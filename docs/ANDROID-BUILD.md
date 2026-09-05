@@ -146,3 +146,24 @@ Die vorhandenen SDK-54-Abhängigkeitswarnungen sind weiterhin in der README erfa
 Referenzen: [Expo: lokale Release-Builds](https://docs.expo.dev/guides/local-app-production/),
 [GitHub: Workflow-Artifacts herunterladen](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/downloading-workflow-artifacts),
 [GitHub: upload-artifact](https://github.com/actions/upload-artifact).
+
+### Erster nachgewiesener APK-Build
+
+- Lauf: https://github.com/samisam-hub/SmartBasket/actions/runs/33996350944
+- Build-Commit: `9fb5eb3`; nachfolgende Änderungen betreffen nur diese Anleitung.
+- Artifact: `SmartBasket-APK-1`, APK: `SmartBasket-0.1.0-build-1.apk` (42.292.866 Bytes).
+- Gradle-Release-Build, Signaturprüfung und Artifact-Upload erfolgreich.
+- Heruntergeladene APK erneut lokal mit `apksigner` geprüft; Zertifikat entspricht
+  dem gesicherten eigenen SmartBasket-Schlüssel, nicht dem Expo-Debug-Schlüssel.
+- Paket `com.smartbasket.app`, Version `0.1.0`, Versionscode `1`, minSdk `24`,
+  targetSdk `36`, Architekturen `arm64-v8a` und `x86_64` bestätigt.
+- APK-SHA-256: `40e102ac7ff6a10d459901f585900262c24926e3a86648024f99d712643d8ed4`.
+- Zertifikat-SHA-256: `f75b6ad0bdd56a6af6f6b24daa015fe4703eb7d040ba47e25b36cddf8925c45d`.
+- Windows-DPAPI-Wiederherstellung der Schlüsselsicherung erfolgreich getestet.
+- Kein Installationstest auf einem physischen Android-Gerät durchgeführt.
+
+Hinweis zum vorhandenen lokalen Ordner: Dessen Besitzer ist noch das
+Codex-Sandboxkonto. Git kann deshalb unter dem normalen Windows-Konto einen
+Eigentumsfehler melden. Die Änderung des Besitzers wurde von der automatischen
+Freigabeprüfung zurückgehalten und ist ohne ausdrückliche Zustimmung nicht
+vorgenommen worden. Das GitHub-Repository und die APK-Builds sind davon unabhängig.
