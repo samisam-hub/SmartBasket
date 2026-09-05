@@ -1,17 +1,70 @@
-import { StyleSheet } from 'react-native';
-
+import { StyleSheet, type TextStyle } from "react-native";
 export const colors = {
-  background: '#F8F8F2', surface: '#FFFFFF', ink: '#203A2D', muted: '#637066',
-  primary: '#216E48', pale: '#EAF0DE', border: '#E2E7DA', peach: '#F5DFC5',
+  primary: "#2563EB",
+  primaryLight: "#60A5FA",
+  secondary: "#0EA5E9",
+  success: "#10B981",
+  nutrition: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  background: "#F8FAFC",
+  surface: "#FFFFFF",
+  ink: "#0F172A",
+  muted: "#64748B",
+  border: "#E2E8F0",
+  disabled: "#CBD5E1",
+  pale: "#EFF6FF",
+  successBackground: "#ECFDF5",
+  errorBackground: "#FEF2F2",
+  warningBackground: "#FFFBEB",
+  successText: "#047857",
+  errorText: "#B91C1C",
+  onPrimary: "#FFFFFF",
 };
-
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+  huge: 48,
+};
+export const radii = { small: 8, medium: 12, large: 16, xl: 24, pill: 999 };
+// System typography avoids adding font loading to the established APK setup.
+export const typography = {
+  h1: { fontSize: 32, lineHeight: 40, fontWeight: "700" },
+  h2: { fontSize: 24, lineHeight: 32, fontWeight: "600" },
+  h3: { fontSize: 20, lineHeight: 28, fontWeight: "600" },
+  body: { fontSize: 16, lineHeight: 24, fontWeight: "400" },
+  small: { fontSize: 14, lineHeight: 20 },
+  caption: { fontSize: 12, lineHeight: 16 },
+} satisfies Record<string, TextStyle>;
 export const ui = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 24, paddingBottom: 36, gap: 24 },
-  title: { fontSize: 32, fontWeight: '700', color: colors.ink, letterSpacing: -1 },
-  heading: { fontSize: 22, fontWeight: '700', color: colors.ink, letterSpacing: -0.4 },
-  body: { fontSize: 16, lineHeight: 24, color: colors.muted },
-  eyebrow: { fontSize: 12, fontWeight: '700', letterSpacing: 1.8, color: colors.primary },
-  card: { backgroundColor: colors.surface, borderRadius: 24, padding: 22, gap: 14, borderWidth: 1, borderColor: colors.border },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  content: { padding: spacing.xl, paddingBottom: spacing.xxl, gap: spacing.xl },
+  title: { ...typography.h1, color: colors.ink },
+  heading: { ...typography.h2, color: colors.ink },
+  subheading: { ...typography.h3, color: colors.ink },
+  body: { ...typography.body, color: colors.muted },
+  small: { ...typography.small, color: colors.muted },
+  caption: { ...typography.caption, color: colors.muted },
+  eyebrow: {
+    ...typography.caption,
+    fontWeight: "700",
+    letterSpacing: 1.5,
+    color: colors.primary,
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.xl,
+    padding: spacing.xl,
+    gap: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  row: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  wrap: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  stack: { gap: spacing.lg },
+  centered: { alignItems: "center", gap: spacing.lg },
 });
