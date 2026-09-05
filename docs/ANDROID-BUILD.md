@@ -86,7 +86,7 @@ Für eine spätere Neueinrichtung per GitHub CLI (angemeldet mit `gh auth login`
 
 ```powershell
 $signingDir = 'C:\Users\Samaana Zakharova\Documents\Codex\SmartBasket-Signing-Backup'
-$securePassword = Get-Content "$signingDir\password.dpapi" -Raw | ConvertTo-SecureString
+$securePassword = (Get-Content "$signingDir\password.dpapi" -Raw).Trim() | ConvertTo-SecureString
 $plainPassword = [System.Net.NetworkCredential]::new('', $securePassword).Password
 [Convert]::ToBase64String([IO.File]::ReadAllBytes("$signingDir\smartbasket.jks")) | gh secret set KEYSTORE_BASE64 --repo samisam-hub/SmartBasket
 $plainPassword | gh secret set KEYSTORE_PASSWORD --repo samisam-hub/SmartBasket
