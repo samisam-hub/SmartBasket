@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "SmartBasket",
+    "slug": "smartbasket",
+    "version": "0.1.0",
+    "scheme": "smartbasket",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "android": { "package": "com.smartbasket.app", "edgeToEdgeEnabled": true },
+    "ios": { "bundleIdentifier": "com.smartbasket.app", "supportsTablet": false },
+    "plugins": ["expo-router", "expo-font"],
+    "experiments": { "typedRoutes": true }
+  }
+}
