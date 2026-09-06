@@ -17,7 +17,8 @@
     "catalog:prepare": "node scripts/import-catalog.cjs",
     "catalog:apply": "node scripts/apply-catalog.cjs",
     "catalog:verify": "node --env-file=.env scripts/verify-catalog.cjs",
-    "basket:verify": "node --env-file=.env scripts/verify-basket.cjs"
+    "basket:verify": "node --env-file=.env scripts/verify-basket.cjs",
+    "meals:verify": "node --env-file=.env scripts/verify-meals.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

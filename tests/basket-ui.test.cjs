@@ -14,6 +14,9 @@ Module._load=function(request,parent,isMain){
   if(request==='react-native')return {ActivityIndicator:'Spinner',Text:'Text'};
   if(request==='expo-router')return {router:{dismissTo:()=>{}},useLocalSearchParams:()=>params};
   if(request==='@/components/ui')return components;
+  if(request==='@/components/MealPlanReview')return {MealPlanReview:props=>React.createElement('MealReview',props)};
+  if(request==='@/services/meals/planner')return {generateMealPlan:(...args)=>{generated++;return require('../services/meals/planner.ts').generateMealPlan(...args);}};
+  if(request==='@/services/meals/basket')return {basketFromMealPlan:(plan,p)=>({...generateBasket(p,catalog),engineVersion:'2',mealPlan:plan})};
   if(request==='@/components/BasketResult')return {BasketResult:props=>React.createElement('Result',props)};
   if(request==='@/context/PreferencesContext')return {usePreferences:()=>preferenceState};
   if(request==='@/hooks/useBasketFlow')return {useBasketFlow:()=>({edit:()=>{},disabled:false})};
@@ -31,12 +34,15 @@ for(const extension of ['.ts','.tsx'])require.extensions[extension]=(module,file
 };
 const Screen=require('../app/basket-setup.tsx').default;
 const flush=()=>act(async()=>{await new Promise(resolve=>setTimeout(resolve,15));});
-test('actual result screen generates, saves once on double tap, reopens a snapshot and aborts abandoned generation',async()=>{
+test('actual screen requires meal confirmation, saves once on double tap, reopens a snapshot and aborts abandoned generation',async()=>{
   let renderer;
   await act(()=>{renderer=create(React.createElement(Screen));});await flush();
-  assert.equal(generated,1);assert.equal(renderer.root.findAllByType('Result').length,1);
+  assert.equal(generated,1);assert.equal(renderer.root.findAllByType('Result').length,0);
+  assert.equal(renderer.root.findAllByType('MealReview').length,1);
+  await act(()=>renderer.root.findByType('MealReview').props.onConfirm());
+  assert.equal(renderer.root.findAllByType('Result').length,1);
   assert.equal(renderer.root.findByType('Screen').props.bottom,true);assert.equal(renderer.root.findByType('Screen').props.top,false);
-  const saveButton=renderer.root.findAllByType('PrimaryButton').find(b=>b.props.label==='Save basket');
+  const saveButton=renderer.root.findAllByType('PrimaryButton').find(b=>b.props.label==='Save meal plan & basket');
   await act(async()=>{saveButton.props.onPress();saveButton.props.onPress();await Promise.resolve();});
   assert.equal(saveCalls,1);
   await act(async()=>{resolveSave();await Promise.resolve();});await flush();

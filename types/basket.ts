@@ -1,9 +1,16 @@
 import type { Product } from './product';
 import type { UserPreferences } from './preferences';
+import type { MealPlan, IngredientRequirement, Nutrition } from './meal';
 export type BasketGroup = 'protein' | 'vegetables' | 'fruit' | 'staples' | 'breakfast' | 'dairy' | 'extras';
 export interface BasketWarning { code: string; message: string; productIds?: string[] }
 export interface SelectionReason { code: string; detail: string }
 export interface BasketItem {
+  ingredientKey?: string;
+  sourceMealIds?: string[];
+  purchasedQuantity?: number;
+  plannedConsumptionQuantity?: number;
+  leftoverQuantity?: number;
+  quantityAdjustmentPercent?: number;
   product: Product;
   group: BasketGroup;
   packageCount: number;
@@ -21,7 +28,12 @@ export interface BasketItem {
   reasonSelected: SelectionReason[];
 }
 export interface BasketGenerationResult {
-  engineVersion: '1';
+  engineVersion: '1' | '2';
+  mealPlan?: MealPlan;
+  ingredientRequirements?: IngredientRequirement[];
+  ingredientRatios?: Record<string, number>;
+  adjustedMealNutrition?: { itemId: string; nutrition: Nutrition }[];
+  remaining?: { totalPurchasedWeight: number; totalPlannedConsumption: number; totalLeftoverWeight: number; totalPurchasedVolume: number; totalPlannedVolume: number; totalLeftoverVolume: number; estimatedWastePercent: number };
   optimizationWeights: Record<string, number>;
   status: 'generated' | 'partial' | 'empty' | 'invalid';
   items: BasketItem[];

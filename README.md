@@ -132,3 +132,7 @@ change an APK already built; build another APK to embed them.
 
 [Supabase anonymous authentication](https://supabase.com/docs/guides/auth/auth-anonymous)
 explains the session identity and its recovery limitations.
+
+## Phase 3B meal-based baskets
+
+New generation uses 24 curated meals, review/replacement, ingredient aggregation and package optimization. See [the implementation and verification report](docs/MEAL-BASKETS.md). Run `npm run meals:verify` for the requested read-only live example. The current catalog cannot supply that lactose-free plan under the existing evidence requirements; missing ingredients are explicit and never replaced with unrelated foods.

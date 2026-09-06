@@ -2,12 +2,14 @@ import type { SavedBasket, BasketGenerationResult } from '../../types/basket';
 import type { UserPreferences } from '../../types/preferences';
 import { isSaved } from '../preference-domain';
 import { groups } from './scoring';
+import { isMealPlan } from '../meals/validation';
 export interface BasketStorage { getItem(key: string): Promise<string | null>; setItem(key: string, value: string): Promise<void> }
 export interface RemoteBaskets { save(basket: SavedBasket): Promise<string>; list(ownerId: string): Promise<SavedBasket[]> }
 export function isBasketResult(v: unknown): v is BasketGenerationResult {
   if (!v || typeof v !== 'object') return false;
   const r = v as BasketGenerationResult;
-  return r.engineVersion === '1' && ['generated', 'partial'].includes(r.status) &&
+  return ['1','2'].includes(r.engineVersion) && (r.engineVersion==='2'?['generated','partial','empty']:['generated','partial']).includes(r.status) &&
+    (r.engineVersion!=='2'||(isMealPlan(r.mealPlan)&&r.mealPlan.status==='confirmed'&&Array.isArray(r.ingredientRequirements)&&r.ingredientRequirements.every(x=>x&&typeof x.ingredientKey==='string'&&Number.isFinite(x.requiredQuantity)&&x.requiredQuantity>0))) &&
     [r.totalCalories, r.totalProtein, r.totalCarbohydrates, r.totalFat, r.calorieTarget, r.proteinTarget, r.score, r.calorieCoveragePercent, r.proteinCoveragePercent, r.knownPriceSubtotal, r.dailyProteinTarget].every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0) &&
     typeof r.proteinRule === 'string' && ['disabled','unknown','within_budget','slightly_over','unachievable'].includes(r.budgetStatus) &&
     (r.budgetTarget === null || (typeof r.budgetTarget === 'number' && Number.isFinite(r.budgetTarget) && r.budgetTarget > 0)) &&
@@ -15,7 +17,10 @@ export function isBasketResult(v: unknown): v is BasketGenerationResult {
     (r.estimatedTotalPrice === null || (typeof r.estimatedTotalPrice === 'number' && Number.isFinite(r.estimatedTotalPrice) && r.estimatedTotalPrice >= 0)) &&
     Array.isArray(r.warnings) && r.warnings.every(w => w && typeof w.code === 'string' && typeof w.message === 'string') &&
     Array.isArray(r.categoryCoverage) && r.categoryCoverage.every(c => c && groups.includes(c.group) && typeof c.represented === 'boolean') &&
-    Array.isArray(r.items) && r.items.length > 0 && r.items.length <= 24 && r.items.every(i => i && i.product && typeof i.product.id === 'string' && typeof i.product.name === 'string' &&
+    Array.isArray(r.items) && (r.engineVersion==='2'||r.items.length>0) && r.items.length <= (r.engineVersion==='2'?64:24) && r.items.every(i => i && i.product && typeof i.product.id === 'string' && typeof i.product.name === 'string' &&
+      (r.engineVersion!=='2'||(typeof i.ingredientKey==='string'&&Array.isArray(i.sourceMealIds)&&i.sourceMealIds.every(s=>typeof s==='string')&&
+        [i.purchasedQuantity,i.plannedConsumptionQuantity,i.leftoverQuantity].every(n=>typeof n==='number'&&Number.isFinite(n)&&n>=0)&&
+        Math.abs(i.purchasedQuantity!-i.plannedConsumptionQuantity!-i.leftoverQuantity!)<0.01&&Math.abs(i.purchasedQuantity!-i.packageCount*i.packageAmount)<0.01))&&
       typeof i.product.source === 'string' && (i.product.brand === null || typeof i.product.brand === 'string') &&
       (i.product.quantityLabel === null || typeof i.product.quantityLabel === 'string') &&
       Number.isInteger(i.packageCount) && i.packageCount > 0 && typeof i.packageAmount === 'number' && Number.isFinite(i.packageAmount) && i.packageAmount > 0 &&
