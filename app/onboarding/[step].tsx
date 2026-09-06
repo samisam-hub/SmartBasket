@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BackHandler, Text, View } from "react-native";
+import type { NavigationProp } from "@react-navigation/native";
 import {
   Redirect,
   router,
   useFocusEffect,
   useLocalSearchParams,
+  useNavigation,
 } from "expo-router";
 import {
   EmptyState,
@@ -33,6 +35,11 @@ import {
   type PreferenceErrors,
 } from "@/types/preferences";
 import { ui } from "@/lib/theme";
+import {
+  preferenceExitState,
+  type PreferenceIntent,
+  type RootStackParams,
+} from "@/services/preference-navigation";
 
 const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
   welcome: {
@@ -78,18 +85,27 @@ const fields: Record<OnboardingStep, (keyof PreferenceErrors)[]> = {
   budget: ["budgetEnabled", "weeklyBudgetEur"],
   review: [],
 };
-function go(step: OnboardingStep, review = false) {
+function go(step: OnboardingStep, intent: PreferenceIntent, review = false) {
   router.replace({
     pathname: "/onboarding/[step]",
-    params: { step, ...(review ? { review: "1" } : {}) },
+    params: { step, intent, ...(review ? { review: "1" } : {}) },
   });
 }
-function home() {
-  router.dismissAll();
-  router.replace("/");
-}
 export default function OnboardingScreen() {
-  const params = useLocalSearchParams<{ step: string; review?: string }>();
+  const params = useLocalSearchParams<{
+    step: string;
+    review?: string;
+    intent?: string;
+  }>();
+  const navigation = useNavigation<NavigationProp<RootStackParams>>(); // Direct child of the root Stack.
+  const intent: PreferenceIntent = params.intent === "edit" ? "edit" : "onboarding";
+  const exit = useCallback(
+    () => navigation.reset(preferenceExitState(intent)),
+    [navigation, intent],
+  );
+  const active = useRef(false);
+  const pending = useRef(false);
+  const [exiting, setExiting] = useState(false);
   const step = steps.includes(params.step as OnboardingStep)
     ? (params.step as OnboardingStep)
     : null;
@@ -97,17 +113,24 @@ export default function OnboardingScreen() {
   const { draft, ready, saving, configured, localError, store } =
     usePreferences();
   const [attempted, setAttempted] = useState(false);
+  const busy = saving || exiting;
   const index = step ? steps.indexOf(step) : 0;
   useEffect(() => {
     if (step && ready) store.goTo(step);
     setAttempted(false);
   }, [step, ready, store]);
   const back = useCallback(() => {
-    if (saving) return;
-    if (returning) go("review");
-    else if (index > 0) go(steps[index - 1]);
-    else home();
-  }, [saving, returning, index]);
+    if (busy || pending.current) return;
+    if (returning) go("review", intent);
+    else if (index > 0) go(steps[index - 1], intent);
+    else exit();
+  }, [busy, returning, index, intent, exit]);
+  useFocusEffect(
+    useCallback(() => {
+      active.current = true;
+      return () => { active.current = false; };
+    }, []),
+  );
   useFocusEffect(
     useCallback(() => {
       const subscription = BackHandler.addEventListener(
@@ -123,7 +146,7 @@ export default function OnboardingScreen() {
   if (!step) return <Redirect href="/" />;
   if (!ready)
     return (
-      <Screen>
+      <Screen bottom>
         <EmptyState
           title="Getting things ready"
           description="Loading your saved progress…"
@@ -134,34 +157,44 @@ export default function OnboardingScreen() {
   const errors = validatePreferences(draft);
   const visible = attempted ? errors : {};
   const next = () => {
+    if (busy || pending.current) return;
     setAttempted(true);
     if (fields[step].some((field) => errors[field])) return;
-    if (returning) go("review");
-    else go(steps[index + 1]);
+    if (returning) go("review", intent);
+    else go(steps[index + 1], intent);
+  };
+  const finish = async (persist: () => Promise<boolean>) => {
+    if (busy || pending.current) return;
+    pending.current = true;
+    setExiting(true);
+    try {
+      if ((await persist()) && active.current) exit();
+    } finally {
+      pending.current = false;
+      if (active.current) setExiting(false);
+    }
   };
   const save = async () => {
     setAttempted(true);
     if (Object.keys(errors).length) return;
-    if (await store.save()) home();
+    await finish(store.save);
   };
   return (
     <Screen bottom>
       <View style={[ui.row, { justifyContent: "space-between" }]}>
-        <TextButton label="Back" disabled={saving} onPress={back} />
+        <TextButton label="Back" disabled={busy} onPress={back} />
         <TextButton
           label="Save & exit"
-          disabled={saving}
+          disabled={busy}
           onPress={() => {
-            void store.flushDraft().then((ok) => {
-              if (ok) home();
-            });
+            void finish(store.flushDraft);
           }}
         />
       </View>
       <ProgressIndicator current={index + 1} total={steps.length} />
       <ScreenHeader {...copy[step]} />
       <ErrorMessage message={localError} />
-      <View pointerEvents={saving ? "none" : "auto"} style={ui.stack}>
+      <View pointerEvents={busy ? "none" : "auto"} style={ui.stack}>
         {step === "welcome" && (
           <>
             <InfoCard title="A few choices. A stronger start.">
@@ -364,7 +397,7 @@ export default function OnboardingScreen() {
             <SectionCard>
               <PreferenceSummary
                 preferences={draft}
-                onEdit={(target) => go(target, true)}
+                onEdit={(target) => go(target, intent, true)}
               />
             </SectionCard>
             {attempted &&
@@ -381,8 +414,9 @@ export default function OnboardingScreen() {
       </View>
       {step === "review" ? (
         <PrimaryButton
-          label={saving ? "Saving preferences…" : "Save preferences"}
-          loading={saving}
+          label={busy ? "Saving preferences…" : intent === "edit"
+            ? "Save changes" : "Save preferences"}
+          loading={busy}
           onPress={() => {
             void save();
           }}
@@ -397,6 +431,7 @@ export default function OnboardingScreen() {
                 : "Continue"
           }
           onPress={next}
+          disabled={busy}
         />
       )}
     </Screen>

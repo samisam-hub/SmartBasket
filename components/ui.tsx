@@ -34,7 +34,7 @@ export function Screen({
         ...(top ? ["top" as const] : []),
         "left",
         "right",
-        ...(!top || bottom ? ["bottom" as const] : []),
+        ...(bottom ? ["bottom" as const] : []),
       ]}
     >
       <KeyboardAvoidingView

@@ -14,7 +14,7 @@ export default function BasketSetupScreen() {
   const { saved } = usePreferences();
   const flow = useBasketFlow();
   return (
-    <Screen top={false}>
+    <Screen top={false} bottom>
       <InfoChip label="Coming soon · Basket generation" />
       <EmptyState
         title="Your preferences are ready."

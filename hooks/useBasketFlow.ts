@@ -7,7 +7,10 @@ export function useBasketFlow() {
     if (!ready || saving) return;
     router.push({
       pathname: "/onboarding/[step]",
-      params: { step: store.begin(step) },
+      params: {
+        step: store.begin(step),
+        intent: saved?.onboardingCompleted ? "edit" : "onboarding",
+      },
     });
   };
   return {
