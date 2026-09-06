@@ -1,8 +1,8 @@
-# SmartBasket · Phase 2A
+# SmartBasket · Real product catalog
 
 A fitness-oriented grocery assistant: **Fuel your goals.** This is the existing
 React Native / Expo SDK 54 / Expo Router Android app, with a blue design system,
-complete onboarding, local draft persistence, and a Supabase repository.
+complete onboarding, local draft persistence, and a normalized Supabase product catalog.
 
 ## Run locally
 
@@ -35,9 +35,12 @@ npm run export:android
 - One private `user_preferences` table, database constraints, timestamps, and RLS.
 - Explicit local-only completion and a Retry cloud sync action when offline.
 - Editable saved preferences in Profile and actual preference chips on Home.
-- Ten searchable mock grocery products and a labeled basket-generation placeholder.
+- 750 real imported groceries, paged name/brand search, category/diet filters, and product details.
+- Conservative preference matching, allergen warnings, source attribution, and image fallbacks.
+- A clearly labeled ten-item fictional catalog if the live catalog is unavailable.
+- A labeled basket-generation placeholder.
 
-No basket generation, optimization, Open Food Facts, retailer integration,
+No basket generation, optimization, retailer integration,
 payments, recipes, or notification delivery is implemented.
 
 ## Architecture
@@ -56,14 +59,15 @@ components/
   PersistenceStatus.tsx        Device/cloud status and retry actions
 context/PreferencesContext.tsx Store subscription and auth refresh lifecycle
 hooks/useBasketFlow.ts         Shared onboarding/generation navigation
-hooks/useProducts.ts           Mock catalog search state
+hooks/useProducts.ts           Debounced paged catalog state with cancellation
 lib/theme.ts                  Central design tokens
 lib/supabase.ts                Optional native client with bounded fetch waits
 services/
   preference-domain.ts        Validation, dietary selection, summary formatting
   preference-store.ts         UI-independent durable draft/completion state
   preferences-repository.ts   Anonymous identity, row mapping, select/upsert
-  products.ts                 Existing local catalog search
+  products.ts                 Catalog repository composition
+  catalog/                    Provider, normalization, database reads and discovery rules
 supabase/migrations/          Versioned user_preferences migration
 tests/                        Domain and persistence regression tests
 types/preferences.ts          Draft and saved preference models
@@ -75,6 +79,11 @@ PGlite is a development-only dependency for isolated PostgreSQL migration/RLS te
 it is not imported or bundled into the mobile app.
 
 ## Backend configuration
+
+The catalog migration and import are applied to the same dedicated SmartBasket
+project. See [catalog implementation, import commands, and verification](docs/PRODUCT-CATALOG.md)
+for the complete data mapping, 750-product breakdown, license attribution, and limitations.
+Catalog reads work with the existing public app credentials; the app has no catalog write access.
 
 The dedicated SmartBasket project (`oepajinqjkcqqyddpgne`) is configured locally and in GitHub Actions. Anonymous sign-in, migration, session recovery, cloud upsert/readback, and owner-only RLS passed hosted verification on 2026-09-06.
 

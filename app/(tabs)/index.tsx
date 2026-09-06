@@ -84,7 +84,7 @@ export default function HomeScreen() {
           </View>
         ))}
         <TextButton
-          label="Explore sample products"
+          label="Explore products"
           onPress={() => router.navigate("/products")}
         />
       </SectionCard>

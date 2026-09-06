@@ -1,0 +1,47 @@
+const { test } = require("node:test");
+const assert = require("node:assert/strict");
+const path = require("node:path"), Module = require("node:module");
+require("./register.cjs");
+const React = require("react"), { create, act } = require("react-test-renderer");
+global.IS_REACT_ACT_ENVIRONMENT = true;
+const requests = [];
+const repository = { page: (...args) => new Promise((resolve, reject) => requests.push({ args, resolve, reject })) };
+const originalLoad = Module._load;
+Module._load = function(request, parent, isMain) {
+  if (request === "@/services/products") return { getProductRepository: () => repository };
+  if (request === "@/context/PreferencesContext") return { usePreferences: () => ({ saved: null }) };
+  if (request.startsWith("@/")) request = path.resolve(path.dirname(require.resolve("../package.json")), request.slice(2));
+  return originalLoad.call(this, request, parent, isMain);
+};
+const { useProducts } = require("../hooks/useProducts.ts");
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+test("catalog hook debounces search, ignores stale responses, and preserves pages on loading failure", async () => {
+  let state, renderer;
+  function Harness() { state = useProducts(); return null; }
+  await act(() => { renderer = create(React.createElement(Harness)); });
+  await act(async () => { await wait(10); });
+  assert.equal(requests.length, 1);
+  await act(() => state.setQuery("oa"));
+  await act(async () => { await wait(10); });
+  await act(() => state.setQuery("oat"));
+  await act(async () => { await wait(50); });
+  assert.equal(requests.length, 1);
+  await act(async () => { await wait(300); });
+  assert.equal(requests.length, 2); assert.equal(requests[1].args[0], "oat");
+  await act(async () => requests[1].resolve({ products: [{ id: "oat" }], hasMore: true, mode: "catalog", warning: null }));
+  await act(async () => requests[0].resolve({ products: [{ id: "stale" }], hasMore: true, mode: "catalog", warning: null }));
+  assert.deepEqual(state.products.map(p => p.id), ["oat"]);
+  await act(() => { state.loadMore(); state.loadMore(); });
+  assert.equal(requests.length, 3); assert.equal(requests[2].args[3], 1);
+  await act(async () => requests[2].reject(Error("offline")));
+  assert.deepEqual(state.products.map(p => p.id), ["oat"]); assert.ok(state.error); assert.equal(state.loadingMore, false);
+  await act(() => state.loadMore());
+  await act(async () => requests[3].resolve({ products: [{ id: "oat" }, { id: "milk" }], hasMore: false, mode: "catalog", warning: null }));
+  assert.deepEqual(state.products.map(p => p.id), ["oat", "milk"]);
+  await act(() => state.setQuery(""));
+  await act(async () => { await wait(10); });
+  assert.equal(requests[4].args[3], 0);
+  assert.equal(state.products.length, 0);
+  await act(() => renderer.unmount());
+  assert.equal(requests[4].args[5].aborted, true);
+});

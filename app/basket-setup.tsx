@@ -23,7 +23,7 @@ export default function BasketSetupScreen() {
       >
         {saved && <Chips labels={preferenceChips(saved)} />}
         <SecondaryButton
-          label="Explore sample products"
+          label="Explore products"
           onPress={() => router.dismissTo("/products")}
         />
         <TextButton

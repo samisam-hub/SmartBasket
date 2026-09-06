@@ -28,6 +28,7 @@ export default function RootLayout() {
             name="basket-setup"
             options={{ title: "Create my basket" }}
           />
+          <Stack.Screen name="product/[id]" options={{ title: "Product details" }} />
         </Stack>
       </PreferencesProvider>
     </SafeAreaProvider>

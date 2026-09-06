@@ -1,73 +1,32 @@
-import { useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Chips, SectionCard } from "@/components/ui";
-import { colors, radii, spacing, ui } from "@/lib/theme";
-import type { Product } from "@/types/product";
-export function ProductCard({ product }: { product: Product }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const price =
-    product.priceEstimate === null
-      ? "Price unavailable"
-      : new Intl.NumberFormat("en-IE", {
-          style: "currency",
-          currency: product.currency,
-        }).format(product.priceEstimate);
-  return (
+import { ProductImage } from "@/components/ProductImage";
+import { colors, spacing, ui } from "@/lib/theme";
+import { categoryLabels, type Product } from "@/types/product";
+import type { UserPreferences } from "@/types/preferences";
+import { allergenConflicts, dietaryFields, dietaryNames, estimatedPrice, matchesPreferences } from "@/services/catalog/discovery";
+export function ProductCard({ product, preferences, onPress }: { product: Product; preferences: UserPreferences | null; onPress: () => void }) {
+  const risk = allergenConflicts(product, preferences);
+  const diet = dietaryFields.filter(f => product[f] === true && !(f === "vegetarian" && product.vegan)).map(f => dietaryNames[f]);
+  return <Pressable accessibilityRole="button" accessibilityLabel={`View ${product.name}`} onPress={onPress}
+    style={({ pressed }) => pressed && { opacity: 0.8 }}>
     <SectionCard>
       <View style={ui.row}>
-        <View style={styles.image}>
-          {product.imageUrl && !imageFailed ? (
-            <Image
-              source={{ uri: product.imageUrl }}
-              style={StyleSheet.absoluteFill}
-              resizeMode="contain"
-              accessibilityLabel={product.name}
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            <Text
-              style={styles.emoji}
-              accessibilityLabel={`${product.name} illustration`}
-            >
-              {product.imagePlaceholder}
-            </Text>
-          )}
-        </View>
+        <ProductImage uri={product.imageThumbnailUrl ?? product.imageUrl} name={product.name} />
         <View style={styles.details}>
-          <Text style={ui.caption}>
-            {product.brand} · {product.category}
-          </Text>
-          <Text style={ui.subheading}>{product.name}</Text>
-          <Text style={ui.small}>{product.packageLabel}</Text>
-          <Text style={[ui.subheading, { color: colors.primary }]}>
-            {price} <Text style={ui.caption}>est.</Text>
-          </Text>
+          <Text style={ui.caption}>{product.brand ?? "Brand not provided"} · {categoryLabels[product.category]}</Text>
+          <Text style={ui.subheading} numberOfLines={3}>{product.name}</Text>
+          {product.quantityLabel && <Text style={ui.small}>{product.quantityLabel}</Text>}
+          <Text style={[ui.small, { color: colors.primary }]}>{estimatedPrice(product)}</Text>
         </View>
       </View>
-      <Text style={ui.small}>
-        {product.caloriesPer100g ?? "—"} kcal ·{" "}
-        <Text style={{ color: colors.successText }}>
-          {product.proteinPer100g ?? "—"} g protein
-        </Text>{" "}
-        / 100 g
-      </Text>
-      <Chips labels={product.labels} />
-      {product.allergens.length > 0 && (
-        <Text style={ui.caption}>Contains: {product.allergens.join(", ")}</Text>
-      )}
+      <Text style={ui.small}>{product.caloriesPer100g ?? "—"} kcal · {product.proteinPer100g ?? "—"} g protein / {product.nutritionBasis === "100ml" ? "100 ml" : "100 g"}</Text>
+      {!!diet.length && <Chips labels={diet.slice(0, 3)} />}
+      {!!risk.contains.length && <Text style={styles.warning}>Allergen warning: contains {risk.contains.join(", ").replace(/_/g, " ")}</Text>}
+      {!!risk.traces.length && <Text style={styles.warning}>Allergen warning: may contain {risk.traces.join(", ").replace(/_/g, " ")}</Text>}
+      {matchesPreferences(product, preferences) && <Text style={[ui.caption, { color: colors.successText }]}>Matches your preferences · check the label</Text>}
+      {product.source === "demo" && <Text style={ui.caption}>Fictional demo product</Text>}
     </SectionCard>
-  );
+  </Pressable>;
 }
-const styles = StyleSheet.create({
-  image: {
-    width: 80,
-    height: 96,
-    borderRadius: radii.large,
-    backgroundColor: colors.pale,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  emoji: { fontSize: 48 },
-  details: { flex: 1, gap: spacing.xs },
-});
+const styles = StyleSheet.create({ details: { flex: 1, gap: spacing.xs }, warning: { ...ui.small, color: colors.errorText } });

@@ -182,7 +182,8 @@ export function SearchInput({
         value={value}
         onChangeText={onChangeText}
         accessibilityLabel="Search products"
-        placeholder="Search foods, brands, or labels"
+        placeholder="Search foods or brands"
+        maxLength={120}
         placeholderTextColor={colors.muted}
         autoCorrect={false}
         autoCapitalize="none"

@@ -5,6 +5,7 @@ export type RootStackParams = {
   "(tabs)": undefined;
   "onboarding/[step]": { step: string; intent?: PreferenceIntent; review?: string };
   "basket-setup": undefined;
+  "product/[id]": { id: string };
 };
 
 export function preferenceExitState(intent: PreferenceIntent): PartialState<NavigationState<RootStackParams>> {
