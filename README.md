@@ -76,6 +76,8 @@ it is not imported or bundled into the mobile app.
 
 ## Backend configuration
 
+The dedicated SmartBasket project (`oepajinqjkcqqyddpgne`) is configured locally and in GitHub Actions. Anonymous sign-in, migration, session recovery, cloud upsert/readback, and owner-only RLS passed hosted verification on 2026-09-06.
+
 See [Phase 2A setup and verification](docs/PHASE-2A.md) for migration, anonymous
 authentication, ownership checks, limitations, and the complete testing checklist.
 Copy `.env.example` to `.env` and supply a **dedicated SmartBasket** project:

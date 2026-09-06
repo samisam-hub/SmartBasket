@@ -167,3 +167,18 @@ Codex-Sandboxkonto. Git kann deshalb unter dem normalen Windows-Konto einen
 Eigentumsfehler melden. Die Änderung des Besitzers wurde von der automatischen
 Freigabeprüfung zurückgehalten und ist ohne ausdrückliche Zustimmung nicht
 vorgenommen worden. Das GitHub-Repository und die APK-Builds sind davon unabhängig.
+
+### Phase 2A: verifizierter APK-Build
+
+- Lauf: https://github.com/samisam-hub/SmartBasket/actions/runs/34000092179
+- Build-Commit: `b89b72904306250462b77443cecaed54dcaac2b2`.
+- Artifact: `SmartBasket-APK-2`; APK: `SmartBasket-0.1.0-build-2.apk` (40.309.682 Bytes).
+- Lokal: `C:\Users\Samaana Zakharova\Desktop\SmartBasket-APK-2`.
+- Release-Build, Signaturprüfung und Upload erfolgreich; heruntergeladene APK erneut geprüft.
+- SHA-256: `4c118e410e175bbb7082f89959c7491e2dd1665135b03b480edf477b13bb2e6b`.
+- Zertifikat identisch mit Build 1; Paket `com.smartbasket.app`, Version `0.1.0`, Versionscode `2`.
+- minSdk `24`, targetSdk `36`, ARM64 und x86_64 bestätigt.
+- Die öffentliche Konfiguration des eigenen SmartBasket-Supabase-Projekts ist im APK-Bundle enthalten.
+- Anonymous Auth, Cloud-Speicherung, Session-Wiederherstellung und RLS wurden am echten Backend erfolgreich getestet.
+- Änderungen am APK-Workflow beschränken sich auf die öffentlichen Backend-Variablen. Der bestehende Build- und Signierungsablauf bleibt erhalten.
+- Kein erfolgreicher Installationstest auf einem Android-Gerät; der vorhandene Emulator wurde nicht vollständig gestartet.

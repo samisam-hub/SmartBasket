@@ -4,10 +4,8 @@
 
 The dedicated **SmartBasket** Supabase project is provisioned in the samisam
 organization (eu-west-1), reference `oepajinqjkcqqyddpgne`. The quoted $10/month
-cost was approved. The migration is applied and Supabase's security advisor
-reports no findings. Local .env and GitHub public build variables are configured.
-Anonymous sign-ins still need to be enabled in the dashboard; account sign-in
-is pending. Hosted round-trip verification will follow that configuration.
+cost was approved. The migration is applied. Local .env and GitHub public build variables are configured.
+Anonymous sign-ins are enabled. Hosted verification passed on 2026-09-06: anonymous identity, insert/upsert, session restore and refresh, readback, two-user RLS, denied ownership reassignment, and denied anonymous-role/delete access. The two disposable verification users and their preference rows were removed after testing. Hosted SQL/RLS checks also passed inside a rolled-back transaction.
 
 ## Database and identity
 
@@ -24,7 +22,7 @@ RLS is enabled. `authenticated` can SELECT, INSERT and UPDATE only where
 `(select auth.uid()) = user_id`. UPDATE has both USING and WITH CHECK. The `anon`
 role has no table privileges. There is no client delete grant/policy. Anonymous
 sign-in creates a real Supabase user with the authenticated role; it does not
-mean publicly writable data. Auth metadata is never used for authorization.
+mean publicly writable data. Auth metadata is never used for authorization. After anonymous authentication was enabled, the security advisor reported the expected `auth_allow_anonymous_sign_ins` warning for owner-access policies. Guest access is intentional in this phase; the verified user_id checks still isolate each guest. See https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0012_auth_allow_anonymous_sign_ins.
 
 The client uses AsyncStorage for the Supabase session, a project-scoped auth
 storage key, and a single root AppState listener for foreground refresh, with
@@ -157,8 +155,7 @@ This is an actual PostgreSQL/RLS test, but not a hosted Supabase/JWT round trip.
 
 Validation results: all 15 tests pass; Expo Doctor passed 18/18; the Android
 production export including Hermes bytecode succeeded. The existing Android
-emulator did not complete boot, so screen interaction and a newly signed APK
-have not been verified during this phase. No GitHub build has been dispatched.
+emulator did not complete boot, so screen interaction has not been verified. The signed APK workflow passed for commit b89b729. Build 2 was downloaded and independently checked for checksum, signing certificate, package metadata, and embedded SmartBasket backend configuration. Details are recorded in docs/ANDROID-BUILD.md.
 
 ## Architecture found before this phase
 
@@ -195,6 +192,7 @@ keystore secrets, and uploaded APK artifacts. These foundations were retained.
 - package-lock.json
 - package.json
 - README.md
+- scripts/verify-backend.cjs
 - services/preference-domain.ts
 - services/preference-store.ts
 - services/preferences-repository.ts
