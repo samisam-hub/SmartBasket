@@ -2,6 +2,9 @@ import { categories, type CatalogProductInput, type Product } from "../../types/
 export const productColumns = {
   externalId: "external_id", barcode: "barcode", name: "name", brand: "brand", category: "category",
   imageUrl: "image_url", imageThumbnailUrl: "image_thumbnail_url", quantityLabel: "quantity_label",
+  sourceImageUrl: "source_image_url", displayImageUrl: "display_image_url", imageSource: "image_source",
+  imageQuality: "image_quality", imageWidth: "image_width", imageHeight: "image_height",
+  imageThumbnailWidth: "image_thumbnail_width", imageThumbnailHeight: "image_thumbnail_height",
   packageSize: "package_size", packageUnit: "package_unit", priceEstimate: "price_estimate",
   priceKind: "price_kind", currency: "currency", caloriesPer100g: "calories_per_100g",
   proteinPer100g: "protein_per_100g", carbohydratesPer100g: "carbohydrates_per_100g",
@@ -26,6 +29,9 @@ export function productFromRow(row: Record<string, unknown>): Product {
   }
   for (const column of ["vegetarian", "vegan", "lactose_free", "gluten_free"])
     if (row[column] !== null && typeof row[column] !== "boolean") throw new Error("Malformed dietary flag");
+  if (!["usable", "low-resolution", "unknown", "missing"].includes(String(row.image_quality))) throw new Error("Malformed image quality");
+  for (const column of ["image_width", "image_height", "image_thumbnail_width", "image_thumbnail_height"])
+    if (row[column] !== null && (typeof row[column] !== "number" || !Number.isInteger(row[column]) || row[column] <= 0)) throw new Error("Malformed image dimensions");
   for (const column of ["price_estimate", "calories_per_100g", "protein_per_100g", "carbohydrates_per_100g", "fat_per_100g", "fiber_per_100g", "sugars_per_100g", "salt_per_100g"])
     if (row[column] !== null && (typeof row[column] !== "number" || !Number.isFinite(row[column]))) throw new Error("Malformed nutrition value");
   return { ...Object.fromEntries(Object.entries(productColumns).map(([key, column]) => [key, row[column]])),

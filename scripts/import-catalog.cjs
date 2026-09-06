@@ -43,7 +43,7 @@ function save() {
       let raw; try { raw = JSON.parse(line); } catch { report.rejected++; continue; }
       const p = provider.normalize(raw);
       // Prefer complete, pictured groceries and cap each category to avoid a snack-heavy sample.
-      if (!p || p.category === "other" || !p.imageUrl || !p.brand ||
+      if (!p || p.category === "other" || p.imageQuality !== "usable" || !p.displayImageUrl || !p.brand ||
           [p.proteinPer100g, p.carbohydratesPer100g, p.fatPer100g].some(v => v === null)) {
         report.rejected++; continue;
       }

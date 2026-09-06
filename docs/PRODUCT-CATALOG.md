@@ -1,5 +1,8 @@
 # Phase 2: real product catalog
 
+Image handling was subsequently audited and improved; see [the image audit](PRODUCT-IMAGES.md)
+for current image variants, suitability rules and the 655 usable / 95 placeholder count.
+
 ## Architecture and preserved behavior
 
 The existing standalone Expo SDK 54 / React Native 0.81.5 / React 19.1 app,

@@ -1,5 +1,5 @@
 import type { CatalogProductInput, ProductCategory } from "../../types/product";
-import { safeImageUrl } from "./images";
+import { normalizeOffImages } from "./off-images";
 export const record = (v: unknown): Record<string, unknown> =>
   v !== null && typeof v === "object" && !Array.isArray(v) ? v as Record<string, unknown> : {};
 export function cleanText(v: unknown, limit = 500): string | null {
@@ -41,25 +41,6 @@ const allergenMap: Record<string, string> = {
 };
 export function normalizeAllergens(value: unknown): string[] {
   return [...new Set(tags(value).map(t => allergenMap[t] ?? t.replace(/^en:/, "")))].sort();
-}
-function images(p: Record<string, unknown>, code: string) {
-  let imageUrl = safeImageUrl(p.image_front_url ?? p.image_url);
-  let imageThumbnailUrl = safeImageUrl(p.image_front_small_url ?? p.image_small_url);
-  const data = record(p.images), selected = record(record(data.selected).front);
-  const languages = [...new Set(["en", "de", String(p.lc ?? ""), ...Object.keys(selected),
-    ...Object.keys(data).filter(k => k.startsWith("front_")).map(k => k.slice(6))])];
-  for (const language of languages) {
-    if (!/^[a-z]{2}$/.test(language)) continue;
-    const front = record(selected[language] ?? data[`front_${language}`]);
-    if (!/^\d+$/.test(String(front.rev ?? ""))) continue;
-    const sizes = record(front.sizes);
-    const folder = code.padStart(13, "0").replace(/^(...)(...)(...)(.*)$/, "$1/$2/$3/$4");
-    const url = (size: string) => `https://images.openfoodfacts.org/images/products/${folder}/front_${language}.${front.rev}.${size}.jpg`;
-    imageUrl ??= sizes["400"] ? url("400") : null;
-    imageThumbnailUrl ??= sizes["200"] ? url("200") : sizes["100"] ? url("100") : imageUrl;
-    if (imageUrl) break;
-  }
-  return { imageUrl, imageThumbnailUrl: imageThumbnailUrl ?? imageUrl };
 }
 /** Use declared as-sold quantities only. Never copy estimated or prepared nutrients. */
 function nutrition(p: Record<string, unknown>) {
@@ -109,7 +90,7 @@ export function normalizeOpenFoodFacts(raw: unknown): CatalogProductInput | null
   const canonicalCode = code.length === 14 && code.startsWith("0") ? code.slice(1) : code.padStart(13, "0");
   return {
     externalId: canonicalCode, barcode: canonicalCode, name, brand: cleanText(p.brands),
-    category: categoryOf(tags(p.categories_tags)), ...images(p, code),
+    category: categoryOf(tags(p.categories_tags)), ...normalizeOffImages(p, code),
     quantityLabel: cleanText(p.quantity), packageSize: unit && qty !== 0 ? qty : null, packageUnit: unit,
     priceEstimate: null, priceKind: "unavailable", currency: "EUR", ...nutrients,
     ingredientsText: cleanText(p.ingredients_text_en, 12000) ?? cleanText(p.ingredients_text_de, 12000) ?? cleanText(p.ingredients_text, 12000),

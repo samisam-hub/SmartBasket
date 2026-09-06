@@ -6,3 +6,8 @@ export function safeImageUrl(v: unknown): string | null {
     return u.protocol === "https:" && !u.username && !u.password ? u.href : null;
   } catch { return null; }
 }
+/** Resolution suitability, not a claim about focus, lighting or packaging accuracy. */
+export function imageSuitable(width: number | null, height: number | null, large: boolean): boolean {
+  if (!width || !height || !Number.isFinite(width) || !Number.isFinite(height)) return false;
+  return Math.max(width, height) >= (large ? 600 : 240) && Math.min(width, height) >= (large ? 200 : 120);
+}

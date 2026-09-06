@@ -1,20 +1,32 @@
 import { useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
-import { ActivityIndicator, Image, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Image, PixelRatio, StyleSheet, View } from "react-native";
 import { colors, radii } from "@/lib/theme";
-import { safeImageUrl } from "@/services/catalog/images";
-export function ProductImage({ uri, name, large = false }: { uri: string | null; name: string; large?: boolean }) {
-  const safe = safeImageUrl(uri);
+import { imageSuitable, safeImageUrl } from "@/services/catalog/images";
+type Props = { uri: string | null; width: number | null; height: number | null; name: string; large?: boolean };
+export function ProductImage({ uri, width, height, name, large = false }: Props) {
+  const safe = imageSuitable(width, height, large) ? safeImageUrl(uri) : null;
   // Remount per URL so a failed/recycled list image never poisons the next product.
-  return <ImageFrame key={safe ?? "missing"} uri={safe} name={name} large={large} />;
+  return <ImageFrame key={`${safe}:${width}:${height}:${large}`} uri={safe} width={width} height={height} name={name} large={large} />;
 }
-function ImageFrame({ uri, name, large }: { uri: string | null; name: string; large: boolean }) {
+function ImageFrame({ uri, width, height, name, large = false }: Props) {
   const [failed, setFailed] = useState(false), [loading, setLoading] = useState(!!uri);
+  const [actual, setActual] = useState({ width: width ?? 0, height: height ?? 0 });
+  const density = PixelRatio.get();
   return <View style={[styles.frame, large ? styles.large : styles.small]}>
     {uri && !failed ? <>
-      <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="contain" accessibilityLabel={name}
-        onLoad={() => setLoading(false)} onError={() => { setFailed(true); setLoading(false); }} />
-      {loading && <ActivityIndicator color={colors.primary} accessibilityLabel="Loading product image" />}
+      <Image source={{ uri }} style={{ width: "100%", height: "100%", maxWidth: actual.width / density,
+        maxHeight: actual.height / density, opacity: loading ? 0 : 1 }} resizeMode="contain" resizeMethod="resize" accessibilityLabel={name}
+        onLoad={event => {
+          const loaded = event.nativeEvent.source;
+          // Android may report a downsampled bitmap here, not the original metadata.
+          // Keep the strict source threshold above; reject only unusably tiny decoded files.
+          if (!Number.isFinite(loaded.width) || !Number.isFinite(loaded.height) ||
+            loaded.width <= 0 || loaded.height <= 0 || Math.max(loaded.width, loaded.height) < (large ? 200 : 72)) setFailed(true);
+          else setActual({ width: loaded.width, height: loaded.height });
+          setLoading(false);
+        }} onError={() => { setFailed(true); setLoading(false); }} />
+      {loading && <ActivityIndicator style={StyleSheet.absoluteFill} color={colors.primary} accessibilityLabel="Loading product image" />}
     </> : <Feather name="package" size={large ? 64 : 32} color={colors.muted} accessibilityLabel="Product image unavailable" />}
   </View>;
 }

@@ -18,6 +18,14 @@ export interface Product {
   category: ProductCategory;
   imageUrl: string | null;
   imageThumbnailUrl: string | null;
+  sourceImageUrl: string | null;
+  displayImageUrl: string | null;
+  imageSource: string | null;
+  imageQuality: "usable" | "low-resolution" | "unknown" | "missing";
+  imageWidth: number | null;
+  imageHeight: number | null;
+  imageThumbnailWidth: number | null;
+  imageThumbnailHeight: number | null;
   priceEstimate: number | null;
   currency: string;
   priceKind: "unavailable" | "demo-estimate" | "estimate";

@@ -10,6 +10,7 @@ test("catalog migration, idempotent imports, indexed search and read-only RLS in
   try {
     await db.exec("create role anon; create role authenticated; create role service_role; grant usage on schema public to anon, authenticated;");
     await db.exec(fs.readFileSync("supabase/migrations/20260906005004_products_catalog.sql", "utf8"));
+    await db.exec(fs.readFileSync("supabase/migrations/20260906124417_product_image_quality.sql", "utf8"));
     const product = normalizeOpenFoodFacts({ code: "1234567890123", product_name: "Oat milk", brands: "O'Brien", categories_tags: ["en:milk-substitutes"], nutriments: { "energy-kcal_100g": 40, proteins_100g: 4 }, labels_tags: ["en:vegan"] });
     await db.exec(catalogImportSql([product]));
     const first = (await db.query("select * from products")).rows[0];
@@ -28,5 +29,7 @@ test("catalog migration, idempotent imports, indexed search and read-only RLS in
     }
     await assert.rejects(db.exec(catalogImportSql([{ ...product, externalId: "different" }])), e => e.code === "23505");
     await assert.rejects(db.exec("update products set protein_per_100g = -1"), e => e.code === "23514");
+    await assert.rejects(db.exec("update products set image_quality = 'usable', display_image_url = 'https://example.com/tiny.jpg', image_width = 100, image_height = 100"), e => e.code === "23514");
+    await assert.rejects(db.exec("update products set image_quality = 'usable', display_image_url = 'https://example.com/unknown.jpg'"), e => e.code === "23514");
   } finally { await db.close(); }
 });

@@ -31,7 +31,7 @@ export default function ProductDetails() {
     {loading ? <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading product details" /> : error ? <>
       <ErrorMessage message={error} /><TextButton label="Retry" onPress={() => setRevision(v => v + 1)} />
     </> : !product ? <EmptyState title="Product not found" description="This item may no longer be in the catalog. Go back to browse other products." /> : <>
-      <ProductImage uri={product.imageUrl ?? product.imageThumbnailUrl} name={product.name} large />
+      <ProductImage uri={product.displayImageUrl} width={product.imageWidth} height={product.imageHeight} name={product.name} large />
       <View style={ui.stack}>
         <Text style={ui.caption}>{product.brand ?? "Brand not provided"} · {categoryLabels[product.category]}</Text>
         <Text style={ui.heading}>{product.name}</Text>

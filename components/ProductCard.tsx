@@ -12,7 +12,9 @@ export function ProductCard({ product, preferences, onPress }: { product: Produc
     style={({ pressed }) => pressed && { opacity: 0.8 }}>
     <SectionCard>
       <View style={ui.row}>
-        <ProductImage uri={product.imageThumbnailUrl ?? product.imageUrl} name={product.name} />
+        <ProductImage uri={product.imageThumbnailUrl ?? product.displayImageUrl} name={product.name}
+          width={product.imageThumbnailUrl ? product.imageThumbnailWidth : product.imageWidth}
+          height={product.imageThumbnailUrl ? product.imageThumbnailHeight : product.imageHeight} />
         <View style={styles.details}>
           <Text style={ui.caption}>{product.brand ?? "Brand not provided"} · {categoryLabels[product.category]}</Text>
           <Text style={ui.subheading} numberOfLines={3}>{product.name}</Text>

@@ -4,6 +4,8 @@ import type { Product } from '../types/product';
 // Nutrition is per 100 g of the product, not per package or serving.
 const base = {
   externalId: null, barcode: null, imageUrl: null, currency: 'EUR',
+  sourceImageUrl: null, displayImageUrl: null, imageSource: null, imageQuality: 'missing',
+  imageWidth: null, imageHeight: null, imageThumbnailWidth: null, imageThumbnailHeight: null,
   allergens: [], labels: [], vegetarian: true, vegan: true, lactoseFree: true,
   source: 'demo', sourceUrl: null, imageThumbnailUrl: null, priceKind: 'demo-estimate',
   quantityLabel: null, packageSize: null, packageUnit: null, nutritionBasis: '100g',

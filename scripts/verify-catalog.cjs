@@ -7,6 +7,7 @@ const { ProductRepository, PAGE_SIZE } = require("../services/catalog/ProductRep
 const { emptyFilters, categories } = require("../types/product.ts");
 const { defaultDraft } = require("../types/preferences.ts");
 const { highProtein, allergenConflicts } = require("../services/catalog/discovery.ts");
+const { imageSuitable } = require("../services/catalog/images.ts");
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 if (!url || !key) throw Error("Configure .env for SmartBasket first");
@@ -47,13 +48,24 @@ const client = createClient(url, key, { auth: { persistSession: false, autoRefre
   const summary = await client.from("products").select("id", { count: "exact", head: true });
   if (summary.error) throw summary.error;
   assert.ok(summary.count >= 500 && summary.count <= 1000);
+  const images = await client.from("products").select("image_quality,display_image_url,image_url,image_thumbnail_url,image_width,image_height,image_thumbnail_width,image_thumbnail_height").limit(1000);
+  if (images.error) throw images.error;
+  const imageQuality = {};
+  for (const row of images.data) {
+    imageQuality[row.image_quality] = (imageQuality[row.image_quality] || 0) + 1;
+    assert.equal(row.image_url, row.display_image_url);
+    if (row.image_quality === "usable") {
+      assert.ok(row.display_image_url && imageSuitable(row.image_width, row.image_height, true));
+      if (row.image_thumbnail_url) assert.ok(imageSuitable(row.image_thumbnail_width, row.image_thumbnail_height, false));
+    } else { assert.equal(row.display_image_url, null); assert.equal(row.image_thumbnail_url, null); }
+  }
   const imageResults = [];
-  for (const p of first.products.slice(0, 3)) {
-    const response = await fetch(p.imageThumbnailUrl, { method: "HEAD", signal: AbortSignal.timeout(15000) });
+  for (const p of first.products.filter(p => p.imageQuality === "usable").slice(0, 3)) {
+    const response = await fetch(p.imageThumbnailUrl ?? p.displayImageUrl, { method: "HEAD", signal: AbortSignal.timeout(15000) });
     imageResults.push({ id: p.id, status: response.status, type: response.headers.get("content-type") });
     assert.ok(response.ok && response.headers.get("content-type")?.startsWith("image/"));
   }
-  const report = { passed: true, checkedAt: new Date().toISOString(), count: summary.count,
+  const report = { passed: true, checkedAt: new Date().toISOString(), count: summary.count, imageQuality,
     checks: ["public catalog read", "non-overlapping pagination", "detail lookup", "name and brand search", "15 categories", "dietary flags", "protein filter", "personalized allergen exclusion", "empty results"], imageResults };
   fs.mkdirSync(".expo/catalog", { recursive: true });
   fs.writeFileSync(".expo/catalog/hosted-verification.json", JSON.stringify(report, null, 2));

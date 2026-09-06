@@ -71,8 +71,11 @@ test("provider validates malformed responses, missing products and network failu
 });
 test("images support current selected-image metadata and reject unsafe URLs", () => {
   for (const value of [null, "http://example.com/a.jpg", "javascript:alert(1)", "https://user:pass@example.com/a"]) assert.equal(safeImageUrl(value), null);
-  const p = normalizeOpenFoodFacts(raw({ images: { selected: { front: { en: { rev: "4", sizes: { "200": {}, "400": {} } } } } } }));
-  assert.equal(p.imageThumbnailUrl, "https://images.openfoodfacts.org/images/products/123/456/789/0123/front_en.4.200.jpg");
+  const p = normalizeOpenFoodFacts(raw({ images: { selected: { front: { en: { rev: "4", sizes: {
+    "200": { w: 150, h: 200 }, "400": { w: 300, h: 400 }, full: { w: 900, h: 1200 },
+  } } } } } }));
+  assert.equal(p.imageThumbnailUrl, "https://images.openfoodfacts.org/images/products/123/456/789/0123/front_en.4.400.jpg");
+  assert.match(p.displayImageUrl, /front_en\.4\.full\.jpg$/);
 });
 test("Supabase repository requests bounded pages, server filters, detail reads and explicit fallback", async () => {
   const calls = [];
