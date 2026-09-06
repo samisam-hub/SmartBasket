@@ -1,0 +1,61 @@
+import type { Product } from './product';
+import type { UserPreferences } from './preferences';
+export type BasketGroup = 'protein' | 'vegetables' | 'fruit' | 'staples' | 'breakfast' | 'dairy' | 'extras';
+export interface BasketWarning { code: string; message: string; productIds?: string[] }
+export interface SelectionReason { code: string; detail: string }
+export interface BasketItem {
+  product: Product;
+  group: BasketGroup;
+  packageCount: number;
+  packageAmount: number;
+  quantityUnit: 'g' | 'ml';
+  quantityAssumed: boolean;
+  totalWeight: number | null;
+  totalVolume: number | null;
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbohydrates: number;
+  totalFat: number;
+  totalFiber: number | null;
+  estimatedPrice: number | null;
+  reasonSelected: SelectionReason[];
+}
+export interface BasketGenerationResult {
+  engineVersion: '1';
+  optimizationWeights: Record<string, number>;
+  status: 'generated' | 'partial' | 'empty' | 'invalid';
+  items: BasketItem[];
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbohydrates: number;
+  totalFat: number;
+  totalFiber: number | null;
+  estimatedTotalPrice: number | null;
+  knownPriceSubtotal: number;
+  calorieTarget: number;
+  proteinTarget: number;
+  dailyProteinTarget: number;
+  proteinRule: string;
+  budgetTarget: number | null;
+  budgetDifference: number | null;
+  budgetStatus: 'disabled' | 'unknown' | 'within_budget' | 'slightly_over' | 'unachievable';
+  calorieCoveragePercent: number;
+  proteinCoveragePercent: number;
+  categoryCoverage: { group: BasketGroup; required: boolean; available: boolean; represented: boolean; amount: number; targetAmount: number }[];
+  warnings: BasketWarning[];
+  constraintsApplied: string[];
+  exclusions: Record<string, number>;
+  score: number;
+  objective: number;
+  iterations: number;
+}
+export interface SavedBasket {
+  id: string;
+  cloudId: string | null;
+  ownerId: string | null;
+  name: string;
+  createdAt: string;
+  preferences: UserPreferences;
+  result: BasketGenerationResult;
+  syncStatus: 'local' | 'synced';
+}

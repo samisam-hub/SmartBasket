@@ -4,7 +4,7 @@ export type PreferenceIntent = "onboarding" | "edit";
 export type RootStackParams = {
   "(tabs)": undefined;
   "onboarding/[step]": { step: string; intent?: PreferenceIntent; review?: string };
-  "basket-setup": undefined;
+  "basket-setup": { savedId?: string } | undefined;
   "product/[id]": { id: string };
 };
 

@@ -1,4 +1,4 @@
-# SmartBasket · Real product catalog
+# SmartBasket · Basket engine V1
 
 A fitness-oriented grocery assistant: **Fuel your goals.** This is the existing
 React Native / Expo SDK 54 / Expo Router Android app, with a blue design system,
@@ -38,10 +38,11 @@ npm run export:android
 - 750 real imported groceries, paged name/brand search, category/diet filters, and product details.
 - Conservative preference matching, allergen warnings, source attribution, and image fallbacks.
 - A clearly labeled ten-item fictional catalog if the live catalog is unavailable.
-- A labeled basket-generation placeholder.
+- Deterministic basket generation with package quantities, safety exclusions, target coverage and structured warnings.
+- Device/cloud basket saving, owner-only RLS, atomic retry-safe saves and snapshot reopening.
 
-No basket generation, optimization, retailer integration,
-payments, recipes, or notification delivery is implemented.
+Basket editing, retailer integration, payments, recipes, and notification delivery
+are not implemented. See [Phase 3A engine and verification](docs/BASKET-ENGINE.md).
 
 ## Architecture
 
@@ -50,7 +51,7 @@ app/
   _layout.tsx                  Root stack, safe areas, preference provider
   (tabs)/                      Home, Products, Basket, Profile and tab layout
   onboarding/[step].tsx        Seven validated step routes
-  basket-setup.tsx             Clearly labeled generation placeholder
+  basket-setup.tsx             Generate, inspect, save or reopen a basket
 components/
   ui.tsx                      Shared native design-system components
   NumberInput.tsx              Numeric keyboard text buffer
@@ -68,13 +69,14 @@ services/
   preferences-repository.ts   Anonymous identity, row mapping, select/upsert
   products.ts                 Catalog repository composition
   catalog/                    Provider, normalization, database reads and discovery rules
-supabase/migrations/          Versioned user_preferences migration
+  basket/                     Pure engine, constraints, scoring, quantities and persistence
+supabase/migrations/          Versioned preferences, catalog and basket migrations
 tests/                        Domain and persistence regression tests
 types/preferences.ts          Draft and saved preference models
 ```
 
 System fonts are retained; Inter was not previously installed. Food imagery uses
-native placeholders. Existing package versions and native modules are preserved.
+qualified source images with native placeholders. Existing package versions and native modules are preserved.
 PGlite is a development-only dependency for isolated PostgreSQL migration/RLS tests;
 it is not imported or bundled into the mobile app.
 
@@ -121,8 +123,10 @@ change an APK already built; build another APK to embed them.
   not implemented. Unsynced local completions take priority over cloud reads.
 - Budget is the **total for the selected planning period and whole household**.
   The requested `weekly_budget_eur` column name is retained and documented.
-- Automatic protein mode stores no calculated target yet. Nutrition values are
-  user choices, not medical guidance. Always check actual product labels.
+- Automatic protein is calculated in the basket engine from the saved goal;
+  manual targets remain unchanged. Always check actual product labels.
+- Imported catalog prices are unavailable, so real basket totals and budget fit
+  remain unknown. Missing package sizes use explicit, visible assumptions.
 - The inherited SDK 54 dependency tree has 25 npm audit entries (16 moderate,
   9 high). No force upgrade or untested transitive overrides were introduced.
 
