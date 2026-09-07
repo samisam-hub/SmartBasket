@@ -27,6 +27,9 @@ export interface Product {
   imageThumbnailWidth: number | null;
   imageThumbnailHeight: number | null;
   priceEstimate: number | null;
+  priceEstimateSource?: string | null;
+  priceConfidence?: 'high' | 'medium' | 'low' | null;
+  priceEstimateVersion?: string | null;
   currency: string;
   priceKind: "unavailable" | "demo-estimate" | "estimate";
   quantityLabel: string | null;

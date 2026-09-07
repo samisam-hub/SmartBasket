@@ -125,8 +125,8 @@ change an APK already built; build another APK to embed them.
   The requested `weekly_budget_eur` column name is retained and documented.
 - Automatic protein is calculated in the basket engine from the saved goal;
   manual targets remain unchanged. Always check actual product labels.
-- Imported catalog prices are unavailable, so real basket totals and budget fit
-  remain unknown. Meal package optimization leaves unknown quantities unresolved.
+- Synthetic development estimates cover products with sufficient package data.
+  They are not retailer offers. Meal package optimization leaves unknown quantities unresolved.
 - The inherited SDK 54 dependency tree has 25 npm audit entries (16 moderate,
   9 high). No force upgrade or untested transitive overrides were introduced.
 
@@ -140,3 +140,7 @@ New generation uses 24 curated meals, review/replacement, ingredient aggregation
 ## Phase 3C ingredient matching
 
 Canonical English/German ingredient mappings, conservative package normalization and separate dietary confidence now resolve all 13 ingredients in the three-day example. The catalog contains 784 products; 17 of 23 ingredient concepts have an eligible package. Read [the current matching report](docs/INGREDIENT-MATCHING.md) for safety policy, remaining gaps and verification. Run `npm run matching:verify` for read-only live diagnostics. Unknown lifestyle flags remain unverified and selected allergies retain strict evidence requirements.
+
+## MVP price estimates
+
+410 of 784 products now have synthetic package estimates; the one-person three-day regression basket totals an estimated €38.76. Read [pricing assumptions, coverage and validation](docs/PRICE-ESTIMATES.md). Run `npm run prices:prepare` to prepare a missing-price backfill and `npm run prices:verify` for read-only hosted verification. Unknown quantities remain unpriced, and missing ingredient costs are separately excluded from selected-basket estimates.

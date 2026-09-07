@@ -13,6 +13,7 @@ test("catalog migration, idempotent imports, indexed search and read-only RLS in
     await db.exec(fs.readFileSync("supabase/migrations/20260906124417_product_image_quality.sql", "utf8"));
     const product = normalizeOpenFoodFacts({ code: "1234567890123", product_name: "Oat milk", brands: "O'Brien", categories_tags: ["en:milk-substitutes"], nutriments: { "energy-kcal_100g": 40, proteins_100g: 4 }, labels_tags: ["en:vegan"] });
     await db.exec(fs.readFileSync("supabase/migrations/20260907081513_ingredient_package_metadata.sql", "utf8"));
+    await db.exec(fs.readFileSync("supabase/migrations/20260907120000_synthetic_price_metadata.sql", "utf8"));
     await db.exec(catalogImportSql([product]));
     const first = (await db.query("select * from products")).rows[0];
     await db.exec(catalogImportSql([{ ...product, name: "Oat drink", proteinPer100g: 5 }]));
@@ -20,6 +21,12 @@ test("catalog migration, idempotent imports, indexed search and read-only RLS in
     assert.equal(updated.id, first.id); assert.equal(updated.created_at.getTime(), first.created_at.getTime());
     assert.equal(updated.protein_per_100g, "5");
     assert.equal((await db.query("select count(*)::int n from products")).rows[0].n, 1);
+    // A nutrition re-import cannot erase or synthesize over a pre-existing curated/real estimate.
+    await db.exec("update products set price_estimate=7.99, price_kind='estimate',price_estimate_source='curated' where true");
+    await db.exec(catalogImportSql([{...product,quantityLabel:'1 L',packageSize:1000,packageUnit:'ml'}]));
+    const preserved=(await db.query('select price_estimate,price_estimate_source from products')).rows[0];
+    assert.equal(Number(preserved.price_estimate),7.99);assert.equal(preserved.price_estimate_source,'curated');
+    await assert.rejects(db.exec("insert into products(name,category,source,nutrition_basis,price_estimate_source) values ('Bad','other','manual','100g','synthetic_mvp')"),e=>e.code==='23514');
     assert.equal((await db.query("select name from products where search_document @@ to_tsquery('simple','oat:* & bri:*') and vegan = true and high_protein = true")).rows.length, 1);
     for (const role of ["anon", "authenticated"]) {
       await db.exec(`set role ${role}`);

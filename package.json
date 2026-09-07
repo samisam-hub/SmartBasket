@@ -19,7 +19,9 @@
     "catalog:verify": "node --env-file=.env scripts/verify-catalog.cjs",
     "basket:verify": "node --env-file=.env scripts/verify-basket.cjs",
     "meals:verify": "node --env-file=.env scripts/verify-meals.cjs",
-    "matching:verify": "node --env-file=.env scripts/audit-ingredient-matching.cjs"
+    "matching:verify": "node --env-file=.env scripts/audit-ingredient-matching.cjs",
+    "prices:prepare": "node --env-file=.env scripts/prepare-prices.cjs",
+    "prices:verify": "node --env-file=.env scripts/verify-prices.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

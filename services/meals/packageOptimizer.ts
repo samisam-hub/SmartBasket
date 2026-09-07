@@ -21,7 +21,7 @@ export function optimizePackages(r: IngredientRequirement, candidates: Product[]
     if(best && score>=best.score-1e-9)return;
     let remaining=consumed;
     const choices=parts.map(({product, count})=>{const purchasedQuantity=product.packageSize!*count,plannedConsumptionQuantity=Math.min(remaining,purchasedQuantity);remaining-=plannedConsumptionQuantity;
-      return {product,packageCount:count,purchasedQuantity,plannedConsumptionQuantity,leftoverQuantity:purchasedQuantity-plannedConsumptionQuantity,estimatedPrice:packagePrice(product)===null?null:packagePrice(product)!*count};});
+      return {product,packageCount:count,purchasedQuantity,plannedConsumptionQuantity,leftoverQuantity:purchasedQuantity-plannedConsumptionQuantity,estimatedPrice:packagePrice(product)===null?null:Math.round(packagePrice(product)!*count*100)/100};});
     best={choices,purchasedQuantity:purchased,plannedConsumptionQuantity:consumed,leftoverQuantity:leftover,score};
   };
   for(let i=0;i<available.length;i++){

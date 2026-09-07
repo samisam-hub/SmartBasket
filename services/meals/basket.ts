@@ -55,10 +55,12 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
   const n=planNutrition(plan,ratios),knownPriceSubtotal=items.reduce((s,i)=>s+(i.estimatedPrice??0),0);
   const incomplete=requirements.some(r=>ratios[r.ingredientKey]===0);
   if(matchingDiagnostics.some(d=>d.unresolvedReason?.includes('allergen_metadata_unknown')))warnings.unshift({code:'allergy_evidence_gap',message:`Your selected allergies (${preferences.allergens.map(a=>labels[a]).join(', ')}) require explicit free-from evidence that this catalog often lacks. Matching foods are excluded when that evidence is unknown.${preferences.allergens.includes('milk')&&preferences.dietaryPreferences.includes('lactose_free')?' Milk allergy and lactose-free are separate settings; lactose-free alone does not satisfy the milk-allergy check.':''}`});
-  const estimatedTotalPrice=items.length&&!incomplete&&items.every(i=>i.estimatedPrice!==null)?round(knownPriceSubtotal):null;
+  const estimatedTotalPrice=items.length&&items.every(i=>i.estimatedPrice!==null)?round(knownPriceSubtotal):null;
   const budgetDifference=estimatedTotalPrice===null||targets.budgetTarget===null?null:round(estimatedTotalPrice-targets.budgetTarget);
-  const budgetStatus=targets.budgetTarget===null?'disabled':budgetDifference===null?'unknown':budgetDifference<=0?'within_budget':budgetDifference<=targets.budgetTarget*.1?'slightly_over':'unachievable';
-  if(estimatedTotalPrice===null)warnings.push({code:'unknown_total',message:'Missing prices or ingredient matches: a complete basket cost and budget fit cannot be established.'});
+  const budgetStatus=targets.budgetTarget===null?'disabled':budgetDifference===null?(items.length?'price_incomplete':'unknown'):budgetDifference<=0?'within_budget':budgetDifference<=targets.budgetTarget*.1?'slightly_over':'over_budget';
+  if(estimatedTotalPrice===null)warnings.push({code:'unknown_total',message:items.length?'Some selected products lack usable price estimates. A selected-basket total cannot be established.':'No products were selected, so a basket cost cannot be established.'});
+  if(incomplete&&estimatedTotalPrice!==null)warnings.push({code:'unmatched_cost_excluded',message:'Estimated total and budget fit cover selected packages only. Unmatched ingredients are not included; the complete meal-plan cost remains unknown.'});
+  if(items.some(i=>i.product.priceEstimateSource==='synthetic_mvp'))warnings.push({code:'synthetic_prices',message:'Prices are synthetic development estimates based on product type and package size, not live retailer offers.'});
   if(budgetDifference!==null&&budgetDifference>0)warnings.push({code:'budget_exceeded',message:'The selected package estimate exceeds your period budget. Dietary constraints were preserved.'});
   const calorieCoveragePercent=round(n.calories/targets.calorieTarget*100),proteinCoveragePercent=round(n.protein/targets.proteinTarget*100);
   objective+=requirements.filter(r=>ratios[r.ingredientKey]===0).length*10+8*Math.abs(1-calorieCoveragePercent/100)+5*Math.abs(1-proteinCoveragePercent/100);

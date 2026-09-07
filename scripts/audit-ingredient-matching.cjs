@@ -23,7 +23,7 @@ const {defaultDraft}=require('../types/preferences.ts');
   assert.equal(mealPlan.items.length,9);assert.ok(result.items.length>=5);assert.ok(result.calorieCoveragePercent>=80);assert.ok(result.items.every(i=>products.some(p=>p.id===i.product.id)));
   assert.deepEqual(result,basketFromMealPlan(mealPlan,preferences,[...products].reverse()));return {preferences,result};});
  // Schema backfill may change updatedAt; original product facts must be preserved.
- for(const old of before){const current=products.find(p=>p.id===old.id);assert.ok(current);for(const [key,value] of Object.entries(old))if(key!=='updatedAt')assert.deepEqual(current[key],value,`Original product changed: ${old.id}/${key}`);}
+ for(const old of before){const current=products.find(p=>p.id===old.id);assert.ok(current);for(const [key,value] of Object.entries(old))if(!['updatedAt','priceEstimate','priceKind','currency','priceEstimateSource','priceConfidence','priceEstimateVersion'].includes(key))assert.deepEqual(current[key],value,`Original product changed: ${old.id}/${key}`);}
  const report={catalogCount:products.length,originalCount:before.length,originalFactsPreserved:true,coverage,
   existingCatalogWithNewLogic:Object.keys(ingredients).map(key=>compact(key,before,lactose)),examples};
  fs.writeFileSync('.expo/phase3c/after.json',JSON.stringify(report,null,2));

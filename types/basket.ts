@@ -51,7 +51,7 @@ export interface BasketGenerationResult {
   proteinRule: string;
   budgetTarget: number | null;
   budgetDifference: number | null;
-  budgetStatus: 'disabled' | 'unknown' | 'within_budget' | 'slightly_over' | 'unachievable';
+  budgetStatus: 'disabled' | 'unknown' | 'within_budget' | 'slightly_over' | 'unachievable' | 'over_budget' | 'price_incomplete';
   calorieCoveragePercent: number;
   proteinCoveragePercent: number;
   categoryCoverage: { group: BasketGroup; required: boolean; available: boolean; represented: boolean; amount: number; targetAmount: number }[];

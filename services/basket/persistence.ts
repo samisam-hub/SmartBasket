@@ -11,7 +11,7 @@ export function isBasketResult(v: unknown): v is BasketGenerationResult {
   return ['1','2'].includes(r.engineVersion) && (r.engineVersion==='2'?['generated','partial','empty']:['generated','partial']).includes(r.status) &&
     (r.engineVersion!=='2'||(isMealPlan(r.mealPlan)&&r.mealPlan.status==='confirmed'&&Array.isArray(r.ingredientRequirements)&&r.ingredientRequirements.every(x=>x&&typeof x.ingredientKey==='string'&&Number.isFinite(x.requiredQuantity)&&x.requiredQuantity>0))) &&
     [r.totalCalories, r.totalProtein, r.totalCarbohydrates, r.totalFat, r.calorieTarget, r.proteinTarget, r.score, r.calorieCoveragePercent, r.proteinCoveragePercent, r.knownPriceSubtotal, r.dailyProteinTarget].every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0) &&
-    typeof r.proteinRule === 'string' && ['disabled','unknown','within_budget','slightly_over','unachievable'].includes(r.budgetStatus) &&
+    typeof r.proteinRule === 'string' && ['disabled','unknown','within_budget','slightly_over','unachievable','over_budget','price_incomplete'].includes(r.budgetStatus) &&
     (r.budgetTarget === null || (typeof r.budgetTarget === 'number' && Number.isFinite(r.budgetTarget) && r.budgetTarget > 0)) &&
     (r.budgetDifference === null || (typeof r.budgetDifference === 'number' && Number.isFinite(r.budgetDifference))) &&
     (r.estimatedTotalPrice === null || (typeof r.estimatedTotalPrice === 'number' && Number.isFinite(r.estimatedTotalPrice) && r.estimatedTotalPrice >= 0)) &&

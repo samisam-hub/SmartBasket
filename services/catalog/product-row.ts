@@ -1,5 +1,6 @@
 import { categories, type CatalogProductInput, type Product } from "../../types/product";
 import { normalizePackage } from './package-size';
+import { withMissingPriceEstimate } from '../pricing/priceEstimator';
 export const productColumns = {
   externalId: "external_id", barcode: "barcode", name: "name", brand: "brand", category: "category",
   imageUrl: "image_url", imageThumbnailUrl: "image_thumbnail_url", quantityLabel: "quantity_label",
@@ -10,6 +11,7 @@ export const productColumns = {
   packageCountUnits: "package_count_units", packageSizeStatus: "package_size_status", packageSizeSource: "package_size_source",
   packageMassPerUnit: "package_mass_per_unit", packageDrainedWeight: "package_drained_weight",
   priceKind: "price_kind", currency: "currency", caloriesPer100g: "calories_per_100g",
+  priceEstimateSource: "price_estimate_source", priceConfidence: "price_confidence", priceEstimateVersion: "price_estimate_version",
   proteinPer100g: "protein_per_100g", carbohydratesPer100g: "carbohydrates_per_100g",
   fatPer100g: "fat_per_100g", fiberPer100g: "fiber_per_100g", sugarsPer100g: "sugars_per_100g",
   saltPer100g: "salt_per_100g", nutritionBasis: "nutrition_basis", ingredientsText: "ingredients_text",
@@ -47,7 +49,7 @@ export function productFromRow(row: Record<string, unknown>): Product {
 /** JSON is SQL-literal escaped; never concatenate external values as SQL identifiers. */
 export function catalogImportSql(products: CatalogProductInput[]): string {
   const columns = Object.values(productColumns);
-  const json = JSON.stringify(products.map(productToRow)).replace(/'/g, "''");
+  const json = JSON.stringify(products.map(withMissingPriceEstimate).map(productToRow)).replace(/'/g, "''");
   const updates = columns.filter(c => !["source", "external_id"].includes(c)).map(c => `${c} = excluded.${c}`).join(", ");
   return `insert into public.products (${columns.join(", ")}) select ${columns.join(", ")} from jsonb_populate_recordset(null::public.products, '${json}'::jsonb) on conflict (source, external_id) do update set ${updates};`;
 }

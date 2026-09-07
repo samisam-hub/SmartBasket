@@ -10,7 +10,7 @@ export const basketPrice = (price: number | null) => price === null ? 'Estimate 
 export function BasketResult({ result }: { result: BasketGenerationResult }) {
   return <>
     <SectionCard title="Basket summary">
-      <Text style={ui.heading}>{basketPrice(result.estimatedTotalPrice)}</Text>
+      <Text style={ui.heading}>{result.estimatedTotalPrice===null?'Estimate unavailable':`Estimated total €${result.estimatedTotalPrice.toFixed(2)}`}</Text>
       {result.status === 'partial' && <Text style={ui.body}>Partial basket: some targets are unmet.</Text>}
       {!result.items.length && <Text style={ui.body}>No eligible products were selected.</Text>}
       {result.estimatedTotalPrice === null && !!result.items.length && <Text style={ui.small}>The catalog has missing prices. Known-price subtotal: €{result.knownPriceSubtotal.toFixed(2)}; this is not the basket total.</Text>}
@@ -19,7 +19,7 @@ export function BasketResult({ result }: { result: BasketGenerationResult }) {
       <Text style={ui.small}>Protein: {result.proteinCoveragePercent}% of {number(result.proteinTarget)} g</Text>
       <Text style={ui.small}>{result.proteinRule}</Text>
       <Text style={ui.small}>{result.items.length} products · {result.items.reduce((sum, i) => sum + i.packageCount, 0)} packages · Plan fit {result.score}/100</Text>
-      {result.budgetTarget !== null && <Text style={ui.small}>Period budget: €{result.budgetTarget.toFixed(2)} · {result.budgetStatus.replace(/_/g, ' ')}{result.budgetDifference !== null ? ` · difference ${result.budgetDifference >= 0 ? '+' : '−'}€${Math.abs(result.budgetDifference).toFixed(2)}` : ''}</Text>}
+      {result.budgetTarget !== null && <Text style={ui.small}>Period budget: €{result.budgetTarget.toFixed(2)} · {result.budgetDifference!==null?`Estimated €${Math.abs(result.budgetDifference).toFixed(2)} ${result.budgetDifference>0?'over':'under'} budget`:result.budgetStatus.replace(/_/g,' ')}</Text>}
       <Text style={ui.caption}>{result.engineVersion === '2' ? 'Nutrition is calculated from planned ingredient consumption using curated estimates. Missing ingredients contribute no nutrition. Costs cover whole purchased packages.' : 'Package nutrition is a planning total, not a meal plan or a promise of daily intake. Prices, where available, are estimates.'}</Text>
     </SectionCard>
     {!!result.categoryCoverage.length && <SectionCard title="Category coverage">
@@ -33,6 +33,7 @@ export function BasketResult({ result }: { result: BasketGenerationResult }) {
     {result.items.map(item => <SectionCard key={item.product.id} title={item.product.name}>
       <Text style={ui.small}>{item.product.brand ?? 'Brand unavailable'}</Text>
       <Text style={ui.body}>{item.packageCount} × {!item.quantityAssumed && item.product.quantityLabel ? item.product.quantityLabel : `${Number(item.packageAmount.toFixed(2))} ${item.quantityUnit}`}{item.quantityAssumed ? ' (assumed package)' : ''}</Text>
+      {item.estimatedPrice!==null && <Text style={ui.small}>{basketPrice(item.estimatedPrice/item.packageCount)} per package · {basketPrice(item.estimatedPrice)} item total</Text>}
       <Text style={ui.small}>{number(item.totalCalories)} kcal · {number(item.totalProtein)} g protein · {basketPrice(item.estimatedPrice)}</Text>
       {item.plannedConsumptionQuantity !== undefined && <Text style={ui.small}>Planned: {number(item.plannedConsumptionQuantity)} {item.quantityUnit} · Left for later: {number(item.leftoverQuantity??0)} {item.quantityUnit}</Text>}
       <View style={ui.stack}>{item.reasonSelected.slice(0, 3).map(reason => <Text key={reason.code} style={ui.caption}>{reason.detail}</Text>)}</View>

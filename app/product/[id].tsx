@@ -37,7 +37,7 @@ export default function ProductDetails() {
         <Text style={ui.heading}>{product.name}</Text>
         <Text style={ui.body}>{product.quantityLabel ?? (product.packageSize && product.packageUnit ? `${product.packageSize} ${product.packageUnit}` : "Package size not provided")}</Text>
         <Text style={[ui.subheading, { color: colors.primary }]}>{estimatedPrice(product)}</Text>
-        {product.priceEstimate !== null && <Text style={ui.caption}>Estimated package price, not a current supermarket offer.</Text>}
+        {product.priceEstimate !== null && <Text style={ui.caption}>{product.priceEstimateSource==='synthetic_mvp'?'Synthetic development estimate based on product type and package size.':'Estimated package price.'} Not a current supermarket offer.</Text>}
       </View>
       {product.source === "demo" && <InfoCard title="Fictional demo product">This fallback item uses illustrative nutrition and pricing, not imported product data.</InfoCard>}
       {risk && (!!risk.contains.length || !!risk.traces.length) && <InfoCard title="Allergen warning">
