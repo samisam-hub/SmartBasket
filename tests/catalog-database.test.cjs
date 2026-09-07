@@ -12,6 +12,7 @@ test("catalog migration, idempotent imports, indexed search and read-only RLS in
     await db.exec(fs.readFileSync("supabase/migrations/20260906005004_products_catalog.sql", "utf8"));
     await db.exec(fs.readFileSync("supabase/migrations/20260906124417_product_image_quality.sql", "utf8"));
     const product = normalizeOpenFoodFacts({ code: "1234567890123", product_name: "Oat milk", brands: "O'Brien", categories_tags: ["en:milk-substitutes"], nutriments: { "energy-kcal_100g": 40, proteins_100g: 4 }, labels_tags: ["en:vegan"] });
+    await db.exec(fs.readFileSync("supabase/migrations/20260907081513_ingredient_package_metadata.sql", "utf8"));
     await db.exec(catalogImportSql([product]));
     const first = (await db.query("select * from products")).rows[0];
     await db.exec(catalogImportSql([{ ...product, name: "Oat drink", proteinPer100g: 5 }]));

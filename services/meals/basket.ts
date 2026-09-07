@@ -6,7 +6,7 @@ import { ingredients } from '../../data/meals';
 import { nutritionTargets } from '../basket/nutritionTargets';
 import { groupOf } from '../basket/scoring';
 import { aggregateIngredients } from './aggregation';
-import { matchProducts, uniqueCatalog } from './matching';
+import { diagnoseMatches, uniqueCatalog } from './matching';
 import { optimizePackages } from './packageOptimizer';
 import { compatibleMeal, mealNutrition, planNutrition } from './planner';
 import { packageWeights } from './config';
@@ -19,20 +19,26 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
   if(plan.items.some(i=>!compatibleMeal(i.meal,preferences)))throw Error('Meal plan conflicts with current preferences.');
   const requirements=aggregateIngredients(plan),products=uniqueCatalog(catalog),targets=nutritionTargets(preferences);
   const items: BasketItem[]=[],warnings=[...plan.warnings],ratios:Record<string,number>={};let objective=0;
+  const matchingDiagnostics:NonNullable<BasketGenerationResult['matchingDiagnostics']>=[];
   for(const r of requirements){
     // Never assign the same physical SKU to two non-equivalent ingredient requirements.
-    const candidates=matchProducts(r.ingredientKey,products,preferences).filter(p=>!items.some(i=>i.product.id===p.id));
-    const solution=optimizePackages(r,candidates,targets.budgetTarget===null?null:targets.budgetTarget/Math.max(1,requirements.length));
-    if(!solution){ratios[r.ingredientKey]=0;warnings.push({code:`unmatched_${r.ingredientKey}`,message:`${r.ingredientName}: no safe equivalent SKU with a known compatible package size. This ingredient is missing; its nutrition is excluded from basket coverage.`});continue;}
+    const diagnostic=diagnoseMatches(r.ingredientKey,products,preferences);
+    const candidates=diagnostic.candidates.flatMap(c=>c.optimizationProduct?[c.optimizationProduct]:[]).filter(p=>!items.some(i=>i.product.id===p.id));
+    const solution=optimizePackages(r,candidates,targets.budgetTarget===null?null:targets.budgetTarget/Math.max(1,requirements.length),Object.fromEntries(diagnostic.candidates.map(c=>[c.product.id,c.score])));
+    const unresolvedReason=solution?null:diagnostic.candidates.length?[...new Set(diagnostic.candidates.map(c=>c.packageIssue??'product_already_allocated'))].join(', '):'no_compatible_product';
+    matchingDiagnostics.push({ingredientKey:r.ingredientKey,candidatesFound:diagnostic.candidates.length,rejected:diagnostic.rejected,eligibleProductIds:candidates.map(p=>p.id),selectedProductIds:solution?.choices.map(c=>c.product.id)??[],unresolvedReason});
+    if(!solution){ratios[r.ingredientKey]=0;warnings.push({code:`unmatched_${r.ingredientKey}`,message:`${r.ingredientName}: ${diagnostic.candidates.length?`${diagnostic.candidates.length} ingredient matches found, but package optimization is unresolved (${unresolvedReason}).`:'No compatible ingredient product found.'} Its nutrition is excluded from basket coverage.`});continue;}
     objective+=solution.score;ratios[r.ingredientKey]=solution.plannedConsumptionQuantity/r.requiredQuantity;
     for(const choice of solution.choices){
+      const match=diagnostic.candidates.find(c=>c.product.id===choice.product.id)!;
+      if(match.dietaryUnknown.length&&!warnings.some(w=>w.code===`diet_uncertain_${r.ingredientKey}`))warnings.push({code:`diet_uncertain_${r.ingredientKey}`,message:`${r.ingredientName}: selected product has unverified lifestyle labels (${match.dietaryUnknown.join(', ')}). Check the packaging; it is not marked as verified free-from.`});
       const n=ingredients[r.ingredientKey].nutritionPer100,factor=choice.plannedConsumptionQuantity/100;
-      items.push({product:choice.product,ingredientKey:r.ingredientKey,sourceMealIds:r.sourceMealIds,
+      items.push({product:match.product,ingredientKey:r.ingredientKey,sourceMealIds:r.sourceMealIds,
         group:groupOf(choice.product),packageCount:choice.packageCount,packageAmount:choice.product.packageSize!,quantityUnit:r.unit,quantityAssumed:false,
         purchasedQuantity:choice.purchasedQuantity,plannedConsumptionQuantity:choice.plannedConsumptionQuantity,leftoverQuantity:choice.leftoverQuantity,
         quantityAdjustmentPercent:round((ratios[r.ingredientKey]-1)*100),totalWeight:r.unit==='g'?choice.purchasedQuantity:null,totalVolume:r.unit==='ml'?choice.purchasedQuantity:null,
         totalCalories:n.calories*factor,totalProtein:n.protein*factor,totalCarbohydrates:n.carbohydrates*factor,totalFat:n.fat*factor,totalFiber:null,
-        estimatedPrice:choice.estimatedPrice,reasonSelected:[{code:'ingredient_match',detail:`Matches ${r.ingredientName}; ${candidates.length} compatible package candidates compared.`},
+        estimatedPrice:choice.estimatedPrice,reasonSelected:[{code:'ingredient_match',detail:`${match.stage} match for ${r.ingredientName}, compatibility score ${match.score}; ${candidates.length} package candidates compared.`},
           {code:'package_fit',detail:`Buy ${round(choice.purchasedQuantity)} ${r.unit}, plan ${round(choice.plannedConsumptionQuantity)} ${r.unit}, left for later ${round(choice.leftoverQuantity)} ${r.unit}.`},
           {code:'quantity_adjustment',detail:`Ingredient consumption adjusted ${round((ratios[r.ingredientKey]-1)*100)}% within its allowed range.`}]});
     }
@@ -49,7 +55,7 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
   if(calorieCoveragePercent<90||calorieCoveragePercent>110||proteinCoveragePercent<90)warnings.push({code:'nutrition_gap',message:'Planned consumption does not closely meet all nutrition targets. Review meals and missing ingredients.'});
   const sum=(key:'purchasedQuantity'|'plannedConsumptionQuantity'|'leftoverQuantity',unit:'g'|'ml')=>items.filter(i=>i.quantityUnit===unit).reduce((s,i)=>s+i[key]!,0);
   const purchased=sum('purchasedQuantity','g'),leftover=sum('leftoverQuantity','g');
-  return {engineVersion:'2',mealPlan:plan,ingredientRequirements:requirements,ingredientRatios:ratios,
+  return {engineVersion:'2',mealPlan:plan,ingredientRequirements:requirements,ingredientRatios:ratios,matchingDiagnostics,
     adjustedMealNutrition:plan.items.map(i=>({itemId:i.id,nutrition:mealNutrition(i,ratios)})),
     remaining:{totalPurchasedWeight:purchased,totalPlannedConsumption:sum('plannedConsumptionQuantity','g'),totalLeftoverWeight:leftover,
       totalPurchasedVolume:sum('purchasedQuantity','ml'),totalPlannedVolume:sum('plannedConsumptionQuantity','ml'),totalLeftoverVolume:sum('leftoverQuantity','ml'),estimatedWastePercent:purchased?round(leftover/purchased*100):0},

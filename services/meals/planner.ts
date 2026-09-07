@@ -1,4 +1,5 @@
 import { ingredients, meals } from '../../data/meals';
+import { canonicalIngredientKey } from '../../data/ingredient-mappings';
 import type { Meal, MealPlan, MealPlanItem, MealSlot, Nutrition } from '../../types/meal';
 import type { UserPreferences } from '../../types/preferences';
 import type { Product } from '../../types/product';
@@ -17,7 +18,7 @@ export function compatibleMeal(meal: Meal, p: UserPreferences): boolean {
 export function mealNutrition(item: MealPlanItem, ratios: Record<string,number> = {}): Nutrition {
   const n: Nutrition={calories:0,protein:0,carbohydrates:0,fat:0};
   for(const line of item.meal.ingredients) for(const k of Object.keys(n) as (keyof Nutrition)[])
-    n[k]+=ingredients[line.ingredientKey].nutritionPer100[k]*line.quantity*item.servings/item.meal.servings*(ratios[line.ingredientKey]??1)/100;
+    n[k]+=ingredients[line.ingredientKey].nutritionPer100[k]*line.quantity*item.servings/item.meal.servings*(ratios[canonicalIngredientKey(line.ingredientKey)]??ratios[line.ingredientKey]??1)/100;
   return n;
 }
 export function planNutrition(plan: MealPlan, ratios: Record<string,number> = {}): Nutrition {

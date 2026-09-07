@@ -1,5 +1,6 @@
 import type { CatalogProductInput, ProductCategory } from "../../types/product";
 import { normalizeOffImages } from "./off-images";
+import { normalizePackage } from './package-size';
 export const record = (v: unknown): Record<string, unknown> =>
   v !== null && typeof v === "object" && !Array.isArray(v) ? v as Record<string, unknown> : {};
 export function cleanText(v: unknown, limit = 500): string | null {
@@ -17,11 +18,11 @@ const tags = (v: unknown): string[] => Array.isArray(v)
   ? [...new Set(v.filter((t): t is string => typeof t === "string").map(t => t.toLowerCase()))] : [];
 const categoryRules: [ProductCategory, string[]][] = [
   ["dairy-alternatives", ["milk-substitutes", "plant-milks", "plant-based-yogurts", "dairy-substitutes", "plant-based-milk-alternatives"]],
-  ["eggs", ["eggs"]], ["fish", ["fishes", "fish", "seafood"]], ["meat", ["meats", "poultries"]],
-  ["potatoes", ["potatoes"]], ["legumes", ["legumes", "tofu", "plant-based-meat-substitutes"]],
-  ["pasta", ["pastas", "noodles"]], ["bread", ["breads"]],
+  ["eggs", ["eggs", "chicken-eggs"]], ["fish", ["fishes", "fish", "seafood", "salmon-fillets", "tunas-in-brine"]], ["meat", ["meats", "poultries", "chicken-breasts", "turkey-breasts", "poultry"]],
+  ["potatoes", ["potatoes"]], ["legumes", ["legumes", "tofu", "tofus", "lentils", "chickpeas", "plant-based-meat-substitutes"]],
+  ["pasta", ["pastas", "noodles", "dry-pastas"]], ["bread", ["breads", "wholemeal-breads"]],
   ["dairy", ["dairies", "cheeses", "yogurts", "milks"]],
-  ["beverages", ["beverages"]], ["fruit", ["fruits"]], ["vegetables", ["vegetables"]],
+  ["beverages", ["beverages"]], ["fruit", ["fruits", "apples", "bananas", "strawberries"]], ["vegetables", ["vegetables", "broccolis", "carrots", "spinachs", "canned-tomatoes"]],
   ["breakfast", ["breakfast-cereals", "breakfasts"]],
   ["grains", ["rices", "cereal-grains", "flours", "cereals-and-their-products"]],
   ["snacks", ["snacks", "desserts", "biscuits-and-cakes"]],
@@ -84,18 +85,17 @@ export function normalizeOpenFoodFacts(raw: unknown): CatalogProductInput | null
   if (vegan === true && vegetarian === false) vegan = null;
   if (vegan === true && vegetarian === null) vegetarian = true;
   const gluten = allergens.some(a => ["gluten", "wheat"].includes(a)), glutenLabel = has("gluten-free", "no-gluten");
-  const qty = numberValue(p.product_quantity, 100000);
-  const unit = p.product_quantity_unit === "g" || p.product_quantity_unit === "ml" ? p.product_quantity_unit : null;
+  const pack = normalizePackage({quantity:p.quantity,name,size:p.product_quantity,unit:p.product_quantity_unit,servingText:p.serving_size,drainedWeight:p.drained_weight});
   const grade = cleanText(p.nutriscore_grade ?? p.nutrition_grades);
   const canonicalCode = code.length === 14 && code.startsWith("0") ? code.slice(1) : code.padStart(13, "0");
   return {
     externalId: canonicalCode, barcode: canonicalCode, name, brand: cleanText(p.brands),
     category: categoryOf(tags(p.categories_tags)), ...normalizeOffImages(p, code),
-    quantityLabel: cleanText(p.quantity), packageSize: unit && qty !== 0 ? qty : null, packageUnit: unit,
+    quantityLabel: cleanText(p.quantity), ...pack,
     priceEstimate: null, priceKind: "unavailable", currency: "EUR", ...nutrients,
     ingredientsText: cleanText(p.ingredients_text_en, 12000) ?? cleanText(p.ingredients_text_de, 12000) ?? cleanText(p.ingredients_text, 12000),
     allergens, mayContainAllergens: normalizeAllergens(p.traces_tags),
-    allergenInfoAvailable: !!cleanText(p.ingredients_text) || allergens.length > 0,
+    allergenInfoAvailable: !!(cleanText(p.ingredients_text)??cleanText(p.ingredients_text_en)??cleanText(p.ingredients_text_de)) || allergens.length > 0,
     labels: labelTags.slice(0, 30).map(t => t.replace(/^en:/, "").replace(/-/g, " ")),
     vegetarian, vegan, lactoseFree: has("lactose-free", "no-lactose") ? true : null,
     glutenFree: gluten ? (glutenLabel ? null : false) : glutenLabel ? true : null,

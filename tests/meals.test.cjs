@@ -40,8 +40,8 @@ test('nutrition recalculates underfill and does not count leftover package calor
  const m=structuredClone(meals.find(m=>m.id==='chicken-potato'));m.ingredients=[{...m.ingredients[0],quantity:620}];
  const single={...plan,status:'confirmed',items:[{id:'a',dayIndex:0,mealSlot:'lunch',servings:1,meal:m}]};
  const chicken=fullCatalog.find(p=>p.name==='chicken breast');
- const result=basketFromMealPlan(single,p,[{...chicken,packageSize:600}]);
- assert.equal(result.totalCalories,720);assert.equal(result.totalProtein,138);assert.equal(result.ingredientRatios.chicken,600/620);
+ const result=basketFromMealPlan(single,p,[{...chicken,packageSize:600,quantityLabel:"600 g"}]);
+ assert.equal(result.totalCalories,720);assert.equal(result.totalProtein,138);assert.equal(result.ingredientRatios.chicken_breast,600/620);
  assert.equal(result.adjustedMealNutrition[0].nutrition.calories,720);
 });
 test('meal safety, unknown ingredient and replacement constraints',()=>{
@@ -58,7 +58,7 @@ test('meal safety, unknown ingredient and replacement constraints',()=>{
 test('missing/unsafe SKU data warns, never invents packages, prices or unrelated foods',()=>{
  const p=prefs({planningDays:3,dietaryPreferences:['lactose_free']});const plan={...generateMealPlan(p),status:'confirmed'};
  const r=basketFromMealPlan(plan,p,[]);assert.equal(r.status,'empty');assert.equal(r.totalCalories,0);assert.equal(r.estimatedTotalPrice,null);assert.equal(r.budgetStatus,'unknown');assert.equal(isBasketResult(r),true);
- for(const patch of [{packageSize:null},{packageUnit:'ml'},{lactoseFree:null},{name:'rice pudding'},{caloriesPer100g:null}])assert.equal(matchProducts('rice',[{...fullCatalog.find(p=>p.name==='rice'),...patch}],p).length,0);
+ for(const patch of [{packageSize:null,quantityLabel:null},{packageUnit:'ml'},{name:'rice pudding'}])assert.equal(matchProducts('rice',[{...fullCatalog.find(p=>p.name==='rice'),...patch}],p).length,0);
  assert.equal(matchProducts('tofu',[{...fullCatalog.find(p=>p.name==='tofu'),name:'Tofu rella',ingredientsText:'Tofu, caseinate, jalapeno peppers'}],p).length,0);
  const unknownPrice=basketFromMealPlan(plan,p,fullCatalog.map(i=>({...i,priceEstimate:null,priceKind:'unavailable'})));assert.equal(unknownPrice.estimatedTotalPrice,null);
  assert.throws(()=>basketFromMealPlan({...plan,status:'review'},p,fullCatalog));

@@ -5,7 +5,7 @@ import { packageWeights } from './config';
 export interface PackageChoice { product: Product; packageCount: number; purchasedQuantity: number; plannedConsumptionQuantity: number; leftoverQuantity: number; estimatedPrice: number|null }
 export interface PackageSolution { choices: PackageChoice[]; purchasedQuantity: number; plannedConsumptionQuantity: number; leftoverQuantity: number; score: number }
 /** Bounded exhaustive single/two-SKU search; whole packages, no universal upward rounding. */
-export function optimizePackages(r: IngredientRequirement, candidates: Product[], budget: number|null=null): PackageSolution|null {
+export function optimizePackages(r: IngredientRequirement, candidates: Product[], budget: number|null=null, compatibilityScores:Record<string,number>={}): PackageSolution|null {
   if(!Number.isFinite(r.requiredQuantity)||r.requiredQuantity<=0||r.minimumAcceptableQuantity<=0||r.minimumAcceptableQuantity>r.requiredQuantity||r.maximumAcceptableQuantity<r.requiredQuantity)return null;
   const min=r.flexible?r.minimumAcceptableQuantity:r.requiredQuantity;
   const available=candidates.filter(p=>p.packageUnit===r.unit&&Number.isFinite(p.packageSize)&&p.packageSize!>0&&p.packageSize!<=20000)
@@ -17,7 +17,7 @@ export function optimizePackages(r: IngredientRequirement, candidates: Product[]
     const price=parts.reduce((s,x)=>s+(packagePrice(x.product)??0)*x.count,0),unknown=parts.some(x=>packagePrice(x.product)===null);
     const score=w.deviation*Math.abs(consumed-r.requiredQuantity)/r.requiredQuantity+w.remaining*leftover/r.requiredQuantity+
       w.price*price/(budget&&budget>0?budget:10)+w.packages*parts.reduce((s,x)=>s+x.count,0)+w.unavailablePrice*Number(unknown)+
-      w.quality*parts.filter(x=>!x.product.ingredientsText).length;
+      w.quality*parts.filter(x=>!x.product.ingredientsText).length+w.compatibility*parts.reduce((s,x)=>s+(1-Math.min(1,(compatibilityScores[x.product.id]??100)/100)),0);
     if(best && score>=best.score-1e-9)return;
     let remaining=consumed;
     const choices=parts.map(({product, count})=>{const purchasedQuantity=product.packageSize!*count,plannedConsumptionQuantity=Math.min(remaining,purchasedQuantity);remaining-=plannedConsumptionQuantity;

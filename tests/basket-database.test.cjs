@@ -11,7 +11,7 @@ test('basket tables/RPC enforce two-user isolation, atomic saves, retries, forei
       create schema auth; create table auth.users(id uuid primary key);
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema public,auth to authenticated,anon;`);
-    for (const file of ['20260906005004_products_catalog.sql','20260906124417_product_image_quality.sql','20260906131336_generated_baskets.sql','20260906194141_meal_based_baskets.sql'])
+    for (const file of ['20260906005004_products_catalog.sql','20260906124417_product_image_quality.sql','20260906131336_generated_baskets.sql','20260906194141_meal_based_baskets.sql','20260907081513_ingredient_package_metadata.sql'])
       await db.exec(fs.readFileSync(`supabase/migrations/${file}`, 'utf8'));
     const a = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', b = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
     await db.query('insert into auth.users values ($1),($2)', [a,b]);

@@ -35,7 +35,7 @@ npm run export:android
 - One private `user_preferences` table, database constraints, timestamps, and RLS.
 - Explicit local-only completion and a Retry cloud sync action when offline.
 - Editable saved preferences in Profile and actual preference chips on Home.
-- 750 real imported groceries, paged name/brand search, category/diet filters, and product details.
+- 784 real imported groceries, paged name/brand search, category/diet filters, and product details.
 - Conservative preference matching, allergen warnings, source attribution, and image fallbacks.
 - A clearly labeled ten-item fictional catalog if the live catalog is unavailable.
 - Deterministic basket generation with package quantities, safety exclusions, target coverage and structured warnings.
@@ -126,7 +126,7 @@ change an APK already built; build another APK to embed them.
 - Automatic protein is calculated in the basket engine from the saved goal;
   manual targets remain unchanged. Always check actual product labels.
 - Imported catalog prices are unavailable, so real basket totals and budget fit
-  remain unknown. Missing package sizes use explicit, visible assumptions.
+  remain unknown. Meal package optimization leaves unknown quantities unresolved.
 - The inherited SDK 54 dependency tree has 25 npm audit entries (16 moderate,
   9 high). No force upgrade or untested transitive overrides were introduced.
 
@@ -135,4 +135,8 @@ explains the session identity and its recovery limitations.
 
 ## Phase 3B meal-based baskets
 
-New generation uses 24 curated meals, review/replacement, ingredient aggregation and package optimization. See [the implementation and verification report](docs/MEAL-BASKETS.md). Run `npm run meals:verify` for the requested read-only live example. The current catalog cannot supply that lactose-free plan under the existing evidence requirements; missing ingredients are explicit and never replaced with unrelated foods.
+New generation uses 24 curated meals, review/replacement, ingredient aggregation and package optimization. See [the original implementation report](docs/MEAL-BASKETS.md).
+
+## Phase 3C ingredient matching
+
+Canonical English/German ingredient mappings, conservative package normalization and separate dietary confidence now resolve all 13 ingredients in the three-day example. The catalog contains 784 products; 17 of 23 ingredient concepts have an eligible package. Read [the current matching report](docs/INGREDIENT-MATCHING.md) for safety policy, remaining gaps and verification. Run `npm run matching:verify` for read-only live diagnostics. Unknown lifestyle flags remain unverified and selected allergies retain strict evidence requirements.

@@ -1,10 +1,11 @@
 import type { IngredientRequirement, MealPlan } from '../../types/meal';
+import { canonicalIngredientKey } from '../../data/ingredient-mappings';
 export function aggregateIngredients(plan: MealPlan): IngredientRequirement[] {
   const map=new Map<string,IngredientRequirement>();
   for(const item of plan.items) for(const line of item.meal.ingredients){
     const quantity=line.quantity*item.servings/item.meal.servings;
     if(!Number.isFinite(quantity)||quantity<=0)throw Error('Invalid meal quantity');
-    const key=line.ingredientKey, previous=map.get(key);
+    const key=canonicalIngredientKey(line.ingredientKey), previous=map.get(key);
     if(previous && previous.unit!==line.unit)throw Error('Cannot aggregate incompatible ingredient units');
     const row=previous??{ingredientKey:key,ingredientName:line.ingredientName,requiredQuantity:0,unit:line.unit,flexible:true,minimumAcceptableQuantity:0,maximumAcceptableQuantity:0,sourceMealIds:[]};
     row.requiredQuantity+=quantity;

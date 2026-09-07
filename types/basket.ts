@@ -32,6 +32,7 @@ export interface BasketGenerationResult {
   mealPlan?: MealPlan;
   ingredientRequirements?: IngredientRequirement[];
   ingredientRatios?: Record<string, number>;
+  matchingDiagnostics?: {ingredientKey:string;candidatesFound:number;rejected:Record<string,number>;eligibleProductIds:string[];selectedProductIds:string[];unresolvedReason:string|null}[];
   adjustedMealNutrition?: { itemId: string; nutrition: Nutrition }[];
   remaining?: { totalPurchasedWeight: number; totalPlannedConsumption: number; totalLeftoverWeight: number; totalPurchasedVolume: number; totalPlannedVolume: number; totalLeftoverVolume: number; estimatedWastePercent: number };
   optimizationWeights: Record<string, number>;

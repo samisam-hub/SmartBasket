@@ -1,4 +1,5 @@
 import { categories, type CatalogProductInput, type Product } from "../../types/product";
+import { normalizePackage } from './package-size';
 export const productColumns = {
   externalId: "external_id", barcode: "barcode", name: "name", brand: "brand", category: "category",
   imageUrl: "image_url", imageThumbnailUrl: "image_thumbnail_url", quantityLabel: "quantity_label",
@@ -6,6 +7,8 @@ export const productColumns = {
   imageQuality: "image_quality", imageWidth: "image_width", imageHeight: "image_height",
   imageThumbnailWidth: "image_thumbnail_width", imageThumbnailHeight: "image_thumbnail_height",
   packageSize: "package_size", packageUnit: "package_unit", priceEstimate: "price_estimate",
+  packageCountUnits: "package_count_units", packageSizeStatus: "package_size_status", packageSizeSource: "package_size_source",
+  packageMassPerUnit: "package_mass_per_unit", packageDrainedWeight: "package_drained_weight",
   priceKind: "price_kind", currency: "currency", caloriesPer100g: "calories_per_100g",
   proteinPer100g: "protein_per_100g", carbohydratesPer100g: "carbohydrates_per_100g",
   fatPer100g: "fat_per_100g", fiberPer100g: "fiber_per_100g", sugarsPer100g: "sugars_per_100g",
@@ -16,7 +19,8 @@ export const productColumns = {
   source: "source", sourceUrl: "source_url",
 } satisfies Record<keyof CatalogProductInput, string>;
 export function productToRow(product: CatalogProductInput): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(productColumns).map(([key, column]) => [column, product[key as keyof CatalogProductInput]]));
+  const fallback=normalizePackage({quantity:product.quantityLabel,name:product.name,size:product.packageSize,unit:product.packageUnit});
+  return Object.fromEntries(Object.entries(productColumns).map(([key, column]) => [column, product[key as keyof CatalogProductInput]!==undefined?product[key as keyof CatalogProductInput]:(fallback as unknown as Record<string,unknown>)[key]??null]));
 }
 export function productFromRow(row: Record<string, unknown>): Product {
   if (typeof row.id !== "string" || typeof row.name !== "string" || typeof row.created_at !== "string" ||
@@ -29,6 +33,9 @@ export function productFromRow(row: Record<string, unknown>): Product {
   }
   for (const column of ["vegetarian", "vegan", "lactose_free", "gluten_free"])
     if (row[column] !== null && typeof row[column] !== "boolean") throw new Error("Malformed dietary flag");
+  if(row.package_size_status!==undefined&&!['known','unknown','conflicting'].includes(String(row.package_size_status)))throw Error('Malformed package status');
+  for(const column of ['package_count_units','package_mass_per_unit','package_drained_weight'])
+    if(row[column]!==undefined&&row[column]!==null&&(typeof row[column]!=='number'||!Number.isFinite(row[column])||Number(row[column])<=0))throw Error('Malformed package metadata');
   if (!["usable", "low-resolution", "unknown", "missing"].includes(String(row.image_quality))) throw new Error("Malformed image quality");
   for (const column of ["image_width", "image_height", "image_thumbnail_width", "image_thumbnail_height"])
     if (row[column] !== null && (typeof row[column] !== "number" || !Number.isInteger(row[column]) || row[column] <= 0)) throw new Error("Malformed image dimensions");

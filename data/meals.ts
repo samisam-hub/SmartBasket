@@ -1,3 +1,4 @@
+import { canonicalIngredientKey, ingredientMappings, legacyIngredientKeys } from './ingredient-mappings';
 import type { IngredientDefinition, Meal } from '../types/meal';
 import type { Allergen, Diet } from '../types/preferences';
 import { quantityTolerances } from '../services/meals/config';
@@ -8,6 +9,8 @@ const animal: Diet[] = ['lactose_free', 'gluten_free'];
 function ingredient(key: string, name: string, group: IngredientDefinition['group'], categories: IngredientDefinition['categories'],
   aliases: string[], values: number[], diets: Diet[] = plant, allergens: Allergen[] = [], exclude: string[] = []): IngredientDefinition {
   const [calories, protein, carbohydrates, fat] = values;
+  key=canonicalIngredientKey(key); const config=ingredientMappings[key];
+  aliases=config?.aliases??aliases; categories=config?.allowedCategories??categories; exclude=config?.blockedKeywords??exclude;
   return { key, name, group, categories, aliases, exclude, unit: 'g', nutritionPer100: { calories, protein, carbohydrates, fat }, diets, allergens };
 }
 export const ingredients: Record<string, IngredientDefinition> = Object.fromEntries([
@@ -35,6 +38,8 @@ export const ingredients: Record<string, IngredientDefinition> = Object.fromEntr
   ingredient('cottage', 'Cottage cheese', 'protein', ['dairy'], ['cottage cheese','hüttenkäse'], [98,12,3,4], ['vegetarian','pescatarian','gluten_free'], ['milk']),
   ingredient('oil', 'Olive oil', 'oil', ['other'], ['olive oil','olivenöl'], [884,0,0,100]),
 ].map(i=>[i.key,i]));
+// Non-enumerable aliases keep saved Phase 3B meal snapshots readable.
+for(const [old,key] of Object.entries(legacyIngredientKeys))Object.defineProperty(ingredients,old,{value:ingredients[key],enumerable:false});
 function meal(id: string, name: string, mealType: Meal['mealType'], amounts: [string,number][]): Meal {
   const totals = { calories: 0, protein: 0, carbohydrates: 0, fat: 0 };
   for (const [key,q] of amounts) for (const field of Object.keys(totals) as (keyof typeof totals)[]) totals[field] += ingredients[key].nutritionPer100[field]*q/100;
@@ -43,7 +48,7 @@ function meal(id: string, name: string, mealType: Meal['mealType'], amounts: [st
     dietaryTags: plant.filter(d=>amounts.every(([key])=>ingredients[key].diets.includes(d))),
     allergens: [...new Set(amounts.flatMap(([key])=>ingredients[key].allergens))],
     ingredients: amounts.map(([key,quantity])=>{const i=ingredients[key], [min,max]=quantityTolerances[i.group];
-      return { ingredientKey:key, ingredientName:i.name, quantity, unit:i.unit, flexible:min!==0||max!==0,
+      return { ingredientKey:i.key, ingredientName:i.name, quantity, unit:i.unit, flexible:min!==0||max!==0,
         minAdjustmentPercent:min, maxAdjustmentPercent:max, category:i.group };}),
     nutritionSource:'curated-development-estimate', createdAt:'2026-09-06T00:00:00Z',updatedAt:'2026-09-06T00:00:00Z' };
 }

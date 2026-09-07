@@ -19,7 +19,7 @@ test('meal migration/RPC is atomic, owner-private, idempotent and preserves exis
  const db=new PGlite();try{
   await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);
    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to authenticated,anon;`);
-  for(const f of ['20260906005004_products_catalog.sql','20260906124417_product_image_quality.sql','20260906131336_generated_baskets.sql','20260906194141_meal_based_baskets.sql'])await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8'));
+  for(const f of ['20260906005004_products_catalog.sql','20260906124417_product_image_quality.sql','20260906131336_generated_baskets.sql','20260906194141_meal_based_baskets.sql','20260907081513_ingredient_package_metadata.sql'])await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8'));
   const a='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',b='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';await db.query('insert into auth.users values($1),($2)',[a,b]);
   await db.exec(catalogImportSql([product(1)]));const productId=(await db.query('select id from products limit 1')).rows[0].id;
   const asUser=async id=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated');};

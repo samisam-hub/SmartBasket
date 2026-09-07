@@ -32,6 +32,11 @@ export interface Product {
   quantityLabel: string | null;
   packageSize: number | null;
   packageUnit: "g" | "ml" | "piece" | null;
+  packageCountUnits?: number | null;
+  packageSizeStatus?: "known" | "unknown" | "conflicting";
+  packageSizeSource?: string | null;
+  packageMassPerUnit?: number | null;
+  packageDrainedWeight?: number | null;
   /** Values below use nutritionBasis, despite the legacy field names. */
   caloriesPer100g: number | null;
   proteinPer100g: number | null;
