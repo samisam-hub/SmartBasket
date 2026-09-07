@@ -98,3 +98,15 @@ Expo Doctor retry: **18/18 checks passed**. A final Android export initially hit
 | Latta's Egg Ranch, Cage Free Chickens | 24 oz | €4.08 |
 | Olivenöl | 458 g | €5.04 |
 | Almond Milk | 1 L | €2.00 |
+
+## Complete demo catalog pricing and web images — 7 September 2026
+
+All 784 catalog products now have persisted estimated EUR prices. The existing 410 prices were preserved; 374 missing prices use `synthetic-category-demo-2`, source `synthetic_mvp`, confidence `low`. These are invented category-level demo amounts, not surveyed retailer prices or verified package quotes. Unknown/conflicting package metadata stays unchanged, and the ingredient/package engine still needs a compatible usable quantity. Kroger 1% lowfat chocolate milk now shows Est. €1.99 with a quantity-unverified demo label.
+
+`estimateCatalogPrice` first uses the existing quantity-based estimator, then assigns a deterministic category demo value. `withMissingPriceEstimate` applies this to future imports, while the backfill script only updates null prices. Cards and details explain the less reliable fallback. Re-running the script is idempotent; it preserves already assigned prices.
+
+Live verification: 784 products, 784 prices, zero unpriced; all non-price fields and previous prices compared to the pre-update snapshot and preserved. The established one-person three-day basket remains €38.76, 13 product lines/16 packages, with no unmatched ingredients.
+
+The preview's React Native Web image-load event omitted both native source dimensions and DOM target dimensions. ProductImage now uses Image.getSize when those fields are absent, validates the decoded dimensions, and respects unmounting and the existing resolution thresholds. Stable load/error callbacks prevent repeated loading effects. Cards fall back to the main display image if the thumbnail metadata is unsuitable. No images were generated or substituted with invented packaging.
+
+687 catalog rows have a usable display-image URL; the other 97 retain placeholders. Browser verification confirmed loaded product images, including Kroger chocolate milk, alongside its persisted demo price. Unit tests cover missing-event lookup success/failure, native/web dimensions, tiny resources, price preservation and no invented package quantities.

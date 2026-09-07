@@ -33,3 +33,11 @@ test('whole purchased packages are charged and missing ingredients do not erase 
  const oats=optimizePackages({requiredQuantity:300,minimumAcceptableQuantity:300,maximumAcceptableQuantity:300,unit:'g',flexible:false},[product(1,{packageSize:500,priceEstimate:1.79})]);
  assert.equal(oats.choices[0].estimatedPrice,1.79);assert.equal(oats.choices[0].plannedConsumptionQuantity,300);
 });
+
+test('category demo prices fill unknown packages without fabricating quantities or replacing existing prices',()=>{
+ const {estimateCatalogPrice}=require('../services/pricing/priceEstimator.ts');
+ const p=blank({name:'1% lowfat chocolate milk',category:'dairy',quantityLabel:null,packageSize:null,packageUnit:null,packageSizeStatus:'unknown'});
+ const before=structuredClone(p),estimate=estimateCatalogPrice(p);assert.equal(estimate.priceEstimate,1.99);assert.equal(estimate.priceConfidence,'low');assert.equal(estimate.priceEstimateVersion,'synthetic-category-demo-2');assert.deepEqual(p,before);
+ assert.equal(estimateCatalogPrice({...p,priceEstimate:4.99}),null);
+ assert.equal(withMissingPriceEstimate(p).packageSize,null);
+});

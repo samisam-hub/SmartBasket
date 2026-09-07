@@ -22,5 +22,12 @@ export function estimatePackagePrice(p:PricingProduct) {
 }
 /** Only the administrative import/backfill pipeline assigns estimates; UI reads persisted prices. */
 export function withMissingPriceEstimate<T extends CatalogProductInput>(p:T):T {
-  const estimate=estimatePackagePrice(p);return estimate?{...p,...estimate}:p;
+  const estimate=estimateCatalogPrice(p);return estimate?{...p,...estimate}:p;
+}
+/** Catalog-only demo fallback. It never invents a package quantity for the basket engine. */
+export function estimateCatalogPrice(p:PricingProduct){
+ if(p.priceEstimate!==null||p.source==='demo')return null;
+ const known=estimatePackagePrice(p);if(known)return known;
+ const defaults:Record<string,number>={fruit:1.99,vegetables:1.99,meat:5.99,fish:6.99,eggs:2.49,dairy:1.99,'dairy-alternatives':2.49,bread:2.49,grains:1.99,pasta:1.49,potatoes:2.49,legumes:1.49,breakfast:2.99,snacks:2.49,beverages:1.99,other:2.99};
+ return {priceEstimate:defaults[p.category]??2.99,currency:'EUR',priceKind:'estimate' as const,priceEstimateSource:'synthetic_mvp',priceConfidence:'low' as const,priceEstimateVersion:'synthetic-category-demo-2'};
 }

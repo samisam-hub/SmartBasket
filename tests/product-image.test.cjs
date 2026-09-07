@@ -3,9 +3,12 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs"), path = require("node:path"), Module = require("node:module");
 const ts = require("typescript"), React = require("react"), { create, act } = require("react-test-renderer");
 global.IS_REACT_ACT_ENVIRONMENT = true;
+let lookupSize = (_uri, _ok, fail) => fail();
+function NativeImage(props) { return React.createElement('Image',props); }
+NativeImage.getSize = (...args) => lookupSize(...args);
 const originalLoad = Module._load;
 Module._load = function(request, parent, isMain) {
-  if (request === "react-native") return { PixelRatio: { get: () => 3 }, View: "View", Image: "Image", ActivityIndicator: "Spinner", StyleSheet: { create: v => v, absoluteFill: {} } };
+  if (request === "react-native") return { PixelRatio: { get: () => 3 }, View: "View", Image: NativeImage, ActivityIndicator: "Spinner", StyleSheet: { create: v => v, absoluteFill: {} } };
   if (request === "@expo/vector-icons/Feather") return { __esModule: true, default: props => React.createElement("Placeholder", props) };
   if (request.startsWith("@/")) request = path.resolve(path.dirname(require.resolve("../package.json")), request.slice(2));
   return originalLoad.call(this, request, parent, isMain);
@@ -66,4 +69,18 @@ test('web DOM image events load safely with stable callbacks and malformed event
   assert.equal(renderer.root.findAllByType('Spinner').length,0);
  }
  await act(()=>renderer.unmount());
+});
+
+
+test('missing browser event dimensions use image lookup and reject genuinely tiny resources', async()=>{
+ let renderer;lookupSize=(_uri,ok)=>ok(900,1200);
+ await act(()=>{renderer=create(React.createElement(ProductImage,{uri:'https://example.com/lookup.jpg',width:900,height:1200,name:'Lookup'}));});
+ await act(()=>renderer.root.findByType('Image').props.onLoad({nativeEvent:{}}));
+ assert.equal(renderer.root.findByType('Image').props.style.opacity,1);
+ assert.equal(renderer.root.findByType('Image').props.style.maxWidth,300);
+ lookupSize=(_uri,ok)=>ok(30,40);
+ await act(()=>renderer.update(React.createElement(ProductImage,{uri:'https://example.com/tiny-lookup.jpg',width:900,height:1200,name:'Tiny'})));
+ await act(()=>renderer.root.findByType('Image').props.onLoad({nativeEvent:{}}));
+ assert.equal(renderer.root.findAllByType('Placeholder').length,1);
+ lookupSize=(_uri,_ok,fail)=>fail();await act(()=>renderer.unmount());
 });

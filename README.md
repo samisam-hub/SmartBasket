@@ -148,3 +148,5 @@ Canonical English/German ingredient mappings, conservative package normalization
 ## Phase 4A personal profiles and participants
 
 Guest-first account screens, private personal defaults and independent plan participants are implemented. Existing plan preferences remain separate. Read [the implementation and activation report](docs/AUTH-PROFILES.md) for schema, owner isolation, shared-menu behavior, checks and the pending email-auth configuration. Live email account activation is not yet verified.
+
+Catalog update: all 784 products now have clearly marked development estimates, including 374 low-confidence category demo prices where reliable package pricing was unavailable. Missing package quantities remain unknown. Browser product images now support load events without dimension metadata; see docs/PRICE-ESTIMATES.md for verification.
