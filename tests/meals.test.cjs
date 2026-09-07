@@ -11,6 +11,18 @@ const {isBasketResult}=require('../services/basket/persistence.ts');
 const requirement=(patch={})=>({ingredientKey:'chicken',ingredientName:'Chicken breast',unit:'g',requiredQuantity:620,flexible:true,minimumAcceptableQuantity:558,maximumAcceptableQuantity:682,sourceMealIds:['one'],...patch});
 const sku=(size,patch={})=>product(size,{packageSize:size,...patch});
 const {fullCatalog}=require('./meal-fixtures.cjs');
+
+test('milk allergy evidence gaps explain empty baskets without weakening safety or confusing lactose-free',()=>{
+ const p=prefs({householdSize:2,planningDays:3,dailyCalories:1500,primaryGoal:'build_muscle',proteinMode:'manual',proteinTargetGrams:100,dietaryPreferences:['lactose_free'],allergens:['milk']});
+ const result=basketFromMealPlan({...generateMealPlan(p,fullCatalog),status:'confirmed'},p,fullCatalog);
+ assert.equal(result.items.length,0);
+ assert.ok(result.warnings.some(w=>w.code==='allergy_evidence_gap'&&w.message.includes('Milk allergy and lactose-free')));
+ assert.ok(result.matchingDiagnostics.some(d=>d.unresolvedReason.includes('allergen_metadata_unknown')));
+ assert.ok(result.warnings.some(w=>w.message.includes('This does not mean they contain those allergens')));
+ const withoutAllergy={...p,allergens:[]};
+ assert.ok(basketFromMealPlan({...generateMealPlan(withoutAllergy,fullCatalog),status:'confirmed'},withoutAllergy,fullCatalog).items.length>0);
+ assert.deepEqual(p.allergens,['milk']);
+});
 test('A/C: flexible 620 g chooses one 600 or 650 g over two 500 g; small underfill is consumption',()=>{
  const r=optimizePackages(requirement(),[sku(500),sku(600),sku(650)]);
  assert.ok([600,650].includes(r.purchasedQuantity));assert.equal(r.choices.reduce((s,i)=>s+i.packageCount,0),1);

@@ -2,6 +2,7 @@ import type { MealPlan } from '../../types/meal';
 import type { BasketGenerationResult, BasketItem } from '../../types/basket';
 import type { Product } from '../../types/product';
 import type { UserPreferences } from '../../types/preferences';
+import { labels } from '../../types/preferences';
 import { ingredients } from '../../data/meals';
 import { nutritionTargets } from '../basket/nutritionTargets';
 import { groupOf } from '../basket/scoring';
@@ -25,9 +26,17 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
     const diagnostic=diagnoseMatches(r.ingredientKey,products,preferences);
     const candidates=diagnostic.candidates.flatMap(c=>c.optimizationProduct?[c.optimizationProduct]:[]).filter(p=>!items.some(i=>i.product.id===p.id));
     const solution=optimizePackages(r,candidates,targets.budgetTarget===null?null:targets.budgetTarget/Math.max(1,requirements.length),Object.fromEntries(diagnostic.candidates.map(c=>[c.product.id,c.score])));
-    const unresolvedReason=solution?null:diagnostic.candidates.length?[...new Set(diagnostic.candidates.map(c=>c.packageIssue??'product_already_allocated'))].join(', '):'no_compatible_product';
+    const safetyReasons=['allergen_metadata_unknown','allergen_conflict','known_dietary_conflict'].filter(reason=>diagnostic.rejected[reason]);
+    const unresolvedReason=solution?null:diagnostic.candidates.length?[...new Set(diagnostic.candidates.map(c=>c.packageIssue??'product_already_allocated'))].join(', '):safetyReasons.join(', ')||'no_compatible_product';
     matchingDiagnostics.push({ingredientKey:r.ingredientKey,candidatesFound:diagnostic.candidates.length,rejected:diagnostic.rejected,eligibleProductIds:candidates.map(p=>p.id),selectedProductIds:solution?.choices.map(c=>c.product.id)??[],unresolvedReason});
-    if(!solution){ratios[r.ingredientKey]=0;warnings.push({code:`unmatched_${r.ingredientKey}`,message:`${r.ingredientName}: ${diagnostic.candidates.length?`${diagnostic.candidates.length} ingredient matches found, but package optimization is unresolved (${unresolvedReason}).`:'No compatible ingredient product found.'} Its nutrition is excluded from basket coverage.`});continue;}
+    if(!solution){
+      const safetyDetails=[
+        diagnostic.rejected.allergen_metadata_unknown ? `${diagnostic.rejected.allergen_metadata_unknown} matching products lack the explicit free-from evidence required by your selected allergies (${preferences.allergens.map(a=>labels[a]).join(', ')}). This does not mean they contain those allergens.` : '',
+        diagnostic.rejected.allergen_conflict ? `${diagnostic.rejected.allergen_conflict} matching products have a declared ingredient or trace conflict with your selected allergies.` : '',
+        diagnostic.rejected.known_dietary_conflict ? `${diagnostic.rejected.known_dietary_conflict} matching products conflict with your dietary preferences.` : '',
+      ].filter(Boolean).join(' ');
+      ratios[r.ingredientKey]=0;warnings.push({code:`unmatched_${r.ingredientKey}`,message:`${r.ingredientName}: ${diagnostic.candidates.length?`${diagnostic.candidates.length} ingredient matches found, but package optimization is unresolved (${unresolvedReason}).`:safetyDetails||'No compatible ingredient product found.'} Its nutrition is excluded from basket coverage.`});continue;
+    }
     objective+=solution.score;ratios[r.ingredientKey]=solution.plannedConsumptionQuantity/r.requiredQuantity;
     for(const choice of solution.choices){
       const match=diagnostic.candidates.find(c=>c.product.id===choice.product.id)!;
@@ -45,6 +54,7 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
   }
   const n=planNutrition(plan,ratios),knownPriceSubtotal=items.reduce((s,i)=>s+(i.estimatedPrice??0),0);
   const incomplete=requirements.some(r=>ratios[r.ingredientKey]===0);
+  if(matchingDiagnostics.some(d=>d.unresolvedReason?.includes('allergen_metadata_unknown')))warnings.unshift({code:'allergy_evidence_gap',message:`Your selected allergies (${preferences.allergens.map(a=>labels[a]).join(', ')}) require explicit free-from evidence that this catalog often lacks. Matching foods are excluded when that evidence is unknown.${preferences.allergens.includes('milk')&&preferences.dietaryPreferences.includes('lactose_free')?' Milk allergy and lactose-free are separate settings; lactose-free alone does not satisfy the milk-allergy check.':''}`});
   const estimatedTotalPrice=items.length&&!incomplete&&items.every(i=>i.estimatedPrice!==null)?round(knownPriceSubtotal):null;
   const budgetDifference=estimatedTotalPrice===null||targets.budgetTarget===null?null:round(estimatedTotalPrice-targets.budgetTarget);
   const budgetStatus=targets.budgetTarget===null?'disabled':budgetDifference===null?'unknown':budgetDifference<=0?'within_budget':budgetDifference<=targets.budgetTarget*.1?'slightly_over':'unachievable';

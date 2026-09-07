@@ -42,6 +42,9 @@ test('unknown lifestyle is confidence, known conflicts and allergen uncertainty 
  assert.equal(skuSafety({...r,ingredientsText:'Rice, milk',labels:['milk free']},prefs({allergens:['milk']})).rejection,'allergen_conflict');
 });
 test('prepared, mixed and manually named products cannot bypass ingredient or safety rules',()=>{
+ const salmon=product(99,{name:'Citrus Herb Salmon',category:'fish',caloriesPer100g:208,proteinPer100g:20,carbohydratesPer100g:0,fatPer100g:13,quantityLabel:'500 g'});
+ assert.equal(matchProducts('salmon',[salmon],prefs()).length,0);
+ assert.equal(matchProducts('salmon',[{...salmon,name:'Salmon fillets'}],prefs()).length,1);
  for(const name of ['Rice pudding','Reis Waffeln','Rice & quinoa','rice cakes'])assert.equal(matchProducts('rice',[rice({name})],prefs()).length,0);
  const cheese=product(3,{name:'Tofu rella',category:'legumes',caloriesPer100g:150,proteinPer100g:16,carbohydratesPer100g:3,fatPer100g:9,quantityLabel:'500g'});
  assert.equal(matchProducts('tofu',[cheese],prefs()).length,0);

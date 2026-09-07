@@ -11,7 +11,7 @@ const mapping=(aliases:string[],allowedCategories:ProductCategory[],blockedKeywo
 export const ingredientMappings:Record<string,IngredientMapping>={
  chicken_breast:mapping(['chicken breast','chicken fillet','chicken breast fillet','hähnchenbrust','hähnchenbrustfilet','haehnchenbrust','hähnchen brustfilet','filet de poulet'],['meat'],['cooked','smoked','roasted','gegart','geräuchert','aufschnitt','cuite','rôti','charcuterie','pané']),
  turkey:mapping(['turkey breast','turkey fillet','putenbrust','putenbrustfilet','putenschnitzel'],['meat'],['cooked','smoked','roasted','gegart','geräuchert','aufschnitt']),
- salmon:mapping(['salmon','salmon fillet','salmon fillets','lachs','lachsfilet','lachsfilets','saumon'],['fish'],['seelachs','pollock','smoked','geräuchert','fumé','crusted']),
+ salmon:mapping(['salmon','salmon fillet','salmon fillets','lachs','lachsfilet','lachsfilets','saumon'],['fish'],['seelachs','pollock','smoked','geräuchert','fumé','crusted','citrus','herb','lemon','teriyaki','kräuter','zitrone']),
  tuna:mapping(['tuna in water','tuna in spring water','tuna in brine','thunfisch','thon au naturel'],['fish'],['oil','öl','huile','steak','fresh','frisch']),
  eggs:mapping(['eggs','egg','eier','ei','freilandeier','bio eier','bodenhaltung'],['eggs'],['chocolate','schokolade','cooked','boiled','gekocht','peeled','powder']),
  tofu:mapping(['tofu','naturtofu','tofu natur'],['legumes','dairy-alternatives','other'],['rella','cheese','käse','smoked','geräuchert','mariniert','silken','seiden','dessert']),
