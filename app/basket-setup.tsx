@@ -16,9 +16,15 @@ import type { Product } from '@/types/product';
 import { newSavedBasket } from '@/services/basket/persistence';
 import { basketOwner, basketPersistence } from '@/services/baskets';
 import type { SavedBasket } from '@/types/basket';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type {UserPreferences} from '@/types/preferences';
+import {participantPreferences} from '@/services/profile-domain';
+import {isSaved} from '@/services/preference-domain';
 export default function BasketSetupScreen() {
-  const { saved, ready } = usePreferences(), flow = useBasketFlow();
-  const { savedId } = useLocalSearchParams<{ savedId?: string }>();
+  const { saved:basePreferences, ready } = usePreferences(), flow = useBasketFlow();
+  const [planPreferences,setPlanPreferences]=useState<UserPreferences|null>(null);
+  const saved=planPreferences??basePreferences;
+  const { savedId,participants } = useLocalSearchParams<{ savedId?: string;participants?:string }>();
   const [basket, setBasket] = useState<SavedBasket | null>(null), [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null), [notice, setNotice] = useState<string | null>(null);
   const [saving, setSaving] = useState(false), [savedOnce, setSavedOnce] = useState(false), [retry, setRetry] = useState(0);
@@ -34,7 +40,7 @@ export default function BasketSetupScreen() {
     setBusy(true); setError(null); setNotice(null); setBasket(null); setPlan(null); setSavedOnce(false);
     void (async () => {
       try {
-        const owner = await basketOwner(saved?.userId ?? null);
+        const owner = await basketOwner(basePreferences?.userId ?? null);
         let next: SavedBasket | null = null;
         if (savedId) {
           const response = await basketPersistence().list(owner);
@@ -43,21 +49,30 @@ export default function BasketSetupScreen() {
           next = found;
           if (!controller.signal.aborted) { setNotice(response.warning); setSavedOnce(true); }
         } else {
-          if (!saved?.onboardingCompleted) throw Error('Complete your preferences before generating a basket.');
+          if (!basePreferences?.onboardingCompleted) throw Error('Complete your preferences before generating a basket.');
+          let input=basePreferences;
+          if(participants==='1'){
+            const raw=await AsyncStorage.getItem(`smartbasket.active-plan.v1:${owner??'local'}`);
+            if(!raw)throw Error('Review your plan participants first.');
+            const stored=JSON.parse(raw);
+            if(!isSaved(stored)||!stored.participants||stored.userId!==basePreferences.userId)throw Error('Plan inputs are invalid or belong to another account.');
+            input=participantPreferences(stored,stored.participants);
+          }
+          if(!controller.signal.aborted)setPlanPreferences(input);
           let products: Product[] = [];
           try { products = await loadBasketCatalog(getSupabaseClient(), controller.signal); }
           catch { if (!controller.signal.aborted) setNotice('Catalog unavailable. You can review meals; package matching will report missing ingredients.'); }
           await new Promise(resolve => setTimeout(resolve, 0));
           if (controller.signal.aborted) return;
           catalog.current=products;ownerRef.current=owner;
-          setPlan(generateMealPlan(saved,products));
+          setPlan(generateMealPlan(input,products));
         }
         if (!controller.signal.aborted) setBasket(next);
       } catch (e) { if (!controller.signal.aborted) setError(e instanceof Error ? e.message : 'Basket could not be loaded.'); }
       finally { if (!controller.signal.aborted) setBusy(false); }
     })();
     return () => controller.abort();
-  }, [ready, saved, savedId, retry]);
+  }, [ready, basePreferences, savedId, retry,participants]);
   const confirmPlan=()=>{
     if(!plan||!saved)return;
     try { const confirmed:MealPlan={...plan,status:'confirmed'};

@@ -28,7 +28,8 @@ const slots: MealSlot[]=['breakfast','lunch','dinner'];
 export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): MealPlan {
   if (!isSaved(p) || !p.onboardingCompleted) throw Error('Complete valid preferences before planning meals.');
   const targets=nutritionTargets(p), products=uniqueCatalog(catalog);
-  const plan: MealPlan={version:'1',planningDays:p.planningDays,householdSize:p.householdSize,targetCalories:targets.calorieTarget,targetProtein:targets.proteinTarget,status:'review',items:[],warnings:[]};
+  const dailyCalories=targets.calorieTarget/(p.planningDays*p.householdSize);
+  const plan: MealPlan={version:'1',planningDays:p.planningDays,householdSize:p.householdSize,targetCalories:targets.calorieTarget,targetProtein:targets.proteinTarget,status:'review',items:[],warnings:[],...(p.participants?{participants:structuredClone(p.participants)}:{})};
   const compatible=meals.filter(m=>compatibleMeal(m,p));
   const ingredientCosts=new Map(Object.keys(ingredients).map(key=>{
     const matches=matchProducts(key,products,p), priced=matches.filter(x=>packagePrice(x)!==null);
@@ -42,7 +43,7 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
     const candidates=options.flatMap(meal=>[0.75,1,1.25,1.5].map(scale=>{
       const servings=p.householdSize*scale, calories=meal.caloriesPerServing*scale, protein=meal.proteinPerServing*scale;
       const prior=plan.items.filter(i=>i.dayIndex===day).reduce((n,i)=>{const x=mealNutrition(i);return {calories:n.calories+x.calories/p.householdSize,protein:n.protein+x.protein/p.householdSize};},{calories:0,protein:0});
-      const calorieGoal=slot==='dinner'?Math.max(p.dailyCalories*0.2,p.dailyCalories-prior.calories):p.dailyCalories*fraction;
+      const calorieGoal=slot==='dinner'?Math.max(dailyCalories*0.2,dailyCalories-prior.calories):dailyCalories*fraction;
       const proteinGoal=slot==='dinner'?Math.max(targets.dailyProteinTarget*0.2,targets.dailyProteinTarget-prior.protein):targets.dailyProteinTarget*fraction;
       const repeat=plan.items.filter(i=>i.meal.id===meal.id).length;
       const sameDay=plan.items.some(i=>i.dayIndex===day&&i.meal.id===meal.id)?1:0;

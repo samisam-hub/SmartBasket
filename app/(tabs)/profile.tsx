@@ -15,9 +15,15 @@ import { usePreferences } from "@/context/PreferencesContext";
 import { useBasketFlow } from "@/hooks/useBasketFlow";
 import { labels } from "@/types/preferences";
 import { ui } from "@/lib/theme";
+import {useAuth} from '@/context/AuthContext';
+import {useProfile} from '@/context/ProfileContext';
+import {useState} from 'react';
 export default function ProfileScreen() {
   const { saved, editing } = usePreferences();
   const flow = useBasketFlow();
+  const auth=useAuth(),personal=useProfile(),p=personal.saved;
+  const [accountError,setAccountError]=useState<string|null>(null),[signingOut,setSigningOut]=useState(false);
+  const editPersonal=(step=0)=>{personal.store.update({},step);router.push('/personal-profile');};
   return (
     <Screen>
       <ScreenHeader
@@ -25,7 +31,17 @@ export default function ProfileScreen() {
         title="Profile"
         subtitle="Your preferences, all in one place."
       />
-      <SectionCard title="My preferences">
+      <SectionCard title={auth.session?.user.is_anonymous||!auth.session?'Guest':p?.displayName||'Your account'}>
+        <Text style={ui.body}>{auth.session?.user.email??'Anonymous SmartBasket session'}</Text>
+        {auth.session?.user.is_anonymous||!auth.session?<><Text style={ui.small}>Create an account to keep your SmartBasket data across devices.</Text><PrimaryButton label="Create account" onPress={()=>router.push('/account')} /><TextButton label="Sign in" onPress={()=>router.push({pathname:'/account',params:{mode:'signin'}})} /></>:<Text style={ui.small}>Signed in · Session saved on this device</Text>}
+        {auth.error&&<Text style={ui.small}>{auth.error}</Text>}
+      </SectionCard>
+      <SectionCard title="Personal details"><Text style={ui.body}>{p?`${p.displayName||'Name not set'} · ${p.sex??'Sex not set'} · ${p.age??'Age not set'}`:'Set long-term personal defaults, even as a guest.'}</Text><TextButton label={personal.pending?'Resume personal profile':'Edit personal details'} onPress={()=>editPersonal(0)} /></SectionCard>
+      <SectionCard title="Nutrition goals"><Text style={ui.body}>{p?`${p.primaryNutritionGoal.replaceAll('_',' ')} · ${p.defaultDailyCalories??'Plan target'} kcal · ${p.proteinMode} protein`:'No personal defaults yet.'}</Text><TextButton label="Edit personal nutrition goals" onPress={()=>editPersonal(1)} /></SectionCard>
+      <SectionCard title="Dietary preferences"><Text style={ui.body}>{p?.dietaryPreferences.map(d=>labels[d]).join(', ')??'Not set'}</Text><TextButton label="Edit personal diet" onPress={()=>editPersonal(2)} /></SectionCard>
+      <SectionCard title="Personal allergies & intolerances"><Text style={ui.body}>{p?[...p.allergens,...p.intolerances].join(', ')||'None selected':'Not set'}</Text><TextButton label="Edit personal allergies & intolerances" onPress={()=>editPersonal(3)} /></SectionCard>
+      {personal.error&&<Text style={ui.small}>{personal.error}</Text>}
+      <SectionCard title="Plan setup preferences">
         {saved ? (
           <PreferenceSummary preferences={saved} />
         ) : (
@@ -68,12 +84,18 @@ export default function ProfileScreen() {
       </SectionCard>
       <SectionCard title="Saved baskets">
         <Text style={ui.body}>
-          Saved baskets will appear here when basket creation is available.
+          Open your saved grocery baskets and their original plan snapshots.
         </Text>
         <TextButton
           label="Open basket"
           onPress={() => router.navigate("/basket")}
         />
+      </SectionCard>
+      <SectionCard title="Saved meal plans"><TextButton label="View saved meal plans" onPress={()=>router.push('/saved-meal-plans')} /></SectionCard>
+      <SectionCard title="Account">
+        {accountError&&<Text style={ui.small}>{accountError}</Text>}
+        <TextButton label="Reset password" onPress={()=>router.push({pathname:'/account',params:{mode:'forgot'}})} />
+        {auth.session&&!auth.session.user.is_anonymous&&<PrimaryButton label="Sign out" loading={signingOut} onPress={()=>{setSigningOut(true);void auth.service?.signOut().then(()=>router.dismissTo('/profile')).catch(e=>setAccountError(e.message)).finally(()=>setSigningOut(false));}} />}
       </SectionCard>
       <InfoCard title="Notifications">
         Reminders are coming later. SmartBasket does not send notifications yet.

@@ -78,9 +78,12 @@ async function userId() {
     identity = null;
   }
 }
-export const remotePreferences: RemotePreferences = {
+export function scopedRemotePreferences(expectedUserId?:string):RemotePreferences {
+const check=(id:string)=>{if(expectedUserId&&id!==expectedUserId)throw Error('Account changed. Reopen preferences.');};
+return {
   async load() {
     const id = await userId();
+    check(id);
     const { data, error } = await getSupabaseClient()!
       .from("user_preferences")
       .select("*")
@@ -91,6 +94,7 @@ export const remotePreferences: RemotePreferences = {
   },
   async save(preferences) {
     const id = await userId();
+    check(id);
     if (preferences.userId && preferences.userId !== id)
       throw new Error("These preferences belong to a different session.");
     const { data, error } = await getSupabaseClient()!
@@ -102,3 +106,5 @@ export const remotePreferences: RemotePreferences = {
     return fromRow(data as PreferenceRow);
   },
 };
+}
+export const remotePreferences=scopedRemotePreferences();

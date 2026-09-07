@@ -17,6 +17,7 @@ export function skuSafety(p:Product,preferences:UserPreferences):{rejection:stri
    if(!p.allergenInfoAvailable||!text.trim()||!free[allergen].some(label=>labels.includes(label)))return no('allergen_metadata_unknown');
  }
  const diets=preferences.dietaryPreferences,fields=requiredDiet(preferences);
+ if(preferences.participants?.some(person=>person.intolerances.includes('gluten'))&&p.glutenFree!==true)return no(p.glutenFree===false?'allergen_conflict':'allergen_metadata_unknown');
  if(fields.some(f=>p[f]===false))return no('known_dietary_conflict');
  if((diets.includes('vegan')||diets.includes('vegetarian')||diets.includes('pescatarian'))&&p.category==='meat')return no('known_dietary_conflict');
  if((diets.includes('vegan')||diets.includes('vegetarian'))&&p.category==='fish')return no('known_dietary_conflict');

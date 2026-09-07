@@ -20,6 +20,7 @@ export interface Meal {
 }
 export interface MealPlanItem { id: string; dayIndex: number; mealSlot: MealSlot; meal: Meal; servings: number }
 export interface MealPlan {
+  participants?: import('./profile').PlanParticipant[];
   version: '1'; planningDays: number; householdSize: number; targetCalories: number; targetProtein: number;
   status: 'review' | 'confirmed'; items: MealPlanItem[]; warnings: { code: string; message: string }[];
 }

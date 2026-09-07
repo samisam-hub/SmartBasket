@@ -11,6 +11,7 @@ const preferenceState={ready:true,saved:prefs()};
 const components=Object.fromEntries(['EmptyState','PrimaryButton','Screen','ScreenHeader','SecondaryButton'].map(name=>[name,props=>React.createElement(name,props,props.children)]));
 const originalLoad=Module._load;
 Module._load=function(request,parent,isMain){
+  if(request==='@react-native-async-storage/async-storage')return {__esModule:true,default:{getItem:async()=>null,setItem:async()=>{}}};
   if(request==='react-native')return {ActivityIndicator:'Spinner',Text:'Text'};
   if(request==='expo-router')return {router:{dismissTo:()=>{}},useLocalSearchParams:()=>params};
   if(request==='@/components/ui')return components;

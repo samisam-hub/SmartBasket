@@ -3,7 +3,7 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
+  useMemo,
   useSyncExternalStore,
   type PropsWithChildren,
 } from "react";
@@ -14,20 +14,29 @@ import {
   supabaseConfigured,
 } from "@/lib/supabase";
 import { PreferenceStore } from "@/services/preference-store";
-import { remotePreferences } from "@/services/preferences-repository";
+import { scopedRemotePreferences } from "@/services/preferences-repository";
+import {useAuth} from './AuthContext';
+import {migrateOwnedCache} from '../services/scope-migration';
 
 const Context = createContext<PreferenceStore | null>(null);
 export function PreferencesProvider({ children }: PropsWithChildren) {
-  const [store] = useState(
+  const {session}=useAuth();
+  const owner=session?.user.id??'local';
+  const scopedKey=`${preferencesStorageKey}:${owner}`;
+  const store = useMemo(
     () =>
       new PreferenceStore(
         AsyncStorage,
-        preferencesStorageKey,
-        supabaseConfigured ? remotePreferences : null,
-      ),
+        scopedKey,
+        supabaseConfigured&&owner!=='local' ? scopedRemotePreferences(owner) : null,
+      ), [scopedKey,owner]
   );
   useEffect(() => {
-    void store.initialize();
+    void (async()=>{
+      // Copy legacy data only to its existing owner; never expose it to a different login.
+      await migrateOwnedCache(AsyncStorage,preferencesStorageKey,scopedKey,owner,!!session?.user.is_anonymous||owner==='local','userId');
+      await store.initialize();
+    })().catch(()=>{void store.initialize();});
     let cleanup = () => {};
     try {
       const client = getSupabaseClient();
@@ -47,7 +56,7 @@ export function PreferencesProvider({ children }: PropsWithChildren) {
       /* The repository reports malformed/missing configuration in the UI. */
     }
     return cleanup;
-  }, [store]);
+  }, [store,scopedKey,owner,session?.user.is_anonymous]);
   return <Context.Provider value={store}>{children}</Context.Provider>;
 }
 export function usePreferences() {

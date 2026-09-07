@@ -144,3 +144,7 @@ Canonical English/German ingredient mappings, conservative package normalization
 ## MVP price estimates
 
 410 of 784 products now have synthetic package estimates; the one-person three-day regression basket totals an estimated €38.76. Read [pricing assumptions, coverage and validation](docs/PRICE-ESTIMATES.md). Run `npm run prices:prepare` to prepare a missing-price backfill and `npm run prices:verify` for read-only hosted verification. Unknown quantities remain unpriced, and missing ingredient costs are separately excluded from selected-basket estimates.
+
+## Phase 4A personal profiles and participants
+
+Guest-first account screens, private personal defaults and independent plan participants are implemented. Existing plan preferences remain separate. Read [the implementation and activation report](docs/AUTH-PROFILES.md) for schema, owner isolation, shared-menu behavior, checks and the pending email-auth configuration. Live email account activation is not yet verified.
