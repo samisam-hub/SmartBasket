@@ -78,3 +78,9 @@ Updated integration: app/_layout.tsx, app/(tabs)/profile.tsx, app/basket-setup.t
 Database/tests/docs: migration above; tests/profile-auth.test.cjs, profile-database.test.cjs and auth-navigation.test.cjs; existing tests/basket-ui.test.cjs mock; README.md and this report.
 
 No social login, medical calculations, checkout, payment, retailer account or additional feature phase was added.
+
+## Registration form simplification
+
+Registration now asks for email and password together, with a single Create account button. Supabase still verifies the email before attaching a password to the anonymous identity. The selected password is held only in the auth service's memory, scoped to that guest ID and email; it is never written to local storage, profile data or callback URLs. After verification, the confirmation action (or a warm callback) applies it to the same account. Invalid passwords are rejected before sending an email. Cancellation, sign-in and sign-out discard the pending password; an identity mismatch also discards it.
+
+A reload, closed app or new browser tab loses that memory intentionally. The verification callback then asks the user to re-enter their chosen password. Ordinary subsequent sign-in remains email plus password. Code entry is optional when a template contains a code. The user reports saving manual linking and redirect settings; email delivery remains unverified by automated tests.

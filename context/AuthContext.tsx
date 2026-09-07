@@ -9,7 +9,7 @@ export function AuthProvider({children}:PropsWithChildren){
  useEffect(()=>{let active=true;if(!client||!service){setReady(true);return;}
   const bootstrap=async()=>{try{await service.ensureGuest();const r=await client.auth.getSession();if(r.error)throw r.error;if(active){setSession(r.data.session);setError(null);}}catch{if(active)setError('Offline guest mode. Account services require a connection.');}finally{if(active)setReady(true);}};
   const {data}=client.auth.onAuthStateChange((event,next)=>{if(!active)return;setSession(next);
-   if(event==='SIGNED_OUT'){setReady(false);setTimeout(()=>{if(active)void bootstrap();},0);}
+   if(event==='SIGNED_OUT'){service.clearRegistration();setReady(false);setTimeout(()=>{if(active)void bootstrap();},0);}
   });void bootstrap();return()=>{active=false;data.subscription.unsubscribe();};
  },[client,service]);
  return <Context.Provider value={{session,ready,error,service}}>{children}</Context.Provider>;

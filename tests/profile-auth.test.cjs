@@ -59,3 +59,16 @@ test('edits made during a slow profile save survive in the draft and on disk',as
  const save=s.save();await new Promise(r=>setImmediate(r));s.update({displayName:'New draft'});release();await save;await s.flush();
  assert.equal(s.getSnapshot().saved.displayName,'Saved name');assert.equal(s.getSnapshot().draft.displayName,'New draft');assert.equal(JSON.parse(values.get('race')).draft.displayName,'New draft');
 });
+
+test('email and password registration validates first, keeps guest identity and applies password only after verified ownership',async()=>{
+ let user={id:'guest',is_anonymous:true,email:'a@example.com',email_confirmed_at:null},calls=[];
+ const client={auth:{getSession:async()=>({data:{session:{user}}}),getUser:async()=>({data:{user}}),updateUser:async value=>{calls.push(value);return {data:{user}};}}};
+ const s=authService(client);
+ await assert.rejects(s.beginRegistration('a@example.com','short','callback'));assert.equal(calls.length,0);
+ await s.beginRegistration('a@example.com','chosen-password','callback');assert.deepEqual(calls,[{email:'a@example.com'}]);
+ await assert.rejects(s.completeRegistration(),/confirm your email/);assert.equal(calls.length,1);
+ user={...user,is_anonymous:false,email_confirmed_at:'2026-09-07'};
+ assert.equal(await s.completeRegistration(),true);assert.deepEqual(calls[1],{password:'chosen-password'});assert.equal(await s.completeRegistration(),false);
+ user={...user,is_anonymous:true};await s.beginRegistration('a@example.com','another-password','callback');user={...user,id:'other',is_anonymous:false};await assert.rejects(s.completeRegistration(),/Account changed/);assert.equal(await s.completeRegistration(),false);
+ user={...user,is_anonymous:true};await s.beginRegistration('a@example.com','another-password','callback');s.clearRegistration();assert.equal(await s.completeRegistration(),false);
+});
