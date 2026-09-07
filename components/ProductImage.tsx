@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
 import { ActivityIndicator, Image, PixelRatio, StyleSheet, View } from "react-native";
 import { colors, radii } from "@/lib/theme";
@@ -13,19 +13,23 @@ function ImageFrame({ uri, width, height, name, large = false }: Props) {
   const [failed, setFailed] = useState(false), [loading, setLoading] = useState(!!uri);
   const [actual, setActual] = useState({ width: width ?? 0, height: height ?? 0 });
   const density = PixelRatio.get();
+  const onLoad = useCallback((event: unknown) => {
+    // Native supplies source dimensions; React Native Web wraps a DOM load event.
+    const native = (event as { nativeEvent?: { source?: { width?: number; height?: number }; target?: { naturalWidth?: number; naturalHeight?: number } } } | null)?.nativeEvent;
+    const loadedWidth = native?.source?.width ?? native?.target?.naturalWidth;
+    const loadedHeight = native?.source?.height ?? native?.target?.naturalHeight;
+    if (typeof loadedWidth !== 'number' || typeof loadedHeight !== 'number' ||
+      !Number.isFinite(loadedWidth) || !Number.isFinite(loadedHeight) ||
+      loadedWidth <= 0 || loadedHeight <= 0 || Math.max(loadedWidth, loadedHeight) < (large ? 200 : 72)) setFailed(true);
+    else setActual({ width: loadedWidth, height: loadedHeight });
+    setLoading(false);
+  }, [large]);
+  const onError = useCallback(() => { setFailed(true); setLoading(false); }, []);
   return <View style={[styles.frame, large ? styles.large : styles.small]}>
     {uri && !failed ? <>
       <Image source={{ uri }} style={{ width: "100%", height: "100%", maxWidth: actual.width / density,
         maxHeight: actual.height / density, opacity: loading ? 0 : 1 }} resizeMode="contain" resizeMethod="resize" accessibilityLabel={name}
-        onLoad={event => {
-          const loaded = event.nativeEvent.source;
-          // Android may report a downsampled bitmap here, not the original metadata.
-          // Keep the strict source threshold above; reject only unusably tiny decoded files.
-          if (!Number.isFinite(loaded.width) || !Number.isFinite(loaded.height) ||
-            loaded.width <= 0 || loaded.height <= 0 || Math.max(loaded.width, loaded.height) < (large ? 200 : 72)) setFailed(true);
-          else setActual({ width: loaded.width, height: loaded.height });
-          setLoading(false);
-        }} onError={() => { setFailed(true); setLoading(false); }} />
+        onLoad={onLoad} onError={onError} />
       {loading && <ActivityIndicator style={StyleSheet.absoluteFill} color={colors.primary} accessibilityLabel="Loading product image" />}
     </> : <Feather name="package" size={large ? 64 : 32} color={colors.muted} accessibilityLabel="Product image unavailable" />}
   </View>;

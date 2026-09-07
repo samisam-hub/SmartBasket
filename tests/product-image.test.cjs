@@ -50,3 +50,20 @@ test("actual image component rejects small metadata and small downloaded files o
   assert.equal(renderer.root.findByType('Image').props.style.opacity, 1);
   await act(() => renderer.unmount());
 });
+
+test('web DOM image events load safely with stable callbacks and malformed events show placeholder', async () => {
+ let renderer;
+ await act(()=>{renderer=create(React.createElement(ProductImage,{uri:'https://example.com/web.jpg',width:900,height:1200,name:'Web',large:true}));});
+ const onLoad=renderer.root.findByType('Image').props.onLoad;
+ await act(()=>onLoad({nativeEvent:{target:{naturalWidth:900,naturalHeight:1200}}}));
+ assert.equal(renderer.root.findByType('Image').props.style.maxWidth,300);
+ assert.equal(renderer.root.findByType('Image').props.style.opacity,1);
+ assert.equal(renderer.root.findByType('Image').props.onLoad,onLoad);
+ for(const event of [undefined,{}, {nativeEvent:{}}, {nativeEvent:{target:{naturalWidth:0,naturalHeight:0}}}]){
+  await act(()=>renderer.update(React.createElement(ProductImage,{uri:`https://example.com/${Math.random()}.jpg`,width:900,height:1200,name:'Missing'})));
+  await act(()=>renderer.root.findByType('Image').props.onLoad(event));
+  assert.equal(renderer.root.findAllByType('Placeholder').length,1);
+  assert.equal(renderer.root.findAllByType('Spinner').length,0);
+ }
+ await act(()=>renderer.unmount());
+});
