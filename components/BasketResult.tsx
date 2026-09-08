@@ -43,9 +43,12 @@ export function BasketResult({ result }: { result: BasketGenerationResult }) {
           <ProductImage large fill uri={item.product.displayImageUrl} width={item.product.imageWidth} height={item.product.imageHeight} name={item.product.name} />
         </View>
         <View style={{ flex: 1, flexBasis: 0, minWidth: 0, gap: spacing.sm }}>
-          <Text style={ui.small}>{item.estimatedPrice === null ? 'Price unavailable' : `€${(item.estimatedPrice/item.packageCount).toFixed(2)} per package · €${item.estimatedPrice.toFixed(2)} item total`}</Text>
           <Text style={ui.small}>{number(item.totalCalories)} kcal · {number(item.totalProtein)} g protein</Text>
-          {item.plannedConsumptionQuantity !== undefined && <Text style={ui.small}>Planned: {number(item.plannedConsumptionQuantity)} {item.quantityUnit} · Left for later: {number(item.leftoverQuantity??0)} {item.quantityUnit}</Text>}
+          {item.plannedConsumptionQuantity !== undefined && <>
+            <Text style={ui.small}>Planned: {number(item.plannedConsumptionQuantity)} {item.quantityUnit}</Text>
+            <Text style={ui.small}>Left for later: {number(item.leftoverQuantity??0)} {item.quantityUnit}</Text>
+          </>}
+          <Text style={ui.small}>{item.estimatedPrice === null ? 'Price unavailable' : `€${(item.estimatedPrice/item.packageCount).toFixed(2)} per package · €${item.estimatedPrice.toFixed(2)} item total`}</Text>
         </View>
       </View>
       <TextButton label="View product" onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.product.id } })} />
