@@ -1,3 +1,5 @@
+import { BasketProductHeading } from './BasketProductHeading';
+import { generalBasketNotes, productDietaryNotes } from '../lib/basket-notes';
 import { router } from 'expo-router';
 import { Text, View } from 'react-native';
 import { Chips, SectionCard, TextButton } from './ui';
@@ -8,6 +10,7 @@ import type { BasketGenerationResult } from '../types/basket';
 const number = (value: number) => Math.round(value).toLocaleString('en-GB');
 export const basketPrice = (price: number | null) => price === null ? 'Estimate unavailable' : `Est. €${price.toFixed(2)}`;
 export function BasketResult({ result }: { result: BasketGenerationResult }) {
+  const generalNotes = generalBasketNotes(result);
   return <>
     <SectionCard title="Basket summary">
       <Text style={ui.heading}>{result.estimatedTotalPrice===null?'Estimate unavailable':`Estimated total €${result.estimatedTotalPrice.toFixed(2)}`}</Text>
@@ -28,10 +31,11 @@ export function BasketResult({ result }: { result: BasketGenerationResult }) {
     {result.remaining && <SectionCard title="Purchased and planned"><Text style={ui.body}>{number(result.remaining.totalPurchasedWeight)} g purchased · {number(result.remaining.totalPlannedConsumption)} g planned · {number(result.remaining.totalLeftoverWeight)} g left for later</Text><Text style={ui.small}>Remaining mass: {result.remaining.estimatedWastePercent}%. This may be used later.</Text>{result.remaining.totalPurchasedVolume>0 && <Text style={ui.small}>{number(result.remaining.totalPurchasedVolume)} ml purchased · {number(result.remaining.totalPlannedVolume)} ml planned · {number(result.remaining.totalLeftoverVolume)} ml left for later</Text>}</SectionCard>}
     {result.mealPlan?.participants&&<SectionCard title="People in this plan">{result.mealPlan.participants.map(p=><Text key={p.id} style={ui.small}>{p.name}: {p.dailyCalories} kcal · {p.proteinTarget} g protein/day · {[...p.dietaryPreferences,...p.allergens,...p.intolerances].join(', ')}</Text>)}<Text style={ui.caption}>One shared menu meets the combined restrictions. Individual portions are not assigned.</Text></SectionCard>}
     {result.mealPlan && <SectionCard title="Confirmed meals">{result.mealPlan.items.map(i=><Text key={i.id} style={ui.small}>Day {i.dayIndex+1} · {i.mealSlot}: {i.meal.name} · {i.servings} servings</Text>)}</SectionCard>}
-    {!!result.warnings.length && <SectionCard title="Planning notes">
-      {result.warnings.map(w => <Text key={w.code} style={ui.small}>{w.message}</Text>)}
+    {!!generalNotes.length && <SectionCard title="Planning notes">
+      {generalNotes.map(w => <Text key={w.code} style={ui.small}>{w.message}</Text>)}
     </SectionCard>}
-    {result.items.map(item => <SectionCard key={item.product.id} title={item.product.name}>
+    {result.items.map(item => <SectionCard key={item.product.id}>
+      <BasketProductHeading name={item.product.name} notes={productDietaryNotes(result.warnings, item)} />
       <Text style={ui.small}>{item.product.brand ?? 'Brand unavailable'}</Text>
       <Text style={ui.body}>{item.packageCount} × {!item.quantityAssumed && item.product.quantityLabel ? item.product.quantityLabel : `${Number(item.packageAmount.toFixed(2))} ${item.quantityUnit}`}{item.quantityAssumed ? ' (assumed package)' : ''}</Text>
       {item.estimatedPrice!==null && <Text style={ui.small}>{basketPrice(item.estimatedPrice/item.packageCount)} per package · {basketPrice(item.estimatedPrice)} item total</Text>}
