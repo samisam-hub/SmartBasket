@@ -36,10 +36,9 @@ export function BasketResult({ result }: { result: BasketGenerationResult }) {
     </SectionCard>}
     {result.items.map(item => <SectionCard key={item.product.id}>
       <BasketProductHeading name={item.product.name} notes={productDietaryNotes(result.warnings, item)} />
-      <Text style={ui.small}>{item.product.brand ?? 'Brand unavailable'}</Text>
-      <Text style={ui.body}>{item.packageCount} × {!item.quantityAssumed && item.product.quantityLabel ? item.product.quantityLabel : `${Number(item.packageAmount.toFixed(2))} ${item.quantityUnit}`}{item.quantityAssumed ? ' (assumed package)' : ''}</Text>
-      {item.estimatedPrice!==null && <Text style={ui.small}>{basketPrice(item.estimatedPrice/item.packageCount)} per package · {basketPrice(item.estimatedPrice)} item total</Text>}
-      <Text style={ui.small}>{number(item.totalCalories)} kcal · {number(item.totalProtein)} g protein · {basketPrice(item.estimatedPrice)}</Text>
+      <Text style={ui.small}><Text style={{ fontWeight: '700' }}>{item.product.brand ?? 'Brand unavailable'}</Text> · {item.packageCount} × {!item.quantityAssumed && item.product.quantityLabel ? item.product.quantityLabel : `${Number(item.packageAmount.toFixed(2))} ${item.quantityUnit}`}{item.quantityAssumed ? ' (assumed package)' : ''}</Text>
+      <Text style={ui.small}>{item.estimatedPrice === null ? 'Price unavailable' : `€${(item.estimatedPrice/item.packageCount).toFixed(2)} per package · €${item.estimatedPrice.toFixed(2)} item total`}</Text>
+      <Text style={ui.small}>{number(item.totalCalories)} kcal · {number(item.totalProtein)} g protein</Text>
       {item.plannedConsumptionQuantity !== undefined && <Text style={ui.small}>Planned: {number(item.plannedConsumptionQuantity)} {item.quantityUnit} · Left for later: {number(item.leftoverQuantity??0)} {item.quantityUnit}</Text>}
       <View style={ui.stack}>{item.reasonSelected.slice(0, 3).map(reason => <Text key={reason.code} style={ui.caption}>{reason.detail}</Text>)}</View>
       <TextButton label="View product" onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.product.id } })} />
