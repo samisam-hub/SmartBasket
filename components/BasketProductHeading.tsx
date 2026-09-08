@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, Text, View } from 'react-native';
 import type { BasketWarning, SelectionReason } from '../types/basket';
 import { colors, ui } from '../lib/theme';
 
-export function BasketProductHeading({ name, notes, report }: { name: string; notes: BasketWarning[]; report: SelectionReason[] }) {
+export function BasketProductHeading({ name, subtitle, notes, report }: { name: string; subtitle: ReactNode; notes: BasketWarning[]; report: SelectionReason[] }) {
   const [expanded, setExpanded] = useState(false);
   const [reportExpanded, setReportExpanded] = useState(false);
   return <View style={{ gap: 8 }}>
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <Text style={[ui.subheading, { flex: 1 }]}>{name}</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+      <View style={{ flex: 1, minWidth: 0, paddingTop: 8, gap: 4 }}>
+        <Text style={ui.subheading}>{name}</Text>
+        {subtitle}
+      </View>
       <View>
         {!!report.length && <Pressable onPress={() => setReportExpanded(value => !value)}
           accessibilityRole="button" accessibilityLabel={`Selection report for ${name}`}
