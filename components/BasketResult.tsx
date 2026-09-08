@@ -36,7 +36,7 @@ export function BasketResult({ result }: { result: BasketGenerationResult }) {
       {generalNotes.map(w => <Text key={w.code} style={ui.small}>{w.message}</Text>)}
     </SectionCard>}
     {result.items.map(item => <SectionCard key={item.product.id}>
-      <BasketProductHeading name={item.product.name} notes={productDietaryNotes(result.warnings, item)} />
+      <BasketProductHeading name={item.product.name} notes={productDietaryNotes(result.warnings, item)} report={item.reasonSelected.filter(reason => reason.code !== 'package_fit')} />
       <Text style={ui.small}><Text style={{ fontWeight: '700' }}>{item.product.brand ?? 'Brand unavailable'}</Text> · {item.packageCount} × {!item.quantityAssumed && item.product.quantityLabel ? item.product.quantityLabel : `${Number(item.packageAmount.toFixed(2))} ${item.quantityUnit}`}{item.quantityAssumed ? ' (assumed package)' : ''}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.lg }}>
         <ProductImage uri={item.product.displayImageUrl} width={item.product.imageWidth} height={item.product.imageHeight} name={item.product.name} />
@@ -44,7 +44,6 @@ export function BasketResult({ result }: { result: BasketGenerationResult }) {
           <Text style={ui.small}>{item.estimatedPrice === null ? 'Price unavailable' : `€${(item.estimatedPrice/item.packageCount).toFixed(2)} per package · €${item.estimatedPrice.toFixed(2)} item total`}</Text>
           <Text style={ui.small}>{number(item.totalCalories)} kcal · {number(item.totalProtein)} g protein</Text>
           {item.plannedConsumptionQuantity !== undefined && <Text style={ui.small}>Planned: {number(item.plannedConsumptionQuantity)} {item.quantityUnit} · Left for later: {number(item.leftoverQuantity??0)} {item.quantityUnit}</Text>}
-          <View style={ui.stack}>{item.reasonSelected.slice(0, 3).map(reason => <Text key={reason.code} style={ui.caption}>{reason.detail}</Text>)}</View>
           <TextButton label="View product" onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.product.id } })} />
         </View>
       </View>
