@@ -3,13 +3,13 @@ import {Assets} from '../lib/assets';
 import { ActivityIndicator, Image, PixelRatio, StyleSheet, View } from "react-native";
 import { colors, radii } from "@/lib/theme";
 import { imageSuitable, safeImageUrl } from "@/services/catalog/images";
-type Props = { uri: string | null; width: number | null; height: number | null; name: string; large?: boolean };
-export function ProductImage({ uri, width, height, name, large = false }: Props) {
+type Props = { uri: string | null; width: number | null; height: number | null; name: string; large?: boolean; fill?: boolean };
+export function ProductImage({ uri, width, height, name, large = false, fill = false }: Props) {
   const safe = imageSuitable(width, height, large) ? safeImageUrl(uri) : null;
   // Remount per URL so a failed/recycled list image never poisons the next product.
-  return <ImageFrame key={`${safe}:${width}:${height}:${large}`} uri={safe} width={width} height={height} name={name} large={large} />;
+  return <ImageFrame key={`${safe}:${width}:${height}:${large}`} uri={safe} width={width} height={height} name={name} large={large} fill={fill} />;
 }
-function ImageFrame({ uri, width, height, name, large = false }: Props) {
+function ImageFrame({ uri, width, height, name, large = false, fill = false }: Props) {
   const [failed, setFailed] = useState(false), [loading, setLoading] = useState(!!uri);
   const [actual, setActual] = useState({ width: width ?? 0, height: height ?? 0 });
   const density = PixelRatio.get();
@@ -33,7 +33,7 @@ function ImageFrame({ uri, width, height, name, large = false }: Props) {
     } else acceptSize(loadedWidth,loadedHeight);
   }, [uri,acceptSize]);
   const onError = useCallback(() => { setFailed(true); setLoading(false); }, []);
-  return <View style={[styles.frame, large ? styles.large : styles.small]}>
+  return <View style={[styles.frame, fill ? styles.fill : large ? styles.large : styles.small]}>
     {uri && !failed ? <>
       <Image source={{ uri }} style={{ width: "100%", height: "100%", maxWidth: actual.width / density,
         maxHeight: actual.height / density, opacity: loading ? 0 : 1 }} resizeMode="contain" resizeMethod="resize" accessibilityLabel={name}
@@ -44,5 +44,6 @@ function ImageFrame({ uri, width, height, name, large = false }: Props) {
 }
 const styles = StyleSheet.create({
   frame: { borderRadius: radii.large, backgroundColor: colors.pale, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  fill: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%" },
   small: { width: 80, height: 96 }, large: { width: "100%", height: 240 },
 });
