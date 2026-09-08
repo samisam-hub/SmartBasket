@@ -1,3 +1,4 @@
+import { failureIllustration } from '../lib/failureIllustration';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getProductRepository } from "@/services/products";
 import { emptyFilters, type CatalogFilters, type Product } from "@/types/product";
@@ -11,6 +12,7 @@ export function useProducts() {
   const [hasMore, setHasMore] = useState(false);
   const [warning, setWarning] = useState<string | null>(null), [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"catalog" | "demo">("catalog");
+  const [failureKind,setFailureKind]=useState<'offline'|'dataError'|undefined>();
   const [revision, setRevision] = useState(0);
   const generation = useRef(0), page = useRef(0), pending = useRef(false);
   const controller = useRef<AbortController | null>(null);
@@ -25,10 +27,10 @@ export function useProducts() {
     const timer = setTimeout(() => {
       void getProductRepository().page(query, filters, saved, 0, "catalog", abort.signal).then(result => {
         if (generation.current !== current || abort.signal.aborted) return;
-        setProducts(result.products); setHasMore(result.hasMore); setMode(result.mode); setWarning(result.warning);
+        setProducts(result.products); setHasMore(result.hasMore); setMode(result.mode); setWarning(result.warning);setFailureKind(result.failureKind);
         page.current = 0; readyKey.current = key;
-      }).catch(() => {
-        if (!abort.signal.aborted && generation.current === current) setError("Catalog could not be loaded. Please retry.");
+      }).catch(cause => {
+        if (!abort.signal.aborted && generation.current === current) {setFailureKind(failureIllustration(cause));setError("Catalog could not be loaded. Please retry.");}
       }).finally(() => {
         if (!abort.signal.aborted && generation.current === current) { pending.current = false; setLoading(false); }
       });
@@ -43,12 +45,12 @@ export function useProducts() {
       if (generation.current !== current) return;
       setProducts(previous => [...previous, ...result.products.filter(p => !previous.some(old => old.id === p.id))]);
       setHasMore(result.hasMore); page.current = next;
-    }).catch(() => {
-      if (generation.current === current) setError("More products could not be loaded. Your current results are still available.");
+    }).catch(cause => {
+      if (generation.current === current) {setFailureKind(failureIllustration(cause));setError("More products could not be loaded. Your current results are still available.");}
     }).finally(() => {
       if (generation.current === current) { pending.current = false; setLoadingMore(false); }
     });
   }, [loading, hasMore, key, query, filters, saved, mode]);
   return { query, setQuery, filters, setFilters, products, saved, loading, loadingMore,
-    hasMore, loadMore, mode, warning, error, retry: () => setRevision(v => v + 1) };
+    hasMore, loadMore, mode, warning, error, failureKind, retry: () => setRevision(v => v + 1) };
 }

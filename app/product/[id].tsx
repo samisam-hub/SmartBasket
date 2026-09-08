@@ -1,3 +1,4 @@
+import {StateIllustration,failureIllustration} from '@/components/BrandAssets';
 import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -15,22 +16,23 @@ export default function ProductDetails() {
   const { saved } = usePreferences();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true), [error, setError] = useState<string | null>(null);
+  const [failureKind,setFailureKind]=useState<'offline'|'dataError'>('dataError');
   const [revision, setRevision] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError(null); setProduct(null);
     void getProductRepository().get(id, controller.signal).then(p => {
       if (!controller.signal.aborted) setProduct(p);
-    }).catch(() => {
-      if (!controller.signal.aborted) setError("Product could not be loaded. Check your connection and retry.");
+    }).catch(cause => {
+      if (!controller.signal.aborted) { setFailureKind(failureIllustration(cause)); setError("Product could not be loaded. Check your connection and retry."); }
     }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [id, revision]);
   const risk = product ? allergenConflicts(product, saved) : null;
   return <Screen top={false} bottom>
     {loading ? <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading product details" /> : error ? <>
-      <ErrorMessage message={error} /><TextButton label="Retry" onPress={() => setRevision(v => v + 1)} />
-    </> : !product ? <EmptyState title="Product not found" description="This item may no longer be in the catalog. Go back to browse other products." /> : <>
+      <StateIllustration kind={failureKind} /><ErrorMessage message={error} /><TextButton label="Retry" onPress={() => setRevision(v => v + 1)} />
+    </> : !product ? <EmptyState illustration="dataError" title="Product not found" description="This item may no longer be in the catalog. Go back to browse other products." /> : <>
       <ProductImage uri={product.displayImageUrl} width={product.imageWidth} height={product.imageHeight} name={product.name} large />
       <View style={ui.stack}>
         <Text style={ui.caption}>{product.brand ?? "Brand not provided"} · {categoryLabels[product.category]}</Text>

@@ -1,3 +1,4 @@
+import {BrandLogo} from '../components/BrandAssets';
 import {useEffect,useRef,useState} from 'react';
 import {Platform,Text} from 'react-native';
 import {router,useLocalSearchParams} from 'expo-router';
@@ -33,7 +34,7 @@ export default function AccountScreen(){
   finally{running.current=false;setBusy(false);}
  };
  const waiting=mode==='verify'||mode==='recovery-code';
- return <Screen top={false} bottom>
+ return <Screen top={false} bottom><BrandLogo />
   <ScreenHeader eyebrow="YOUR ACCOUNT" title={mode==='create'?'Create account':mode==='signin'?'Sign in':mode==='forgot'?'Reset password':mode==='password'?'Set password':'Check your email'} />
   <Text style={ui.small}>{mode==='create'?'Choose your email and password. We’ll send one email to confirm it’s you. Your guest preferences and saved baskets stay with your account.':mode==='signin'?'Welcome back. Sign in with your email and password.':'Your SmartBasket data stays attached to your account.'}</Text>
   <ErrorMessage message={error} />{message&&<Text style={ui.body}>{message}</Text>}

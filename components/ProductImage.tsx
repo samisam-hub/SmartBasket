@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import Feather from "@expo/vector-icons/Feather";
+import {Assets} from '../lib/assets';
 import { ActivityIndicator, Image, PixelRatio, StyleSheet, View } from "react-native";
 import { colors, radii } from "@/lib/theme";
 import { imageSuitable, safeImageUrl } from "@/services/catalog/images";
@@ -39,7 +39,7 @@ function ImageFrame({ uri, width, height, name, large = false }: Props) {
         maxHeight: actual.height / density, opacity: loading ? 0 : 1 }} resizeMode="contain" resizeMethod="resize" accessibilityLabel={name}
         onLoad={onLoad} onError={onError} />
       {loading && <ActivityIndicator style={StyleSheet.absoluteFill} color={colors.primary} accessibilityLabel="Loading product image" />}
-    </> : <Feather name="package" size={large ? 64 : 32} color={colors.muted} accessibilityLabel="Product image unavailable" />}
+    </> : <Image source={Assets.states.productPlaceholder} resizeMode="contain" style={{width:"100%",height:"100%"}} accessibilityLabel="Product image unavailable" testID="product-placeholder" />}
   </View>;
 }
 const styles = StyleSheet.create({

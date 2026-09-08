@@ -1,0 +1,163 @@
+{
+  "assets": [
+    {
+      "id": "logo-horizontal",
+      "filename": "logo-horizontal.png",
+      "relativePath": "brand/logo-horizontal.png",
+      "width": 1600,
+      "height": 400,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Header",
+        "Sign in / account screens"
+      ]
+    },
+    {
+      "id": "logo-horizontal-dark",
+      "filename": "logo-horizontal-dark.png",
+      "relativePath": "brand/logo-horizontal-dark.png",
+      "width": 1600,
+      "height": 400,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Dark brand surfaces"
+      ]
+    },
+    {
+      "id": "logo-mark",
+      "filename": "logo-mark.png",
+      "relativePath": "brand/logo-mark.png",
+      "width": 1024,
+      "height": 1024,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Compact branding"
+      ]
+    },
+    {
+      "id": "app-icon",
+      "filename": "app-icon.png",
+      "relativePath": "android/app-icon.png",
+      "width": 1024,
+      "height": 1024,
+      "format": "png",
+      "transparentBackground": false,
+      "intendedUsage": [
+        "Android launcher icon"
+      ]
+    },
+    {
+      "id": "adaptive-icon-foreground",
+      "filename": "adaptive-icon-foreground.png",
+      "relativePath": "android/adaptive-icon-foreground.png",
+      "width": 432,
+      "height": 432,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Android adaptive foreground"
+      ]
+    },
+    {
+      "id": "adaptive-icon-background",
+      "filename": "adaptive-icon-background.png",
+      "relativePath": "android/adaptive-icon-background.png",
+      "width": 432,
+      "height": 432,
+      "format": "png",
+      "transparentBackground": false,
+      "intendedUsage": [
+        "Android adaptive background"
+      ]
+    },
+    {
+      "id": "monochrome-icon",
+      "filename": "monochrome-icon.png",
+      "relativePath": "android/monochrome-icon.png",
+      "width": 432,
+      "height": 432,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Android themed icon"
+      ]
+    },
+    {
+      "id": "splash-logo",
+      "filename": "splash-logo.png",
+      "relativePath": "splash/splash-logo.png",
+      "width": 1200,
+      "height": 600,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Expo splash artwork"
+      ]
+    },
+    {
+      "id": "product-placeholder",
+      "filename": "product-placeholder.png",
+      "relativePath": "states/product-placeholder.png",
+      "width": 800,
+      "height": 800,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "ProductCard fallback",
+        "ProductDetail fallback"
+      ]
+    },
+    {
+      "id": "empty-basket",
+      "filename": "empty-basket.png",
+      "relativePath": "states/empty-basket.png",
+      "width": 800,
+      "height": 800,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Basket empty state",
+        "Saved baskets empty state"
+      ]
+    },
+    {
+      "id": "no-search-results",
+      "filename": "no-search-results.png",
+      "relativePath": "states/no-search-results.png",
+      "width": 800,
+      "height": 800,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Search empty state"
+      ]
+    },
+    {
+      "id": "offline-state",
+      "filename": "offline-state.png",
+      "relativePath": "states/offline-state.png",
+      "width": 800,
+      "height": 800,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Offline/network state"
+      ]
+    },
+    {
+      "id": "data-error",
+      "filename": "data-error.png",
+      "relativePath": "states/data-error.png",
+      "width": 800,
+      "height": 800,
+      "format": "png",
+      "transparentBackground": true,
+      "intendedUsage": [
+        "Data/API error state"
+      ]
+    }
+  ]
+}

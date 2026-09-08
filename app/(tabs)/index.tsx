@@ -1,3 +1,4 @@
+import {BrandLogo} from '@/components/BrandAssets';
 import Feather from "@expo/vector-icons/Feather";
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
@@ -19,12 +20,7 @@ export default function HomeScreen() {
   const flow = useBasketFlow();
   return (
     <Screen>
-      <View style={ui.row}>
-        <View style={styles.logo}>
-          <Feather name="zap" size={24} color={colors.onPrimary} />
-        </View>
-        <Text style={ui.subheading}>SmartBasket</Text>
-      </View>
+      <BrandLogo />
       <View style={styles.hero}>
         <ScreenHeader
           eyebrow="FUEL YOUR GOALS"
@@ -92,11 +88,6 @@ export default function HomeScreen() {
   );
 }
 const styles = StyleSheet.create({
-  logo: {
-    backgroundColor: colors.primary,
-    borderRadius: radii.medium,
-    padding: spacing.md,
-  },
   hero: { gap: spacing.xl },
   heroIcon: {
     padding: spacing.xl,

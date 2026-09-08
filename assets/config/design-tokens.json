@@ -1,0 +1,18 @@
+{
+  "colors": {
+    "primary": "#0F6B3F",
+    "secondary": "#A7D36B",
+    "accent": "#FFD14D",
+    "orange": "#FF6B00",
+    "error": "#E63946",
+    "background": "#FFF8F0",
+    "surface": "#FFFFFF",
+    "text": "#1F2937"
+  },
+  "illustration": {
+    "backgroundBehavior": "State illustrations are transparent; use #FFF8F0 or #FFFFFF surfaces.",
+    "logoClearSpace": "At least 0.5\u00d7 basket-mark height.",
+    "iconSafeArea": "Keep essential adaptive-icon content inside the central ~66%.",
+    "shadow": "Soft down-right shadow, about 8\u201314% opacity, illustration use only."
+  }
+}

@@ -39,7 +39,7 @@ export default function BasketScreen() {
     <PrimaryButton label="Create my basket" onPress={flow.create} disabled={flow.disabled} />
     {loading && <ActivityIndicator color={colors.primary} />}
     {warning && <><Text style={ui.small}>{warning}</Text><SecondaryButton label="Reload saved baskets" onPress={() => setRetry(n => n + 1)} /></>}
-    {!loading && !baskets.length && <EmptyState title="No saved baskets yet." description="Generate a basket from your preferences, then save it here." />}
+    {!loading && !baskets.length && <EmptyState illustration="emptyBasket" title="No saved baskets yet." description="Generate a basket from your preferences, then save it here." />}
     {baskets.map(b => <SectionCard key={b.id} title={b.name}>
       <Text style={ui.small}>{new Date(b.createdAt).toLocaleDateString()} · {b.result.items.length} products · {b.syncStatus === 'synced' ? 'Synced' : 'On this device'}</Text>
       <Text style={ui.body}>{basketPrice(b.result.estimatedTotalPrice)}</Text>

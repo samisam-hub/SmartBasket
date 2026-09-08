@@ -1,3 +1,4 @@
+import {StateIllustration,failureIllustration} from '@/components/BrandAssets';
 import { useState } from "react";
 import { router } from "expo-router";
 import { ActivityIndicator, FlatList, ScrollView, Text, View } from "react-native";
@@ -45,13 +46,13 @@ export default function ProductsScreen() {
           <TextButton label="Clear search & filters" onPress={clear} />
         </>}
         {filters.matchesPreferences && <Text style={ui.small}>Matching uses your saved diet and excludes listed allergens and traces. Unknown dietary information does not match. Missing allergen information is excluded when you have selected allergies. Always check the package label.</Text>}
-        {catalog.warning && <View><Text style={ui.small}>{catalog.warning}</Text><TextButton label="Retry live catalog" onPress={catalog.retry} /></View>}
+        {catalog.warning && <View><StateIllustration kind={catalog.failureKind??failureIllustration(catalog.warning)} size={120} /><Text style={ui.small}>{catalog.warning}</Text><TextButton label="Retry live catalog" onPress={catalog.retry} /></View>}
         <Text style={ui.caption} accessibilityLiveRegion="polite">{catalog.loading ? "Searching catalog…" : `${catalog.products.length} products loaded${catalog.mode === "demo" ? " · Demo fallback" : ""}`}</Text>
       </View>}
-      ListEmptyComponent={catalog.loading ? <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading products" /> :
-        <EmptyState icon="search" title="No matching products" description="Try another name, brand, or fewer filters."><TextButton label="Clear search & filters" onPress={clear} /></EmptyState>}
+      ListEmptyComponent={catalog.loading ? <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading products" /> : catalog.error ? null :
+        <EmptyState illustration="noSearchResults" icon="search" title="No matching products" description="Try another name, brand, or fewer filters."><TextButton label="Clear search & filters" onPress={clear} /></EmptyState>}
       ListFooterComponent={<View style={{ gap: spacing.md, paddingTop: spacing.lg }}>
-        <ErrorMessage message={catalog.error} />
+        {catalog.error&&<StateIllustration kind={catalog.failureKind??failureIllustration(catalog.error)} size={120} />}<ErrorMessage message={catalog.error} />
         {catalog.error && <TextButton label="Retry" onPress={catalog.products.length ? catalog.loadMore : catalog.retry} />}
         {catalog.loadingMore ? <ActivityIndicator color={colors.primary} accessibilityLabel="Loading more products" /> :
           catalog.hasMore && <TextButton label="Load more products" onPress={catalog.loadMore} />}

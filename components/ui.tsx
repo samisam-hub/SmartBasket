@@ -1,4 +1,5 @@
 import Feather from "@expo/vector-icons/Feather";
+import {StateIllustration,type IllustrationKind} from './BrandAssets';
 import type { ComponentProps, PropsWithChildren } from "react";
 import {
   ActivityIndicator,
@@ -389,13 +390,14 @@ export function EmptyState({
   description,
   icon = "shopping-bag",
   children,
-}: PropsWithChildren<{ title: string; description: string; icon?: Icon }>) {
+  illustration,
+}: PropsWithChildren<{ title: string; description: string; icon?: Icon; illustration?:IllustrationKind }>) {
   return (
     <SectionCard>
       <View style={ui.centered}>
-        <View style={styles.emptyIcon}>
+        {illustration?<StateIllustration kind={illustration} />:<View style={styles.emptyIcon}>
           <Feather name={icon} size={40} color={colors.primary} />
-        </View>
+        </View>}
         <Text style={[ui.heading, { textAlign: "center" }]}>{title}</Text>
         <Text style={[ui.body, { textAlign: "center" }]}>{description}</Text>
       </View>

@@ -1,3 +1,4 @@
+import { failureIllustration } from '../../lib/failureIllustration';
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CatalogFilters, Product } from "../../types/product";
 import type { UserPreferences } from "../../types/preferences";
@@ -10,6 +11,7 @@ export interface CatalogPage {
   hasMore: boolean;
   mode: "catalog" | "demo";
   warning: string | null;
+  failureKind?: 'offline'|'dataError';
 }
 export class ProductRepository {
   constructor(private client: SupabaseClient | null, private demo: readonly Product[]) {}
@@ -45,7 +47,8 @@ export class ProductRepository {
       return { products: rows.slice(0, PAGE_SIZE).map(productFromRow), hasMore: rows.length > PAGE_SIZE, mode: "catalog", warning: null };
     } catch (error) {
       if (signal?.aborted || page > 0) throw error;
-      return this.demoPage(query, filters, preferences, page);
+      const result=this.demoPage(query, filters, preferences, page);
+      return {...result,failureKind:failureIllustration(error)};
     }
   }
   private demoPage(query: string, filters: CatalogFilters, preferences: UserPreferences | null, page: number): CatalogPage {

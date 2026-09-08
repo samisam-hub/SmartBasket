@@ -1,10 +1,11 @@
+require.extensions['.png'] = (module, filename) => { module.exports = filename; };
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs"), path = require("node:path"), Module = require("node:module");
 const ts = require("typescript"), React = require("react"), { create, act } = require("react-test-renderer");
 global.IS_REACT_ACT_ENVIRONMENT = true;
 let lookupSize = (_uri, _ok, fail) => fail();
-function NativeImage(props) { return React.createElement('Image',props); }
+function NativeImage(props) { return React.createElement(props.testID==='product-placeholder'?'Placeholder':'Image',props); }
 NativeImage.getSize = (...args) => lookupSize(...args);
 const originalLoad = Module._load;
 Module._load = function(request, parent, isMain) {

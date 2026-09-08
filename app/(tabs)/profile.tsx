@@ -1,3 +1,4 @@
+import {BrandLogo} from '@/components/BrandAssets';
 import { router } from "expo-router";
 import { Alert, Text } from "react-native";
 import {
@@ -25,7 +26,7 @@ export default function ProfileScreen() {
   const [accountError,setAccountError]=useState<string|null>(null),[signingOut,setSigningOut]=useState(false);
   const editPersonal=(step=0)=>{personal.store.update({},step);router.push('/personal-profile');};
   return (
-    <Screen>
+    <Screen><BrandLogo compact />
       <ScreenHeader
         eyebrow="MADE FOR YOU"
         title="Profile"

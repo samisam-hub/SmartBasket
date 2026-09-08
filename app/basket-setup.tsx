@@ -95,7 +95,7 @@ export default function BasketSetupScreen() {
     <ScreenHeader eyebrow="YOUR GROCERIES" title={savedId ? 'Saved basket' : basket ? 'Your meal-based basket' : 'Your meal plan'} />
     {busy && <><ActivityIndicator color={colors.primary} /><Text style={ui.body}>Loading products and checking your constraints…</Text></>}
     {error && <Text style={ui.small} accessibilityRole="alert">{error}</Text>}
-    {!busy && !basket && !plan && <EmptyState title="Basket not available" description="Your saved preferences and catalog are unchanged.">
+    {!busy && !basket && !plan && <EmptyState illustration="dataError" title="Basket not available" description="Your saved preferences and catalog are unchanged.">
       <PrimaryButton label="Retry" onPress={() => setRetry(n => n + 1)} />
       <SecondaryButton label="Edit preferences" onPress={() => flow.edit()} disabled={flow.disabled} />
     </EmptyState>}
