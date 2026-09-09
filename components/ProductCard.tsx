@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Chips, SectionCard } from "@/components/ui";
 import { ProductImage } from "@/components/ProductImage";
+import { ProductEstimateNotice } from './ProductEstimateNotice';
 import { imageSuitable } from "@/services/catalog/images";
 import { colors, spacing, ui } from "@/lib/theme";
 import { categoryLabels, type Product } from "@/types/product";
@@ -27,6 +28,7 @@ export function ProductCard({ product, preferences, onPress }: { product: Produc
       </View>
       <Text style={ui.small}>{product.caloriesPer100g ?? "—"} kcal · {product.proteinPer100g ?? "—"} g protein / {product.nutritionBasis === "100ml" ? "100 ml" : "100 g"}</Text>
       {!!diet.length && <Chips labels={diet.slice(0, 3)} />}
+      <ProductEstimateNotice product={product} />
       {!!risk.contains.length && <Text style={styles.warning}>Allergen warning: contains {risk.contains.join(", ").replace(/_/g, " ")}</Text>}
       {!!risk.traces.length && <Text style={styles.warning}>Allergen warning: may contain {risk.traces.join(", ").replace(/_/g, " ")}</Text>}
       {matchesPreferences(product, preferences) && <Text style={[ui.caption, { color: colors.successText }]}>Matches your preferences · check the label</Text>}

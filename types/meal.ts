@@ -1,7 +1,7 @@
 import type { Allergen, Diet } from './preferences';
 import type { ProductCategory } from './product';
 export interface Nutrition { calories: number; protein: number; carbohydrates: number; fat: number }
-export type MealSlot = 'breakfast' | 'lunch' | 'dinner';
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export type IngredientGroup = 'protein' | 'vegetables' | 'fruit' | 'staples' | 'oil' | 'precise';
 export interface IngredientDefinition {
   key: string; name: string; unit: 'g' | 'ml'; group: IngredientGroup; categories: ProductCategory[];
@@ -20,6 +20,7 @@ export interface Meal {
 }
 export interface MealPlanItem { id: string; dayIndex: number; mealSlot: MealSlot; meal: Meal; servings: number }
 export interface MealPlan {
+  snacksIncluded?: boolean;
   participants?: import('./profile').PlanParticipant[];
   version: '1'; planningDays: number; householdSize: number; targetCalories: number; targetProtein: number;
   status: 'review' | 'confirmed'; items: MealPlanItem[]; warnings: { code: string; message: string }[];

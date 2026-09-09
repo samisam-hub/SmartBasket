@@ -4,6 +4,8 @@ import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Text, View } from "react-native";
 import { CatalogAttribution, openCatalogLink } from "@/components/CatalogAttribution";
 import { ProductImage } from "@/components/ProductImage";
+import { ProductEstimateNotice } from '@/components/ProductEstimateNotice';
+import { AddProductButton } from '@/components/AddProductButton';
 import { EmptyState, ErrorMessage, InfoCard, PreferenceRow, Screen, SectionCard, TextButton } from "@/components/ui";
 import { getProductRepository } from "@/services/products";
 import { allergenConflicts, dietaryFields, dietaryNames, estimatedPrice, hasDiscoveryPreferences, matchesPreferences } from "@/services/catalog/discovery";
@@ -42,6 +44,7 @@ export default function ProductDetails() {
         {product.priceEstimate !== null && <Text style={ui.caption}>{product.priceEstimateVersion==='synthetic-category-demo-2'?'Low-confidence category demo price. Package quantity is unverified.':product.priceEstimateSource==='synthetic_mvp'?'Synthetic development estimate based on product type and package size.':'Estimated package price.'} Not a current supermarket offer.</Text>}
       </View>
       {product.source === "demo" && <InfoCard title="Fictional demo product">This fallback item uses illustrative nutrition and pricing, not imported product data.</InfoCard>}
+      <AddProductButton product={product} />
       {risk && (!!risk.contains.length || !!risk.traces.length) && <InfoCard title="Allergen warning">
         {risk.contains.length ? `Contains allergens you selected: ${displayList(risk.contains)}. ` : ""}
         {risk.traces.length ? `May contain allergens you selected: ${displayList(risk.traces)}.` : ""}
@@ -50,6 +53,7 @@ export default function ProductDetails() {
         {matchesPreferences(product, saved) ? "Matches your saved dietary preferences with no listed allergen conflicts. This is not a guarantee of allergy suitability." : "A match to all your saved preferences is not established: source information may conflict or be incomplete."}
       </Text>}
       <SectionCard title={`Nutrition per ${product.nutritionBasis === "100ml" ? "100 ml" : "100 g"} · as sold`}>
+        <ProductEstimateNotice product={product} />
         {([
           ["Calories", product.caloriesPer100g, "kcal"], ["Protein", product.proteinPer100g, "g"],
           ["Carbohydrates", product.carbohydratesPer100g, "g"], ["Fat", product.fatPer100g, "g"],
@@ -66,7 +70,7 @@ export default function ProductDetails() {
       <SectionCard title="Dietary information">
         {dietaryFields.map(field => <PreferenceRow key={field} label={dietaryNames[field]}
           value={product[field] === null ? "Unknown" : product[field] ? "Reported by source" : "Not indicated as suitable"} />)}
-        {!!product.labels.length && <Text style={ui.small}>Source labels: {product.labels.join(", ")}</Text>}
+        {!!product.labels.filter(l => !l.startsWith('smartbasket:demo:')).length && <Text style={ui.small}>Source labels: {product.labels.filter(l => !l.startsWith('smartbasket:demo:')).join(", ")}</Text>}
       </SectionCard>
       <CatalogAttribution sources={[product.source]} />
       {product.sourceUrl && <TextButton label="View product on source website" onPress={() => openCatalogLink(product.sourceUrl!)} />}

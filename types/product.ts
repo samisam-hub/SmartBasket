@@ -66,7 +66,7 @@ export interface Product {
 }
 export type CatalogProductInput = Omit<Product, "id" | "createdAt" | "updatedAt">;
 export interface CatalogFilters {
-  category: ProductCategory | null;
+  category: ProductCategory | 'fruit-vegetables' | 'meat-fish' | 'dairy-alternatives-group' | 'pantry' | null;
   highProtein: boolean;
   vegetarian: boolean;
   vegan: boolean;

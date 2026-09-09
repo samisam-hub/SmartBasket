@@ -6,6 +6,10 @@ let state={session:null,ready:false},mounts=0;
 function Stack(){const [route]=React.useState('basket');React.useEffect(()=>{mounts++;},[]);return React.createElement('route',{name:route});}Stack.Screen=function Screen(){return null;};
 const pass=p=>p.children,original=Module._load;
 Module._load=function(request,parent,isMain){
+ if(request==='react-native')return {View:pass};
+ if(request==='@/context/ActiveBasketContext')return {ActiveBasketProvider:pass};
+ if(request==='@/components/ActiveBasketShortcut')return {ActiveBasketShortcut:()=>null};
+ if(request==='@/components/ScreenNavigation')return {ScreenNavigation:()=>null};
  if(request==='expo-router')return {Stack};
  if(request==='expo-status-bar')return {StatusBar:()=>null};
  if(request==='react-native-safe-area-context')return {SafeAreaProvider:pass};

@@ -12,7 +12,7 @@ export function remoteBaskets(client: SupabaseClient): RemoteBaskets {
     async save(basket) {
       if (!basket.ownerId) throw Error('No cloud session');
       await verifyOwner(basket.ownerId);
-      const { data, error } = await client.rpc('save_generated_basket', { p_request_key: basket.id,
+      const { data, error } = basket.cloudId ? await client.rpc('update_saved_basket', { p_request_key: basket.id, p_result: basket.result }) : await client.rpc('save_generated_basket', { p_request_key: basket.id,
         p_name: basket.name, p_preferences: basket.preferences, p_result: basket.result });
       if (error || typeof data !== 'string') throw Error('Cloud basket save failed');
       return data;

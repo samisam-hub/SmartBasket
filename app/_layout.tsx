@@ -9,6 +9,10 @@ import { colors } from "@/lib/theme";
 import {AuthProvider,useAuth} from '@/context/AuthContext';
 import {ProfileProvider} from '@/context/ProfileContext';
 import {useRef} from 'react';
+import { View } from 'react-native';
+import { ScreenNavigation } from '@/components/ScreenNavigation';
+import { ActiveBasketProvider } from '@/context/ActiveBasketContext';
+import { ActiveBasketShortcut } from '@/components/ActiveBasketShortcut';
 export default function RootLayout() {
  return <AuthProvider><AuthenticatedLayout /></AuthProvider>;
 }
@@ -22,8 +26,9 @@ function AuthenticatedLayout(){
  else if(ready)identity.current.owner=owner;
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <PreferencesProvider><ProfileProvider>
+      <PreferencesProvider><ProfileProvider><ActiveBasketProvider key={identity.current.generation}>
         <StatusBar style="dark" />
+        <View style={{ flex: 1 }}>
         <Stack
           key={identity.current.generation}
           screenOptions={{
@@ -43,13 +48,17 @@ function AuthenticatedLayout(){
             options={{ title: "Create my basket" }}
           />
           <Stack.Screen name="product/[id]" options={{ title: "Product details" }} />
+          <Stack.Screen name="pantry" options={{ title: "Pantry & purchases" }} />
           <Stack.Screen name="account" options={{ title: "Account" }} />
           <Stack.Screen name="auth/callback" options={{ title: "Verify account" }} />
           <Stack.Screen name="personal-profile" options={{ title: "Personal profile" }} />
           <Stack.Screen name="plan-setup" options={{ title: "Plan participants" }} />
           <Stack.Screen name="saved-meal-plans" options={{ title: "Saved meal plans" }} />
         </Stack>
-      </ProfileProvider></PreferencesProvider>
+        <ActiveBasketShortcut />
+        <ScreenNavigation />
+        </View>
+      </ActiveBasketProvider></ProfileProvider></PreferencesProvider>
     </SafeAreaProvider>
   );
 }

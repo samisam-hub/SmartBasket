@@ -33,20 +33,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="products"
-        options={{
-          title: "Products",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="grid" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="basket"
         options={{
           title: "Basket",
           tabBarIcon: ({ color, size }) => (
             <Feather name="shopping-bag" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="products"
+        options={{
+          title: "Products",
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="grid" color={color} size={size} />
           ),
         }}
       />

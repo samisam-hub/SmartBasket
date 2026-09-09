@@ -9,6 +9,21 @@ export interface IngredientMapping {
 const mapping=(aliases:string[],allowedCategories:ProductCategory[],blockedKeywords:string[]=[],requiredKeywords:string[]=aliases):IngredientMapping=>({aliases,allowedCategories,blockedKeywords,requiredKeywords:[...requiredKeywords]});
 /** Concepts, not meal prose or OFF category strings. Curated IDs never bypass safety/form checks. */
 export const ingredientMappings:Record<string,IngredientMapping>={
+ sourdough_bread:mapping(['sourdough bread','sourdough loaf','sauerteigbrot','pain au levain'],['bread'],['sweet','raisins','rosinen','filled','gefüllt','mix','mischung','crackers','croutons']),
+ cherry_tomatoes:mapping(['cherry tomatoes','cherry tomato','cherrytomaten','kirschtomaten','cocktailtomaten'],['vegetables'],['canned','chopped','diced','gehackt','stückig','dose','dried','getrocknet','sauce','passata','juice','saft','pickled','eingelegt']),
+ chicken_ham:mapping(['chicken ham','hähnchenschinken','haehnchenschinken'],['meat'],['pork','schwein','breaded','paniert']),
+ smoked_salmon:mapping(['smoked salmon','räucherlachs','raucherlachs'],['fish'],['spread','aufstrich','salad','salat','sauce','pate','pâté','honey','roast']),
+ beef_steak:mapping(['beef steak','rump steak','sirloin steak','ribeye steak','rindersteak','rumpsteak','rinder hüftsteak'],['meat'],['minced','hack','marinated','mariniert','cooked','gegart','jerky','braising','sausage']),
+ mushrooms:mapping(['button mushrooms','mushrooms','champignons'],['vegetables','other'],['soup','sauce','dried','getrocknet','mix','chanterelles']),
+ chanterelles:mapping(['chanterelles','pfifferlinge'],['vegetables','other'],['soup','sauce','dried','getrocknet']),
+ onion:mapping(['onion','onions','zwiebeln'],['vegetables'],['powder','pulver','fried','geröstet']),
+ soy_cream:mapping(['soya cuisine','soy cooking cream','soja cuisine'],['dairy-alternatives','other'],['dessert','sweet','vanilla','vanille']),
+ parsley:mapping(['parsley','petersilie'],['vegetables','other'],['dried','getrocknet','sauce','pesto']),
+ dill:mapping(['dill'],['vegetables','other'],['dried','getrocknet','sauce','salmon','lachs']),
+ pepper:mapping(['black pepper','schwarzer pfeffer'],['other'],['sauce','mix']),
+ dark_chocolate:mapping(['dark chocolate','zartbitterschokolade'],['snacks'],['milk','milch','filled','gefüllt','nuts','nüsse']),
+ noodles:mapping(['spaghetti','wheat noodles','weizennudeln'],['pasta'],['egg','eggs','eier','filled','cooked','gekocht','instant','rice','reis','soba','buckwheat']),
+ teriyaki:mapping(['teriyaki marinade'],['other'],['honey','honig','sesame','sesam','garlic','knoblauch','chicken','beef','salmon','tofu']),
  chicken_breast:mapping(['chicken breast','chicken fillet','chicken breast fillet','hähnchenbrust','hähnchenbrustfilet','haehnchenbrust','hähnchen brustfilet','filet de poulet'],['meat'],['cooked','smoked','roasted','gegart','geräuchert','aufschnitt','cuite','rôti','charcuterie','pané']),
  turkey:mapping(['turkey breast','turkey fillet','putenbrust','putenbrustfilet','putenschnitzel'],['meat'],['cooked','smoked','roasted','gegart','geräuchert','aufschnitt']),
  salmon:mapping(['salmon','salmon fillet','salmon fillets','lachs','lachsfilet','lachsfilets','saumon'],['fish'],['seelachs','pollock','smoked','geräuchert','fumé','crusted','citrus','herb','lemon','teriyaki','kräuter','zitrone']),
@@ -34,6 +49,7 @@ export const ingredientMappings:Record<string,IngredientMapping>={
  cottage:mapping(['cottage cheese','hüttenkäse','körniger frischkäse'],['dairy'],['pineapple','ananas','fruit','frucht']),
 };
 export const preparedFoodKeywords=['soup','suppe','sauce','salad','salat','sandwich','burger','nuggets','dessert','meal','pizza','seasoned','marinated','breaded','paniert','gewürzt','waffeln','waffles','curry','eintopf','cakes','cake','chips','crisps'];
+ingredientMappings.berries.aliases.push('framboises', 'myrtilles', 'fraises', 'raspberries');
 ingredientMappings.chicken_breast.blockedKeywords.push('kirschpaprika','paprika');
 ingredientMappings.chickpeas.blockedKeywords.push('quinoa','gemüse','erdnuss');
 ingredientMappings.chopped_tomatoes.requiredKeywords.push('tomaten gehackt','tomaten stückig','tomaten stücken');

@@ -1,100 +1,57 @@
-import {BrandLogo} from '@/components/BrandAssets';
-import Feather from "@expo/vector-icons/Feather";
-import { router } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
-import {
-  Chips,
-  PrimaryButton,
-  Screen,
-  ScreenHeader,
-  SectionCard,
-  TextButton,
-} from "@/components/ui";
-import { PersistenceStatus } from "@/components/PersistenceStatus";
-import { usePreferences } from "@/context/PreferencesContext";
-import { useBasketFlow } from "@/hooks/useBasketFlow";
-import { preferenceChips } from "@/services/preference-domain";
-import { colors, radii, spacing, ui } from "@/lib/theme";
+import Feather from '@expo/vector-icons/Feather';
+import { router } from 'expo-router';
+import { Image, Pressable, Text, View } from 'react-native';
+import { useActiveBasket } from '@/context/ActiveBasketContext';
+import { LatestBasket } from '@/components/LatestBasket';
+import { WastePrevention } from '@/components/WastePrevention';
+import { PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
+import { usePreferences } from '@/context/PreferencesContext';
+import { useProfile } from '@/context/ProfileContext';
+import { useBasketFlow } from '@/hooks/useBasketFlow';
+import { preferenceChips } from '@/services/preference-domain';
+import { colors, ui } from '@/lib/theme';
+
 export default function HomeScreen() {
   const { saved, editing } = usePreferences();
+  const { saved: profile } = useProfile();
   const flow = useBasketFlow();
-  return (
-    <Screen>
-      <BrandLogo />
-      <View style={styles.hero}>
-        <ScreenHeader
-          eyebrow="FUEL YOUR GOALS"
-          title="Good food for a stronger you."
-          subtitle="Personalized groceries based on your goals, lifestyle and budget."
-        />
-        <View style={styles.heroIcon}>
-          <Feather name="target" size={56} color={colors.primary} />
-          <View style={{ flex: 1 }}>
-            <Text style={ui.subheading}>Your next strong week</Text>
-            <Text style={ui.small}>Starts with what’s in your basket.</Text>
-          </View>
+  const { active } = useActiveBasket();
+  const openCart = () => active ? router.push({ pathname: '/basket-setup', params: { savedId: active.id } }) : router.navigate('/basket');
+  const name = profile?.displayName.trim();
+  const details = saved ? preferenceChips(saved).slice(2).filter(label => !label.includes('budget')) : [];
+  return <Screen compact>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 }}>
+      <Text accessibilityRole="header" style={[ui.heading, { flex: 1, fontWeight: '800', fontSize: 22 }]}>Smart<Text style={{ color: colors.primary }}>Basket</Text></Text>
+      <Text style={[ui.small, { color: colors.ink, flexShrink: 1 }]} numberOfLines={1}>{name ? `Hi ${name}` : 'Welcome'}</Text>
+      <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Open your basket" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
+    </View>
+    <WastePrevention />
+    <View style={{ flexDirection: 'row', gap: 10 }}>
+      <View style={{ flex: 1 }}><PrimaryButton label="Plan my next meal" disabled={flow.disabled} onPress={flow.create} /></View>
+      <View style={{ flex: 1 }}><SecondaryButton label="View recent shops" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} /></View>
+    </View>
+    <LatestBasket />
+    <View style={{ flexDirection: 'row', gap: 12 }}>
+      {[
+        { title: 'Your pantry', subtitle: 'Use what you already have', route: '/pantry' as const, photo: 8 },
+        { title: 'Browse products', subtitle: 'Find what you need', route: '/products' as const, photo: 1 },
+      ].map(tile => <Pressable key={tile.title} onPress={()=>router.push(tile.route)} accessibilityRole="button" accessibilityLabel={tile.title}
+        style={({pressed})=>[ui.card,{ flex: 1, minWidth: 0, padding: 12, gap: 6, borderRadius: 14, opacity: pressed ? .75 : 1 }]}>
+        <Text style={[ui.small,{fontWeight:'700',color:colors.ink}]}>{tile.title}</Text>
+        <Text style={ui.caption}>{tile.subtitle}</Text>
+        <View accessible={false} style={{ width: 72, height: 72, overflow: 'hidden', alignSelf: 'flex-end', borderRadius: 10 }}>
+          <Image source={require('../../assets/categories/grocery-categories.png')} resizeMode="stretch" style={{position:'absolute',width:288,height:288,left:-(tile.photo%4)*72,top:-Math.floor(tile.photo/4)*72}} />
         </View>
-        <PrimaryButton
-          label="Create my basket"
-          disabled={flow.disabled}
-          onPress={flow.create}
-        />
+      </Pressable>)}
+    </View>
+    {saved && <SectionCard compact>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={ui.subheading}>Your preferences</Text>
+          <Text style={ui.small}>{details.join(' · ')}</Text>
+        </View>
+        <TextButton label={editing ? 'Resume edits' : 'Edit'} disabled={flow.disabled} onPress={() => flow.edit()} />
       </View>
-      {saved && (
-        <SectionCard title="Your current preferences">
-          <Chips labels={preferenceChips(saved)} />
-          <TextButton
-            label={editing ? "Resume preference edits" : "Edit preferences"}
-            disabled={flow.disabled}
-            onPress={() => flow.edit()}
-          />
-        </SectionCard>
-      )}
-      <PersistenceStatus />
-      <SectionCard title="Built around your everyday">
-        {(
-          [
-            {
-              icon: "target",
-              title: "Supports your goals",
-              detail: "Keep your fitness priorities in focus.",
-            },
-            {
-              icon: "heart",
-              title: "Tailored nutrition",
-              detail: "Make room for your food preferences.",
-            },
-            {
-              icon: "clock",
-              title: "Save time & money",
-              detail: "Plan ahead with a budget that fits.",
-            },
-          ] as const
-        ).map((item) => (
-          <View key={item.title} style={ui.row}>
-            <Feather name={item.icon} size={24} color={colors.primary} />
-            <View style={{ flex: 1 }}>
-              <Text style={ui.body}>{item.title}</Text>
-              <Text style={ui.small}>{item.detail}</Text>
-            </View>
-          </View>
-        ))}
-        <TextButton
-          label="Explore products"
-          onPress={() => router.navigate("/products")}
-        />
-      </SectionCard>
-    </Screen>
-  );
+    </SectionCard>}
+  </Screen>;
 }
-const styles = StyleSheet.create({
-  hero: { gap: spacing.xl },
-  heroIcon: {
-    padding: spacing.xl,
-    borderRadius: radii.xl,
-    backgroundColor: colors.pale,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.lg,
-  },
-});

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { MealImage } from './MealImage';
+import { ParticipantNutrition } from './ParticipantNutrition';
 import { Text, View } from 'react-native';
 import { PrimaryButton, SecondaryButton, SectionCard } from './ui';
 import { ui } from '../lib/theme';
@@ -9,16 +11,18 @@ export function MealPlanReview({plan,preferences,onChange,onConfirm}: {plan:Meal
   const [replacing,setReplacing]=useState<string|null>(null),n=planNutrition(plan);
   return <>
     <SectionCard title="Review your meals">
-      <Text style={ui.body}>{Math.round(n.calories)} kcal · {Math.round(n.protein)} g protein across {plan.planningDays} days</Text>
-      <Text style={ui.small}>Targets: {Math.round(plan.targetCalories)} kcal · {Math.round(plan.targetProtein)} g protein. Quantities include everyone in your household.</Text>
+      <ParticipantNutrition plan={plan} nutrition={n} daily />
+      <Text style={ui.small}>Replacing a meal adjusts the other main portions that day. Snacks count towards the daily target.</Text>
       <Text style={ui.small}>Review and replace meals before matching grocery packages. Nutrition is a curated development estimate; catalog availability is checked after confirmation.</Text>
     </SectionCard>
     {plan.items.map(item=>{const nutrition=mealNutrition(item),options=replacementMeals(plan,item.id,preferences);return <SectionCard key={item.id} title={`Day ${item.dayIndex+1} · ${item.mealSlot}`}>
       <Text style={ui.heading}>{item.meal.name}</Text>
-      <Text style={ui.body}>{item.servings} servings · {Math.round(nutrition.calories)} kcal · {Math.round(nutrition.protein)} g protein</Text>
-      <Text style={ui.small}>{item.meal.ingredients.map(i=>`${Math.round(i.quantity*item.servings/item.meal.servings)} ${i.unit} ${i.ingredientName}`).join(' · ')}</Text>
+      <MealImage meal={item.meal} />
+      <ParticipantNutrition plan={plan} nutrition={nutrition} />
+      <Text style={ui.small}>Ingredients for everyone · {Number(item.servings.toFixed(2))} recipe servings</Text>
+      <Text style={ui.small}>{item.meal.ingredients.map(i=>`${Number((i.quantity*item.servings/item.meal.servings).toFixed(1))} ${i.unit} ${i.ingredientName}`).join(' · ')}</Text>
       <SecondaryButton label={replacing===item.id?'Close replacements':'Replace meal'} disabled={!options.length} onPress={()=>setReplacing(replacing===item.id?null:item.id)} />
-      {replacing===item.id&&<View style={ui.stack}>{options.map(meal=><SecondaryButton key={meal.id} label={`${meal.name} · ${Math.round(meal.caloriesPerServing*item.servings)} kcal`} onPress={()=>{onChange(replaceMeal(plan,item.id,meal.id,preferences));setReplacing(null);}} />)}</View>}
+      {replacing===item.id&&<View style={ui.stack}>{options.map(meal=><SecondaryButton key={meal.id} label={`${meal.name} · ${Math.round(meal.caloriesPerServing)} kcal / serving`} onPress={()=>{onChange(replaceMeal(plan,item.id,meal.id,preferences));setReplacing(null);}} />)}</View>}
     </SectionCard>;})}
     {plan.warnings.map(w=><Text key={w.code} style={ui.small}>{w.message}</Text>)}
     {!plan.items.length&&<Text style={ui.body}>No compatible meals are available. Edit preferences or try again when more curated meals are available.</Text>}

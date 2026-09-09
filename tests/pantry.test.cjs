@@ -1,0 +1,22 @@
+require('./register.cjs');
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const {prefs}=require('./basket-fixtures.cjs');
+const {fullCatalog}=require('./meal-fixtures.cjs');
+const {generateMealPlan}=require('../services/meals/planner.ts');
+const {basketFromMealPlan}=require('../services/meals/basket.ts');
+const {newSavedBasket}=require('../services/basket/persistence.ts');
+const {checkoutPantry}=require('../services/pantry-domain.ts');
+test('purchase reserves meals, retains leftovers and future plans consume stock without mutating previews',()=>{
+ const p=prefs(),plan={...generateMealPlan(p),status:'confirmed'},base=basketFromMealPlan(plan,p,fullCatalog);
+ const b=newSavedBasket(base,p,null),state=checkoutPantry({version:0,lots:[]},b,'2026-09-08T00:00:00Z');
+ assert.ok(state.lots.length);assert.equal(state.version,1);
+ const before=JSON.stringify(state),next=basketFromMealPlan(plan,p,fullCatalog,state.lots);
+ assert.ok(next.pantryUsed.length);assert.equal(JSON.stringify(state),before);
+ assert.ok(next.knownPriceSubtotal<=base.knownPriceSubtotal);
+ const other=newSavedBasket(next,p,null);other.id='second';
+ const final=checkoutPantry(state,other,'2026-09-09T00:00:00Z');assert.equal(final.version,2);
+ assert.throws(()=>checkoutPantry({version:0,lots:[]},other,'2026-09-09'),/pantry changed/);
+ assert.throws(()=>checkoutPantry(state,{...b,result:{...b.result,purchasedAt:'done'}},'now'),/already purchased/);
+ const wrong=state.lots.map(l=>({...l,unit:l.unit==='g'?'ml':'g'}));
+ assert.equal(basketFromMealPlan(plan,p,fullCatalog,wrong).pantryUsed.length,0);
+});

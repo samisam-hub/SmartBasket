@@ -1,13 +1,13 @@
 {
   "colors": {
-    "primary": "#0F6B3F",
-    "secondary": "#A7D36B",
-    "accent": "#FFD14D",
-    "orange": "#FF6B00",
+    "primary": "#AD5137",
+    "secondary": "#F4D8BF",
+    "accent": "#E8B386",
+    "orange": "#C56440",
     "error": "#E63946",
-    "background": "#FFF8F0",
+    "background": "#FFFCF8",
     "surface": "#FFFFFF",
-    "text": "#1F2937"
+    "text": "#362B26"
   },
   "illustration": {
     "backgroundBehavior": "State illustrations are transparent; use #FFF8F0 or #FFFFFF surfaces.",

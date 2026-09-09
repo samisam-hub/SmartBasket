@@ -38,7 +38,7 @@ export function matchesPreferences(p: Product, preferences: UserPreferences | nu
 export function productMatches(p: Product, query: string, filters: CatalogFilters, preferences: UserPreferences | null) {
   const words = `${p.name} ${p.brand ?? ""}`.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
   return searchTokens(query).every(t => words.some(w => w.startsWith(t))) &&
-    (!filters.category || p.category === filters.category) &&
+    (!filters.category || (filters.category === 'fruit-vegetables' ? ['fruit','vegetables'].includes(p.category) : filters.category === 'meat-fish' ? ['meat','fish'].includes(p.category) : filters.category === 'dairy-alternatives-group' ? ['dairy','dairy-alternatives'].includes(p.category) : filters.category === 'pantry' ? ['grains','pasta'].includes(p.category) : p.category === filters.category)) &&
     (!filters.highProtein || highProtein(p)) &&
     dietaryFields.every(f => !filters[f] || p[f] === true) &&
     (!filters.matchesPreferences || matchesPreferences(p, preferences));

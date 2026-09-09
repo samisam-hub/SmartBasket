@@ -5,6 +5,8 @@ export type BasketGroup = 'protein' | 'vegetables' | 'fruit' | 'staples' | 'brea
 export interface BasketWarning { code: string; message: string; productIds?: string[] }
 export interface SelectionReason { code: string; detail: string }
 export interface BasketItem {
+  isExtra?: boolean;
+  extraPackageCount?: number;
   ingredientKey?: string;
   sourceMealIds?: string[];
   purchasedQuantity?: number;
@@ -28,6 +30,10 @@ export interface BasketItem {
   reasonSelected: SelectionReason[];
 }
 export interface BasketGenerationResult {
+  purchasedAt?: string;
+  pantryUsed?: import('./pantry').PantryUse[];
+  removedProductIds?: string[];
+  removedIngredientKeys?: string[];
   engineVersion: '1' | '2';
   mealPlan?: MealPlan;
   ingredientRequirements?: IngredientRequirement[];

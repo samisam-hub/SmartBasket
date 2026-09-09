@@ -27,7 +27,8 @@ export function Screen({
   children,
   top = true,
   bottom = false,
-}: PropsWithChildren<{ top?: boolean; bottom?: boolean }>) {
+  compact = false,
+}: PropsWithChildren<{ top?: boolean; bottom?: boolean; compact?: boolean }>) {
   return (
     <SafeAreaView
       style={ui.page}
@@ -43,7 +44,7 @@ export function Screen({
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerStyle={ui.content}
+          contentContainerStyle={[ui.content, compact && { padding: 16, gap: 12 }]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
@@ -302,9 +303,11 @@ export function Chips({ labels }: { labels: readonly string[] }) {
 export function SectionCard({
   children,
   title,
-}: PropsWithChildren<{ title?: string }>) {
+  compact = false,
+  pale = false,
+}: PropsWithChildren<{ title?: string; compact?: boolean; pale?: boolean }>) {
   return (
-    <View style={ui.card}>
+    <View style={[ui.card, compact && { padding: 16, gap: 12 }, pale && { backgroundColor: colors.pale }]}>
       {title && <Text style={ui.subheading}>{title}</Text>}
       {children}
     </View>
@@ -416,7 +419,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
   },
-  secondary: { backgroundColor: colors.pale },
+  secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary },
   textButton: { backgroundColor: colors.background },
   buttonText: {
     ...typography.body,

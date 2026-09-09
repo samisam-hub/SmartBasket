@@ -84,8 +84,10 @@ export class BasketPersistence {
   }
   return failed?'Changes saved on this device. Cloud sync is pending; use Reload saved baskets when connected.':null;
  }
+ cache(b:SavedBasket):Promise<void>{return this.queue(async()=>{if(!isSavedBasket(b))throw Error('Invalid basket snapshot');if((await this.changes(b.ownerId))[b.id]?.kind==='delete')return;await this.write(b);});}
  save(b:SavedBasket):Promise<{basket:SavedBasket;warning:string|null}>{return this.queue(async()=>{
   if(!isSavedBasket(b))throw Error('This basket cannot be saved. Generate a valid nonempty basket first.');
+  const existing=(await this.local(b.ownerId)).find(x=>x.id===b.id);if(existing?.result.purchasedAt&&JSON.stringify(existing.result)!==JSON.stringify(b.result))throw Error('Purchased baskets cannot be edited.');
   const changes=await this.changes(b.ownerId);if(changes[b.id]?.kind==='delete')throw Error('This basket has been deleted.');
   const c=changes[b.id];if(c?.kind==='rename')b={...b,name:c.name};await this.write(b);
   if(!this.remote||!b.ownerId)return {basket:b,warning:'Saved on this device only. Cloud storage is unavailable for this session.'};

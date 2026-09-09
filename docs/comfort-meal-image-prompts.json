@@ -1,0 +1,61 @@
+{
+  "tool": "built-in image_gen",
+  "images": [
+    {
+      "id": "chicken-ham-toast",
+      "name": "Egg and chicken-ham toast",
+      "prompt": "Use case: photorealistic-natural. A single square meal photograph for SmartBasket. Off-white ceramic bowl or shallow plate on warm cream background, slightly elevated near-overhead angle, natural soft daylight. A home cook made a modest effort to plate nicely, but natural asymmetry, varied piece sizes, irregular vegetable shapes, uneven browning and casual overlapping. Real cooked texture, restrained sheen. No text, logos, watermark, packaging, cutlery or added ingredients beyond those listed. No perfect geometric arrangements. Wholemeal toast topped with thin folded cooked chicken ham and softly cooked eggs, sprinkled with visibly coarse black pepper and a small amount of chopped parsley. No tomatoes. Ingredients: wholemeal bread, eggs, chicken ham, pepper, parsley.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-7c723cc6-6f62-4045-ae7a-d1bba2464d47.png",
+      "asset": "assets/meals/chicken-ham-toast.png"
+    },
+    {
+      "id": "salmon-egg-toast",
+      "name": "Smoked salmon and soft egg toast",
+      "prompt": "Use case: photorealistic-natural. A single square meal photograph for SmartBasket. Off-white ceramic bowl or shallow plate on warm cream background, slightly elevated near-overhead angle, natural soft daylight. A home cook made a modest effort to plate nicely, but natural asymmetry, varied piece sizes, irregular vegetable shapes, uneven browning and casual overlapping. Real cooked texture, restrained sheen. No text, logos, watermark, packaging, cutlery or added ingredients beyond those listed. No perfect geometric arrangements. Wholemeal toast with loose folds of smoked salmon and a softly poached egg cut open showing a naturally runny golden yolk, small fresh dill sprigs and coarse pepper. Ingredients only wholemeal bread, smoked salmon, eggs, dill, pepper.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-e5d7c89e-9e29-45d9-9d21-9ba7a3b41285.png",
+      "asset": "assets/meals/salmon-egg-toast.png"
+    },
+    {
+      "id": "steak-greens",
+      "name": "Steak with potatoes and spinach",
+      "prompt": "Use case: photorealistic-natural. A single square meal photograph for SmartBasket. Off-white ceramic bowl or shallow plate on warm cream background, slightly elevated near-overhead angle, natural soft daylight. A home cook made a modest effort to plate nicely, but natural asymmetry, varied piece sizes, irregular vegetable shapes, uneven browning and casual overlapping. Real cooked texture, restrained sheen. No text, logos, watermark, packaging, cutlery or added ingredients beyond those listed. No perfect geometric arrangements. Seared beef steak sliced with cooked warm pink center, rustic cooked potato chunks and wilted spinach, olive oil, chopped parsley and coarse black pepper. Irregular potatoes. No sauces. Ingredients only beef steak, potatoes, spinach, olive oil, parsley, pepper.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-f909bd53-d452-4a2d-8c16-2b42ebdda079.png",
+      "asset": "assets/meals/steak-greens.png"
+    },
+    {
+      "id": "chicken-stroganoff",
+      "name": "Chicken Stroganoff with noodles",
+      "prompt": "Use case: photorealistic-natural. A single square meal photograph for SmartBasket. Off-white ceramic bowl or shallow plate on warm cream background, slightly elevated near-overhead angle, natural soft daylight. A home cook made a modest effort to plate nicely, but natural asymmetry, varied piece sizes, irregular vegetable shapes, uneven browning and casual overlapping. Real cooked texture, restrained sheen. No text, logos, watermark, packaging, cutlery or added ingredients beyond those listed. No perfect geometric arrangements. Cooked chicken breast strips and sliced button mushrooms with softened onions in a light creamy plant-based soy cooking cream sauce, spooned over realistic thin wheat noodles. Chopped parsley and coarse pepper, a little olive oil. Natural loosely tangled supple noodles, not thick rubber worms. No tomatoes. Ingredients chicken, noodles, mushrooms, onion, soy cooking cream, olive oil, parsley, pepper.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-72ab20a0-2ee4-49de-8775-6251d68f029b.png",
+      "asset": "assets/meals/chicken-stroganoff.png"
+    },
+    {
+      "id": "steak-chanterelles",
+      "name": "Steak with chanterelle sauce and potatoes",
+      "prompt": "Use case: photorealistic-natural. A single square meal photograph for SmartBasket. Off-white ceramic bowl or shallow plate on warm cream background, slightly elevated near-overhead angle, natural soft daylight. A home cook made a modest effort to plate nicely, but natural asymmetry, varied piece sizes, irregular vegetable shapes, uneven browning and casual overlapping. Real cooked texture, restrained sheen. No text, logos, watermark, packaging, cutlery or added ingredients beyond those listed. No perfect geometric arrangements. Seared sliced beef steak, rustic cooked potato chunks and a modest spoonful of creamy golden chanterelle mushroom sauce with softened onion using plant soy cooking cream and a little olive oil. Chanterelles clearly identifiable irregular golden trumpet shaped mushrooms, not button mushrooms. Chopped parsley and black pepper. Ingredients steak, potatoes, chanterelles, onion, soy cream, olive oil, parsley, pepper.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-42275fae-7232-40d5-80da-36e6f5e4c9f0.png",
+      "asset": "assets/meals/steak-chanterelles.png"
+    },
+    {
+      "id": "snack-apple-berries",
+      "name": "Apple and berry snack",
+      "prompt": "Use case: photorealistic-natural. A single square meal photograph for SmartBasket. Off-white ceramic bowl or shallow plate on warm cream background, slightly elevated near-overhead angle, natural soft daylight. A home cook made a modest effort to plate nicely, but natural asymmetry, varied piece sizes, irregular vegetable shapes, uneven browning and casual overlapping. Real cooked texture, restrained sheen. No text, logos, watermark, packaging, cutlery or added ingredients beyond those listed. No perfect geometric arrangements. A SMALL snack portion of irregular fresh apple slices and blueberries and strawberries in a small off-white bowl. Only apple and berries, no yogurt, garnish or nuts. Modest quantity, not a large main meal.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-0142dffb-5042-4709-b458-4af75b902fe3.png",
+      "asset": "assets/meals/snack-apple-berries.png"
+    },
+    {
+      "id": "snack-yogurt",
+      "name": "Yogurt and berry snack",
+      "prompt": "Create one square natural photograph of ONLY a small bowl of plain white Greek yogurt topped with five blueberries and three strawberry pieces. This yogurt snack is the ONLY food in the image. No main meal, no chicken, no meat, no vegetables, no rice, no grain, no side dishes, no other bowls or plates. Small off-white ceramic bowl centered on cream background, close view, soft daylight, natural casual arrangement. No text or logos. Only yogurt, blueberries, strawberries.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-daf5f3a4-bb59-4c8d-8bda-ce51eabe441a.png",
+      "asset": "assets/meals/snack-yogurt.png"
+    },
+    {
+      "id": "snack-banana-chocolate",
+      "name": "Banana and dark chocolate snack",
+      "prompt": "Use case: photorealistic-natural. A single square meal photograph for SmartBasket. Off-white ceramic bowl or shallow plate on warm cream background, slightly elevated near-overhead angle, natural soft daylight. A home cook made a modest effort to plate nicely, but natural asymmetry, varied piece sizes, irregular vegetable shapes, uneven browning and casual overlapping. Real cooked texture, restrained sheen. No text, logos, watermark, packaging, cutlery or added ingredients beyond those listed. No perfect geometric arrangements. A SMALL snack portion: half a banana in irregular slices and two small uneven broken pieces of plain dark chocolate in a small off-white bowl. Only banana and dark chocolate, no nuts, cream or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-82defee1-0950-44f7-a6a8-adb6eab72094.png",
+      "asset": "assets/meals/snack-banana-chocolate.png"
+    }
+  ]
+}

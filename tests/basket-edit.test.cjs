@@ -1,0 +1,23 @@
+require('./register.cjs');
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const {prefs}=require('./basket-fixtures.cjs');
+const {fullCatalog}=require('./meal-fixtures.cjs');
+const {generateMealPlan,planNutrition}=require('../services/meals/planner.ts');
+const {basketFromMealPlan}=require('../services/meals/basket.ts');
+const {removeBasketProduct}=require('../services/basket/edit.ts');
+const {BasketPersistence,newSavedBasket,isBasketResult}=require('../services/basket/persistence.ts');
+test('removal recalculates totals, preserves meals and persists without changing identity',async()=>{
+ const p=prefs({planningDays:3}),plan={...generateMealPlan(p),status:'confirmed'};
+ const original=basketFromMealPlan(plan,p,fullCatalog);assert.ok(original.items.length>1);
+ const before=JSON.stringify(original),removed=original.items[0],next=removeBasketProduct(original,removed.product.id);
+ assert.equal(JSON.stringify(original),before);assert.equal(next.items.length,original.items.length-1);
+ assert.deepEqual(next.mealPlan,original.mealPlan);assert.ok(isBasketResult(next));
+ assert.ok(Math.abs(next.totalCalories-planNutrition(plan,next.ingredientRatios).calories)<0.001);
+ assert.ok(Math.abs(next.knownPriceSubtotal-(original.knownPriceSubtotal-removed.estimatedPrice))<.02);
+ assert.ok(next.remaining.totalPurchasedWeight<=original.remaining.totalPurchasedWeight);
+ const store=new Map(),persistence=new BasketPersistence({getItem:async k=>store.get(k)??null,setItem:async(k,v)=>store.set(k,v)},null);
+ const b=newSavedBasket(original,p,null);await persistence.save(b);await persistence.save({...b,result:next});
+ const reopened=(await persistence.list(null)).baskets;assert.equal(reopened.length,1);assert.equal(reopened[0].id,b.id);assert.deepEqual(reopened[0].result,next);
+ let empty=next;for(const item of next.items)empty=removeBasketProduct(empty,item.product.id);
+ assert.equal(empty.totalCalories,0);assert.equal(empty.estimatedTotalPrice,0);assert.ok(isBasketResult(empty));
+});

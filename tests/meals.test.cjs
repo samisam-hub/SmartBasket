@@ -40,7 +40,7 @@ test('E: broccoli aggregates across meals before any SKU matching',()=>{
 });
 test('F: complete fixture catalog produces diverse 3-day meals and realistic packages with high consumption coverage',()=>{
  const p=prefs({planningDays:3,dailyCalories:1500,primaryGoal:'high_protein',dietaryPreferences:['lactose_free'],weeklyBudgetEur:100});
- const plan=generateMealPlan(p,fullCatalog);assert.equal(plan.items.length,9);assert.ok(new Set(plan.items.map(i=>i.meal.id)).size>=5);
+ const plan=generateMealPlan(p,fullCatalog);assert.equal(plan.items.length,12);assert.ok(new Set(plan.items.map(i=>i.meal.id)).size>=5);
  const result=basketFromMealPlan({...plan,status:'confirmed'},p,fullCatalog);
  assert.ok(result.items.length>=5);assert.ok(result.calorieCoveragePercent>=90&&result.calorieCoveragePercent<=110,JSON.stringify(result.warnings));
  assert.ok(result.proteinCoveragePercent>=90);assert.ok(result.items.every(i=>i.packageCount>0&&i.packageCount<10));assert.equal(isBasketResult(result),true);
@@ -57,14 +57,14 @@ test('nutrition recalculates underfill and does not count leftover package calor
  assert.equal(result.adjustedMealNutrition[0].nutrition.calories,720);
 });
 test('meal safety, unknown ingredient and replacement constraints',()=>{
- assert.equal(meals.length,24);
+ assert.equal(meals.length,32);
  for(const diet of ['vegan','vegetarian','pescatarian','lactose_free','gluten_free']){
   const p=prefs({dietaryPreferences:[diet]});const plan=generateMealPlan(p);assert.ok(plan.items.length);assert.ok(plan.items.every(i=>compatibleMeal(i.meal,p)));
  }
  const p=prefs({allergens:['milk','eggs','soy','wheat']});const plan=generateMealPlan(p);assert.ok(plan.items.every(i=>i.meal.allergens.every(a=>!p.allergens.includes(a))));
  assert.equal(compatibleMeal({...meals[0],ingredients:[{...meals[0].ingredients[0],ingredientKey:'unknown'}]},p),false);
  const vegan=prefs({dietaryPreferences:['vegan']});const v=generateMealPlan(vegan);assert.throws(()=>replaceMeal(v,v.items[0].id,'eggs-toast',vegan));
- const normal=generateMealPlan(prefs());const replaced=replaceMeal(normal,normal.items[0].id,normal.items[0].meal.id==='eggs-toast'?'oat-berries':'eggs-toast',prefs());
+ const normal=generateMealPlan(prefs());const replaced=replaceMeal(normal,normal.items[0].id,normal.items[0].meal.id==='chicken-ham-toast'?'oat-berries':'chicken-ham-toast',prefs());
  assert.notDeepEqual(planNutrition(normal),planNutrition(replaced));assert.equal(replaced.status,'review');
 });
 test('missing/unsafe SKU data warns, never invents packages, prices or unrelated foods',()=>{

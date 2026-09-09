@@ -1,0 +1,20 @@
+require('./register.cjs');
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const {prefs,product}=require('./basket-fixtures.cjs');
+const {fullCatalog}=require('./meal-fixtures.cjs');
+const {generateMealPlan}=require('../services/meals/planner.ts');
+const {basketFromMealPlan}=require('../services/meals/basket.ts');
+const {addBasketProduct}=require('../services/basket/add-product.ts');
+const {removeBasketProduct}=require('../services/basket/edit.ts');
+const {isBasketResult}=require('../services/basket/persistence.ts');
+test('extras add cost without changing meal nutrition, merge duplicates and can be removed',()=>{
+ const p=prefs({planningDays:3}),plan={...generateMealPlan(p),status:'confirmed'};
+ const base=basketFromMealPlan(plan,p,fullCatalog),juice=product(999,{name:'Juice',category:'beverages',packageSize:1000,packageUnit:'ml',nutritionBasis:'100ml',priceEstimate:2});
+ const one=addBasketProduct(base,juice),two=addBasketProduct(one,juice);
+ assert.equal(two.items.filter(i=>i.product.id===juice.id).length,1);
+ const extra=two.items.find(i=>i.product.id===juice.id);assert.equal(extra.packageCount,2);assert.equal(extra.purchasedQuantity,2000);assert.equal(extra.estimatedPrice,4);
+ assert.ok(isBasketResult(two));assert.equal(two.totalCalories,one.totalCalories);assert.deepEqual(two.mealPlan,base.mealPlan);
+ assert.ok(Math.abs(two.knownPriceSubtotal-base.knownPriceSubtotal-4)<.01);
+ const removed=removeBasketProduct(two,juice.id);assert.equal(removed.knownPriceSubtotal,base.knownPriceSubtotal);
+ assert.equal(base.items.some(i=>i.product.id===juice.id),false);
+});

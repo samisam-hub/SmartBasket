@@ -1,0 +1,152 @@
+{
+  "tool": "built-in image_gen",
+  "images": [
+    {
+      "id": "eggs-toast",
+      "name": "Eggs with toast",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Eggs with toast. Softly cooked eggs on rustic wholemeal toast with a modest spoonful of cooked chopped tomatoes. Only eggs, wholemeal bread and chopped tomatoes. No butter, herbs or salad.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-7f1392e5-842e-49d6-99d9-5fffe01a4b23.png",
+      "asset": "assets/meals/eggs-toast.png"
+    },
+    {
+      "id": "yogurt-fruit",
+      "name": "Yogurt fruit breakfast",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Yogurt fruit breakfast. Thick plain Greek yogurt, rolled oat flakes and fresh mixed blueberries and strawberries. Oats partly stirred into yogurt, berries loosely placed, not a decorative geometric pattern. No banana, nuts or honey.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-d3e6fa6c-ee26-45eb-a203-62562b0bdb28.png",
+      "asset": "assets/meals/yogurt-fruit.png"
+    },
+    {
+      "id": "overnight-oats",
+      "name": "Overnight oats with banana",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Overnight oats with banana. Water-soaked overnight rolled oats with banana slices and mixed berries, naturally thick, moist and slightly uneven. Only oats, water, banana and berries. No milk, yogurt, seeds or nuts.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-566ea210-2a23-4209-8b3a-88d10a6862b3.png",
+      "asset": "assets/meals/overnight-oats.png"
+    },
+    {
+      "id": "scrambled-eggs",
+      "name": "Scrambled eggs with vegetables",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Scrambled eggs with vegetables. Soft scrambled eggs with wilted spinach and cooked potato chunks, a little olive oil. Only eggs, spinach, potatoes and olive oil. Pale golden irregular egg curds, no cheese, herbs or toast.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-857147f3-e404-4744-a30c-69ea9d7ae6bb.png",
+      "asset": "assets/meals/scrambled-eggs.png"
+    },
+    {
+      "id": "cottage-bowl",
+      "name": "Cottage-cheese apple bowl",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Cottage-cheese apple bowl. White curdy cottage cheese with irregular bite-sized apple pieces with skin and a scattering of rolled oat flakes, partly mixed. Only cottage cheese, apple and oats. No cinnamon, berries, nuts or honey.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-3075924d-8aeb-4280-89a6-8b949eb284dd.png",
+      "asset": "assets/meals/cottage-bowl.png"
+    },
+    {
+      "id": "tofu-breakfast",
+      "name": "Tofu potato scramble",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Tofu potato scramble. Irregular crumbled plain tofu lightly pan cooked, cooked potato chunks and wilted spinach with olive oil. Only tofu, potatoes, spinach and olive oil. Tofu naturally off-white with modest browning, no yellow turmeric, eggs or garnishes.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-959b8136-cda8-4a66-91e1-b60867530562.png",
+      "asset": "assets/meals/tofu-breakfast.png"
+    },
+    {
+      "id": "lentil-breakfast",
+      "name": "Savory lentil breakfast bowl",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Savory lentil breakfast bowl. Tender cooked lentils mixed with cooked chopped tomatoes and wilted spinach, a small olive oil sheen. Only lentils, tomatoes, spinach and olive oil. Thick spoonable home-cooked lentils, not soup. No rice, bread or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-ea9cef89-99a4-47e3-9025-06a65e96d8cd.png",
+      "asset": "assets/meals/lentil-breakfast.png"
+    },
+    {
+      "id": "chicken-potato",
+      "name": "Chicken potato bowl",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Chicken potato bowl. Fully cooked chicken breast in irregular slices with cooked potato chunks and broccoli florets of clearly varied sizes, a little olive oil. Only chicken, potatoes, broccoli, olive oil. No herbs, lemon or sauces.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-37607df6-b0a9-4f32-b8a0-65ea94e3cd56.png",
+      "asset": "assets/meals/chicken-potato.png"
+    },
+    {
+      "id": "lentil-pasta",
+      "name": "Lentil pasta bowl",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Lentil pasta bowl. Cooked penne pasta with tender lentils and simple chunky cooked tomato sauce, a little olive oil. Only pasta, lentils, chopped tomatoes, olive oil. Sauce naturally clings to pasta. No cheese, herbs or meat.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-71715f2f-6c3a-47c9-b6e5-c30f796f43ff.png",
+      "asset": "assets/meals/lentil-pasta.png"
+    },
+    {
+      "id": "chickpea-salad",
+      "name": "Chickpea potato salad",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Chickpea potato salad. Tender chickpeas, cooked potato chunks and soft chopped tomatoes lightly tossed with olive oil. Only chickpeas, potatoes, chopped tomatoes, olive oil. A simple warm salad, no lettuce, cucumber, onion or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-7a21f2d8-b857-4498-9faf-0055e79953bc.png",
+      "asset": "assets/meals/chickpea-salad.png"
+    },
+    {
+      "id": "turkey-pasta",
+      "name": "Turkey pasta",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Turkey pasta. Fully cooked turkey breast pieces with cooked penne pasta and chunky cooked tomatoes, lightly coated with olive oil. Only turkey, pasta, chopped tomatoes, olive oil. No cheese, herbs or vegetables beyond tomato.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-43808cf4-ae4f-4f7e-a30f-6c177d9ebe12.png",
+      "asset": "assets/meals/turkey-pasta.png"
+    },
+    {
+      "id": "tuna-potato",
+      "name": "Tuna potato salad",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Tuna potato salad. Naturally flaky canned tuna drained from water, cooked potato chunks and cooked carrot slices tossed with a little olive oil. Only tuna, potatoes, carrots and olive oil. No mayo, egg, onion, herbs or lettuce.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-bf446549-4c32-4779-b869-3e5cd3edf5f4.png",
+      "asset": "assets/meals/tuna-potato.png"
+    },
+    {
+      "id": "chicken-rice",
+      "name": "Rice with chicken and vegetables",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Rice with chicken and vegetables. Fully cooked lightly browned chicken breast pieces with white rice and cooked broccoli of mixed floret sizes, a little olive oil. Only chicken, rice, broccoli, olive oil. No sauce, lemon, seeds or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-21dc1830-1585-4167-a167-519a678a27f4.png",
+      "asset": "assets/meals/chicken-rice.png"
+    },
+    {
+      "id": "lentil-curry",
+      "name": "Simple lentil curry bowl",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Simple lentil curry bowl. Tender lentils in a thick simple chopped tomato and wilted spinach mixture served with plain cooked white rice, a little olive oil. Only lentils, tomatoes, spinach, rice, olive oil. This recipe has no coconut milk or curry spice: preserve the natural brown lentil and red tomato colors. No yellow sauce, cream or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-1e45e5b5-1a40-4f96-a767-940c92aea79b.png",
+      "asset": "assets/meals/lentil-curry.png"
+    },
+    {
+      "id": "tuna-pasta",
+      "name": "Pasta with tomato and tuna",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Pasta with tomato and tuna. Cooked penne pasta with naturally flaky canned tuna drained from water and chunky cooked tomatoes with a little olive oil. Only pasta, tuna, chopped tomatoes, olive oil. No cheese, olives, herbs or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-cef77fb9-f2e9-4a97-b8f4-dadbc9fdc1b9.png",
+      "asset": "assets/meals/tuna-pasta.png"
+    },
+    {
+      "id": "vegan-protein",
+      "name": "Vegan protein bowl",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Vegan protein bowl. Pan cooked plain tofu in irregular lightly browned pieces with tender cooked lentils and broccoli of varied floret sizes, a little olive oil. Only tofu, lentils, broccoli, olive oil. No rice, seeds, sauce or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-7740d222-00e9-46bb-a32b-d28c0377289f.png",
+      "asset": "assets/meals/vegan-protein.png"
+    },
+    {
+      "id": "chicken-lentils",
+      "name": "Chicken lentil bowl",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Chicken lentil bowl. Fully cooked chicken breast slices over tender cooked lentils with irregular cooked carrot pieces and a little olive oil. Only chicken, lentils, carrots, olive oil. No rice, herbs or sauces.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-84f5af2f-6575-4ab9-99b3-d7dcf05686d3.png",
+      "asset": "assets/meals/chicken-lentils.png"
+    },
+    {
+      "id": "salmon-potato",
+      "name": "Salmon with potatoes and spinach",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Salmon with potatoes and spinach. Fully cooked lightly seared salmon fillet with cooked potato chunks and wilted spinach, a little olive oil. Only salmon, potatoes, spinach, olive oil. No lemon, dill, cream or other garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-49607bc6-65f7-4902-9094-0ca47f74af7e.png",
+      "asset": "assets/meals/salmon-potato.png"
+    },
+    {
+      "id": "eggs-rice",
+      "name": "Egg and vegetable rice",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Egg and vegetable rice. Cooked white rice with soft scrambled egg curds and cooked carrot pieces gently mixed in olive oil. Only eggs, rice, carrots and olive oil. No peas, spring onions, soy sauce, sesame or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-24410d07-8f8b-4660-980b-9986a665df7a.png",
+      "asset": "assets/meals/eggs-rice.png"
+    },
+    {
+      "id": "chickpea-rice",
+      "name": "Chickpea rice bowl",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Chickpea rice bowl. Tender chickpeas with cooked white rice and wilted spinach loosely mixed with a little olive oil. Only chickpeas, rice, spinach, olive oil. No curry sauce, tomato, herbs or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-706c6a51-f46c-47fc-991e-81a9c4a289e0.png",
+      "asset": "assets/meals/chickpea-rice.png"
+    },
+    {
+      "id": "tofu-pasta",
+      "name": "Tofu tomato pasta",
+      "prompt": "Use case: photorealistic-natural. Asset: single square meal serving illustration for SmartBasket, one meal only, no collage. Photograph at a slightly elevated near-overhead angle, off-white ceramic bowl on warm cream background, soft natural daylight. Bowl centered with a modest visible rim, food fills most of frame. A home cook has made a little effort to arrange it nicely, but it is not perfect food styling: slight asymmetry, varied piece sizes, natural overlapping, uneven browning, ingredients partly hidden, restrained oil sheen, realistic cooked textures and natural colors. No identical repeated shapes, artificial lacquer, symmetry, plastic surfaces, added garnish, text, branding, packaging, watermarks, utensils or props. All meat, fish, eggs, dry grains and legumes shown cooked. Vegetables naturally varied in size. It is an AI serving suggestion, not a real product photograph. Subject: Tofu tomato pasta. Plain tofu pieces lightly browned with cooked penne pasta and chunky cooked tomatoes and a little olive oil. Only tofu, pasta, chopped tomatoes, olive oil. No cheese, herbs, seeds or garnish.",
+      "source": "C:\\Users\\Samaana Zakharova\\.codex\\generated_images\\01a0739a-12e1-7662-a00f-164d8dbea0ab\\exec-e582a9f9-e40c-4713-8587-73ae5e228577.png",
+      "asset": "assets/meals/tofu-pasta.png"
+    }
+  ]
+}

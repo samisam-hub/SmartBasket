@@ -23,7 +23,11 @@ export class ProductRepository {
       let request = this.client.from("products").select(columns).order("name").order("id");
       const expression = searchExpression(query);
       if (expression) request = request.textSearch("search_document", expression, { config: "simple" });
-      if (filters.category) request = request.eq("category", filters.category);
+      if (filters.category === 'fruit-vegetables') request = request.in('category', ['fruit', 'vegetables']);
+      else if (filters.category === 'meat-fish') request = request.in('category', ['meat', 'fish']);
+      else if (filters.category === 'dairy-alternatives-group') request = request.in('category', ['dairy', 'dairy-alternatives']);
+      else if (filters.category === 'pantry') request = request.in('category', ['grains', 'pasta']);
+      else if (filters.category) request = request.eq("category", filters.category);
       if (filters.highProtein) request = request.eq("high_protein", true);
       const flags = new Set(requiredDiet(filters.matchesPreferences ? preferences : null));
       for (const flag of ["vegetarian", "vegan", "lactoseFree", "glutenFree"] as const) if (filters[flag]) flags.add(flag);

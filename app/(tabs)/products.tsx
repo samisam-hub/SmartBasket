@@ -4,10 +4,12 @@ import { router } from "expo-router";
 import { ActivityIndicator, FlatList, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ProductCard } from "@/components/ProductCard";
+import { AddProductButton } from '@/components/AddProductButton';
+import { CategoryButton } from '@/components/CategoryButton';
 import { CatalogAttribution } from "@/components/CatalogAttribution";
 import { EmptyState, ErrorMessage, ScreenHeader, SearchInput, SelectionChip, TextButton } from "@/components/ui";
 import { useProducts } from "@/hooks/useProducts";
-import { categories, categoryLabels, emptyFilters } from "@/types/product";
+import { categories, emptyFilters } from "@/types/product";
 import { dietaryFields, dietaryNames, hasDiscoveryPreferences } from "@/services/catalog/discovery";
 import { colors, spacing, ui } from "@/lib/theme";
 export default function ProductsScreen() {
@@ -18,8 +20,8 @@ export default function ProductsScreen() {
   return <SafeAreaView style={ui.page} edges={["top", "left", "right"]}>
     <FlatList
       data={catalog.products} keyExtractor={item => item.id}
-      renderItem={({ item }) => <ProductCard product={item} preferences={catalog.saved}
-        onPress={() => router.push({ pathname: "/product/[id]", params: { id: item.id } })} />}
+      renderItem={({ item }) => <View style={{ gap: 8 }}><ProductCard product={item} preferences={catalog.saved}
+        onPress={() => router.push({ pathname: "/product/[id]", params: { id: item.id } })} /><AddProductButton product={item} /></View>}
       initialNumToRender={6} maxToRenderPerBatch={6} windowSize={5}
       contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xl }}
       ItemSeparatorComponent={() => <View style={{ height: spacing.lg }} />}
@@ -27,14 +29,17 @@ export default function ProductsScreen() {
       ListHeaderComponent={<View style={{ gap: spacing.lg, paddingVertical: spacing.xl }}>
         <ScreenHeader eyebrow="FUEL YOUR EVERYDAY" title="Products" subtitle="Discover groceries for your goals." />
         <SearchInput value={catalog.query} onChangeText={catalog.setQuery} />
-        <TextButton label={`${showFilters ? "Hide" : "Show"} filters${Object.values(filters).some(Boolean) ? " · Active" : ""}`} onPress={() => setShowFilters(v => !v)} />
-        {showFilters && <>
-          <Text style={ui.subheading}>Category</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm }} keyboardShouldPersistTaps="handled">
-            <SelectionChip label="All" selected={!filters.category} onPress={() => setFilters(f => ({ ...f, category: null }))} />
-            {categories.map(category => <SelectionChip key={category} label={categoryLabels[category]} selected={filters.category === category}
-              onPress={() => setFilters(f => ({ ...f, category: f.category === category ? null : category }))} />)}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityLabel="Product categories" contentContainerStyle={{ gap: spacing.sm, paddingVertical: spacing.xs }} keyboardShouldPersistTaps="handled">
+            <CategoryButton category="all" selected={!filters.category} onPress={() => setFilters(f => ({ ...f, category: null }))} />
+            <CategoryButton category="fruit" label="Fruit & Vegetables" selected={filters.category === 'fruit-vegetables'} onPress={() => setFilters(f => ({ ...f, category: 'fruit-vegetables' }))} />
+            <CategoryButton category="meat" label="Meat & Fish" selected={filters.category === 'meat-fish'} onPress={() => setFilters(f => ({ ...f, category: 'meat-fish' }))} />
+            <CategoryButton category="dairy" label="Dairy & Alternatives" selected={filters.category === 'dairy-alternatives-group'} onPress={() => setFilters(f => ({ ...f, category: 'dairy-alternatives-group' }))} />
+            <CategoryButton category="grains" label="Pantry" selected={filters.category === 'pantry'} onPress={() => setFilters(f => ({ ...f, category: 'pantry' }))} />
+            {categories.filter(category => !['fruit', 'vegetables', 'meat', 'fish', 'dairy', 'dairy-alternatives', 'grains', 'pasta', 'potatoes', 'legumes'].includes(category)).map(category => <CategoryButton key={category} category={category} selected={filters.category === category}
+              onPress={() => setFilters(f => ({ ...f, category }))} />)}
           </ScrollView>
+        <TextButton label={`${showFilters ? "Hide" : "Show"} filters${Object.entries(filters).some(([key,value]) => key !== 'category' && Boolean(value)) ? " · Active" : ""}`} onPress={() => setShowFilters(v => !v)} />
+        {showFilters && <>
           <View style={ui.wrap}>
             <SelectionChip label="High protein" selected={filters.highProtein} onPress={() => setFilters(f => ({ ...f, highProtein: !f.highProtein }))} />
             {dietaryFields.map(field => <SelectionChip key={field} label={dietaryNames[field]} selected={filters[field]}

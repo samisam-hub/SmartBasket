@@ -9,9 +9,12 @@ let params={},generated=0,saveCalls=0,resolveSave,load=async()=>catalog;
 const saved=newSavedBasket(generateBasket(prefs(),catalog),prefs(),prefs().userId);
 const preferenceState={ready:true,saved:prefs()};
 const components=Object.fromEntries(['EmptyState','PrimaryButton','Screen','ScreenHeader','SecondaryButton'].map(name=>[name,props=>React.createElement(name,props,props.children)]));
+const remember=()=>{};
 const originalLoad=Module._load;
 Module._load=function(request,parent,isMain){
   if(request==='@react-native-async-storage/async-storage')return {__esModule:true,default:{getItem:async()=>null,setItem:async()=>{}}};
+  if(request==='@/context/ActiveBasketContext')return {useActiveBasket:()=>({active:null,remember,clear:()=>{}})};
+  if(request==='@/services/pantry')return {loadPantry:async()=>({state:{version:0,lots:[]},purchases:[]})};
   if(request==='react-native')return {ActivityIndicator:'Spinner',Text:'Text'};
   if(request==='expo-router')return {router:{dismissTo:()=>{}},useLocalSearchParams:()=>params};
   if(request==='@/components/ui')return components;

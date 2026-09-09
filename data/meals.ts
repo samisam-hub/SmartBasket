@@ -14,6 +14,20 @@ function ingredient(key: string, name: string, group: IngredientDefinition['grou
   return { key, name, group, categories, aliases, exclude, unit: 'g', nutritionPer100: { calories, protein, carbohydrates, fat }, diets, allergens };
 }
 export const ingredients: Record<string, IngredientDefinition> = Object.fromEntries([
+  ingredient('chicken_ham', 'Chicken ham (cooked slices)', 'protein', ['meat'], ['chicken ham','hähnchenschinken'], [110,20,2,2.4], animal),
+  ingredient('smoked_salmon', 'Smoked salmon', 'protein', ['fish'], ['smoked salmon','räucherlachs'], [180,22,0,10], [...animal,'pescatarian'], ['fish']),
+  ingredient('beef_steak', 'Beef steak (raw)', 'protein', ['meat'], ['beef steak','rump steak','rindersteak'], [190,22,0,11], animal),
+  ingredient('mushrooms', 'Button mushrooms', 'vegetables', ['vegetables','other'], ['mushrooms','champignons'], [22,3,3,0.3]),
+  ingredient('chanterelles', 'Chanterelle mushrooms', 'vegetables', ['vegetables','other'], ['chanterelles','pfifferlinge'], [32,1.5,5,0.5]),
+  ingredient('onion', 'Onion', 'vegetables', ['vegetables'], ['onion','zwiebeln'], [40,1,9,0.1]),
+  { ...ingredient('soy_cream', 'Soy cooking cream', 'precise', ['dairy-alternatives','other'], ['soya cuisine','soy cooking cream','soja cuisine'], [150,2,3,14], plant, ['soy']), unit:'ml' as const },
+  ingredient('parsley', 'Fresh parsley', 'precise', ['vegetables','other'], ['parsley','petersilie'], [36,3,6,0.8]),
+  ingredient('dill', 'Fresh dill', 'precise', ['vegetables','other'], ['dill'], [43,3.5,7,1]),
+  ingredient('pepper', 'Black pepper', 'precise', ['other'], ['black pepper','schwarzer pfeffer'], [251,10,64,3]),
+  ingredient('dark_chocolate', 'Dairy-free dark chocolate', 'precise', ['snacks'], ['dark chocolate','zartbitterschokolade'], [600,7,35,48], plant),
+  ingredient('noodles', 'Wheat noodles / spaghetti (dry)', 'staples', ['pasta'], ['spaghetti'], [350,12,70,2], plant.filter(d=>d!=='gluten_free'), ['wheat']),
+  // Development reference per 100 ml: https://www.kikkoman.eu/products/detail/kikkoman-teriyaki-marinade
+  { ...ingredient('teriyaki', 'Teriyaki marinade', 'precise', ['other'], ['teriyaki marinade'], [100,6,12,0], plant.filter(d=>d!=='gluten_free'), ['soy','wheat']), unit: 'ml' as const },
   ingredient('chicken', 'Chicken breast (raw)', 'protein', ['meat'], ['chicken breast', 'hähnchenbrust', 'haehnchenbrust'], [120,23,0,3], animal, [], ['breaded','nugget','cooked','smoked']),
   ingredient('turkey', 'Turkey breast (raw)', 'protein', ['meat'], ['turkey breast','putenbrust'], [114,24,0,1.5], animal, [], ['smoked','sliced','cooked']),
   ingredient('salmon', 'Salmon fillet (raw)', 'protein', ['fish'], ['salmon fillet','lachsfilet'], [208,20,0,13], [...animal,'pescatarian'], ['fish'], ['smoked','geräuchert','sauce']),
@@ -29,6 +43,8 @@ export const ingredients: Record<string, IngredientDefinition> = Object.fromEntr
   ingredient('broccoli', 'Broccoli', 'vegetables', ['vegetables'], ['broccoli','brokkoli'], [34,3,5,0.4], plant, [], ['sauce','soup','gratin']),
   ingredient('spinach', 'Spinach', 'vegetables', ['vegetables'], ['spinach','spinat'], [23,3,2,0.4], plant, [], ['cream','rahm','sauce']),
   ingredient('tomatoes', 'Chopped tomatoes', 'vegetables', ['vegetables'], ['chopped tomatoes','diced tomatoes','gehackte tomaten'], [22,1,4,0.2]),
+  ingredient('cherry_tomatoes', 'Fresh cherry tomatoes', 'vegetables', ['vegetables'], ['cherry tomatoes','cherrytomaten'], [18,0.9,3.9,0.2]),
+  ingredient('sourdough_bread', 'Sourdough bread', 'staples', ['bread'], ['sourdough bread','sauerteigbrot'], [250,9,48,1.5], plant.filter(d=>d!=='gluten_free'), ['wheat']),
   ingredient('carrots', 'Carrots', 'vegetables', ['vegetables'], ['carrots','karotten','möhren'], [41,1,9,0.2], plant, [], ['juice','cake','soup']),
   ingredient('berries', 'Berries', 'fruit', ['fruit'], ['blueberries','blaubeeren','mixed berries','beerenmischung','strawberries','erdbeeren'], [50,1,11,0.4], plant, [], ['dried','jam','syrup','confiture','getrocknet']),
   ingredient('banana', 'Banana', 'fruit', ['fruit'], ['banana','bananen'], [89,1,23,0.3], plant, [], ['chips','dried','juice','puree','powder']),
@@ -41,6 +57,10 @@ export const ingredients: Record<string, IngredientDefinition> = Object.fromEntr
 // Non-enumerable aliases keep saved Phase 3B meal snapshots readable.
 for(const [old,key] of Object.entries(legacyIngredientKeys))Object.defineProperty(ingredients,old,{value:ingredients[key],enumerable:false});
 function meal(id: string, name: string, mealType: Meal['mealType'], amounts: [string,number][]): Meal {
+  // Season savory meals; sweet breakfasts and snacks keep their original ingredients.
+  if (mealType !== 'snack' && !['oat-berries','yogurt-fruit','overnight-oats','cottage-bowl'].includes(id)) {
+    amounts = [...amounts, [id==='salmon-egg-toast'?'dill':'parsley',3], ['pepper',0.2]];
+  }
   const totals = { calories: 0, protein: 0, carbohydrates: 0, fat: 0 };
   for (const [key,q] of amounts) for (const field of Object.keys(totals) as (keyof typeof totals)[]) totals[field] += ingredients[key].nutritionPer100[field]*q/100;
   return { id, name, mealType, servings: 1, caloriesPerServing: totals.calories, proteinPerServing: totals.protein,
@@ -54,7 +74,9 @@ function meal(id: string, name: string, mealType: Meal['mealType'], amounts: [st
 }
 export const meals: Meal[] = [
   meal('oat-berries','Oatmeal with berries','breakfast',[['oats',70],['berries',150],['banana',100]]),
-  meal('eggs-toast','Eggs with toast','breakfast',[['eggs',150],['bread',80],['tomatoes',100]]),
+  meal('chicken-ham-toast','Egg and chicken-ham toast','breakfast',[['eggs',100],['bread',60],['chicken_ham',50]]),
+  meal('salmon-egg-toast','Smoked salmon and soft egg toast','breakfast',[['smoked_salmon',60],['eggs',100],['bread',60]]),
+  meal('sunny-side-toast','Sunny-side-up eggs on sourdough with cherry tomatoes and greens','breakfast',[['eggs',100],['sourdough_bread',70],['cherry_tomatoes',100],['spinach',30],['oil',5]]),
   meal('yogurt-fruit','Yogurt fruit breakfast','breakfast',[['yogurt',250],['oats',50],['berries',120]]),
   meal('overnight-oats','Overnight oats with banana (water-based)','breakfast',[['oats',80],['banana',120],['berries',100]]),
   meal('scrambled-eggs','Scrambled eggs with vegetables','breakfast',[['eggs',180],['spinach',100],['potatoes',180],['oil',5]]),
@@ -64,7 +86,7 @@ export const meals: Meal[] = [
   meal('chicken-potato','Chicken potato bowl','lunch',[['chicken',180],['potatoes',300],['broccoli',150],['oil',10]]),
   meal('salmon-rice','Salmon rice bowl','dinner',[['salmon',150],['rice',75],['broccoli',180],['oil',5]]),
   meal('lentil-pasta','Lentil pasta bowl','lunch',[['lentils',60],['pasta',65],['tomatoes',200],['oil',5]]),
-  meal('tofu-stirfry','Tofu vegetable stir-fry','dinner',[['tofu',200],['rice',70],['broccoli',150],['carrots',100],['oil',5]]),
+  meal('tofu-teriyaki-noodles','Tofu teriyaki noodles','dinner',[['tofu',200],['noodles',70],['broccoli',150],['carrots',100],['oil',5],['teriyaki',15]]),
   meal('chickpea-salad','Chickpea potato salad','lunch',[['chickpeas',220],['potatoes',150],['tomatoes',150],['oil',10]]),
   meal('turkey-pasta','Turkey pasta','dinner',[['turkey',180],['pasta',80],['tomatoes',180],['oil',10]]),
   meal('tuna-potato','Tuna potato salad','lunch',[['tuna',150],['potatoes',300],['carrots',150],['oil',10]]),
@@ -77,4 +99,10 @@ export const meals: Meal[] = [
   meal('eggs-rice','Egg and vegetable rice','lunch',[['eggs',150],['rice',80],['carrots',150],['oil',5]]),
   meal('chickpea-rice','Chickpea rice bowl','dinner',[['chickpeas',200],['rice',65],['spinach',150],['oil',8]]),
   meal('tofu-pasta','Tofu tomato pasta','lunch',[['tofu',180],['pasta',75],['tomatoes',180],['oil',5]]),
+  meal('steak-greens','Steak with potatoes and spinach','dinner',[['beef_steak',160],['potatoes',220],['spinach',100],['oil',8]]),
+  meal('chicken-stroganoff','Chicken Stroganoff with noodles','dinner',[['chicken',180],['noodles',65],['mushrooms',100],['onion',40],['soy_cream',70],['oil',5]]),
+  meal('steak-chanterelles','Steak with chanterelle sauce and potatoes','dinner',[['beef_steak',150],['potatoes',200],['chanterelles',100],['onion',30],['soy_cream',50],['oil',5]]),
+  meal('snack-apple-berries','Apple and berry snack','snack',[['apple',150],['berries',80]]),
+  meal('snack-yogurt','Yogurt and berry snack','snack',[['yogurt',150],['berries',60]]),
+  meal('snack-banana-chocolate','Banana and dark chocolate','snack',[['banana',60],['dark_chocolate',10]]),
 ];
