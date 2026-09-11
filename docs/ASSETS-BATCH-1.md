@@ -56,3 +56,11 @@ Existing: .gitignore, app.config.js, app/(tabs)/index.tsx, products.tsx, basket.
 New: the approved assets/ library, lib/assets.ts, lib/failureIllustration.ts, components/BrandAssets.tsx, tests/brand-assets.test.cjs and this report.
 
 Limitations: offline artwork classifies known network failures (and browser offline status), not a continuous native connectivity monitor. It does not turn ordinary backend errors into offline states. No destructive live-data testing or account registration was performed. Dark logo support is ready; a new app-wide dark mode is outside this task.
+
+## Palette alignment (11 September 2026)
+The design tokens later moved from green/orange to terracotta (primary #AD5137, orange #C56440, accent #E8B386, text #362B26), but the PNGs kept the original colors. The in-app brand and state artwork was recolored in place by exact palette mapping (dimensions, transparency and shapes unchanged):
+- logo-horizontal: "Smart" #362B26, "Basket" and basket #AD5137. logo-horizontal-dark: "Basket" #E8B386, basket #C56440. logo-mark: basket #AD5137. Produce colors are unchanged.
+- empty-basket: basket #AD5137, accent strokes #E8B386/#C56440. no-search-results: magnifier #AD5137, accents #E8B386/#C56440. offline-state: cloud #E8B386 (error slash unchanged).
+- data-error and product-placeholder already fit the palette and are unchanged.
+
+Not recolored: assets/android launcher icons and splash-logo.png. They only change with a rebuilt APK and still use the original green/orange artwork. The Batch 1 originals remain available in Git history (commit 313fa32).

@@ -8,6 +8,24 @@ export function cleanText(v: unknown, limit = 500): string | null {
   const s = v.replace(/<[^>]*>/g, " ").replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim();
   return s ? s.slice(0, limit) : null;
 }
+const decodeEntities = (s: string) => s.replace(/&#0*39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+/** OFF brand lists often repeat one brand in another spelling ("Marks & Spencer, Marks and Spencer"). */
+export function cleanBrand(v: unknown): string | null {
+  const text = cleanText(v);
+  if (!text) return null;
+  const key = (brand: string) => brand.toLowerCase().replace(/&/g, "and").replace(/[^\p{L}\p{N}]+/gu, "").replace(/s$/, "");
+  const kept = new Map<string, string>();
+  for (const brand of decodeEntities(text).split(",").map(b => b.trim()).filter(Boolean)) {
+    const current = kept.get(key(brand));
+    if (current === undefined || brand.length < current.length) kept.set(key(brand), brand);
+  }
+  return [...kept.values()].join(", ") || null;
+}
+/** Some OFF OCR ingredient lists contain a literal " ? " where the package prints a bullet separator. */
+export function cleanIngredients(v: unknown): string | null {
+  const text = cleanText(v, 12000);
+  return text ? text.replace(/ \? /g, ", ") : null;
+}
 export function numberValue(v: unknown, max = 100): number | null {
   if (typeof v !== "number" && typeof v !== "string") return null;
   if (typeof v === "string" && !/^\d+(?:[.,]\d+)?$/.test(v.trim())) return null;
@@ -89,11 +107,11 @@ export function normalizeOpenFoodFacts(raw: unknown): CatalogProductInput | null
   const grade = cleanText(p.nutriscore_grade ?? p.nutrition_grades);
   const canonicalCode = code.length === 14 && code.startsWith("0") ? code.slice(1) : code.padStart(13, "0");
   return {
-    externalId: canonicalCode, barcode: canonicalCode, name, brand: cleanText(p.brands),
+    externalId: canonicalCode, barcode: canonicalCode, name, brand: cleanBrand(p.brands),
     category: categoryOf(tags(p.categories_tags)), ...normalizeOffImages(p, code),
     quantityLabel: cleanText(p.quantity), ...pack,
     priceEstimate: null, priceKind: "unavailable", currency: "EUR", ...nutrients,
-    ingredientsText: cleanText(p.ingredients_text_en, 12000) ?? cleanText(p.ingredients_text_de, 12000) ?? cleanText(p.ingredients_text, 12000),
+    ingredientsText: cleanIngredients(p.ingredients_text_en) ?? cleanIngredients(p.ingredients_text_de) ?? cleanIngredients(p.ingredients_text),
     allergens, mayContainAllergens: normalizeAllergens(p.traces_tags),
     allergenInfoAvailable: !!(cleanText(p.ingredients_text)??cleanText(p.ingredients_text_en)??cleanText(p.ingredients_text_de)) || allergens.length > 0,
     labels: labelTags.slice(0, 30).map(t => t.replace(/^en:/, "").replace(/-/g, " ")),

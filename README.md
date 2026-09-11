@@ -1,7 +1,7 @@
 # SmartBasket · Basket engine V1
 
 A fitness-oriented grocery assistant: **Fuel your goals.** This is the existing
-React Native / Expo SDK 54 / Expo Router Android app, with a blue design system,
+React Native / Expo SDK 54 / Expo Router Android app, with a warm terracotta design system,
 complete onboarding, local draft persistence, and a normalized Supabase product catalog.
 
 ## Run locally
@@ -26,7 +26,7 @@ npm run export:android
 
 ## What is included
 
-- Central blue theme, typography, spacing, radii, and real native UI components.
+- Central terracotta theme (tokens in `assets/config/design-tokens.json`), typography, spacing, radii, and real native UI components.
 - Home, Products, Basket, and Profile tabs with consistent outline icons.
 - Seven onboarding steps with inline validation, review editing, back navigation,
   save-and-exit, and restoration after app restart.

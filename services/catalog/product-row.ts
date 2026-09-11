@@ -1,5 +1,6 @@
 import { categories, type CatalogProductInput, type Product } from "../../types/product";
 import { normalizePackage } from './package-size';
+import { cleanBrand, cleanIngredients } from './normalize';
 import { withMissingPriceEstimate } from '../pricing/priceEstimator';
 export const productColumns = {
   externalId: "external_id", barcode: "barcode", name: "name", brand: "brand", category: "category",
@@ -43,8 +44,10 @@ export function productFromRow(row: Record<string, unknown>): Product {
     if (row[column] !== null && (typeof row[column] !== "number" || !Number.isInteger(row[column]) || row[column] <= 0)) throw new Error("Malformed image dimensions");
   for (const column of ["price_estimate", "calories_per_100g", "protein_per_100g", "carbohydrates_per_100g", "fat_per_100g", "fiber_per_100g", "sugars_per_100g", "salt_per_100g"])
     if (row[column] !== null && (typeof row[column] !== "number" || !Number.isFinite(row[column]))) throw new Error("Malformed nutrition value");
-  return { ...Object.fromEntries(Object.entries(productColumns).map(([key, column]) => [key, row[column]])),
+  const product = { ...Object.fromEntries(Object.entries(productColumns).map(([key, column]) => [key, row[column]])),
     id: row.id, createdAt: row.created_at, updatedAt: row.updated_at } as Product;
+  // Rows imported before brand/separator cleanup are normalized on read as well.
+  return { ...product, brand: cleanBrand(product.brand), ingredientsText: cleanIngredients(product.ingredientsText) };
 }
 /** JSON is SQL-literal escaped; never concatenate external values as SQL identifiers. */
 export function catalogImportSql(products: CatalogProductInput[]): string {

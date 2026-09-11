@@ -37,7 +37,10 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
     return [key,{available:matches.length>0,cost:priced.length?Math.min(...priced.map(x=>packagePrice(x)!/x.packageSize!)):null}];
   }));
   for(let day=0;day<p.planningDays;day++) for(const slot of slots){
-    const options=compatible.filter(m=>fitsSlot(m,slot));
+    const allOptions=compatible.filter(m=>fitsSlot(m,slot));
+    // Include each spoken meal wish once when compatible; keep the usual portion scoring.
+    const wished=allOptions.filter(m=>p.preferredMealIds?.includes(m.id)&&!plan.items.some(i=>i.meal.id===m.id));
+    const options=wished.length?wished:allOptions;
     if(!options.length){plan.warnings.push({code:`missing_${day}_${slot}`,message:`Day ${day+1}: no compatible ${slot} meal. No unsafe replacement was selected.`});continue;}
     const fraction=slot==='snack'?0.08:slot==='breakfast'?0.25:0.32;
     const used=new Set(plan.items.flatMap(i=>i.meal.ingredients.map(l=>l.ingredientKey)));

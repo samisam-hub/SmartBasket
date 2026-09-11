@@ -101,3 +101,13 @@ test("Supabase repository requests bounded pages, server filters, detail reads a
   } }), []);
   assert.equal((await details.get(row.id)).name, row.name);
 });
+test("repeated brand spellings and OCR ingredient separators are cleaned on import and on read", () => {
+  const p = normalizeOpenFoodFacts(raw({ brands: "Marks & Spencers, Marks & Spencer,Marks and Spencer", ingredients_text_en: "Yogurt (Milk) ? Apple ? Oats" }));
+  assert.equal(p.brand, "Marks & Spencer");
+  assert.equal(p.ingredientsText, "Yogurt (Milk), Apple, Oats");
+  const row = { ...productToRow(product()), id: product().id, created_at: product().createdAt, updated_at: product().updatedAt,
+    brand: "Kroger, The Kroger Co.,Kroger, Sainsbury&#039;s", ingredients_text: "Water ? Salt" };
+  assert.equal(productFromRow(row).brand, "Kroger, The Kroger Co., Sainsbury's");
+  assert.equal(productFromRow(row).ingredientsText, "Water, Salt");
+  assert.equal(productFromRow({ ...row, brand: null, ingredients_text: null }).brand, null);
+});

@@ -53,6 +53,7 @@ function AuthenticatedLayout(){
           <Stack.Screen name="auth/callback" options={{ title: "Verify account" }} />
           <Stack.Screen name="personal-profile" options={{ title: "Personal profile" }} />
           <Stack.Screen name="plan-setup" options={{ title: "Plan participants" }} />
+          <Stack.Screen name="voice-plan" options={{ title: "Plan by voice" }} />
           <Stack.Screen name="saved-meal-plans" options={{ title: "Saved meal plans" }} />
         </Stack>
         <ActiveBasketShortcut />
