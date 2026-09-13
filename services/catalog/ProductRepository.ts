@@ -2,7 +2,7 @@ import { failureIllustration } from '../../lib/failureIllustration';
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CatalogFilters, Product } from "../../types/product";
 import type { UserPreferences } from "../../types/preferences";
-import { allergenTerms, hasDiscoveryPreferences, productMatches, requiredDiet, searchExpression } from "./discovery";
+import { allergenTerms, hasDiscoveryPreferences, highSugarThreshold, productMatches, requiredDiet, searchExpression } from "./discovery";
 import { productColumns, productFromRow } from "./product-row";
 export const PAGE_SIZE = 24;
 const columns = ["id", ...Object.values(productColumns), "created_at", "updated_at"].join(",");
@@ -35,6 +35,11 @@ export class ProductRepository {
       if (filters.matchesPreferences) {
         if (!hasDiscoveryPreferences(preferences)) return { products: [], hasMore: false, mode: "catalog", warning: null };
         if (preferences?.dietaryPreferences.includes("pescatarian")) request = request.or("vegetarian.eq.true,category.eq.fish");
+        // Diabetes-friendly keeps the declared-sugars rule of discovery: an undeclared value never passes.
+        if (preferences?.dietaryPreferences.includes("diabetes"))
+          request = request.not("sugars_per_100g", "is", null).or(
+            `and(nutrition_basis.eq.100g,sugars_per_100g.lte.${highSugarThreshold["100g"]}),` +
+            `and(nutrition_basis.eq.100ml,sugars_per_100g.lte.${highSugarThreshold["100ml"]})`);
         const allergens = allergenTerms(preferences);
         if (allergens.length) request = request.eq("allergen_info_available", true)
           .not("allergens", "ov", `{${allergens.join(",")}}`)
