@@ -10,7 +10,8 @@ export function OptionalNumber({label,value,onChange,error,hint}:{label:string;v
  useEffect(()=>{if(!Object.is(value,last.current)){setText(value===null?'':String(value));last.current=value;}},[value]);
  return <TextInput label={label} value={text} keyboardType="decimal-pad" error={error} hint={hint} onChangeText={s=>{setText(s);const n=s.trim()===''?null:Number(s.replace(',','.'));last.current=n;onChange(n);}} />;
 }
-export function DietFields({value,onChange}:{value:Diet[];onChange:(v:Diet[])=>void}){return <View style={ui.stack}>{diets.map(d=><SelectionChip key={d} label={labels[d]} selected={value.includes(d)} onPress={()=>onChange(toggleDiet(value,d))} />)}</View>;}
+export function DietFields({value,onChange}:{value:Diet[];onChange:(v:Diet[])=>void}){return <View style={ui.stack}>{diets.map(d=><SelectionChip key={d} label={labels[d]} selected={value.includes(d)} onPress={()=>onChange(toggleDiet(value,d))} />)}
+ {value.includes('diabetes')&&<Text style={ui.small}>Diabetes-friendly filters out products whose declared sugars are high (over 22.5 g per 100 g, 11.25 g per 100 ml) and keeps meal carbohydrates in common portions. Products with no declared sugar value are left out rather than assumed low. It is a shopping preference, not medical advice.</Text>}</View>;}
 export function AllergyFields({value,intolerances,onChange,onIntolerances}:{value:Allergen[];intolerances:PersonalProfile['intolerances'];onChange:(a:Allergen[])=>void;onIntolerances:(a:PersonalProfile['intolerances'])=>void}){
  return <View style={ui.stack}><SelectionChip label="None" selected={!value.length&&!intolerances.length} onPress={()=>{onChange([]);onIntolerances([]);}} />
  {allergens.map(a=><SelectionChip key={a} label={labels[a]} selected={value.includes(a)} onPress={()=>onChange(value.includes(a)?value.filter(x=>x!==a):[...value,a])} />)}

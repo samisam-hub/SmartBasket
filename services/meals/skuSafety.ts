@@ -1,6 +1,6 @@
 import type { Product } from '../../types/product';
 import type { UserPreferences, Allergen } from '../../types/preferences';
-import { allergenConflicts, requiredDiet } from '../catalog/discovery';
+import { allergenConflicts, highSugar, requiredDiet, sugarsUnknown } from '../catalog/discovery';
 const terms:Record<Allergen,RegExp>={milk:/\b(milk|milch|lait|caseinate|casein|whey|molke)\b/i,eggs:/\b(egg|eggs|ei|eier|oeuf)\b/i,fish:/\b(fish|fisch|salmon|lachs|tuna|thunfisch)\b/i,
  shellfish:/\b(shrimp|prawn|crab|garnelen|krabben|shellfish)\b/i,peanuts:/\b(peanut|peanuts|erdnuss|erdnüsse)\b/i,tree_nuts:/\b(almond|hazelnut|walnut|mandel|haselnuss|walnuss|cashew)\b/i,
  soy:/\b(soy|soya|soja|soybeans)\b/i,wheat:/\b(wheat|weizen|gluten)\b/i,sesame:/\b(sesame|sesam)\b/i};
@@ -25,7 +25,9 @@ export function skuSafety(p:Product,preferences:UserPreferences):{rejection:stri
  if(diets.includes('lactose_free')&&p.lactoseFree!==true&&(p.category==='dairy'||p.allergens.includes('milk')||terms.milk.test(text)))return no('known_dietary_conflict');
  if(diets.includes('gluten_free')&&(p.allergens.some(a=>['wheat','gluten'].includes(a))||terms.wheat.test(text)))return no('known_dietary_conflict');
  if(diets.includes('vegan')&&[terms.milk,terms.eggs,terms.fish,terms.shellfish].some(r=>r.test(text)))return no('known_dietary_conflict');
+ if(diets.includes('diabetes')&&highSugar(p))return no('known_dietary_conflict');
  const unknownDiet=fields.filter(f=>p[f]!==true).map(String);
  if(diets.includes('pescatarian')&&p.vegetarian!==true&&p.category!=='fish')unknownDiet.push('pescatarian');
+ if(diets.includes('diabetes')&&sugarsUnknown(p))unknownDiet.push('diabetes');
  return {rejection:null,unknownDiet};
 }

@@ -50,7 +50,13 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
     objective+=solution.score;ratios[r.ingredientKey]=(solution.plannedConsumptionQuantity+fromPantry)/r.requiredQuantity;
     for(const choice of solution.choices){
       const match=diagnostic.candidates.find(c=>c.product.id===choice.product.id)!;
-      if(match.dietaryUnknown.length&&!warnings.some(w=>w.code===`diet_uncertain_${r.ingredientKey}`))warnings.push({code:`diet_uncertain_${r.ingredientKey}`,message:`${r.ingredientName}: selected product has unverified lifestyle labels (${match.dietaryUnknown.join(', ')}). Check the packaging; it is not marked as verified free-from.`});
+      if(match.dietaryUnknown.length&&!warnings.some(w=>w.code===`diet_uncertain_${r.ingredientKey}`)){
+        const unverified=match.dietaryUnknown.filter(d=>d!=='diabetes');
+        warnings.push({code:`diet_uncertain_${r.ingredientKey}`,message:`${r.ingredientName}: ${[
+          unverified.length?`selected product has unverified lifestyle labels (${unverified.join(', ')}); it is not marked as verified free-from.`:'',
+          match.dietaryUnknown.includes('diabetes')?'the selected product declares no sugar content, so it could not be checked against your diabetes-friendly preference.':'',
+        ].filter(Boolean).join(' ')} Check the packaging.`});
+      }
       const n=ingredients[r.ingredientKey].nutritionPer100,factor=choice.plannedConsumptionQuantity/100;
       items.push({product:match.product,ingredientKey:r.ingredientKey,sourceMealIds:r.sourceMealIds,
         group:groupOf(choice.product),packageCount:choice.packageCount,packageAmount:choice.product.packageSize!,quantityUnit:r.unit,quantityAssumed:false,

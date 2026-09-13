@@ -12,6 +12,7 @@ export const diets = [
   "pescatarian",
   "lactose_free",
   "gluten_free",
+  "diabetes",
 ] as const;
 export const allergens = [
   "milk",
@@ -73,6 +74,7 @@ export const labels: Record<Goal | Diet | Allergen, string> = {
   pescatarian: "Pescatarian",
   lactose_free: "Lactose-free",
   gluten_free: "Gluten-free",
+  diabetes: "Diabetes-friendly",
   milk: "Milk",
   eggs: "Eggs",
   fish: "Fish",

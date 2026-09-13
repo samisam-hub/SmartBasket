@@ -1,6 +1,6 @@
 import type { Product } from '../../types/product';
 import type { UserPreferences, Allergen } from '../../types/preferences';
-import { allergenConflicts, requiredDiet } from '../catalog/discovery';
+import { allergenConflicts, highSugar, requiredDiet, sugarsUnknown } from '../catalog/discovery';
 const freeLabels: Record<Allergen, string[]> = {
   milk: ['milk free', 'dairy free', 'no milk'], eggs: ['egg free', 'eggs free', 'no eggs'],
   fish: ['fish free', 'no fish'], shellfish: ['shellfish free'], peanuts: ['peanut free', 'peanuts free'],
@@ -24,6 +24,11 @@ export function exclusionReason(p: Product, preferences: UserPreferences): strin
   if ((diets.includes('vegetarian') || diets.includes('vegan')) && ['meat', 'fish'].includes(p.category)) return 'contradictory_diet';
   if (diets.includes('vegan') && (['dairy', 'eggs'].includes(p.category) || p.allergens.some(a => ['milk', 'eggs', 'fish', 'shellfish'].includes(a)))) return 'contradictory_diet';
   if (diets.includes('gluten_free') && p.allergens.some(a => ['wheat', 'gluten'].includes(a))) return 'contradictory_diet';
+  // Diabetes-friendly is filtered on declared sugars only; an undeclared value is never treated as low.
+  if (diets.includes('diabetes')) {
+    if (sugarsUnknown(p)) return 'sugar_content_unknown';
+    if (highSugar(p)) return 'contradictory_diet';
+  }
   const labels = p.labels.map(l => l.toLowerCase().replace(/^en:/, '').replace(/[-_]/g, ' ').trim());
   if (diets.includes('pescatarian') && (p.category === 'meat' || (p.vegetarian !== true && !labels.includes('pescatarian')))) return 'pescatarian_unknown';
   const conflicts = allergenConflicts(p, preferences);
