@@ -51,6 +51,7 @@ import { removeBasketProduct } from '@/services/basket/edit';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
 
 import { addBasketProduct } from '@/services/basket/add-product';
+import { addBasketReplacement, replaceBasketProduct } from '@/services/basket/replacements';
 
 export default function BasketSetupScreen() {
 
@@ -125,6 +126,11 @@ export default function BasketSetupScreen() {
           if (!found) throw Error('This saved basket is unavailable for the current session.');
 
           next = found;
+
+          // Keep the catalog available while editing a saved basket so each
+          // purchased item can be swapped without regenerating the plan.
+          try { catalog.current = await loadBasketCatalog(getSupabaseClient(), controller.signal); ownerRef.current = owner; }
+          catch { catalog.current = []; }
 
           if (!controller.signal.aborted) { originalBasket.current = found; setEditingBasket(edit === '1' && !found.result.purchasedAt); }
 
@@ -312,7 +318,16 @@ export default function BasketSetupScreen() {
 
       <SecondaryButton label="Pantry & purchase history" onPress={()=>router.push('/pantry')} />
 
-      <BasketResult result={basket.result} onRemoveProduct={editingBasket && !saving ? id => {
+      <BasketResult result={basket.result} catalog={catalog.current} preferences={basket.preferences}
+        onReplaceProduct={editingBasket && !saving ? (currentId, product) => {
+          try { setBasket({ ...basket, result: replaceBasketProduct(basket.result, currentId, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Product replaced. Save the basket to keep this choice.'); }
+          catch (e) { setError(e instanceof Error ? e.message : 'Could not replace product.'); }
+        } : undefined}
+        onAddReplacement={editingBasket && !saving ? (requirement, product) => {
+          try { setBasket({ ...basket, result: addBasketReplacement(basket.result, requirement, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Category replacement added. Save the basket to keep this choice.'); }
+          catch (e) { setError(e instanceof Error ? e.message : 'Could not add replacement.'); }
+        } : undefined}
+        onRemoveProduct={editingBasket && !saving ? id => {
 
         try { setBasket({ ...basket, result: removeBasketProduct(basket.result, id), syncStatus: 'local' }); setSavedOnce(false); setNotice(null); }
 

@@ -8,16 +8,28 @@ import { BasketProductHeading } from './BasketProductHeading';
 import { generalBasketNotes, productDietaryNotes } from '../lib/basket-notes';
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
+import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Chips, SectionCard, TextButton } from './ui';
 import { CatalogAttribution } from './CatalogAttribution';
 import { colors, spacing, ui } from '../lib/theme';
 import { groupLabels } from '../services/basket/scoring';
 import type { BasketGenerationResult } from '../types/basket';
+import type { Product } from '../types/product';
+import type { UserPreferences } from '../types/preferences';
+import { replacementCandidatesForItem, replacementCandidatesForRequirement } from '../services/basket/replacements';
 const number = (value: number) => Math.round(value).toLocaleString('en-GB');
 export const basketPrice = (price: number | null) => price === null ? 'Estimate unavailable' : `Est. €${price.toFixed(2)}`;
-export function BasketResult({ result, onRemoveProduct }: { result: BasketGenerationResult; onRemoveProduct?: (id: string) => void }) {
+export function BasketResult({ result, catalog = [], preferences, onRemoveProduct, onReplaceProduct, onAddReplacement }: { result: BasketGenerationResult; catalog?: Product[]; preferences?: UserPreferences; onRemoveProduct?: (id: string) => void; onReplaceProduct?: (currentId: string, product: Product) => void; onAddReplacement?: (requirement: NonNullable<BasketGenerationResult['ingredientRequirements']>[number], product: Product) => void }) {
+  const [replacing, setReplacing] = useState<string | null>(null);
   const generalNotes = generalBasketNotes(result);
+  const choose = (key: string, action: () => void) => { action(); setReplacing(null); };
+  const replacementButton = (key: string, label: string) => <TextButton label={replacing === key ? 'Close replacements' : label} onPress={() => setReplacing(replacing === key ? null : key)} />;
+  const replacementOptions = (key: string, options: Product[], action: (product: Product) => void) => replacing === key ? <View style={{ gap: 6, padding: 8, borderRadius: 10, backgroundColor: colors.surface }}>
+    <Text style={ui.caption}>Choose another product from the same category</Text>
+    {!options.length && <Text style={ui.small}>No compatible alternatives are available.</Text>}
+    {options.map(product => <TextButton key={product.id} label={`${product.name}${product.brand ? ` · ${product.brand}` : ''}${product.priceEstimate === null ? '' : ` · Est. €${product.priceEstimate.toFixed(2)}`}`} onPress={() => choose(key, () => action(product))} />)}
+  </View> : null;
   return <>
     <SectionCard title="Basket summary">
       <Text style={ui.heading}>{result.estimatedTotalPrice===null?'Estimate unavailable':`Estimated total €${result.estimatedTotalPrice.toFixed(2)}`}</Text>
@@ -44,6 +56,8 @@ export function BasketResult({ result, onRemoveProduct }: { result: BasketGenera
       {result.ingredientRequirements.filter(r => !result.items.some(i => i.ingredientKey === r.ingredientKey) && (result.pantryUsed??[]).filter(u=>u.ingredientKey===r.ingredientKey).reduce((n,u)=>n+u.quantity,0)<r.requiredQuantity-.001).map(r => <View key={r.ingredientKey} style={{ gap: 4 }}>
         <Text style={ui.body}>{r.ingredientName} · {Math.round(r.requiredQuantity)} {r.unit}</Text>
         <Text style={ui.caption}>{result.removedIngredientKeys?.includes(r.ingredientKey) ? 'Removed from purchases' : 'No matching product selected'} · excluded from purchase cost</Text>
+        {preferences && onAddReplacement && replacementButton(`ingredient:${r.ingredientKey}`, 'Find a category replacement')}
+        {preferences && onAddReplacement && replacementOptions(`ingredient:${r.ingredientKey}`, replacementCandidatesForRequirement(r, catalog, preferences), product => onAddReplacement(r, product))}
       </View>)}
     </SectionCard>}
     {!!generalNotes.length && <SectionCard title="Planning notes">
@@ -74,6 +88,8 @@ export function BasketResult({ result, onRemoveProduct }: { result: BasketGenera
         </View>
       </View>
       <TextButton label="View product" onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.product.id } })} />
+      {preferences && onReplaceProduct && replacementButton(`product:${item.product.id}`, 'Replace product')}
+      {preferences && onReplaceProduct && replacementOptions(`product:${item.product.id}`, replacementCandidatesForItem(item, catalog, preferences), product => onReplaceProduct(item.product.id, product))}
       <ProductEstimateNotice product={item.product} />
       </SectionCard>
       {onRemoveProduct && <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${item.product.name}`}
