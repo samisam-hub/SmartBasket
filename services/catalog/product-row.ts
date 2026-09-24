@@ -2,7 +2,9 @@ import { categories, type CatalogProductInput, type Product } from "../../types/
 import { normalizePackage } from './package-size';
 import { cleanBrand, cleanIngredients } from './normalize';
 import { withMissingPriceEstimate } from '../pricing/priceEstimator';
+import { isReadyMealMetadata } from '../meals/choices';
 export const productColumns = {
+  readyMeal: 'ready_meal',
   externalId: "external_id", barcode: "barcode", name: "name", brand: "brand", category: "category",
   imageUrl: "image_url", imageThumbnailUrl: "image_thumbnail_url", quantityLabel: "quantity_label",
   sourceImageUrl: "source_image_url", displayImageUrl: "display_image_url", imageSource: "image_source",
@@ -26,6 +28,7 @@ export function productToRow(product: CatalogProductInput): Record<string, unkno
   return Object.fromEntries(Object.entries(productColumns).map(([key, column]) => [column, product[key as keyof CatalogProductInput]!==undefined?product[key as keyof CatalogProductInput]:(fallback as unknown as Record<string,unknown>)[key]??null]));
 }
 export function productFromRow(row: Record<string, unknown>): Product {
+  if (row.ready_meal != null && !isReadyMealMetadata(row.ready_meal)) throw Error('Malformed ready meal metadata');
   if (typeof row.id !== "string" || typeof row.name !== "string" || typeof row.created_at !== "string" ||
     typeof row.updated_at !== "string" || typeof row.source !== "string" ||
     !categories.some(c => c === row.category) || !["100g", "100ml"].includes(String(row.nutrition_basis)))
@@ -53,6 +56,6 @@ export function productFromRow(row: Record<string, unknown>): Product {
 export function catalogImportSql(products: CatalogProductInput[]): string {
   const columns = Object.values(productColumns);
   const json = JSON.stringify(products.map(withMissingPriceEstimate).map(productToRow)).replace(/'/g, "''");
-  const updates = columns.filter(c => !["source", "external_id"].includes(c)).map(c => `${c} = excluded.${c}`).join(", ");
+  const updates = columns.filter(c => !["source", "external_id"].includes(c)).map(c => c === 'ready_meal' ? 'ready_meal = coalesce(excluded.ready_meal, products.ready_meal)' : `${c} = excluded.${c}`).join(", ");
   return `insert into public.products (${columns.join(", ")}) select ${columns.join(", ")} from jsonb_populate_recordset(null::public.products, '${json}'::jsonb) on conflict (source, external_id) do update set ${updates};`;
 }

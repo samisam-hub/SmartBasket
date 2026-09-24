@@ -21,7 +21,7 @@ export async function transcribe(uri: string, signal: AbortSignal) {
   const form = new FormData();
   if (Platform.OS === 'web') {
     const blob = await (await fetch(uri, { signal })).blob();
-    form.append('audio', blob, 'wish.webm');
+    form.append('audio', blob, blob.type.includes('mp4') ? 'wish.m4a' : 'wish.webm');
   } else {
     form.append('audio', { uri, name: 'wish.m4a', type: 'audio/mp4' } as unknown as Blob);
   }

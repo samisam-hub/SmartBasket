@@ -22,6 +22,7 @@ export function diagnoseMatches(inputKey:string,products:Product[],preferences:U
  const reject=(p:Product,reason:string)=>{result.rejected[reason]=(result.rejected[reason]??0)+1;result.rejectedProducts.push({id:p.id,name:p.name,reason});};
  if(!definition||!config)return result;
  for(const p of uniqueCatalog(products)){
+  if(p.readyMeal){reject(p,'prepared_meal_not_ingredient');continue;}
   if(p.source==='demo'||!p.id||!p.name){reject(p,'missing_essential_product_data');continue;}
   const name=normalizeIngredientText(p.name),manual=config.preferredProductIds?.includes(p.id)||config.preferredBarcodes?.includes(p.barcode??'');
   const alias=config.aliases.some(a=>contains(name,a));

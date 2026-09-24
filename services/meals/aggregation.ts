@@ -1,8 +1,9 @@
 import type { IngredientRequirement, MealPlan } from '../../types/meal';
 import { canonicalIngredientKey } from '../../data/ingredient-mappings';
+import { isCook } from './choices';
 export function aggregateIngredients(plan: MealPlan): IngredientRequirement[] {
   const map=new Map<string,IngredientRequirement>();
-  for(const item of plan.items) for(const line of item.meal.ingredients){
+  for(const item of plan.items.filter(isCook)) for(const line of item.meal.ingredients){
     const quantity=line.quantity*item.servings/item.meal.servings;
     if(!Number.isFinite(quantity)||quantity<=0)throw Error('Invalid meal quantity');
     const key=canonicalIngredientKey(line.ingredientKey), previous=map.get(key);

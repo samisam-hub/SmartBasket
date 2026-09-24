@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { MealPlan, MealPlanItem } from '../types/meal';
 import { mealNutrition } from '../services/meals/planner';
+import { mealNutritionKnown } from '../services/meals/choices';
 import { colors, spacing, ui } from '../lib/theme';
 import { MealImage } from './MealImage';
 import { ParticipantNutrition } from './ParticipantNutrition';
@@ -31,7 +32,8 @@ function DayMeals({ plan, items, ratios }: { plan: MealPlan; items: MealPlanItem
           <Text style={ui.eyebrow}>{item.mealSlot.toUpperCase()}</Text>
           <Text style={ui.subheading}>{item.meal.name}</Text>
           <MealImage meal={item.meal} compact />
-          <ParticipantNutrition plan={plan} nutrition={mealNutrition(item, ratios)} />
+          {mealNutritionKnown(item, ratios) ? <ParticipantNutrition plan={plan} nutrition={mealNutrition(item, ratios)} /> : <Text style={ui.small}>Nutrition unknown{item.mealMode==='eat_out'?' · Eating out · No shopping items':' · No matched product'}</Text>}
+          {item.readyMealMatch && (ratios?.[`ready:${item.readyMealMatch.productId}`]??1)>0 && <Text style={ui.small}>{item.readyMealMatch.productName}</Text>}
         </View>)}
       </ScrollView>}
     </View>
