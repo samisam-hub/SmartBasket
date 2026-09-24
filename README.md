@@ -36,6 +36,7 @@ npm run export:android
 - Explicit local-only completion and a Retry cloud sync action when offline.
 - Editable saved preferences in Profile and actual preference chips on Home.
 - 784 real imported groceries, paged name/brand search, category/diet filters, and product details.
+- Diabetes-friendly is selectable alongside the other dietary preferences; it filters declared sugars and meal carbohydrate portions. See [the rules and limits](docs/DIABETES-DIET.md).
 - Conservative preference matching, allergen warnings, source attribution, and image fallbacks.
 - A clearly labeled ten-item fictional catalog if the live catalog is unavailable.
 - Deterministic basket generation with package quantities, safety exclusions, target coverage and structured warnings.

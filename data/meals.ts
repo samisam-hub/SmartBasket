@@ -6,10 +6,17 @@ import { quantityTolerances } from '../services/meals/config';
 // Rice, pasta and lentils are dry weights; eggs are edible mass; canned beans are drained.
 const plant: Diet[] = ['vegan', 'vegetarian', 'pescatarian', 'lactose_free', 'gluten_free'];
 const animal: Diet[] = ['lactose_free', 'gluten_free'];
+// Diabetes-friendly is a shopping preference, never medical advice. Ingredients above the UK FSA
+// front-of-pack high-sugar threshold (22.5 g sugars per 100 g, 11.25 per 100 ml) are left untagged,
+// and a meal keeps the tag only inside the carbohydrate portions common in carbohydrate counting.
+const highSugarIngredients = new Set(['dark_chocolate', 'teriyaki']);
+const diabetesCarbsPerServing: Record<Meal['mealType'], number> = { breakfast: 75, lunch: 75, dinner: 75, snack: 30 };
+const taggable: Diet[] = [...plant, 'diabetes'];
 function ingredient(key: string, name: string, group: IngredientDefinition['group'], categories: IngredientDefinition['categories'],
   aliases: string[], values: number[], diets: Diet[] = plant, allergens: Allergen[] = [], exclude: string[] = []): IngredientDefinition {
   const [calories, protein, carbohydrates, fat] = values;
   key=canonicalIngredientKey(key); const config=ingredientMappings[key];
+  if (!highSugarIngredients.has(key)) diets = [...diets, 'diabetes'];
   aliases=config?.aliases??aliases; categories=config?.allowedCategories??categories; exclude=config?.blockedKeywords??exclude;
   return { key, name, group, categories, aliases, exclude, unit: 'g', nutritionPer100: { calories, protein, carbohydrates, fat }, diets, allergens };
 }
@@ -65,7 +72,8 @@ function meal(id: string, name: string, mealType: Meal['mealType'], amounts: [st
   for (const [key,q] of amounts) for (const field of Object.keys(totals) as (keyof typeof totals)[]) totals[field] += ingredients[key].nutritionPer100[field]*q/100;
   return { id, name, mealType, servings: 1, caloriesPerServing: totals.calories, proteinPerServing: totals.protein,
     carbohydratesPerServing: totals.carbohydrates, fatPerServing: totals.fat,
-    dietaryTags: plant.filter(d=>amounts.every(([key])=>ingredients[key].diets.includes(d))),
+    dietaryTags: taggable.filter(d=>amounts.every(([key])=>ingredients[key].diets.includes(d)) &&
+      (d!=='diabetes' || totals.carbohydrates<=diabetesCarbsPerServing[mealType])),
     allergens: [...new Set(amounts.flatMap(([key])=>ingredients[key].allergens))],
     ingredients: amounts.map(([key,quantity])=>{const i=ingredients[key], [min,max]=quantityTolerances[i.group];
       return { ingredientKey:i.key, ingredientName:i.name, quantity, unit:i.unit, flexible:min!==0||max!==0,

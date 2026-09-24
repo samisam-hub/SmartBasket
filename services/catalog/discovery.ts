@@ -9,6 +9,13 @@ export const searchTokens = (query: string) => (query.slice(0, 120).toLowerCase(
 export const searchExpression = (query: string) => searchTokens(query).map(t => `${t}:*`).join(" & ");
 export const highProtein = (p: Product) => p.caloriesPer100g !== null && p.caloriesPer100g > 0 &&
   p.proteinPer100g !== null && p.proteinPer100g * 4 >= p.caloriesPer100g * 0.2;
+/** UK FSA front-of-pack "high sugars" thresholds, used as a transparent basket filter.
+ *  Diabetes-friendly is a shopping preference here, never a medical recommendation. */
+export const highSugarThreshold: Record<Product["nutritionBasis"], number> = { "100g": 22.5, "100ml": 11.25 };
+export const highSugar = (p: Product) =>
+  p.sugarsPer100g !== null && p.sugarsPer100g > (highSugarThreshold[p.nutritionBasis] ?? highSugarThreshold["100g"]);
+/** Unknown sugars are never read as low sugars; discovery needs the declared value. */
+export const sugarsUnknown = (p: Product) => p.sugarsPer100g === null;
 export function allergenTerms(preferences: UserPreferences | null): string[] {
   const selected: string[] = [...(preferences?.allergens ?? [])];
   // A generic gluten declaration cannot rule out wheat. Treat it as a warning.
@@ -31,6 +38,7 @@ export function matchesPreferences(p: Product, preferences: UserPreferences | nu
   if (!hasDiscoveryPreferences(preferences)) return false;
   if (requiredDiet(preferences).some(d => p[d] !== true)) return false;
   if (preferences?.dietaryPreferences.includes("pescatarian") && p.vegetarian !== true && p.category !== "fish") return false;
+  if (preferences?.dietaryPreferences.includes("diabetes") && (sugarsUnknown(p) || highSugar(p))) return false;
   const risk = allergenConflicts(p, preferences);
   if (risk.contains.length || risk.traces.length) return false;
   return !preferences?.allergens.length || p.allergenInfoAvailable;

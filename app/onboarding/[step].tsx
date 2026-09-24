@@ -59,7 +59,7 @@ const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
   diet: {
     title: "Food that fits your life.",
     subtitle:
-      "Choose a dietary pattern and any extra restrictions. You can change these later.",
+      "Choose a dietary pattern and any extra restrictions, such as diabetes-friendly. You can change these later.",
   },
   allergies: {
     title: "What should we know?",
@@ -317,10 +317,21 @@ export default function OnboardingScreen() {
             </View>
             <Text style={ui.small}>
               Vegetarian, vegan and pescatarian are alternative patterns.
-              Lactose-free and gluten-free can be added to any pattern.
+              Lactose-free, gluten-free and diabetes-friendly can be added to
+              any pattern.
             </Text>
             <ErrorMessage message={visible.dietaryPreferences} />
           </SectionCard>
+        )}
+        {step === "diet" && draft.dietaryPreferences.includes("diabetes") && (
+          <InfoCard title="How diabetes-friendly filters your basket">
+            We keep products whose declared sugars stay under the front-of-pack
+            high-sugar level (22.5 g per 100 g, 11.25 g per 100 ml) and meals
+            within common carbohydrate portions. Products without a declared
+            sugar value are left out rather than assumed low. This is a
+            shopping preference, not medical advice or a treatment plan — check
+            labels and follow the guidance of your care team.
+          </InfoCard>
         )}
         {step === "allergies" && (
           <>
