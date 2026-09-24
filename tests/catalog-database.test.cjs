@@ -14,6 +14,7 @@ test("catalog migration, idempotent imports, indexed search and read-only RLS in
     const product = normalizeOpenFoodFacts({ code: "1234567890123", product_name: "Oat milk", brands: "O'Brien", categories_tags: ["en:milk-substitutes"], nutriments: { "energy-kcal_100g": 40, proteins_100g: 4 }, labels_tags: ["en:vegan"] });
     await db.exec(fs.readFileSync("supabase/migrations/20260907081513_ingredient_package_metadata.sql", "utf8"));
     await db.exec(fs.readFileSync("supabase/migrations/20260907120000_synthetic_price_metadata.sql", "utf8"));
+  await db.exec(fs.readFileSync('supabase/migrations/20260924144255_ready_meal_metadata.sql','utf8'));
     await db.exec(catalogImportSql([product]));
     const first = (await db.query("select * from products")).rows[0];
     await db.exec(catalogImportSql([{ ...product, name: "Oat drink", proteinPer100g: 5 }]));
@@ -37,6 +38,13 @@ test("catalog migration, idempotent imports, indexed search and read-only RLS in
     }
     await assert.rejects(db.exec(catalogImportSql([{ ...product, externalId: "different" }])), e => e.code === "23505");
     await assert.rejects(db.exec("update products set protein_per_100g = -1"), e => e.code === "23514");
+    await assert.rejects(db.exec("update products set ready_meal = '{}'::jsonb"), e => e.code === '23514');
+    const metadata = {category:'lasagne',modes:['heat_and_eat'],slots:['lunch','dinner'],portionGrams:350,available:true,evidence:'Test label'};
+    await db.query('update products set ready_meal=$1::jsonb',[JSON.stringify(metadata)]);
+    await db.exec(catalogImportSql([product]));
+    assert.deepEqual((await db.query('select ready_meal from products')).rows[0].ready_meal,metadata);
+    for(const invalid of [{...metadata,modes:['cook']},{...metadata,available:null},{...metadata,portionGrams:0},{...metadata,evidence:''}])
+      await assert.rejects(db.query('update products set ready_meal=$1::jsonb',[JSON.stringify(invalid)]),e=>e.code==='23514');
     await assert.rejects(db.exec("update products set image_quality = 'usable', display_image_url = 'https://example.com/tiny.jpg', image_width = 100, image_height = 100"), e => e.code === "23514");
     await assert.rejects(db.exec("update products set image_quality = 'usable', display_image_url = 'https://example.com/unknown.jpg'"), e => e.code === "23514");
   } finally { await db.close(); }

@@ -8,6 +8,7 @@ import { packagePrice } from '../basket/quantityPlanner';
 import { isSaved } from '../preference-domain';
 import { mealWeights as w } from './config';
 import { matchProducts, uniqueCatalog } from './matching';
+import { isCook } from './choices';
 export function compatibleMeal(meal: Meal, p: UserPreferences): boolean {
   if (!meal.ingredients.length || !Array.isArray(meal.allergens) || !Array.isArray(meal.dietaryTags)) return false;
   if (p.dietaryPreferences.some(d=>d!=='none'&&!meal.dietaryTags.includes(d)) || p.allergens.some(a=>meal.allergens.includes(a))) return false;
@@ -17,6 +18,12 @@ export function compatibleMeal(meal: Meal, p: UserPreferences): boolean {
 }
 export function mealNutrition(item: MealPlanItem, ratios: Record<string,number> = {}): Nutrition {
   const n: Nutrition={calories:0,protein:0,carbohydrates:0,fat:0};
+  if (!isCook(item)) {
+    if (item.mealMode !== 'eat_out' && item.readyMealMatch) {
+      for (const key of Object.keys(n) as (keyof Nutrition)[]) n[key] = item.readyMealMatch.nutrition[key] * (ratios[`ready:${item.readyMealMatch.productId}`] ?? 1);
+    }
+    return n;
+  }
   for(const line of item.meal.ingredients) for(const k of Object.keys(n) as (keyof Nutrition)[])
     n[k]+=ingredients[line.ingredientKey].nutritionPer100[k]*line.quantity*item.servings/item.meal.servings*(ratios[canonicalIngredientKey(line.ingredientKey)]??ratios[line.ingredientKey]??1)/100;
   return n;
@@ -37,7 +44,10 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
     return [key,{available:matches.length>0,cost:priced.length?Math.min(...priced.map(x=>packagePrice(x)!/x.packageSize!)):null}];
   }));
   for(let day=0;day<p.planningDays;day++) for(const slot of slots){
-    const options=compatible.filter(m=>fitsSlot(m,slot));
+    const allOptions=compatible.filter(m=>fitsSlot(m,slot));
+    // Include each spoken meal wish once when compatible; keep the usual portion scoring.
+    const wished=allOptions.filter(m=>p.preferredMealIds?.includes(m.id)&&!plan.items.some(i=>i.meal.id===m.id));
+    const options=wished.length?wished:allOptions;
     if(!options.length){plan.warnings.push({code:`missing_${day}_${slot}`,message:`Day ${day+1}: no compatible ${slot} meal. No unsafe replacement was selected.`});continue;}
     const fraction=slot==='snack'?0.08:slot==='breakfast'?0.25:0.32;
     const used=new Set(plan.items.flatMap(i=>i.meal.ingredients.map(l=>l.ingredientKey)));
@@ -72,7 +82,8 @@ export function replacementMeals(plan: MealPlan, itemId: string, preferences: Us
 export function replaceMeal(plan: MealPlan, itemId: string, mealId: string, p: UserPreferences): MealPlan {
   const meal=replacementMeals(plan,itemId,p).find(m=>m.id===mealId);if(!meal)throw Error('This replacement is not compatible.');
   const previous=plan.items.find(i=>i.id===itemId)!;
-  const updated=plan.items.map(i=>i.id===itemId?{...i,meal,servings:plan.householdSize}:i);
+  const updated=plan.items.map(i=>i.id===itemId?{id:i.id,dayIndex:i.dayIndex,mealSlot:i.mealSlot,meal,mealMode:'cook' as const,servings:plan.householdSize}:i);
+  if (updated.some(i=>i.dayIndex===previous.dayIndex&&!isCook(i))) return {...plan,status:'review',items:updated};
   // Preserve the chosen meal's normal portion; distribute the remaining daily budget
   // over the other main meals. Snacks stay small and are always counted.
   const flexible=updated.filter(i=>i.dayIndex===previous.dayIndex&&i.id!==itemId&&i.mealSlot!=='snack');

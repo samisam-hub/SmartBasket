@@ -15,6 +15,7 @@ test('basket tables/RPC enforce two-user isolation, atomic saves, retries, forei
       await db.exec(fs.readFileSync(`supabase/migrations/${file}`, 'utf8'));
     const a = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', b = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
     await db.query('insert into auth.users values ($1),($2)', [a,b]);
+  await db.exec(fs.readFileSync('supabase/migrations/20260924144255_ready_meal_metadata.sql','utf8'));
     await db.exec(catalogImportSql(catalog));
     const ids = (await db.query('select id,name from products')).rows;
     const result = generateBasket(prefs(), catalog.map(p => ({ ...p, id: ids.find(r => r.name === p.name).id })));

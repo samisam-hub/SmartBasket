@@ -6,6 +6,7 @@ const {generateMealPlan}=require('../services/meals/planner.ts');
 const {basketFromMealPlan}=require('../services/meals/basket.ts');
 const {BasketPersistence,newSavedBasket}=require('../services/basket/persistence.ts');
 const {catalogImportSql}=require('../services/catalog/product-row.ts');
+const {replaceMealChoice}=require('../services/meals/choices.ts');
 const p=prefs({planningDays:3});
 const plan={...generateMealPlan(p),status:'confirmed'};
 test('meal snapshots and empty ingredient coverage save locally, reopen offline and retry cloud',async()=>{
@@ -21,6 +22,7 @@ test('meal migration/RPC is atomic, owner-private, idempotent and preserves exis
    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to authenticated,anon;`);
   for(const f of ['20260906005004_products_catalog.sql','20260906124417_product_image_quality.sql','20260906131336_generated_baskets.sql','20260906194141_meal_based_baskets.sql','20260907081513_ingredient_package_metadata.sql','20260907120000_synthetic_price_metadata.sql','20260908173310_meal_plan_snacks.sql','20260907134938_basket_management.sql','20260908185911_edit_saved_basket.sql','20260908191622_refresh_saved_basket_products.sql','20260908203211_checkout_and_pantry.sql'])await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8'));
   const a='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',b='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';await db.query('insert into auth.users values($1),($2)',[a,b]);
+  await db.exec(fs.readFileSync('supabase/migrations/20260924144255_ready_meal_metadata.sql','utf8'));
   await db.exec(catalogImportSql([product(1)]));const productId=(await db.query('select id from products limit 1')).rows[0].id;
   const asUser=async id=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated');};
   const empty=basketFromMealPlan(plan,p,[]);
@@ -45,6 +47,16 @@ test('meal migration/RPC is atomic, owner-private, idempotent and preserves exis
   await assert.rejects(db.query("insert into meal_plan_items(meal_plan_id,meal_id,day_index,meal_slot,servings,item_snapshot) values($1,'x',0,'lunch',1,'{}')",[parent.id]),e=>e.code==='42501');
   await assert.rejects(db.query('update meal_plans set user_id=$1',[b]),e=>e.code==='42501');assert.equal((await db.query('delete from meal_plans returning id')).rows.length,0);
   await save('meal-a');assert.equal((await db.query('select * from meal_plans')).rows.length,1);
+  // Existing snapshot/RPC path preserves new modes and real ready-meal SKU links.
+  let mixed=replaceMealChoice(plan,plan.items[0].id,'eat_out');
+  const lunch=mixed.items.find(i=>i.mealSlot==='lunch');mixed=replaceMealChoice(mixed,lunch.id,'heat_and_eat','lasagne');
+  const sku=product(1,{id:productId,readyMeal:{category:'lasagne',modes:['heat_and_eat'],slots:['lunch'],portionGrams:350,available:true,evidence:'Test label'}});
+  const mixedBasket=basketFromMealPlan({...mixed,status:'confirmed'},p,[sku]);
+  const mixedId=(await save('mixed-modes',mixedBasket)).rows[0].id;
+  const snapshot=(await db.query('select result_summary from baskets where id=$1',[mixedId])).rows[0].result_summary;
+  assert.equal(snapshot.mealPlan.items[0].mealMode,'eat_out');
+  assert.equal(snapshot.mealPlan.items.find(i=>i.id===lunch.id).readyMealMatch.productId,productId);
+  assert.equal((await db.query('select product_id from basket_items where basket_id=$1',[mixedId])).rows[0].product_id,productId);
   await db.exec('reset role;set role anon');await assert.rejects(db.exec('select * from meal_plans'),e=>e.code==='42501');await assert.rejects(save('anon'),e=>e.code==='42501');
  }finally{await db.close();}
 });

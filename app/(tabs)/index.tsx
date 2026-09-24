@@ -30,6 +30,12 @@ export default function HomeScreen() {
       <View style={{ flex: 1 }}><PrimaryButton label="Plan my next meal" disabled={flow.disabled} onPress={flow.create} /></View>
       <View style={{ flex: 1 }}><SecondaryButton label="View recent shops" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} /></View>
     </View>
+    <Pressable accessibilityRole="button" accessibilityLabel="Plan by voice" onPress={() => router.push('/voice-plan')}
+      style={({pressed}) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: colors.pale, opacity: pressed ? .75 : 1 })}>
+      <Feather name="mic" size={24} color={colors.primary} />
+      <View style={{flex: 1}}><Text style={[ui.small, {fontWeight: '700', color: colors.ink}]}>Plan by voice</Text><Text style={ui.caption}>Tell us what you fancy</Text></View>
+      <Feather name="chevron-right" size={20} color={colors.primary} />
+    </Pressable>
     <LatestBasket />
     <View style={{ flexDirection: 'row', gap: 12 }}>
       {[

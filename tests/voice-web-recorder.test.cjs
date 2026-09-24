@@ -1,0 +1,21 @@
+require('./register.cjs');
+const {test}=require('node:test'),assert=require('node:assert/strict'),Module=require('node:module');
+test('web uses one microphone stream, meters speech and releases every recording',async t=>{
+ const previous=Module._load;
+ Module._load=function(name,parent,isMain){if(name==='react'&&parent.filename.endsWith('useConversationRecorder.web.ts'))return {useMemo:fn=>fn()};return previous.call(this,name,parent,isMain);};
+ const {useConversationRecorder}=require('../hooks/useConversationRecorder.web.ts');Module._load=previous;
+ const nav=Object.getOwnPropertyDescriptor(global,'navigator'),audio=global.AudioContext,media=global.MediaRecorder;
+ t.after(()=>{Object.defineProperty(global,'navigator',nav);global.AudioContext=audio;global.MediaRecorder=media;});
+ let streams=0,stopped=0,closed=0,sourceConnections=0;
+ const stream=()=>{streams++;const track={readyState:'live',stop(){this.readyState='ended';stopped++;}};return {getTracks:()=>[track],getAudioTracks:()=>[track]};};
+ Object.defineProperty(global,'navigator',{configurable:true,value:{mediaDevices:{getUserMedia:async()=>stream()}}});
+ global.AudioContext=class{async resume(){} async close(){closed++;}createAnalyser(){return {fftSize:2048,getFloatTimeDomainData:a=>a.fill(.1)};}createMediaStreamSource(){return {connect:()=>sourceConnections++};}};
+ global.MediaRecorder=class{static isTypeSupported(){return true;}state='inactive';start(){this.state='recording';}stop(){this.state='inactive';this.ondataavailable({data:new Blob(['audio'])});this.onstop();}};
+ const recorder=useConversationRecorder();
+ await recorder.start(new AbortController().signal);assert.equal(recorder.isRecording(),true);assert.ok(recorder.level()>-42);
+ const uri=await recorder.stop();assert.ok(uri.startsWith('blob:'));assert.equal(recorder.isRecording(),false);await recorder.discard(uri);
+ assert.equal(streams,1);assert.equal(stopped,1);assert.equal(closed,1);assert.equal(sourceConnections,1);
+ assert.equal(await recorder.stop(),null);
+ const abort=new AbortController();abort.abort();await recorder.start(abort.signal);
+ assert.equal(stopped,2);assert.equal(recorder.isRecording(),false);assert.equal(await recorder.stop(),null);
+});

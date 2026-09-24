@@ -54,6 +54,7 @@ export type PreferenceDraft = Omit<PreferenceValues, "dailyCalories"> & {
   dailyCalories: number | null;
 };
 export interface UserPreferences extends PreferenceValues {
+  preferredMealIds?: string[];
   participants?: import('./profile').PlanParticipant[];
   id: string | null;
   userId: string | null;

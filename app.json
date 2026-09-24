@@ -9,7 +9,7 @@
     "newArchEnabled": true,
     "android": { "package": "com.smartbasket.app", "edgeToEdgeEnabled": true },
     "ios": { "bundleIdentifier": "com.smartbasket.app", "supportsTablet": false },
-    "plugins": ["expo-router", "expo-font"],
+    "plugins": ["expo-router", "expo-font", "expo-asset", ["expo-audio", {"microphonePermission": "Allow SmartBasket to hear your basket wishes."}]],
     "experiments": { "typedRoutes": true }
   }
 }

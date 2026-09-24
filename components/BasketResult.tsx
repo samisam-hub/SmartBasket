@@ -1,6 +1,7 @@
 import { ProductImage } from './ProductImage';
 import { ProductEstimateNotice } from './ProductEstimateNotice';
 import { planNutrition } from '../services/meals/planner';
+import { mealNutritionKnown } from '../services/meals/choices';
 import { ConfirmedMeals } from './ConfirmedMeals';
 import { ParticipantNutrition } from './ParticipantNutrition';
 import { BasketProductHeading } from './BasketProductHeading';
@@ -20,10 +21,11 @@ export function BasketResult({ result, onRemoveProduct }: { result: BasketGenera
   return <>
     <SectionCard title="Basket summary">
       <Text style={ui.heading}>{result.estimatedTotalPrice===null?'Estimate unavailable':`Estimated total €${result.estimatedTotalPrice.toFixed(2)}`}</Text>
-      {result.status === 'partial' && <Text style={ui.body}>{result.mealPlan ? 'Shopping list incomplete: some planned ingredients are not covered by selected products.' : 'Partial basket: some targets are unmet.'}</Text>}
+      {result.status === 'partial' && <Text style={ui.body}>{result.mealPlan ? 'Some nutrition targets or planned purchases are not fully covered. See the meal details below.' : 'Partial basket: some targets are unmet.'}</Text>}
       {!result.items.length && <Text style={ui.body}>No eligible products were selected.</Text>}
       {result.estimatedTotalPrice === null && !!result.items.length && <Text style={ui.small}>The catalog has missing prices. Known-price subtotal: €{result.knownPriceSubtotal.toFixed(2)}; this is not the basket total.</Text>}
       {result.mealPlan ? <><Text style={ui.subheading}>Planned meals · including snacks</Text><ParticipantNutrition plan={result.mealPlan} nutrition={planNutrition(result.mealPlan)} daily />
+        {result.mealPlan.items.some(i=>!mealNutritionKnown(i)) && <Text style={ui.small}>Averages cover recorded meals only. Eating out and unmatched ready meals have unknown nutrition and spending.</Text>}
         <Text style={ui.caption}>Shopping coverage: {Math.round(result.calorieCoveragePercent)}% of calorie target · {Math.round(result.proteinCoveragePercent)}% of protein target. Missing or removed groceries do not change the planned meals.</Text></> : <>
         <Text style={ui.body}>{number(result.totalCalories)} kcal · {number(result.totalProtein)} g protein</Text>
         <Text style={ui.small}>Calories: {result.calorieCoveragePercent}% of {number(result.calorieTarget)} kcal</Text>

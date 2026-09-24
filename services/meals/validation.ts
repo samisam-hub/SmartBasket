@@ -1,6 +1,17 @@
-import type { MealPlan } from '../../types/meal';
+import type { MealPlan, MealPlanItem } from '../../types/meal';
 import { ingredients } from '../../data/meals';
 import {isParticipant} from '../profile-domain';
+import { isCook, readyCategories } from './choices';
+function validChoice(i: MealPlanItem) {
+  if (isCook(i)) return i.readyMealCategory === undefined && i.readyMealMatch === undefined;
+  if (!['ready_to_eat', 'heat_and_eat', 'eat_out'].includes(i.mealMode!) || i.meal?.nutritionSource !== 'unrecorded' || i.meal?.ingredients?.length !== 0) return false;
+  if (i.mealMode === 'eat_out') return i.readyMealCategory === undefined && i.readyMealMatch === undefined;
+  if (!i.readyMealCategory || !readyCategories(i.mealMode!, i.mealSlot).includes(i.readyMealCategory)) return false;
+  const match = i.readyMealMatch;
+  return !match || (typeof match.productId === 'string' && !!match.productId && typeof match.productName === 'string' &&
+    Number.isFinite(match.quantity) && match.quantity > 0 && match.nutrition &&
+    ['calories','protein','carbohydrates','fat'].every(k => Number.isFinite(match.nutrition[k as keyof typeof match.nutrition]) && match.nutrition[k as keyof typeof match.nutrition] >= 0));
+}
 export function isMealPlan(v: unknown): v is MealPlan {
   if(!v||typeof v!=='object')return false;const p=v as MealPlan;
   return (p.participants===undefined||(Array.isArray(p.participants)&&p.participants.length===p.householdSize&&p.participants.every(isParticipant)))&&p.version==='1'&&['review','confirmed'].includes(p.status)&&[3,5,7,14].includes(p.planningDays)&&Number.isInteger(p.householdSize)&&p.householdSize>=1&&p.householdSize<=10&&
@@ -8,7 +19,7 @@ export function isMealPlan(v: unknown): v is MealPlan {
     (p.snacksIncluded===undefined||typeof p.snacksIncluded==='boolean')&&Array.isArray(p.items)&&p.items.length<=p.planningDays*4&&new Set(p.items.map(i=>i?.id)).size===p.items.length&&
     new Set(p.items.map(i=>`${i?.dayIndex}-${i?.mealSlot}`)).size===p.items.length&&p.items.every(i=>i&&typeof i.id==='string'&&Number.isInteger(i.dayIndex)&&i.dayIndex>=0&&i.dayIndex<p.planningDays&&
       ['breakfast','lunch','dinner','snack'].includes(i.mealSlot)&&Number.isFinite(i.servings)&&i.servings>0&&i.servings<=15&&i.meal&&typeof i.meal.id==='string'&&typeof i.meal.name==='string'&&i.meal.servings===1&&
-      Array.isArray(i.meal.dietaryTags)&&Array.isArray(i.meal.allergens)&&Array.isArray(i.meal.ingredients)&&i.meal.ingredients.length>0&&i.meal.ingredients.length<=12&&i.meal.ingredients.every(l=>l&&ingredients[l.ingredientKey]&&
+      validChoice(i)&&Array.isArray(i.meal.dietaryTags)&&Array.isArray(i.meal.allergens)&&Array.isArray(i.meal.ingredients)&&(!isCook(i)||i.meal.ingredients.length>0)&&i.meal.ingredients.length<=12&&i.meal.ingredients.every(l=>l&&ingredients[l.ingredientKey]&&
         typeof l.ingredientName==='string'&&l.unit===ingredients[l.ingredientKey].unit&&Number.isFinite(l.quantity)&&l.quantity>0&&l.quantity<=2000&&typeof l.flexible==='boolean'&&
         Number.isFinite(l.minAdjustmentPercent)&&l.minAdjustmentPercent>=-20&&l.minAdjustmentPercent<=0&&Number.isFinite(l.maxAdjustmentPercent)&&l.maxAdjustmentPercent>=0&&l.maxAdjustmentPercent<=20));
 }

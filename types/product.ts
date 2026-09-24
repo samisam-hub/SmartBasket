@@ -10,6 +10,7 @@ export const categoryLabels: Record<ProductCategory, string> = {
 };
 /** Provider-neutral product. Null means unknown, never zero/false by default. */
 export interface Product {
+  readyMeal?: import('./meal').ReadyMealMetadata | null;
   id: string;
   externalId: string | null;
   barcode: string | null;

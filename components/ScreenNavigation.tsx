@@ -17,8 +17,10 @@ export function ScreenNavigation() {
   const path = usePathname();
   const insets = useSafeAreaInsets();
   if (segments[0] === '(tabs)') return null;
+  // Pantry belongs to the shopping flow; onboarding is reached from several tabs, so none is highlighted.
   const selected = path.startsWith('/product/') ? '/products' :
-    ['/basket-setup', '/plan-setup', '/saved-meal-plans'].includes(path) ? '/basket' : '/profile';
+    ['/basket-setup', '/plan-setup', '/voice-plan', '/saved-meal-plans', '/pantry'].includes(path) ? '/basket' :
+    path.startsWith('/onboarding') ? null : '/profile';
   return <View style={{ flexDirection: 'row', backgroundColor: colors.surface,
     borderTopWidth: 1, borderTopColor: colors.border, paddingBottom: insets.bottom,
     paddingLeft: insets.left, paddingRight: insets.right }}>

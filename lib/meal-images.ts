@@ -1,5 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 import type { Meal } from '../types/meal';
+import { mealOptionImages } from './meal-option-images';
 
 /** Approved AI serving illustrations, bundled for offline use; never product photos. */
 const images: Record<string, { source: ImageSourcePropType; ingredients: string[] }> = {
@@ -39,6 +40,7 @@ const images: Record<string, { source: ImageSourcePropType; ingredients: string[
 };
 
 export function mealImageSource(meal: Meal): ImageSourcePropType | null {
+  if (meal.nutritionSource === 'unrecorded') return mealOptionImages[meal.id.split(':')[1] as keyof typeof mealOptionImages] ?? null;
   const image = images[meal.id];
   // Saved snapshots can predate a recipe revision. Do not illustrate different ingredients.
   const core = meal.ingredients.filter(i=>!['parsley','dill','pepper'].includes(i.ingredientKey));

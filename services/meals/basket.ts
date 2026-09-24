@@ -15,11 +15,13 @@ import { isMealPlan } from './validation';
 import { isSaved } from '../preference-domain';
 import type { PantryLot, PantryUse } from '../../types/pantry';
 import { allocatePantry } from '../pantry-domain';
+import { isCook } from './choices';
+import { matchReadyMeals } from './readyMeals';
 const round=(n:number)=>Math.round(n*100)/100;
 export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences, catalog: Product[], pantry: PantryLot[] = []): BasketGenerationResult {
   if(!isMealPlan(plan)||!isSaved(preferences)||!preferences.onboardingCompleted||plan.status!=='confirmed')throw Error('Confirm a valid meal plan before creating a basket.');
   if(plan.planningDays!==preferences.planningDays||plan.householdSize!==preferences.householdSize)throw Error('Preferences changed. Generate a new meal plan.');
-  if(plan.items.some(i=>!compatibleMeal(i.meal,preferences)))throw Error('Meal plan conflicts with current preferences.');
+  if(plan.items.some(i=>isCook(i)&&!compatibleMeal(i.meal,preferences)))throw Error('Meal plan conflicts with current preferences.');
   const requirements=aggregateIngredients(plan),products=uniqueCatalog(catalog),targets=nutritionTargets(preferences);
   const items: BasketItem[]=[],warnings=[...plan.warnings],ratios:Record<string,number>={};let objective=0;
   const matchingDiagnostics:NonNullable<BasketGenerationResult['matchingDiagnostics']>=[];
@@ -62,8 +64,13 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
           {code:'quantity_adjustment',detail:`Ingredient consumption adjusted ${round((ratios[r.ingredientKey]-1)*100)}% within its allowed range.`}]});
     }
   }
+  const ready = matchReadyMeals(plan, preferences, products.filter(p=>!items.some(i=>i.product.id===p.id)), targets.budgetTarget===null?null:targets.budgetTarget-items.reduce((sum,i)=>sum+(i.estimatedPrice??0),0));
+  plan = ready.plan; items.push(...ready.items); requirements.push(...ready.requirements); warnings.push(...ready.warnings);
+  for (const r of ready.requirements) ratios[r.ingredientKey] = 1;
+  const outside = plan.items.some(i=>i.mealMode==='eat_out');
+  if (outside) warnings.push({code:'eat_out_unknown',message:'Eating-out meals have no shopping items. Their nutrition and spending are not recorded; other meal portions have not been increased.'});
   const n=planNutrition(plan,ratios),knownPriceSubtotal=items.reduce((s,i)=>s+(i.estimatedPrice??0),0);
-  const incomplete=requirements.some(r=>ratios[r.ingredientKey]<r.minimumAcceptableQuantity/r.requiredQuantity-.0001);
+  const incomplete=ready.unmatched>0||requirements.some(r=>ratios[r.ingredientKey]<r.minimumAcceptableQuantity/r.requiredQuantity-.0001);
   if(matchingDiagnostics.some(d=>d.unresolvedReason?.includes('allergen_metadata_unknown')))warnings.unshift({code:'allergy_evidence_gap',message:`Your selected allergies (${preferences.allergens.map(a=>labels[a]).join(', ')}) require explicit free-from evidence that this catalog often lacks. Matching foods are excluded when that evidence is unknown.${preferences.allergens.includes('milk')&&preferences.dietaryPreferences.includes('lactose_free')?' Milk allergy and lactose-free are separate settings; lactose-free alone does not satisfy the milk-allergy check.':''}`});
   const estimatedTotalPrice=(items.length||pantryUsed.length)&&items.every(i=>i.estimatedPrice!==null)?round(knownPriceSubtotal):null;
   const budgetDifference=estimatedTotalPrice===null||targets.budgetTarget===null?null:round(estimatedTotalPrice-targets.budgetTarget);
@@ -81,9 +88,9 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
     adjustedMealNutrition:plan.items.map(i=>({itemId:i.id,nutrition:mealNutrition(i,ratios)})),
     remaining:{totalPurchasedWeight:purchased,totalPlannedConsumption:sum('plannedConsumptionQuantity','g'),totalLeftoverWeight:leftover,
       totalPurchasedVolume:sum('purchasedQuantity','ml'),totalPlannedVolume:sum('plannedConsumptionQuantity','ml'),totalLeftoverVolume:sum('leftoverQuantity','ml'),estimatedWastePercent:purchased?round(leftover/purchased*100):0},
-    optimizationWeights:{...packageWeights},status:!items.length&&!pantryUsed.length?'empty':incomplete||plan.items.length!==preferences.planningDays*(plan.snacksIncluded?4:3)||calorieCoveragePercent<90||calorieCoveragePercent>110||proteinCoveragePercent<90?'partial':'generated',
+    optimizationWeights:{...packageWeights},status:!items.length&&!pantryUsed.length?'empty':incomplete||outside||plan.items.length!==preferences.planningDays*(plan.snacksIncluded?4:3)||calorieCoveragePercent<90||calorieCoveragePercent>110||proteinCoveragePercent<90?'partial':'generated',
     items,totalCalories:round(n.calories),totalProtein:round(n.protein),totalCarbohydrates:round(n.carbohydrates),totalFat:round(n.fat),totalFiber:null,
     ...targets,estimatedTotalPrice,knownPriceSubtotal:round(knownPriceSubtotal),budgetDifference,budgetStatus,calorieCoveragePercent,proteinCoveragePercent,
     categoryCoverage:[],warnings,constraintsApplied:['Meal compatibility','Ingredient equivalence','Known package size and unit','Allergen and trace evidence','Ingredient-specific tolerance'],
-    exclusions:{unmatchedIngredients:requirements.filter(r=>ratios[r.ingredientKey]===0).length},objective,score:round(100/(1+objective)),iterations:requirements.length};
+    exclusions:{unmatchedIngredients:requirements.filter(r=>ratios[r.ingredientKey]===0).length,unmatchedReadyMeals:ready.unmatched},objective,score:round(100/(1+objective)),iterations:requirements.length};
 }
