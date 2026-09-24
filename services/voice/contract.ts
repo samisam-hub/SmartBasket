@@ -1,5 +1,5 @@
 // Shared by the mobile app and the isolated voice backend. No platform dependencies.
-export const voiceDiets = ['none', 'vegetarian', 'vegan', 'pescatarian', 'lactose_free', 'gluten_free'] as const;
+export const voiceDiets = ['none', 'vegetarian', 'vegan', 'pescatarian', 'lactose_free', 'gluten_free', 'diabetes'] as const;
 export const voiceAllergens = ['milk', 'eggs', 'fish', 'shellfish', 'peanuts', 'tree_nuts', 'soy', 'wheat', 'sesame'] as const;
 export interface VoicePerson {
   name: string;
