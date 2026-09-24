@@ -23,7 +23,21 @@ export default function ProfileScreen() {
   const { saved, editing } = usePreferences();
   const flow = useBasketFlow();
   const auth=useAuth(),personal=useProfile(),p=personal.saved;
-  const [accountError,setAccountError]=useState<string|null>(null),[signingOut,setSigningOut]=useState(false);
+  const [accountError,setAccountError]=useState<string|null>(null),[signingOut,setSigningOut]=useState(false),[deleting,setDeleting]=useState(false);
+  const deleteAccount=()=>Alert.alert(
+    'Delete account permanently?',
+    'This removes your signed-in account and its cloud data, including saved baskets, meal plans and preferences. This cannot be undone.',
+    [
+      {text:'Cancel',style:'cancel'},
+      {text:'Delete permanently',style:'destructive',onPress:()=>{
+        setAccountError(null);setDeleting(true);
+        void auth.service?.deleteAccount()
+          .then(()=>router.dismissTo('/account'))
+          .catch(e=>setAccountError(e instanceof Error?e.message:'Account deletion failed. Please retry.'))
+          .finally(()=>setDeleting(false));
+      }},
+    ],
+  );
   const editPersonal=(step=0)=>{personal.store.update({},step);router.push('/personal-profile');};
   return (
     <Screen><BrandLogo compact />
@@ -97,6 +111,8 @@ export default function ProfileScreen() {
         {accountError&&<Text style={ui.small}>{accountError}</Text>}
         <TextButton label="Reset password" onPress={()=>router.push({pathname:'/account',params:{mode:'forgot'}})} />
         {auth.session&&!auth.session.user.is_anonymous&&<PrimaryButton label="Sign out" loading={signingOut} onPress={()=>{setSigningOut(true);void auth.service?.signOut().then(()=>router.dismissTo('/profile')).catch(e=>setAccountError(e.message)).finally(()=>setSigningOut(false));}} />}
+        {auth.session&&!auth.session.user.is_anonymous&&<TextButton label="Delete account" disabled={deleting||signingOut} onPress={deleteAccount} />}
+        {deleting&&<Text style={ui.small}>Deleting your account…</Text>}
       </SectionCard>
       <InfoCard title="Notifications">
         Reminders are coming later. SmartBasket does not send notifications yet.
