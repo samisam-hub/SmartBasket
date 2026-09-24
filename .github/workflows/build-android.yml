@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK and AAB
 
 on:
   workflow_dispatch:
@@ -70,12 +70,15 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: bash scripts/build-android.sh
 
-      - name: Verify APK and prepare download
+      - name: Verify APK and AAB and prepare downloads
         run: |
           set -euo pipefail
           apk=android/app/build/outputs/apk/release/app-release.apk
+          aab=android/app/build/outputs/bundle/release/app-release.aab
           build_tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
           "$build_tools/apksigner" verify --verbose --print-certs "$apk"
+          test -s "$aab"
+          jarsigner -verify -verbose -certs "$aab" > /dev/null
           metadata=$("$build_tools/aapt" dump badging "$apk")
           grep -F "package: name='com.smartbasket.app'" <<< "$metadata"
           grep -F "versionCode='$ANDROID_VERSION_CODE'" <<< "$metadata"
@@ -83,13 +86,19 @@ jobs:
           name="SmartBasket-0.1.0-build-${ANDROID_VERSION_CODE}.apk"
           cp "$apk" "apk-artifact/$name"
           (cd apk-artifact && sha256sum "$name" > SHA256SUMS.txt)
-          printf '### SmartBasket APK\n\nBuild: %s\n\nDownload **SmartBasket-APK-%s** under **Artifacts** below, unzip it and install the APK.\n\nAndroid package: `com.smartbasket.app`; ARM64 phones and x86_64 emulators; no Expo Go or Metro required.\n' "$ANDROID_VERSION_CODE" "$ANDROID_VERSION_CODE" >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p aab-artifact
+          bundle_name="SmartBasket-0.1.0-build-${ANDROID_VERSION_CODE}.aab"
+          cp "$aab" "aab-artifact/$bundle_name"
+          (cd aab-artifact && sha256sum "$bundle_name" > SHA256SUMS.txt)
+          printf '### SmartBasket Android packages\n\nBuild: %s\n\nDownload **SmartBasket-APK-AAB-%s** under **Artifacts**. The APK can be installed directly; the AAB is for Google Play Console.\n\nAndroid package: `com.smartbasket.app`; signed release artifacts.\n' "$ANDROID_VERSION_CODE" "$ANDROID_VERSION_CODE" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload APK
+      - name: Upload APK and AAB
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: SmartBasket-APK-${{ github.run_number }}
-          path: apk-artifact/
+          name: SmartBasket-APK-AAB-${{ github.run_number }}
+          path: |
+            apk-artifact/
+            aab-artifact/
           if-no-files-found: error
           retention-days: 14
           compression-level: 0

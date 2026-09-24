@@ -17,7 +17,7 @@ keytool -list -keystore "$keystore" -storepass:env KEYSTORE_PASSWORD -alias "$KE
 
 cd android
 chmod +x gradlew
-./gradlew :app:assembleRelease \
+./gradlew :app:assembleRelease :app:bundleRelease \
   --no-daemon --build-cache --max-workers=2 \
   '-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g' \
   -PreactNativeArchitectures=arm64-v8a,x86_64 \
