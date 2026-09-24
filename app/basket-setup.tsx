@@ -320,11 +320,11 @@ export default function BasketSetupScreen() {
 
       <BasketResult result={basket.result} catalog={catalog.current} preferences={basket.preferences}
         onReplaceProduct={!saving && !basket.result.purchasedAt ? (currentId, product) => {
-          try { setBasket({ ...basket, result: replaceBasketProduct(basket.result, currentId, product), syncStatus: 'local' }); setEditingBasket(true); setSavedOnce(false); setNotice('Product replaced. Save the basket to keep this choice.'); }
+          try { setBasket({ ...basket, result: replaceBasketProduct(basket.result, currentId, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Product replaced. Save the basket to keep this choice.'); }
           catch (e) { setError(e instanceof Error ? e.message : 'Could not replace product.'); }
         } : undefined}
         onAddReplacement={!saving && !basket.result.purchasedAt ? (requirement, product) => {
-          try { setBasket({ ...basket, result: addBasketReplacement(basket.result, requirement, product), syncStatus: 'local' }); setEditingBasket(true); setSavedOnce(false); setNotice('Category replacement added. Save the basket to keep this choice.'); }
+          try { setBasket({ ...basket, result: addBasketReplacement(basket.result, requirement, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Category replacement added. Save the basket to keep this choice.'); }
           catch (e) { setError(e instanceof Error ? e.message : 'Could not add replacement.'); }
         } : undefined}
         onRemoveProduct={editingBasket && !saving ? id => {
