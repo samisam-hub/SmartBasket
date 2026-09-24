@@ -319,12 +319,12 @@ export default function BasketSetupScreen() {
       <SecondaryButton label="Pantry & purchase history" onPress={()=>router.push('/pantry')} />
 
       <BasketResult result={basket.result} catalog={catalog.current} preferences={basket.preferences}
-        onReplaceProduct={editingBasket && !saving ? (currentId, product) => {
-          try { setBasket({ ...basket, result: replaceBasketProduct(basket.result, currentId, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Product replaced. Save the basket to keep this choice.'); }
+        onReplaceProduct={!saving && !basket.result.purchasedAt ? (currentId, product) => {
+          try { setBasket({ ...basket, result: replaceBasketProduct(basket.result, currentId, product), syncStatus: 'local' }); setEditingBasket(true); setSavedOnce(false); setNotice('Product replaced. Save the basket to keep this choice.'); }
           catch (e) { setError(e instanceof Error ? e.message : 'Could not replace product.'); }
         } : undefined}
-        onAddReplacement={editingBasket && !saving ? (requirement, product) => {
-          try { setBasket({ ...basket, result: addBasketReplacement(basket.result, requirement, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Category replacement added. Save the basket to keep this choice.'); }
+        onAddReplacement={!saving && !basket.result.purchasedAt ? (requirement, product) => {
+          try { setBasket({ ...basket, result: addBasketReplacement(basket.result, requirement, product), syncStatus: 'local' }); setEditingBasket(true); setSavedOnce(false); setNotice('Category replacement added. Save the basket to keep this choice.'); }
           catch (e) { setError(e instanceof Error ? e.message : 'Could not add replacement.'); }
         } : undefined}
         onRemoveProduct={editingBasket && !saving ? id => {
