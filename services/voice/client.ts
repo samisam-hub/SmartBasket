@@ -17,7 +17,8 @@ async function invoke(body: FormData | object, signal: AbortSignal) {
   if (!response.ok) throw Error(typeof result?.error === 'string' ? result.error : 'Voice planning is unavailable. Please try again or plan manually.');
   return result;
 }
-export async function transcribe(uri: string, signal: AbortSignal) {
+export type VoiceInputLanguage = 'en' | 'de';
+export async function transcribe(uri: string, signal: AbortSignal, language: VoiceInputLanguage = 'en') {
   const form = new FormData();
   if (Platform.OS === 'web') {
     const blob = await (await fetch(uri, { signal })).blob();
@@ -25,6 +26,7 @@ export async function transcribe(uri: string, signal: AbortSignal) {
   } else {
     form.append('audio', { uri, name: 'wish.m4a', type: 'audio/mp4' } as unknown as Blob);
   }
+  form.append('language', language);
   const result = await invoke(form, signal);
   if (typeof result?.text !== 'string' || !result.text.trim() || result.text.length > 2000) throw Error('No clear speech detected. Please try again.');
   return result.text as string;

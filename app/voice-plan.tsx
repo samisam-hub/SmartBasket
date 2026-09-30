@@ -14,7 +14,7 @@ import { meals } from '../data/meals';
 import { labels } from '../types/preferences';
 import type { PlanParticipant } from '../types/profile';
 import { colors, ui } from '../lib/theme';
-import { askPlanner, transcribe, type VoiceMessage } from '../services/voice/client';
+import { askPlanner, transcribe, type VoiceInputLanguage, type VoiceMessage } from '../services/voice/client';
 import { clarification, type VoicePlan } from '../services/voice/contract';
 import { confirmedVoicePlan, voiceDefaults, voiceParticipants } from '../services/voice/plan';
 import { useConversationRecorder } from '../hooks/useConversationRecorder';
@@ -29,17 +29,21 @@ export default function VoicePlanScreen() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false), [unresolved, setUnresolved] = useState<string | null>('Tell me what you would like to plan.');
   const [language, setLanguage] = useState<'en' | 'de'>('en');
+  const [inputLanguage, setInputLanguage] = useState<VoiceInputLanguage>(() => {
+    const locale = typeof navigator !== 'undefined' ? navigator.language : '';
+    return locale.toLowerCase().startsWith('de') ? 'de' : 'en';
+  });
   const [phase, setPhase] = useState<ConversationPhase>('idle');
   const [showTranscript, setShowTranscript] = useState(false);
   const focused = useRef(true), saving = useRef(false);
   const recorder = useConversationRecorder();
   const replyRef = useRef<(text: string, signal: AbortSignal) => Promise<{text: string; language: string}>>(async () => { throw Error('Preferences are loading.'); });
   const conversation = useMemo(() => new VoiceConversation({
-    recorder, transcribe, speak: speakReply,
+    recorder, transcribe: (uri, signal) => transcribe(uri, signal, inputLanguage), speak: speakReply,
     reply: (text, signal) => replyRef.current(text, signal),
     phase: value => { if (focused.current) setPhase(value); },
     error: value => { if (focused.current) setError(value); },
-  }), [recorder]);
+  }), [recorder, inputLanguage]);
   useEffect(() => {
     if (plan || !saved || !profile.ready) return;
     const first: PlanParticipant = profile.saved ? profileParticipant(profile.saved, saved) : {
@@ -103,6 +107,9 @@ export default function VoicePlanScreen() {
       <SectionCard>
         <Text style={[ui.subheading, { textAlign: 'center' }]}>Your SmartBasket voice assistant</Text>
         <Text style={[ui.small, { textAlign: 'center' }]}>Start once and speak naturally. I’ll answer after a short pause and listen again. No typing or sending needed.</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 12 }}>
+          {(['en', 'de'] as const).map(code => <Pressable key={code} accessibilityRole="button" accessibilityLabel={`Speak ${code === 'de' ? 'German' : 'English'}`} disabled={active || busy} onPress={() => setInputLanguage(code)} style={{ borderRadius: 16, borderWidth: 1, borderColor: inputLanguage === code ? colors.primary : colors.border, backgroundColor: inputLanguage === code ? colors.pale : colors.surface, paddingVertical: 6, paddingHorizontal: 14 }}><Text style={{ color: colors.ink, fontWeight: '700' }}>{code === 'de' ? 'Deutsch' : 'English'}</Text></Pressable>)}
+        </View>
         <Pressable accessibilityRole="button" accessibilityLabel={phase === 'speaking' ? 'Interrupt and speak' : active ? 'Pause conversation' : 'Start conversation'} disabled={busy || !plan || phase === 'stopping'}
           onPress={() => { if (phase === 'speaking') conversation.interrupt(); else if (active) void conversation.pause(); else void conversation.start(); }}
           style={{ alignSelf: 'center', alignItems: 'center', justifyContent: 'center', width: 144, height: 144, marginVertical: 16, borderRadius: 72, borderWidth: 10, borderColor: colors.pale, backgroundColor: active ? colors.primary : colors.ink, opacity: busy ? .5 : 1 }}>

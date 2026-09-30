@@ -32,7 +32,15 @@ Deno.serve(async (req: Request) => {
     if (req.headers.get('content-type')?.includes('multipart/form-data')) {
       const form = await bounded.formData(), file = form.get('audio');
       if (!(file instanceof File) || !file.size || file.size > 2_900_000 || !['audio/mp4', 'audio/m4a', 'audio/webm', 'audio/wav', 'audio/mpeg'].includes(file.type.split(';')[0])) return json({ error: 'Unsupported recording. Please try again or type your wishes.' }, 400);
-      const audio = new FormData(); audio.append('file', file); audio.append('model', 'gpt-4o-mini-transcribe');
+      const requestedLanguage = form.get('language');
+      const language = requestedLanguage === 'de' || requestedLanguage === 'en' ? requestedLanguage : null;
+      const audio = new FormData(); audio.append('file', file); audio.append('model', 'gpt-4o-mini-transcribe'); audio.append('temperature', '0');
+      if (language) {
+        audio.append('language', language);
+        audio.append('prompt', language === 'de'
+          ? 'Transcribe the spoken German exactly. Do not translate. The topic is grocery shopping, meals, ingredients, days, people, calories, protein and budget.'
+          : 'Transcribe the spoken English exactly. Do not translate. The topic is grocery shopping, meals, ingredients, days, people, calories, protein and budget.');
+      }
       const response = await request('https://api.openai.com/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${apiKey}` }, body: audio });
       if (!response.ok) return json({ error: 'Speech could not be transcribed. Please retry or type your wishes.' }, 502);
       const result = await response.json();
