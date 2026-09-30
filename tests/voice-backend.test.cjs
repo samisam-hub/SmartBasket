@@ -23,6 +23,11 @@ test('voice backend validates auth, missing secret, input and model output',asyn
  const response=await call({plan,text:'30 Tage',history:[],meals:[]});assert.equal(response.status,200);
  const result=await response.json();assert.match(result.reply,/3, 5, 7 oder 14/);assert.ok(result.unresolved);assert.equal(result.plan.days,30);
  const sent=JSON.parse(upstream[0].init.body);assert.equal(sent.store,false);assert.equal(sent.text.format.strict,true);
+  output={text:'Hallo'};
+  const form=new FormData();form.append('audio',new File(['audio'],'wish.m4a',{type:'audio/mp4'}));form.append('language','de');
+  const audioResponse=await handler(new Request('https://test/voice',{method:'POST',headers:{Authorization:'Bearer test'},body:form}));
+  assert.equal(audioResponse.status,200);assert.equal((await audioResponse.json()).text,'Hallo');
+  const sentAudio=upstream.at(-1).init.body;assert.equal(sentAudio.get('language'),'de');assert.equal(sentAudio.get('temperature'),'0');
  output={status:'completed',output:[{content:[{type:'output_text',text:'{"plan":null}'}]}]};
  assert.equal((await call({plan,text:'hello',history:[],meals:[]})).status,422);
 });
