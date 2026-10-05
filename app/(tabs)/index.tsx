@@ -2,6 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
+import { CalendarWelcome } from '@/components/CalendarWelcome';
 import { LatestBasket } from '@/components/LatestBasket';
 import { WastePrevention } from '@/components/WastePrevention';
 import { PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
@@ -18,13 +19,14 @@ export default function HomeScreen() {
   const { active } = useActiveBasket();
   const openCart = () => active ? router.push({ pathname: '/basket-setup', params: { savedId: active.id } }) : router.navigate('/basket');
   const name = profile?.displayName.trim();
-  const details = saved ? preferenceChips(saved).slice(2).filter(label => !label.includes('budget')) : [];
+  const details = saved?.participants ? saved.participants.map(person => person.name) : saved ? preferenceChips(saved).slice(2).filter(label => !label.includes('budget')) : [];
   return <Screen compact>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 }}>
       <Text accessibilityRole="header" style={[ui.heading, { flex: 1, fontWeight: '800', fontSize: 22 }]}>Smart<Text style={{ color: colors.primary }}>Basket</Text></Text>
       <Text style={[ui.small, { color: colors.ink, flexShrink: 1 }]} numberOfLines={1}>{name ? `Hi ${name}` : 'Welcome'}</Text>
       <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Open your basket" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
     </View>
+    {saved?.slotDefaults ? <CalendarWelcome /> : <>
     <WastePrevention />
     <View style={{ flexDirection: 'row', gap: 10 }}>
       <View style={{ flex: 1 }}><PrimaryButton label="Plan my next meal" disabled={flow.disabled} onPress={flow.create} /></View>
@@ -50,6 +52,7 @@ export default function HomeScreen() {
         </View>
       </Pressable>)}
     </View>
+    </>}
     {saved && <SectionCard compact>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ flex: 1 }}>

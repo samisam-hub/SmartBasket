@@ -48,6 +48,16 @@ Schon vorhanden und wiederverwendbar:
 
 ## Phasen in Reihenfolge
 
+### Implementierungsstand: Haltepunkt nach Phase 0
+
+- Personen-Onboarding mit einem automatisch angelegten ersten Teilnehmer, Erwachsener/Kind als Pflichtauswahl, optionalen Details und korrigierbarer Empfehlung.
+- `estimateCalories` ist über `services/profile-domain.ts` verfügbar. Erwachsene mit vollständigem Alter, Größe, Gewicht und männlich/weiblich verwenden Mifflin–St Jeor mit Aktivitätsfaktor; sonst 2.000 kcal als Ausgangswert. Kinder verwenden eine kleinere, anpassbare Standardportion von 1.400 kcal, keine Erwachsenenformel. Dies sind Planungswerte, keine individuellen Ernährungsvorgaben.
+- Mahlzeiten-Standard mit ausgeschaltetem Snack im Onboarding. `SlotDefaults` wurde als Voraussetzung dafür bereits ergänzt; `WeekPlan` bleibt Phase 1.
+- Abschluss führt zum leeren Wochenkalender mit Wochennavigation. Tage und Mahlzeiten sind hier noch nicht bearbeitbar; diese Screens folgen in der vorgesehenen UI-Phase. Vorhandene gespeicherte Pläne bleiben separat erreichbar.
+- Neue Haushaltsdaten und Mahlzeiten-Standards werden lokal inklusive Entwürfen gespeichert. Bis Phase 2 bleibt ihr Cloud-Sync ausdrücklich ausstehend, damit alte Tabellen keine neuen Daten stillschweigend verlieren. Die Migration muss neben `slot_defaults` auch die Teilnehmerliste dauerhaft in den Preferences speichern; anschließend den vorläufigen Guard in `preferences-repository.ts` ersetzen und Roundtrip-Tests ergänzen.
+- Alte Preferences, Teilnehmer und Version-1-Plan-Snapshots werden nicht umgeschrieben. `planningDays` bleibt intern für die bisherigen Planfunktionen erhalten, entfällt aber aus dem normalen Onboarding.
+- Neue Regressionstests: `tests/onboarding-household.test.cjs` und `tests/onboarding-people-ui.test.cjs`; bestehende Mengen-, Persistenz- und Datenbanktests bleiben aktiv.
+
 Phasen 0 bis 6 plus 3b, jede einzeln testbar. Phase 0 bis 2 bauen aufeinander auf und kommen zuerst; Phase 1 bis 3 sind reine Logik ohne UI; ab Phase 4 kann parallel an Screens gearbeitet werden.
 
 ### Phase 0 — Onboarding mit Personen und Kalorien

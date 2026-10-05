@@ -2,6 +2,7 @@ import { View } from "react-native";
 import { PreferenceRow } from "./ui";
 import {
   labels,
+  defaultSlotDefaults,
   type OnboardingStep,
   type PreferenceDraft,
 } from "@/types/preferences";
@@ -22,6 +23,10 @@ export function PreferenceSummary({
         value={`${p.householdSize} ${p.householdSize === 1 ? "person" : "people"}`}
         onEdit={edit("household")}
       />
+      {p.participants ? <>
+        <PreferenceRow label="People" value={p.participants.map(person => `${person.name}: ${person.kind === 'child' ? 'smaller portion' : 'adult portion'}`).join(', ')} onEdit={edit('household')} />
+        <PreferenceRow label="Usual meals" value={Object.entries(p.slotDefaults ?? defaultSlotDefaults).filter(([, enabled]) => enabled).map(([slot]) => slot).join(', ') || 'Choose each day individually'} onEdit={edit('meals')} />
+      </> : <>
       <PreferenceRow
         label="Planning period"
         value={`${p.planningDays} days`}
@@ -46,6 +51,7 @@ export function PreferenceSummary({
         }
         onEdit={edit("goals")}
       />
+      </>}
       <PreferenceRow
         label="Diet"
         value={p.dietaryPreferences.map((d) => labels[d]).join(", ")}

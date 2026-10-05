@@ -264,8 +264,9 @@ export class PreferenceStore {
       this.publish({ saved: uploaded, pendingSync: false, remoteError: null });
     } catch {
       this.publish({
-        remoteError:
-          "Saved on this device only. Cloud sync failed. Check your connection, anonymous sign-in, and database setup, then retry.",
+        remoteError: saved.slotDefaults
+          ? "Your household and usual meals are saved on this device only. Cloud sync for these preferences is not available yet."
+          : "Saved on this device only. Cloud sync failed. Check your connection, anonymous sign-in, and database setup, then retry.",
       });
     }
   }

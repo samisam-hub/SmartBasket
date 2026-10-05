@@ -1,3 +1,4 @@
+import { isParticipant } from './participant-domain';
 import {
   allergens,
   diets,
@@ -30,6 +31,15 @@ const integerIn = (value: unknown, min: number, max: number) =>
   value <= max;
 export function validatePreferences(value: PreferenceDraft): PreferenceErrors {
   const errors: PreferenceErrors = {};
+  if (value.participants !== undefined && (!Array.isArray(value.participants) ||
+      value.participants.length !== value.householdSize || !value.participants.every(isParticipant) ||
+      new Set(value.participants.map(p => p.id)).size !== value.participants.length ||
+      value.participants.filter(p => p.isCurrentUser).length > 1 ||
+      (value.slotDefaults !== undefined && !value.participants.some(p => p.isCurrentUser))))
+    errors.participants = 'Choose Adult or Child for each person and check their optional details and targets.';
+  if (value.slotDefaults !== undefined && (!value.slotDefaults ||
+      ['breakfast', 'lunch', 'dinner', 'snack'].some(slot => typeof value.slotDefaults?.[slot as keyof typeof value.slotDefaults] !== 'boolean')))
+    errors.slotDefaults = 'Choose your usual meals.';
   if (!integerIn(value.householdSize, 1, 10))
     errors.householdSize = "Choose between 1 and 10 people.";
   if (![3, 5, 7, 14].includes(value.planningDays))
@@ -106,6 +116,9 @@ export function isDraft(value: unknown): value is PreferenceDraft {
   if (!value || typeof value !== "object") return false;
   const p = value as PreferenceDraft;
   return (
+    (p.participants === undefined || (Array.isArray(p.participants) && p.participants.length > 0 &&
+      p.participants.length <= 10 && p.participants.every(person => person && typeof person.id === 'string' && typeof person.name === 'string' &&
+        Array.isArray(person.dietaryPreferences) && Array.isArray(person.allergens) && Array.isArray(person.intolerances)))) &&
     typeof p.householdSize === "number" &&
     typeof p.planningDays === "number" &&
     (p.dailyCalories === null || typeof p.dailyCalories === "number") &&

@@ -12,7 +12,6 @@ import {
   EmptyState,
   ErrorMessage,
   InfoCard,
-  NumberStepper,
   PrimaryButton,
   ProgressIndicator,
   Screen,
@@ -21,16 +20,19 @@ import {
   SelectionChip,
   TextButton,
 } from "@/components/ui";
-import { NumberInput } from "@/components/NumberInput";
+import { NumberInput } from '@/components/NumberInput';
+import { OnboardingPeople } from '@/components/OnboardingPeople';
+import { householdPatch, onboardingHousehold } from '@/services/participant-domain';
 import { PreferenceSummary } from "@/components/PreferenceSummary";
 import { usePreferences } from "@/context/PreferencesContext";
 import { toggleDiet, validatePreferences } from "@/services/preference-domain";
 import {
   allergens,
   diets,
-  goals,
   labels,
   steps,
+  onboardingSteps,
+  defaultSlotDefaults,
   type OnboardingStep,
   type PreferenceErrors,
 } from "@/types/preferences";
@@ -45,12 +47,13 @@ const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
   welcome: {
     title: "Let's build a basket around you.",
     subtitle:
-      "A few preferences about your nutrition, lifestyle and budget. Your progress is saved on this device as you go.",
+      "Your household, usual meals and dietary restrictions. Your progress is saved on this device as you go.",
   },
   household: {
     title: "Who are we fueling?",
-    subtitle: "Choose your household and how many days you want to plan for.",
+    subtitle: "Choose Adult or Child for each person. Details are optional and can be added later.",
   },
+  meals: { title: "Your usual meals.", subtitle: "Choose your daily starting point. You can change each day in the calendar." },
   goals: {
     title: "Fuel your goals.",
     subtitle:
@@ -78,7 +81,8 @@ const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
 };
 const fields: Record<OnboardingStep, (keyof PreferenceErrors)[]> = {
   welcome: [],
-  household: ["householdSize", "planningDays"],
+  household: ["householdSize", "participants", "dailyCalories"],
+  meals: ["slotDefaults"],
   goals: ["dailyCalories", "primaryGoal", "proteinMode", "proteinTargetGrams"],
   diet: ["dietaryPreferences"],
   allergies: ["allergens"],
@@ -107,22 +111,25 @@ export default function OnboardingScreen() {
   const pending = useRef(false);
   const [exiting, setExiting] = useState(false);
   const step = steps.includes(params.step as OnboardingStep)
-    ? (params.step as OnboardingStep)
+    ? (params.step === "goals" ? "household" : params.step as OnboardingStep)
     : null;
-  const returning = params.review === "1";
+  const returning = params.review === "1" || step === "budget";
   const { draft, ready, saving, configured, localError, store } =
     usePreferences();
   const [attempted, setAttempted] = useState(false);
   const busy = saving || exiting;
-  const index = step ? steps.indexOf(step) : 0;
+  const index = step === "budget" ? onboardingSteps.length - 1 : step ? onboardingSteps.indexOf(step) : 0;
   useEffect(() => {
     if (step && ready) store.goTo(step);
     setAttempted(false);
   }, [step, ready, store]);
+  useEffect(() => {
+    if (ready && !saving && (!draft.participants || !draft.slotDefaults)) store.update(onboardingHousehold(draft));
+  }, [ready, saving, draft, store]);
   const back = useCallback(() => {
     if (busy || pending.current) return;
     if (returning) go("review", intent);
-    else if (index > 0) go(steps[index - 1], intent);
+    else if (index > 0) go(onboardingSteps[index - 1], intent);
     else exit();
   }, [busy, returning, index, intent, exit]);
   useFocusEffect(
@@ -161,7 +168,7 @@ export default function OnboardingScreen() {
     setAttempted(true);
     if (fields[step].some((field) => errors[field])) return;
     if (returning) go("review", intent);
-    else go(steps[index + 1], intent);
+    else go(onboardingSteps[index + 1], intent);
   };
   const finish = async (persist: () => Promise<boolean>) => {
     if (busy || pending.current) return;
@@ -191,15 +198,14 @@ export default function OnboardingScreen() {
           }}
         />
       </View>
-      <ProgressIndicator current={index + 1} total={steps.length} />
+      <ProgressIndicator current={index + 1} total={onboardingSteps.length} />
       <ScreenHeader {...copy[step]} />
       <ErrorMessage message={localError} />
       <View pointerEvents={busy ? "none" : "auto"} style={ui.stack}>
         {step === "welcome" && (
           <>
             <InfoCard title="A few choices. A stronger start.">
-              Your calorie goal, food preferences, household and budget will
-              guide future baskets. No email or password needed.
+              Your household and food restrictions will guide your meal suggestions. No email or password needed.
             </InfoCard>
             {!configured && (
               <InfoCard title="Try it locally">
@@ -209,93 +215,17 @@ export default function OnboardingScreen() {
             )}
           </>
         )}
-        {step === "household" && (
-          <SectionCard>
-            <NumberStepper
-              label="Household size"
-              value={draft.householdSize}
-              min={1}
-              max={10}
-              onChange={(householdSize) => store.update({ householdSize })}
-            />
-            <ErrorMessage message={visible.householdSize} />
-            <Text style={ui.subheading}>Planning period</Text>
-            <View style={ui.wrap}>
-              {[3, 5, 7, 14].map((planningDays) => (
-                <SelectionChip
-                  key={planningDays}
-                  label={`${planningDays} days`}
-                  selected={draft.planningDays === planningDays}
-                  onPress={() => store.update({ planningDays })}
-                />
-              ))}
-            </View>
-            <ErrorMessage message={visible.planningDays} />
-          </SectionCard>
-        )}
-        {step === "goals" && (
-          <>
-            <SectionCard>
-              <NumberInput
-                label="Daily calorie target"
-                hint="1,000–5,000 kcal per person, per day"
-                value={draft.dailyCalories}
-                onChange={(dailyCalories) => store.update({ dailyCalories })}
-                error={visible.dailyCalories}
-              />
-              <Text style={ui.subheading}>Main nutrition goal</Text>
-              <View style={ui.wrap}>
-                {goals.map((primaryGoal) => (
-                  <SelectionChip
-                    key={primaryGoal}
-                    label={labels[primaryGoal]}
-                    selected={draft.primaryGoal === primaryGoal}
-                    onPress={() => store.update({ primaryGoal })}
-                  />
-                ))}
-              </View>
-            </SectionCard>
-            <SectionCard title="Protein target">
-              <View style={ui.wrap}>
-                {(["automatic", "manual"] as const).map((proteinMode) => (
-                  <SelectionChip
-                    key={proteinMode}
-                    label={
-                      proteinMode === "automatic"
-                        ? "Automatic"
-                        : "Manual grams/day"
-                    }
-                    selected={draft.proteinMode === proteinMode}
-                    onPress={() =>
-                      store.update({
-                        proteinMode,
-                        proteinTargetGrams:
-                          proteinMode === "manual"
-                            ? (draft.proteinTargetGrams ?? 100)
-                            : null,
-                      })
-                    }
-                  />
-                ))}
-              </View>
-              {draft.proteinMode === "manual" ? (
-                <NumberInput
-                  label="Protein target (g/day)"
-                  value={draft.proteinTargetGrams}
-                  onChange={(proteinTargetGrams) =>
-                    store.update({ proteinTargetGrams })
-                  }
-                  error={visible.proteinTargetGrams}
-                />
-              ) : (
-                <Text style={ui.small}>
-                  No manual target. Automatic calculations will arrive with
-                  basket generation.
-                </Text>
-              )}
-            </SectionCard>
-          </>
-        )}
+        {step === "household" && <>
+          <OnboardingPeople people={draft.participants ?? []} onChange={people => store.update(householdPatch(people))} />
+          <ErrorMessage message={visible.participants ?? visible.dailyCalories} />
+        </>}
+        {step === "meals" && <SectionCard>
+          <View style={ui.wrap}>{(['breakfast', 'lunch', 'dinner', 'snack'] as const).map(slot => <SelectionChip key={slot}
+            label={slot[0].toUpperCase() + slot.slice(1)} selected={(draft.slotDefaults ?? defaultSlotDefaults)[slot]}
+            onPress={() => store.update({ slotDefaults: { ...(draft.slotDefaults ?? defaultSlotDefaults), [slot]: !(draft.slotDefaults ?? defaultSlotDefaults)[slot] } })} />)}</View>
+          <Text style={ui.small}>Snacks start switched off. These are defaults, not a commitment for every day.</Text>
+          <ErrorMessage message={visible.slotDefaults} />
+        </SectionCard>}
         {step === "diet" && (
           <SectionCard>
             <View style={ui.wrap}>
@@ -306,10 +236,8 @@ export default function OnboardingScreen() {
                   selected={draft.dietaryPreferences.includes(diet)}
                   onPress={() =>
                     store.update({
-                      dietaryPreferences: toggleDiet(
-                        draft.dietaryPreferences,
-                        diet,
-                      ),
+                      dietaryPreferences: toggleDiet(draft.dietaryPreferences, diet),
+                      participants: draft.participants?.map(p => ({ ...p, dietaryPreferences: toggleDiet(draft.dietaryPreferences, diet) })),
                     })
                   }
                 />
@@ -340,7 +268,7 @@ export default function OnboardingScreen() {
                 <SelectionChip
                   label="None"
                   selected={!draft.allergens.length}
-                  onPress={() => store.update({ allergens: [] })}
+                  onPress={() => store.update({ allergens: [], participants: draft.participants?.map(p => ({ ...p, allergens: [] })) })}
                 />
                 {allergens.map((allergen) => (
                   <SelectionChip
@@ -352,6 +280,7 @@ export default function OnboardingScreen() {
                         allergens: draft.allergens.includes(allergen)
                           ? draft.allergens.filter((a) => a !== allergen)
                           : [...draft.allergens, allergen],
+                        participants: draft.participants?.map(p => ({ ...p, allergens: draft.allergens.includes(allergen) ? draft.allergens.filter(a => a !== allergen) : [...draft.allergens, allergen] })),
                       })
                     }
                   />
@@ -417,7 +346,7 @@ export default function OnboardingScreen() {
               ))}
             <Text style={ui.small}>
               {configured
-                ? "We’ll save on this device first, then sync to your private Supabase profile. If sync fails, you’ll see a local-only status and can retry."
+                ? "Your household and meal defaults will be saved on this device. Cloud sync for these new preferences is not available yet."
                 : "Supabase is not configured. Saving will complete onboarding on this device only."}
             </Text>
           </>
@@ -426,7 +355,7 @@ export default function OnboardingScreen() {
       {step === "review" ? (
         <PrimaryButton
           label={busy ? "Saving preferences…" : intent === "edit"
-            ? "Save changes" : "Save preferences"}
+            ? "Save changes" : "Open my calendar"}
           loading={busy}
           onPress={() => {
             void save();

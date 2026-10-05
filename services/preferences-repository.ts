@@ -93,6 +93,10 @@ return {
     return data ? fromRow(data as PreferenceRow) : null;
   },
   async save(preferences) {
+    // Phase 2 adds the cloud columns. Keep the full local completion pending meanwhile,
+    // rather than acknowledge a response that silently drops the household and defaults.
+    if (preferences.participants || preferences.slotDefaults)
+      throw new Error('Calendar preferences require the Phase 2 database migration. Your complete preferences remain saved locally.');
     const id = await userId();
     check(id);
     if (preferences.userId && preferences.userId !== id)

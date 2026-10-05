@@ -14,6 +14,12 @@ export const emptyProfile:PersonalProfile={id:null,displayName:'',sex:null,age:n
  primaryNutritionGoal:'balanced',activityLevel:null,defaultDailyCalories:null,proteinMode:'automatic',defaultProteinTargetGrams:null,
  dietaryPreferences:['none'],allergens:[],intolerances:[],onboardingCompleted:false};
 export interface PlanParticipant {
+ /** Optional on legacy snapshots. Null means the onboarding choice is still open. */
+ kind?: 'adult' | 'child' | null;
+ activityLevel?: 'sedentary' | 'normal' | 'active' | null;
+ heightCm?: number | null;
+ weightKg?: number | null;
+ calorieTargetMode?: 'recommended' | 'manual';
  id:string;name:string;age:number|null;sex:PersonalProfile['sex'];dailyCalories:number|null;
  proteinTarget:number|null;dietaryPreferences:Diet[];allergens:Allergen[];intolerances:PersonalProfile['intolerances'];isCurrentUser:boolean;
 }

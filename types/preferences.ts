@@ -29,6 +29,7 @@ export const steps = [
   "welcome",
   "household",
   "goals",
+  "meals",
   "diet",
   "allergies",
   "budget",
@@ -38,7 +39,13 @@ export type Goal = (typeof goals)[number];
 export type Diet = (typeof diets)[number];
 export type Allergen = (typeof allergens)[number];
 export type OnboardingStep = (typeof steps)[number];
+export type SlotDefaults = Record<import('./meal').MealSlot, boolean>;
+export const defaultSlotDefaults: SlotDefaults = { breakfast: true, lunch: true, dinner: true, snack: false };
+/** Old step names remain valid for saved drafts and deep links. */
+export const onboardingSteps: OnboardingStep[] = ['welcome', 'household', 'meals', 'diet', 'allergies', 'review'];
 export interface PreferenceValues {
+  participants?: import('./profile').PlanParticipant[];
+  slotDefaults?: SlotDefaults;
   householdSize: number;
   planningDays: number;
   dailyCalories: number;
@@ -56,7 +63,6 @@ export type PreferenceDraft = Omit<PreferenceValues, "dailyCalories"> & {
 };
 export interface UserPreferences extends PreferenceValues {
   preferredMealIds?: string[];
-  participants?: import('./profile').PlanParticipant[];
   id: string | null;
   userId: string | null;
   onboardingCompleted: boolean;
