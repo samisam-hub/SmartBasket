@@ -1,7 +1,8 @@
 import type { Allergen, Diet } from './preferences';
 import type { ProductCategory } from './product';
 export interface Nutrition { calories: number; protein: number; carbohydrates: number; fat: number }
-export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+export const mealSlots = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
+export type MealSlot = (typeof mealSlots)[number];
 export type MealMode = 'cook' | 'ready_to_eat' | 'heat_and_eat' | 'eat_out';
 export type ReadyMealCategory = 'salad' | 'lasagne' | 'pasta' | 'asian' | 'pizza';
 export interface ReadyMealMetadata {

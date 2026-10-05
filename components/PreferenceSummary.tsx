@@ -5,6 +5,8 @@ import {
   type OnboardingStep,
   type PreferenceDraft,
 } from "@/types/preferences";
+import { activeSlotLabels } from "@/services/preference-domain";
+import { participantKind } from "@/services/profile-domain";
 import { ui } from "@/lib/theme";
 export function PreferenceSummary({
   preferences: p,
@@ -19,18 +21,27 @@ export function PreferenceSummary({
     <View style={ui.stack}>
       <PreferenceRow
         label="Household"
-        value={`${p.householdSize} ${p.householdSize === 1 ? "person" : "people"}`}
+        value={
+          p.participants?.length
+            ? p.participants
+                .map(
+                  (person) =>
+                    `${person.name || "Person"} (${participantKind(person) === "child" ? "child" : "adult"}, ${person.dailyCalories ?? "—"} kcal)`,
+                )
+                .join(", ")
+            : `${p.householdSize} ${p.householdSize === 1 ? "person" : "people"}`
+        }
         onEdit={edit("household")}
       />
       <PreferenceRow
-        label="Planning period"
-        value={`${p.planningDays} days`}
-        onEdit={edit("household")}
+        label="Meals planned"
+        value={activeSlotLabels(p).join(", ")}
+        onEdit={edit("meals")}
       />
       <PreferenceRow
         label="Calories per person"
         value={`${p.dailyCalories ?? "Not set"} kcal/day`}
-        onEdit={edit("goals")}
+        onEdit={edit("household")}
       />
       <PreferenceRow
         label="Nutrition goal"
