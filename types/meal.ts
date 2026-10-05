@@ -29,19 +29,39 @@ export interface Meal {
   dietaryTags: Diet[]; allergens: Allergen[]; ingredients: MealIngredient[];
   nutritionSource: 'curated-development-estimate' | 'unrecorded'; createdAt: string; updatedAt: string;
 }
-export interface MealPlanItem {
-  id: string; dayIndex: number; mealSlot: MealSlot; meal: Meal; servings: number;
+interface MealChoice {
+  id: string; mealSlot: MealSlot; meal: Meal; servings: number;
   /** Missing mode means cook for existing saved plans. Non-cook meal is a display snapshot only. */
   mealMode?: MealMode;
   readyMealCategory?: ReadyMealCategory;
   readyMealMatch?: { productId: string; productName: string; quantity: number; nutrition: Nutrition };
 }
+/** Version 1 item: days are counted from 0 over one uninterrupted planning period. */
+export interface MealPlanItem extends MealChoice { dayIndex: number }
+/** Version 2 item: planned for one calendar date, so a week can have gaps. */
+export interface WeekPlanItem extends MealChoice { date: string }
 export interface MealPlan {
   snacksIncluded?: boolean;
   participants?: import('./profile').PlanParticipant[];
   version: '1'; planningDays: number; householdSize: number; targetCalories: number; targetProtein: number;
   status: 'review' | 'confirmed'; items: MealPlanItem[]; warnings: { code: string; message: string }[];
 }
+/** One chosen day of the calendar: the slots the household plans to eat at home. */
+export interface WeekPlanDay { date: string; slots: MealSlot[] }
+/** Version 2 plan: the week the person filled in themselves. Days may be missing entirely,
+ *  and a planned day may leave single slots open or deliberately unplanned. */
+export interface WeekPlan {
+  version: '2';
+  /** ISO date of the Monday the week starts on. */
+  weekStart: string;
+  days: WeekPlanDay[];
+  participants?: import('./profile').PlanParticipant[];
+  householdSize: number; targetCalories: number; targetProtein: number;
+  status: 'review' | 'confirmed'; items: WeekPlanItem[]; warnings: { code: string; message: string }[];
+}
+/** Saved plans keep their version; both shapes stay readable side by side. */
+export type AnyMealPlan = MealPlan | WeekPlan;
+export type AnyMealPlanItem = MealPlanItem | WeekPlanItem;
 export interface IngredientRequirement {
   ingredientKey: string; ingredientName: string; requiredQuantity: number; unit: 'g' | 'ml'; flexible: boolean;
   minimumAcceptableQuantity: number; maximumAcceptableQuantity: number; sourceMealIds: string[];
