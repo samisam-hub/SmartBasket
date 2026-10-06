@@ -2,9 +2,9 @@
 
 Stand: 6. Oktober 2026 · Plan: [docs/KALENDER-FLOW-PLAN.md](KALENDER-FLOW-PLAN.md)
 
-**Phase 0 bis 6 sind umgesetzt und grün** (`npm run typecheck`, `npm run lint`, `npm test` — 170 Tests). Offen ist **Phase 3b (Anwesenheit pro Mahlzeit)** plus die Punkte unter „Offene Entscheidungen".
+**Phase 0 bis 6 sind umgesetzt und grün** (`npm run typecheck`, `npm run lint`, `npm test` — 176 Tests). Von Phase 3b stehen die Zustände „dabei" und „ganz weg"; offen ist **Zustand 3 (eigenes einfaches Gericht)**, siehe unten, plus die Punkte unter „Offene Entscheidungen".
 
-Branch: `claude/kalender-flow-phase0-2` (Name stammt aus der ersten Sitzung), neun Commits über `main` (789193c). Nichts davon ist gepusht.
+Branch: `claude/kalender-flow`, gepusht.
 
 ## Pflichtregeln für jede weitere Phase
 
@@ -36,17 +36,20 @@ Wichtige Festlegungen, die über den Plan hinausgehen:
 - Die Wischgeste nutzt `PanResponder`/`Animated` aus React Native — **keine neue Abhängigkeit**. `swipeAction(dx, dy, width)` ist die testbare Entscheidung; Tippen macht dasselbe.
 - Der Home-Tab behält Sprachplanung, Pantry, Vorratsanzeige und Produkt-Tiles; nur der automatische Komplettplan ist durch den Kalender ersetzt.
 
-## Als nächstes: Phase 3b — Anwesenheit pro Mahlzeit
+## Phase 3b, Teil 1: Anwesenheit pro Mahlzeit (steht)
 
-Nicht jede Person isst jede Mahlzeit zu Hause. Standard ist **alle dabei**; Abwesenheit ist die Ausnahme und wird pro Slot gesetzt.
+`MealChoice.participantIds?: string[]` — **fehlt das Feld, sind alle dabei**, und genau so bleiben alle gespeicherten Pläne gültig. `setPresence(plan, date, slot, ids, preferences)` rechnet die Menge auf die Köpfe am Tisch um (dieselbe Basis, die `householdSize` immer hatte), speichert „alle dabei" wieder als *kein* Feld, und wenn niemand übrig bleibt, wird der Slot übersprungen statt eine leere Mahlzeit zu führen. Eine Person, die der Plan nicht kennt, wird abgewiesen; `isWeekPlan`/`isMealPlan` prüfen die Liste gegen die Teilnehmer des Plans. `portionsFor`/`splitNutrition` teilen eine Mahlzeit nur unter den Anwesenden, nach deren Kalorienanteil. UI: Chips pro Person unter jeder entschiedenen Mahlzeit auf `app/plan/[date].tsx`.
 
-- Datenmodell: `MealChoice` in `types/meal.ts` bekommt `participantIds?: string[]`. **Fehlt das Feld, sind alle dabei** — so bleiben alle gespeicherten Pläne gültig.
-- Drei Zustände pro Person und Mahlzeit: dabei · ganz weg (keine Menge, kein Einkauf) · eigenes einfaches Gericht.
-- Zustand 3 braucht keinen neuen Modus: ein paar einfache Gerichte in `data/meals.ts` ergänzen (belegtes Brot, Lunchbox) und für diesen Slot statt des Familienessens wählen. Beachten: `meal()` dort leitet `dietaryTags` aus den Zutaten ab, und jedes neue Gericht braucht ein Bild oder einen Fallback in `lib/meal-images.ts`.
-- Mengen: `services/meals/portions.ts` rechnet schon pro Teilnehmer. `participantPortions` muss die Anwesenden eines Slots berücksichtigen, und `aggregateIngredients` die Portionen entsprechend kleiner ansetzen. Dabei gilt weiter: eine Mahlzeit ist eine Einheit — Kalorien und Protein lassen sich nicht unabhängig teilen.
-- UI: auf `app/plan/[date]/[slot].tsx` oder `app/plan/[date].tsx` eine Anwesenheitsliste pro Slot (antippen genügt).
-- Tests: Menge sinkt, wenn jemand nicht dabei ist; ein Slot ohne Anwesende erzeugt keinen Einkauf; alte Items ohne `participantIds` zählen weiter für alle.
-- **Später** (nicht Phase 3b): wiederkehrende Muster wie „Kind, Mo–Fr, Mittag, nicht dabei".
+## Als nächstes: Phase 3b, Teil 2 — eigenes einfaches Gericht
+
+Zustand 3 des Plans („die Person isst Brotzeit/Lunchbox statt des Familienessens") **ist mit dem heutigen Modell nicht umsetzbar** und braucht zwei Entscheidungen:
+
+1. **Ein Slot trägt genau eine Mahlzeit** — in der App (`isWeekPlan`: keine Dubletten pro Datum + Slot, Item-id ist `${date}-${slot}`) und in der Datenbank (`unique(meal_plan_id, plan_date, meal_slot)` aus Migration `20261006090000`). Ein zweites Gericht im selben Slot für eine andere Personengruppe erfordert: Uniqueness auf (Plan, Datum, Slot, Personengruppe) umstellen — also eine weitere Migration plus eine Spalte oder einen Schlüssel für die Gruppe —, ein neues Item-id-Schema, Anpassung von `openPlanSlots` (wann ist ein Slot „entschieden"?) und UI für mehrere Gerichte pro Slot.
+2. **Jedes kuratierte Gericht braucht eine gebündelte Illustration**: `tests/meal-images.test.cjs` prüft `for (const meal of meals) assert.ok(mealImageSource(meal))`, und `mealImageSource` verweigert bewusst ein Bild, dessen Zutaten nicht exakt passen. „Belegtes Brot" und „Lunchbox" in `data/meals.ts` brauchen also vorher Assets in `assets/meals/` (AI-Illustrationen, Provenienz in `docs/`), sonst wird der Test rot oder die Prüfung müsste aufgeweicht werden.
+
+Die kleine Alternative, falls das zu groß ist: die Person als abwesend markieren und ihr Essen über die Korb-Extras (Phase 6) auf die Einkaufsliste nehmen. Das braucht keine Migration und keine neuen Gerichte, modelliert den Zustand aber nicht im Plan.
+
+Ebenfalls offen, aber vom Plan ausdrücklich nach hinten gestellt: wiederkehrende Muster wie „Kind, Mo–Fr, Mittag, nicht dabei", damit man es nicht jede Woche neu setzt.
 
 ## Fallen, die in Phase 0–6 Zeit gekostet haben
 

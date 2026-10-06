@@ -33,7 +33,7 @@ function DayMeals({ plan, label, items, ratios }: { plan: AnyMealPlan; label: st
           <Text style={ui.eyebrow}>{item.mealSlot.toUpperCase()}</Text>
           <Text style={ui.subheading}>{item.meal.name}</Text>
           <MealImage meal={item.meal} compact />
-          {mealNutritionKnown(item, ratios) ? <ParticipantNutrition plan={plan} nutrition={mealNutrition(item, ratios)} /> : <Text style={ui.small}>Nutrition unknown{item.mealMode==='eat_out'?' · Eating out · No shopping items':' · No matched product'}</Text>}
+          {mealNutritionKnown(item, ratios) ? <ParticipantNutrition plan={plan} participantIds={item.participantIds} nutrition={mealNutrition(item, ratios)} /> : <Text style={ui.small}>Nutrition unknown{item.mealMode==='eat_out'?' · Eating out · No shopping items':' · No matched product'}</Text>}
           {item.readyMealMatch && (ratios?.[`ready:${item.readyMealMatch.productId}`]??1)>0 && <Text style={ui.small}>{item.readyMealMatch.productName}</Text>}
         </View>)}
       </ScrollView>}

@@ -6,6 +6,7 @@ import { useWeekPlan } from '@/context/WeekPlanContext';
 import { MealImage } from '@/components/MealImage';
 import { slotLabels } from '@/services/preference-domain';
 import { dayOf, isPlanDate, itemsOn, planDateLabel, sortSlots } from '@/services/meals/weekPlan';
+import { participantKind } from '@/services/profile-domain';
 import { mealSlots, type MealSlot } from '@/types/meal';
 import { ui } from '@/lib/theme';
 
@@ -21,6 +22,7 @@ export default function PlanDayScreen() {
     <PrimaryButton label="Back to the calendar" onPress={() => router.replace('/plan/week')} />
   </Screen>;
   const items = itemsOn(plan, date);
+  const people = plan.participants ?? [];
   const decided = (slot: MealSlot) => items.find(item => item.mealSlot === slot);
   const openSlots = sortSlots(day.slots).filter(slot => !decided(slot));
   return <Screen bottom>
@@ -34,6 +36,20 @@ export default function PlanDayScreen() {
         {item ? <>
           <Text style={ui.subheading}>{item.meal.name}</Text>
           <MealImage meal={item.meal} compact />
+          {people.length > 1 && <>
+            <Text style={ui.caption}>Who is eating this?</Text>
+            <View style={ui.wrap}>
+              {people.map(person => {
+                const present = item.participantIds ?? people.map(other => other.id);
+                const eating = present.includes(person.id);
+                return <SelectionChip key={person.id} selected={eating}
+                  label={`${person.name || 'Person'}${participantKind(person) === 'child' ? ' (child)' : ''}`}
+                  onPress={() => store.setPresence(date, slot,
+                    eating ? present.filter(id => id !== person.id) : [...present, person.id], saved)} />;
+              })}
+            </View>
+            <Text style={ui.small}>Nothing is bought for whoever is not eating at home.</Text>
+          </>}
           <View style={[ui.row, { gap: 8 }]}>
             <TextButton label="Choose another" onPress={() => { store.clear(date, slot, saved);
               router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot } }); }} />

@@ -64,6 +64,26 @@ export function chooseMode(plan: WeekPlan, date: string, slot: MealSlot, mode: E
     meal: choicePlaceholder(mode, slot, category, { createdAt: now, updatedAt: now }) };
   return withTargets({ ...plan, status: 'review', items: [...plan.items, item] }, preferences);
 }
+/** Who eats this meal at home. Absent people get no portion and nothing bought for them; when
+ *  nobody is left the slot is skipped, because an empty meal is not a meal. The quantity follows
+ *  the heads at the table, the same basis the household size always used. */
+export function setPresence(plan: WeekPlan, date: string, slot: MealSlot, participantIds: string[],
+  preferences: UserPreferences): WeekPlan {
+  const item = itemsOn(plan, date).find(candidate => candidate.mealSlot === slot);
+  if (!item) throw Error('Choose a meal for this slot first.');
+  const people = plan.participants?.map(person => person.id);
+  if (people && participantIds.some(id => !people.includes(id))) throw Error('That person is not in this plan.');
+  const present = people ? people.filter(id => participantIds.includes(id)) : [...new Set(participantIds)];
+  if (!present.length) return skipSlot(plan, date, slot, preferences);
+  const before = item.participantIds?.length ?? plan.householdSize;
+  const perPerson = item.servings / Math.max(1, before);
+  const everyone = present.length >= plan.householdSize;
+  const updated: WeekPlanItem = { ...item, servings: perPerson * present.length };
+  // The whole household is the default, so it is stored as no list at all.
+  if (everyone) delete updated.participantIds; else updated.participantIds = present;
+  return withTargets({ ...plan, status: 'review',
+    items: plan.items.map(other => other.id === item.id ? updated : other) }, preferences);
+}
 /** Undo one decision. The slot stays chosen, so it shows up as open again. */
 export const clearChoice = (plan: WeekPlan, date: string, slot: MealSlot, preferences: UserPreferences): WeekPlan =>
   withTargets({ ...plan, status: 'review',

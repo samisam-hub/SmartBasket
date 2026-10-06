@@ -32,6 +32,8 @@ export interface Meal {
 /** What was decided for one slot, without saying which day it belongs to. */
 export interface MealChoice {
   id: string; mealSlot: MealSlot; meal: Meal; servings: number;
+  /** Who eats this one. Absent means the whole household, which is what every saved plan means. */
+  participantIds?: string[];
   /** Missing mode means cook for existing saved plans. Non-cook meal is a display snapshot only. */
   mealMode?: MealMode;
   readyMealCategory?: ReadyMealCategory;

@@ -14,9 +14,13 @@ function validChoice(i: MealChoice) {
     Number.isFinite(match.quantity) && match.quantity > 0 && match.nutrition &&
     ['calories','protein','carbohydrates','fat'].every(k => Number.isFinite(match.nutrition[k as keyof typeof match.nutrition]) && match.nutrition[k as keyof typeof match.nutrition] >= 0));
 }
-/** Everything about one planned meal that holds in both plan shapes; the day itself is checked per shape. */
-function validItem(i: MealChoice): boolean {
+/** Everything about one planned meal that holds in both plan shapes; the day itself is checked per shape.
+ *  `people` are the plan's participant ids when it has any, so a meal cannot name a stranger. */
+function validItem(i: MealChoice, people?: Set<string>): boolean {
   return !!i && typeof i.id === 'string' && mealSlots.includes(i.mealSlot) &&
+    (i.participantIds === undefined || (Array.isArray(i.participantIds) && i.participantIds.length > 0 &&
+      i.participantIds.length <= 10 && new Set(i.participantIds).size === i.participantIds.length &&
+      i.participantIds.every(id => typeof id === 'string' && (!people || people.has(id))))) &&
     Number.isFinite(i.servings) && i.servings > 0 && i.servings <= 15 &&
     !!i.meal && typeof i.meal.id === 'string' && typeof i.meal.name === 'string' && i.meal.servings === 1 &&
     validChoice(i) && Array.isArray(i.meal.dietaryTags) && Array.isArray(i.meal.allergens) && Array.isArray(i.meal.ingredients) &&
@@ -35,12 +39,14 @@ function validHousehold(p: { participants?: unknown; householdSize: number; targ
     [p.targetCalories,p.targetProtein].every(n => Number.isFinite(n) && n > 0) &&
     Array.isArray(p.warnings) && p.warnings.every(w => w && typeof w.code === 'string' && typeof w.message === 'string');
 }
+const planPeople = (plan: { participants?: { id: string }[] }): Set<string> | undefined =>
+  plan.participants ? new Set(plan.participants.map(person => person.id)) : undefined;
 export function isMealPlan(v: unknown): v is MealPlan {
   if(!v||typeof v!=='object')return false;const p=v as MealPlan;
   return validHousehold(p)&&p.version==='1'&&[3,5,7,14].includes(p.planningDays)&&
     (p.snacksIncluded===undefined||typeof p.snacksIncluded==='boolean')&&Array.isArray(p.items)&&p.items.length<=p.planningDays*4&&new Set(p.items.map(i=>i?.id)).size===p.items.length&&
     new Set(p.items.map(i=>`${i?.dayIndex}-${i?.mealSlot}`)).size===p.items.length&&
-    p.items.every(i=>i&&Number.isInteger(i.dayIndex)&&i.dayIndex>=0&&i.dayIndex<p.planningDays&&validItem(i));
+    p.items.every(i=>i&&Number.isInteger(i.dayIndex)&&i.dayIndex>=0&&i.dayIndex<p.planningDays&&validItem(i,planPeople(p)));
 }
 /** A calendar week: days may be missing and a planned day may leave chosen slots open,
  *  but every planned meal must sit on a day the household chose, in a slot it chose there. */
@@ -57,7 +63,7 @@ export function isWeekPlan(v: unknown): v is WeekPlan {
   return Array.isArray(p.items) && p.items.length <= p.days.length * mealSlots.length &&
     new Set(p.items.map(i => i?.id)).size === p.items.length &&
     new Set(p.items.map(i => `${i?.date}-${i?.mealSlot}`)).size === p.items.length &&
-    p.items.every(i => i && isPlanDate(i.date) && !!chosen.get(i.date)?.has(i.mealSlot) && validItem(i));
+    p.items.every(i => i && isPlanDate(i.date) && !!chosen.get(i.date)?.has(i.mealSlot) && validItem(i, planPeople(p)));
 }
 export const isAnyMealPlan = (v: unknown): v is AnyMealPlan => isMealPlan(v) || isWeekPlan(v);
 /** Chosen slots of planned days that nobody has decided yet, in day and slot order. */

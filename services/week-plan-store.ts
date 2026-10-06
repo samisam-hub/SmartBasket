@@ -3,7 +3,7 @@ import type { UserPreferences } from '../types/preferences';
 import type { MealSuggestion } from './meals/planner';
 import { isWeekPlan } from './meals/validation';
 import {
-  chooseMeal, chooseMode, clearChoice, confirmWeek, moveWeek, skipSlot, startWeek, toggleDay, toggleSlot,
+  chooseMeal, chooseMode, clearChoice, confirmWeek, moveWeek, setPresence, skipSlot, startWeek, toggleDay, toggleSlot,
 } from './meals/weekPlanDraft';
 import type { LocalStorage } from './preference-store';
 
@@ -79,6 +79,8 @@ export class WeekPlanStore {
   chooseMode = (date: string, slot: MealSlot, mode: Exclude<MealMode, 'cook'>,
     category: ReadyMealCategory | undefined, preferences: UserPreferences) =>
     this.apply(chooseMode(this.require(), date, slot, mode, category, preferences));
+  setPresence = (date: string, slot: MealSlot, participantIds: string[], preferences: UserPreferences) =>
+    this.apply(setPresence(this.require(), date, slot, participantIds, preferences));
   clear = (date: string, slot: MealSlot, preferences: UserPreferences) =>
     this.apply(clearChoice(this.require(), date, slot, preferences));
   skip = (date: string, slot: MealSlot, preferences: UserPreferences) =>
