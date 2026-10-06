@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ErrorMessage, Screen, ScreenHeader, SecondaryButton, SectionCard, SelectionChip } from '@/components/ui';
 import { MealSwipeCards } from '@/components/MealSwipeCards';
+import { MealImage } from '@/components/MealImage';
 import { usePreferences } from '@/context/PreferencesContext';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 import { useAuth } from '@/context/AuthContext';
@@ -10,9 +11,9 @@ import { useBasketCatalog } from '@/hooks/useBasketCatalog';
 import { getSupabaseClient } from '@/lib/supabase';
 import { readyCategories, readyCategoryLabels } from '@/services/meals/choices';
 import { recordChoice, type ChoiceAction } from '@/services/meals/choiceEvents';
-import { suggestMeals, type MealSuggestion } from '@/services/meals/planner';
+import { quickIndividualMeals, suggestMeals, type MealSuggestion } from '@/services/meals/planner';
 import { slotLabels } from '@/services/preference-domain';
-import { dayOf, isPlanDate, openSlots, planDateLabel } from '@/services/meals/weekPlan';
+import { dayOf, isPlanDate, itemsInSlot, openSlots, planDateLabel } from '@/services/meals/weekPlan';
 import { mealSlots, type MealSlot, type ReadyMealCategory } from '@/types/meal';
 import { ui } from '@/lib/theme';
 
@@ -40,8 +41,10 @@ export default function PlanSlotScreen() {
     <SecondaryButton label="Back to the calendar" onPress={() => router.replace('/')} />
   </Screen>;
   const record = (action: ChoiceAction, chosenMealId?: string) => {
+    const shownMealIds = suggestions.map(suggestion => suggestion.meal.id);
+    if (chosenMealId && !shownMealIds.includes(chosenMealId)) shownMealIds.push(chosenMealId);
     void recordChoice(getSupabaseClient(), session?.user.id ?? null, { planDate: date, mealSlot: mealSlot!,
-      shownMealIds: suggestions.map(suggestion => suggestion.meal.id), action, chosenMealId, round: rounds.current });
+      shownMealIds, action, chosenMealId, round: rounds.current });
   };
   const next = () => {
     const left = openSlots(plan!, date).filter(other => other !== mealSlot);
@@ -53,6 +56,10 @@ export default function PlanSlotScreen() {
     catch (e) { setMessage(e instanceof Error ? e.message : 'That did not work.'); }
   };
   const categories = readyCategories('heat_and_eat', mealSlot!);
+  const ownDishAlreadyChosen = !!eating?.length && itemsInSlot(plan!, date, mealSlot!).some(item =>
+    item.participantIds?.length === eating.length && item.participantIds.every(id => eating.includes(id)));
+  const quickMeals = eatingNames?.length && !ownDishAlreadyChosen
+    ? quickIndividualMeals(plan!, mealSlot!, saved!) : [];
   const takeAway = (mode: 'heat_and_eat' | 'ready_to_eat', category?: ReadyMealCategory) =>
     act(mode, () => store.chooseMode(date, mealSlot!, mode, category, saved!, eating));
   return <Screen bottom>
@@ -66,6 +73,15 @@ export default function PlanSlotScreen() {
         act('chosen', () => store.choose(date, mealSlot!, suggestion, saved!, eating), suggestion.meal.id)}
       onNext={() => setShown(ids => [...ids, suggestions[0].meal.id])}
       onMore={() => { record('shuffled'); rounds.current += 1; setShown(ids => [...ids, ...suggestions.map(s => s.meal.id)]); }} />
+    {quickMeals.length > 0 &&
+      <SectionCard title="Simple meal for one">
+        <Text style={ui.small}>A quick bread meal or lunchbox for this person. Its ingredients are added to the basket.</Text>
+        {quickMeals.map(suggestion => <View key={suggestion.meal.id} style={ui.stack}>
+          <MealImage meal={suggestion.meal} compact />
+          <SecondaryButton label={suggestion.meal.name}
+            onPress={() => act('chosen', () => store.choose(date, mealSlot!, suggestion, saved!, eating), suggestion.meal.id)} />
+        </View>)}
+      </SectionCard>}
     <SectionCard title="Or settle it another way">
       {!eatingNames?.length && <SecondaryButton label="Skip this meal" onPress={() => act('skipped', () => store.skip(date, mealSlot!, saved!))} />}
       <Text style={ui.small}>Skipping means you are not eating this meal at home. It is an answer, not a gap, so the basket will not flag it.</Text>

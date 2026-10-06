@@ -65,7 +65,8 @@ export const ingredients: Record<string, IngredientDefinition> = Object.fromEntr
 for(const [old,key] of Object.entries(legacyIngredientKeys))Object.defineProperty(ingredients,old,{value:ingredients[key],enumerable:false});
 function meal(id: string, name: string, mealType: Meal['mealType'], amounts: [string,number][]): Meal {
   // Season savory meals; sweet breakfasts and snacks keep their original ingredients.
-  if (mealType !== 'snack' && !['oat-berries','yogurt-fruit','overnight-oats','cottage-bowl'].includes(id)) {
+  if (mealType !== 'snack' && !['oat-berries','yogurt-fruit','overnight-oats','cottage-bowl',
+    'cottage-carrot-bread','chicken-ham-lunchbox'].includes(id)) {
     amounts = [...amounts, [id==='salmon-egg-toast'?'dill':'parsley',3], ['pepper',0.2]];
   }
   const totals = { calories: 0, protein: 0, carbohydrates: 0, fat: 0 };
@@ -92,6 +93,8 @@ export const meals: Meal[] = [
   meal('tofu-breakfast','Tofu potato scramble','breakfast',[['tofu',200],['potatoes',180],['spinach',100],['oil',5]]),
   meal('lentil-breakfast','Savory lentil breakfast bowl','breakfast',[['lentils',80],['tomatoes',150],['spinach',100],['oil',5]]),
   meal('chicken-potato','Chicken potato bowl','lunch',[['chicken',180],['potatoes',300],['broccoli',150],['oil',10]]),
+  meal('cottage-carrot-bread','Cottage cheese and carrot bread','lunch',[['bread',100],['cottage',150],['carrots',80]]),
+  meal('chicken-ham-lunchbox','Chicken ham lunchbox','lunch',[['bread',100],['chicken_ham',80],['apple',120],['carrots',80]]),
   meal('salmon-rice','Salmon rice bowl','dinner',[['salmon',150],['rice',75],['broccoli',180],['oil',5]]),
   meal('lentil-pasta','Lentil pasta bowl','lunch',[['lentils',60],['pasta',65],['tomatoes',200],['oil',5]]),
   meal('tofu-teriyaki-noodles','Tofu teriyaki noodles','dinner',[['tofu',200],['noodles',70],['broccoli',150],['carrots',100],['oil',5],['teriyaki',15]]),
@@ -114,3 +117,4 @@ export const meals: Meal[] = [
   meal('snack-yogurt','Yogurt and berry snack','snack',[['yogurt',150],['berries',60]]),
   meal('snack-banana-chocolate','Banana and dark chocolate','snack',[['banana',60],['dark_chocolate',10]]),
 ];
+export const quickIndividualMealIds = ['cottage-carrot-bread', 'chicken-ham-lunchbox'] as const;

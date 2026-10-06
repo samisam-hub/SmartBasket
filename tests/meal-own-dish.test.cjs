@@ -9,7 +9,8 @@ const {
 const { isWeekPlan } = require("../services/meals/validation.ts");
 const { aggregateIngredients } = require("../services/meals/aggregation.ts");
 const { basketFromMealPlan } = require("../services/meals/basket.ts");
-const { mealNutrition, suggestMeals } = require("../services/meals/planner.ts");
+const { mealNutrition, quickIndividualMeals, suggestMeals } = require("../services/meals/planner.ts");
+const { meals } = require('../data/meals.ts');
 const { coveredInSlot, itemGroup, itemsInSlot } = require("../services/meals/weekPlan.ts");
 const { prefs } = require("./basket-fixtures.cjs");
 const { fullCatalog } = require("./meal-fixtures.cjs");
@@ -59,6 +60,29 @@ test("one slot can hold a family meal and somebody's own dish", () => {
   // Only dinner was planned here, so breakfast and lunch are open; the split itself is not a gap.
   for (const warning of basket.warnings.filter(w => w.code.startsWith("open_slot_")))
     assert.ok(!warning.message.includes("dinner"), warning.message);
+});
+
+test('a child can take a simple lunchbox while the family keeps its meal, with only its ingredients added', () => {
+  let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  const familyMeal = meals.find(meal => meal.id === 'chicken-potato');
+  plan = chooseMeal(plan, monday, 'lunch', { meal: familyMeal, servings: 3 }, preferences);
+  const quick = quickIndividualMeals(plan, 'lunch', preferences);
+  assert.deepEqual(quick.map(option => option.meal.id), ['cottage-carrot-bread', 'chicken-ham-lunchbox']);
+  const lunchbox = quick.find(option => option.meal.id === 'chicken-ham-lunchbox');
+  plan = chooseMeal(plan, monday, 'lunch', lunchbox, preferences, ['kid']);
+  const dishes = itemsInSlot(plan, monday, 'lunch');
+  assert.deepEqual(dishes.map(dish => dish.participantIds), [['current-user', 'partner'], ['kid']]);
+  const expectedServings = 1400 * .32 / lunchbox.meal.caloriesPerServing;
+  assert.ok(Math.abs(dishes[1].servings - expectedServings) < 1e-9);
+  const requirements = aggregateIngredients(plan);
+  assert.ok(requirements.some(line => line.ingredientKey === 'chicken_ham' && line.sourceMealIds.includes(dishes[1].id)));
+  assert.ok(requirements.some(line => line.ingredientKey === 'apple' && line.sourceMealIds.includes(dishes[1].id)));
+  assert.ok(!requirements.some(line => line.ingredientKey === 'cottage'));
+  assert.ok(basketFromMealPlan({ ...plan, status: 'confirmed' }, preferences, fullCatalog).items.length > 0);
+  assert.deepEqual(quickIndividualMeals(plan, 'dinner', preferences), []);
+  assert.deepEqual(quickIndividualMeals(plan, 'lunch', prefs({ ...preferences, allergens: ['wheat'] })), []);
+  assert.deepEqual(quickIndividualMeals(plan, 'lunch', prefs({ ...preferences, allergens: ['milk'] })).map(option => option.meal.id),
+    ['chicken-ham-lunchbox']);
 });
 
 test("nobody eats twice in one slot, however the dishes are added", () => {

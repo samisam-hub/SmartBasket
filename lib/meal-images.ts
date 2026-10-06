@@ -16,6 +16,8 @@ const images: Record<string, { source: ImageSourcePropType; ingredients: string[
   "tofu-breakfast": { source: require("../assets/meals/tofu-breakfast.png"), ingredients: ["tofu","potatoes","spinach","olive_oil"] },
   "lentil-breakfast": { source: require("../assets/meals/lentil-breakfast.png"), ingredients: ["lentils","chopped_tomatoes","spinach","olive_oil"] },
   "chicken-potato": { source: require("../assets/meals/chicken-potato.png"), ingredients: ["chicken_breast","potatoes","broccoli","olive_oil"] },
+  'cottage-carrot-bread': { source: require('../assets/meals/cottage-carrot-bread.png'), ingredients: ['wholemeal_bread','cottage','carrots'] },
+  'chicken-ham-lunchbox': { source: require('../assets/meals/chicken-ham-lunchbox.png'), ingredients: ['wholemeal_bread','chicken_ham','apple','carrots'] },
   "lentil-pasta": { source: require("../assets/meals/lentil-pasta.png"), ingredients: ["lentils","pasta","chopped_tomatoes","olive_oil"] },
   "chickpea-salad": { source: require("../assets/meals/chickpea-salad.png"), ingredients: ["chickpeas","potatoes","chopped_tomatoes","olive_oil"] },
   "turkey-pasta": { source: require("../assets/meals/turkey-pasta.png"), ingredients: ["turkey","pasta","chopped_tomatoes","olive_oil"] },

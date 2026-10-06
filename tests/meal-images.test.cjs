@@ -5,7 +5,7 @@ const {mealImageSource}=require('../lib/meal-images.ts');
 const {compatibleMeal}=require('../services/meals/planner.ts');
 const {prefs}=require('./basket-fixtures.cjs');
 test('approved illustrations match ingredients, never legacy rice tofu snapshots',()=>{
-  assert.equal(meals.length,32);
+  assert.equal(meals.length,34);
   for(const meal of meals)assert.ok(mealImageSource(meal),`Missing illustration: ${meal.id}`);
   const tofu=meals.find(m=>m.id==='tofu-teriyaki-noodles');
   assert.equal(mealImageSource({...tofu,id:'tofu-stirfry'}),null);
