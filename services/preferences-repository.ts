@@ -16,6 +16,8 @@ export interface PreferenceRow {
   allergens: UserPreferences["allergens"];
   budget_enabled: boolean;
   weekly_budget_eur: number | null;
+  slot_defaults: UserPreferences["slotDefaults"] | null;
+  participants: UserPreferences["participants"] | null;
   onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
@@ -34,6 +36,9 @@ export function fromRow(row: PreferenceRow): UserPreferences {
     allergens: row.allergens,
     budgetEnabled: row.budget_enabled,
     weeklyBudgetEur: row.weekly_budget_eur,
+    // Rows written before the calendar onboarding have neither; both stay optional.
+    ...(row.slot_defaults ? { slotDefaults: row.slot_defaults } : {}),
+    ...(row.participants ? { participants: row.participants } : {}),
     onboardingCompleted: row.onboarding_completed,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -54,6 +59,8 @@ export function toRow(p: UserPreferences, userId: string) {
     allergens: p.allergens,
     budget_enabled: p.budgetEnabled,
     weekly_budget_eur: p.weeklyBudgetEur,
+    slot_defaults: p.slotDefaults ?? null,
+    participants: p.participants ?? null,
     onboarding_completed: true,
   };
 }
