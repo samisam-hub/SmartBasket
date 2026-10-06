@@ -29,7 +29,8 @@ export interface Meal {
   dietaryTags: Diet[]; allergens: Allergen[]; ingredients: MealIngredient[];
   nutritionSource: 'curated-development-estimate' | 'unrecorded'; createdAt: string; updatedAt: string;
 }
-interface MealChoice {
+/** What was decided for one slot, without saying which day it belongs to. */
+export interface MealChoice {
   id: string; mealSlot: MealSlot; meal: Meal; servings: number;
   /** Missing mode means cook for existing saved plans. Non-cook meal is a display snapshot only. */
   mealMode?: MealMode;

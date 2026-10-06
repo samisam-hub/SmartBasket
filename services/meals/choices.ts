@@ -1,4 +1,4 @@
-import type { MealMode, MealPlan, MealPlanItem, MealSlot, ReadyMealCategory, ReadyMealMetadata } from '../../types/meal';
+import type { MealChoice, MealMode, MealPlan, MealPlanItem, MealSlot, ReadyMealCategory, ReadyMealMetadata } from '../../types/meal';
 
 export const readyCategoryLabels: Record<ReadyMealCategory, string> = {
   salad: 'Salad', lasagne: 'Lasagne', pasta: 'Pasta', asian: 'Asian meal', pizza: 'Pizza',
@@ -6,7 +6,7 @@ export const readyCategoryLabels: Record<ReadyMealCategory, string> = {
 export const modeLabels: Record<MealMode, string> = {
   cook: 'I want to cook', ready_to_eat: 'I don’t want to cook', heat_and_eat: 'I only want to heat it up', eat_out: 'I’m eating out',
 };
-export const isCook = (item: MealPlanItem) => !item.mealMode || item.mealMode === 'cook';
+export const isCook = (item: Pick<MealChoice, 'mealMode'>) => !item.mealMode || item.mealMode === 'cook';
 export function readyCategories(mode: MealMode, slot: MealSlot): ReadyMealCategory[] {
   if (mode !== 'ready_to_eat' && mode !== 'heat_and_eat') return [];
   // These five categories describe main meals, not breakfast or small snacks.
