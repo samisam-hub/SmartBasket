@@ -1,12 +1,14 @@
 import type {
   AnyMealPlan,
   AnyMealPlanItem,
+  MealChoice,
   MealSlot,
   WeekPlan,
   WeekPlanDay,
 } from '../../types/meal';
 import { mealSlots } from '../../types/meal';
 import { activeSlots, type UserPreferences } from '../../types/preferences';
+import { slotCalorieShare } from './config';
 
 /** Plan dates are plain calendar days, so every conversion stays in UTC and never shifts
  *  a day across a time zone or a daylight-saving change. */
@@ -81,3 +83,24 @@ export function itemDayIndex(plan: AnyMealPlan, item: AnyMealPlanItem): number {
 /** Days a plan actually covers: the chosen dates of a week, or the fixed period of a version 1 plan. */
 export const plannedDayCount = (plan: AnyMealPlan): number =>
   isWeekPlanShape(plan) ? plan.days.length : plan.planningDays;
+/** Items of either plan shape, where only the choice itself matters. */
+export const planChoices = (plan: AnyMealPlan): MealChoice[] => plan.items;
+// Plan dates are stored as calendar days, so the label is formatted in UTC as well.
+const dayFormat = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+export const planDateLabel = (date: string): string => dayFormat.format(parsePlanDate(date) ?? new Date(NaN));
+export interface PlanDay { key: string; label: string; date: string | null; items: AnyMealPlanItem[] }
+/** Every day a plan covers, in order, including days with nothing planned on them. */
+export function planDays(plan: AnyMealPlan): PlanDay[] {
+  if (isWeekPlanShape(plan)) return plannedDates(plan).map(date =>
+    ({ key: date, label: planDateLabel(date), date, items: itemsOn(plan, date) }));
+  return Array.from({ length: plan.planningDays }, (_, index) =>
+    ({ key: `day-${index}`, label: `Day ${index + 1}`, date: null,
+      items: plan.items.filter(item => item.dayIndex === index) }));
+}
+export const itemDayLabel = (plan: AnyMealPlan, item: AnyMealPlanItem): string =>
+  isWeekPlanShape(plan) && 'date' in item ? planDateLabel(item.date)
+    : `Day ${('dayIndex' in item ? item.dayIndex : 0) + 1}`;
+/** How much of a person's day a week actually covers: the shares of the slots the household
+ *  chose to eat at home. A day nobody planned, and a slot they dropped, are not counted as a gap. */
+export const plannedSlotShare = (plan: WeekPlan): number =>
+  plan.days.reduce((sum, day) => sum + day.slots.reduce((share, slot) => share + slotCalorieShare[slot], 0), 0);

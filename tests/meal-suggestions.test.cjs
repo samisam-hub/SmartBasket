@@ -8,6 +8,7 @@ const {
   suggestMeals,
 } = require("../services/meals/planner.ts");
 const { emptyWeekPlan } = require("../services/meals/weekPlan.ts");
+const { slotCalorieShare } = require("../services/meals/config.ts");
 const { meals } = require("../data/meals.ts");
 const { prefs } = require("./basket-fixtures.cjs");
 const { fullCatalog } = require("./meal-fixtures.cjs");
@@ -99,9 +100,11 @@ test("dinner only takes the rest of the day once the other chosen slots are deci
   const [restOfDay] = suggestMeals(decided, monday, "dinner", preferences, fullCatalog);
   assert.ok(openDinner && restOfDay);
   // With the day's other meals decided, the portion aims at what is left of the day
-  // instead of a fixed share, within half and one and a half base servings.
+  // instead of a fixed share, within half and one and a half base servings. "The day" is the
+  // slots the household chose for it: a dropped slot is never made up for at dinner.
   const priorPerPerson = eaten.reduce((sum, i) => sum + mealNutrition(i).calories / preferences.householdSize, 0);
-  const remaining = preferences.dailyCalories - priorPerPerson;
+  const dayShare = ["breakfast", "lunch", "dinner"].reduce((sum, slot) => sum + slotCalorieShare[slot], 0);
+  const remaining = preferences.dailyCalories * dayShare - priorPerPerson;
   const expected = Math.max(0.5, Math.min(1.5, remaining / restOfDay.meal.caloriesPerServing))
     * preferences.householdSize;
   assert.ok(Math.abs(restOfDay.servings - expected) < 1e-9,

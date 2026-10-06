@@ -1,14 +1,14 @@
 import { ingredients, meals } from '../../data/meals';
 import { canonicalIngredientKey } from '../../data/ingredient-mappings';
-import type { Meal, MealChoice, MealPlan, MealSlot, Nutrition, WeekPlan } from '../../types/meal';
+import type { AnyMealPlan, Meal, MealChoice, MealPlan, MealSlot, Nutrition, WeekPlan } from '../../types/meal';
 import type { UserPreferences } from '../../types/preferences';
 import type { Product } from '../../types/product';
 import { nutritionTargets } from '../basket/nutritionTargets';
 import { packagePrice } from '../basket/quantityPlanner';
 import { isSaved } from '../preference-domain';
-import { mealWeights as w } from './config';
+import { mealWeights as w, slotCalorieShare } from './config';
 import { matchProducts, uniqueCatalog } from './matching';
-import { dayOf, itemsOn } from './weekPlan';
+import { dayOf, itemsOn, planChoices } from './weekPlan';
 import { isCook } from './choices';
 export function compatibleMeal(meal: Meal, p: UserPreferences): boolean {
   if (!meal.ingredients.length || !Array.isArray(meal.allergens) || !Array.isArray(meal.dietaryTags)) return false;
@@ -29,9 +29,11 @@ export function mealNutrition(item: MealChoice, ratios: Record<string,number> = 
     n[k]+=ingredients[line.ingredientKey].nutritionPer100[k]*line.quantity*item.servings/item.meal.servings*(ratios[canonicalIngredientKey(line.ingredientKey)]??ratios[line.ingredientKey]??1)/100;
   return n;
 }
-export function planNutrition(plan: MealPlan, ratios: Record<string,number> = {}): Nutrition {
-  return plan.items.reduce((sum,item)=>{const n=mealNutrition(item,ratios);for(const k of Object.keys(sum) as (keyof Nutrition)[])sum[k]+=n[k];return sum;}, {calories:0,protein:0,carbohydrates:0,fat:0});
+export function choicesNutrition(items: MealChoice[], ratios: Record<string,number> = {}): Nutrition {
+  return items.reduce((sum,item)=>{const n=mealNutrition(item,ratios);for(const k of Object.keys(sum) as (keyof Nutrition)[])sum[k]+=n[k];return sum;}, {calories:0,protein:0,carbohydrates:0,fat:0});
 }
+export const planNutrition = (plan: AnyMealPlan, ratios: Record<string,number> = {}): Nutrition =>
+  choicesNutrition(planChoices(plan), ratios);
 const slots: MealSlot[]=['snack','breakfast','lunch','dinner'];
 const fitsSlot = (meal: Meal, slot: MealSlot) => slot==='breakfast'||slot==='snack' ? meal.mealType===slot : meal.mealType==='lunch'||meal.mealType==='dinner';
 /** What one slot is scored against: the targets, what the plan already holds, and what the catalog offers. */
@@ -41,6 +43,9 @@ interface SlotContext {
   /** Per person, per day. */
   dailyCalories: number;
   dailyProteinTarget: number;
+  /** Per person, for this day's chosen slots only. A dropped slot is not made up for elsewhere. */
+  dayCalories: number;
+  dayProtein: number;
   /** Budget share of a single slot, or null when no budget is set. */
   budgetPerSlot: number | null;
   /** Already planned for that day, per person. */
@@ -64,11 +69,11 @@ export function ingredientAvailability(catalog: Product[], p: UserPreferences): 
 }
 /** One scoring rule for both plan shapes: portion fit, repetition, ingredient reuse, availability, budget. */
 function scoredCandidates(options: Meal[], c: SlotContext): { meal: Meal; servings: number; score: number }[] {
-  const fraction=c.slot==='snack'?0.08:c.slot==='breakfast'?0.25:0.32;
-  return options.flatMap(meal=>(c.slot==='snack'?[1]:c.restOfDay?[Math.max(0.5,Math.min(1.5,(c.dailyCalories-c.prior.calories)/meal.caloriesPerServing))]:[0.5,0.75,1,1.25,1.5]).map(scale=>{
+  const fraction=slotCalorieShare[c.slot];
+  return options.flatMap(meal=>(c.slot==='snack'?[1]:c.restOfDay?[Math.max(0.5,Math.min(1.5,(c.dayCalories-c.prior.calories)/meal.caloriesPerServing))]:[0.5,0.75,1,1.25,1.5]).map(scale=>{
     const servings=c.householdSize*scale, calories=meal.caloriesPerServing*scale, protein=meal.proteinPerServing*scale;
-    const calorieGoal=c.restOfDay?Math.max(c.dailyCalories*0.2,c.dailyCalories-c.prior.calories):c.dailyCalories*fraction;
-    const proteinGoal=c.restOfDay?Math.max(c.dailyProteinTarget*0.2,c.dailyProteinTarget-c.prior.protein):c.dailyProteinTarget*fraction;
+    const calorieGoal=c.restOfDay?Math.max(c.dayCalories*0.2,c.dayCalories-c.prior.calories):c.dailyCalories*fraction;
+    const proteinGoal=c.restOfDay?Math.max(c.dayProtein*0.2,c.dayProtein-c.prior.protein):c.dailyProteinTarget*fraction;
     const repeat=c.repeat(meal.id);
     const sameDay=c.sameDay(meal.id)?1:0;
     const reuse=meal.ingredients.filter(l=>c.used.has(l.ingredientKey)).length;
@@ -100,9 +105,11 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
     return {calories:n.calories+x.calories/plan.householdSize,protein:n.protein+x.protein/plan.householdSize};},{calories:0,protein:0});
   // The remaining calories of the day are only dinner's to take once the other chosen slots are decided.
   const decided=day.slots.filter(other=>other!==slot).every(other=>planned.some(item=>item.mealSlot===other));
+  const dayShare=day.slots.reduce((share,chosen)=>share+slotCalorieShare[chosen],0);
   const best=new Map<string,MealSuggestion>();
   for (const candidate of scoredCandidates(options,{
     slot,householdSize:plan.householdSize,dailyCalories:p.dailyCalories,dailyProteinTarget:targets.dailyProteinTarget,
+    dayCalories:p.dailyCalories*dayShare,dayProtein:targets.dailyProteinTarget*dayShare,
     budgetPerSlot:targets.budgetTarget?targets.budgetTarget/(Math.max(1,plan.days.length)*4):null,
     prior,restOfDay:slot==='dinner'&&decided,
     used:new Set(plan.items.flatMap(item=>item.meal.ingredients.map(l=>l.ingredientKey))),
@@ -128,6 +135,7 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
     const prior=plan.items.filter(i=>i.dayIndex===day).reduce((n,i)=>{const x=mealNutrition(i);return {calories:n.calories+x.calories/p.householdSize,protein:n.protein+x.protein/p.householdSize};},{calories:0,protein:0});
     const candidates=scoredCandidates(options,{
       slot,householdSize:p.householdSize,dailyCalories,dailyProteinTarget:targets.dailyProteinTarget,
+      dayCalories:dailyCalories,dayProtein:targets.dailyProteinTarget,
       budgetPerSlot:targets.budgetTarget?targets.budgetTarget/(p.planningDays*4):null,
       prior,restOfDay:slot==='dinner',
       used:new Set(plan.items.flatMap(i=>i.meal.ingredients.map(l=>l.ingredientKey))),
