@@ -1,5 +1,6 @@
 import type { Purchase } from '../types/pantry';
-import { planNutrition } from './meals/planner';
+import { choicesNutrition } from './meals/planner';
+import { planDays } from './meals/weekPlan';
 import { splitNutrition } from './meals/portions';
 
 /** Reused pantry quantities committed at checkout, not unconfirmed plan previews. */
@@ -57,8 +58,9 @@ export function shoppingImpact(purchases: Purchase[], now = new Date()) {
   for (const purchase of completed) {
     const plan = purchase.basket.result.mealPlan;
     if (!plan || plan.status !== 'confirmed') continue;
-    for (let day = 0; day < plan.planningDays; day++) {
-      const nutrition = planNutrition({ ...plan, items: plan.items.filter(item => item.dayIndex === day) });
+    // Every day the plan covers counts, including one where nothing was planned.
+    for (const day of planDays(plan)) {
+      const nutrition = choicesNutrition(day.items);
       for (const person of splitNutrition(plan, nutrition)) {
         if (person.calorieTarget && Number.isFinite(person.calorieTarget) && person.calorieTarget > 0) {
           calorieDays++;

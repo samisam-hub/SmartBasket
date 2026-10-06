@@ -1,4 +1,4 @@
-import type { MealPlan } from '../../types/meal';
+import type { AnyMealPlan } from '../../types/meal';
 import type { BasketGenerationResult, BasketItem } from '../../types/basket';
 import type { Product } from '../../types/product';
 import type { UserPreferences } from '../../types/preferences';
@@ -11,18 +11,23 @@ import { diagnoseMatches, uniqueCatalog } from './matching';
 import { optimizePackages } from './packageOptimizer';
 import { compatibleMeal, mealNutrition, planNutrition } from './planner';
 import { packageWeights } from './config';
-import { isMealPlan } from './validation';
+import { isAnyMealPlan, openPlanSlots } from './validation';
+import { isWeekPlanShape, plannedSlotShare } from './weekPlan';
 import { isSaved } from '../preference-domain';
 import type { PantryLot, PantryUse } from '../../types/pantry';
 import { allocatePantry } from '../pantry-domain';
 import { isCook } from './choices';
 import { matchReadyMeals } from './readyMeals';
 const round=(n:number)=>Math.round(n*100)/100;
-export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences, catalog: Product[], pantry: PantryLot[] = []): BasketGenerationResult {
-  if(!isMealPlan(plan)||!isSaved(preferences)||!preferences.onboardingCompleted||plan.status!=='confirmed')throw Error('Confirm a valid meal plan before creating a basket.');
-  if(plan.planningDays!==preferences.planningDays||plan.householdSize!==preferences.householdSize)throw Error('Preferences changed. Generate a new meal plan.');
+export function basketFromMealPlan(plan: AnyMealPlan, preferences: UserPreferences, catalog: Product[], pantry: PantryLot[] = []): BasketGenerationResult {
+  if(!isAnyMealPlan(plan)||!isSaved(preferences)||!preferences.onboardingCompleted||plan.status!=='confirmed')throw Error('Confirm a valid meal plan before creating a basket.');
+  // A calendar week carries its own days; only a fixed period has to match the saved planning period.
+  if(plan.householdSize!==preferences.householdSize||(!isWeekPlanShape(plan)&&plan.planningDays!==preferences.planningDays))throw Error('Preferences changed. Generate a new meal plan.');
   if(plan.items.some(i=>isCook(i)&&!compatibleMeal(i.meal,preferences)))throw Error('Meal plan conflicts with current preferences.');
-  const requirements=aggregateIngredients(plan),products=uniqueCatalog(catalog),targets=nutritionTargets(preferences);
+  const requirements=aggregateIngredients(plan),products=uniqueCatalog(catalog);
+  // Coverage is measured over what the household chose to eat at home, so neither an unplanned
+  // day nor a dropped slot counts as a nutrition gap. The floor keeps the targets above zero.
+  const targets=nutritionTargets(isWeekPlanShape(plan)?{...preferences,planningDays:Math.max(0.08,plannedSlotShare(plan))}:preferences);
   const items: BasketItem[]=[],warnings=[...plan.warnings],ratios:Record<string,number>={};let objective=0;
   const matchingDiagnostics:NonNullable<BasketGenerationResult['matchingDiagnostics']>=[];
   const pantryUsed: PantryUse[] = [], stock = structuredClone(pantry);
@@ -74,6 +79,12 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
   plan = ready.plan; items.push(...ready.items); requirements.push(...ready.requirements); warnings.push(...ready.warnings);
   for (const r of ready.requirements) ratios[r.ingredientKey] = 1;
   const outside = plan.items.some(i=>i.mealMode==='eat_out');
+  // Only a slot the household chose and left undecided makes a basket partial; a day nobody
+  // planned and a slot they deliberately dropped are not gaps.
+  const openSlots = isWeekPlanShape(plan) ? openPlanSlots(plan).reduce((n,day)=>n+day.slots.length,0)
+    : (plan.items.length!==preferences.planningDays*(plan.snacksIncluded?4:3)?1:0);
+  if (isWeekPlanShape(plan)) for (const day of openPlanSlots(plan))
+    warnings.push({code:`open_slot_${day.date}`,message:`${day.date}: ${day.slots.join(', ')} still open. Nothing was planned or bought for ${day.slots.length===1?'it':'them'}.`});
   if (outside) warnings.push({code:'eat_out_unknown',message:'Eating-out meals have no shopping items. Their nutrition and spending are not recorded; other meal portions have not been increased.'});
   const n=planNutrition(plan,ratios),knownPriceSubtotal=items.reduce((s,i)=>s+(i.estimatedPrice??0),0);
   const incomplete=ready.unmatched>0||requirements.some(r=>ratios[r.ingredientKey]<r.minimumAcceptableQuantity/r.requiredQuantity-.0001);
@@ -94,7 +105,7 @@ export function basketFromMealPlan(plan: MealPlan, preferences: UserPreferences,
     adjustedMealNutrition:plan.items.map(i=>({itemId:i.id,nutrition:mealNutrition(i,ratios)})),
     remaining:{totalPurchasedWeight:purchased,totalPlannedConsumption:sum('plannedConsumptionQuantity','g'),totalLeftoverWeight:leftover,
       totalPurchasedVolume:sum('purchasedQuantity','ml'),totalPlannedVolume:sum('plannedConsumptionQuantity','ml'),totalLeftoverVolume:sum('leftoverQuantity','ml'),estimatedWastePercent:purchased?round(leftover/purchased*100):0},
-    optimizationWeights:{...packageWeights},status:!items.length&&!pantryUsed.length?'empty':incomplete||outside||plan.items.length!==preferences.planningDays*(plan.snacksIncluded?4:3)||calorieCoveragePercent<90||calorieCoveragePercent>110||proteinCoveragePercent<90?'partial':'generated',
+    optimizationWeights:{...packageWeights},status:!items.length&&!pantryUsed.length?'empty':incomplete||outside||openSlots>0||calorieCoveragePercent<90||calorieCoveragePercent>110||proteinCoveragePercent<90?'partial':'generated',
     items,totalCalories:round(n.calories),totalProtein:round(n.protein),totalCarbohydrates:round(n.carbohydrates),totalFat:round(n.fat),totalFiber:null,
     ...targets,estimatedTotalPrice,knownPriceSubtotal:round(knownPriceSubtotal),budgetDifference,budgetStatus,calorieCoveragePercent,proteinCoveragePercent,
     categoryCoverage:[],warnings,constraintsApplied:['Meal compatibility','Ingredient equivalence','Known package size and unit','Allergen and trace evidence','Ingredient-specific tolerance'],

@@ -3,12 +3,17 @@ import {
   diets,
   goals,
   labels,
+  slotDefaultsOf,
   type Diet,
   type PreferenceDraft,
   type PreferenceErrors,
   type PreferenceValues,
+  type SlotDefaults,
   type UserPreferences,
 } from "../types/preferences";
+import { mealSlots } from "../types/meal";
+import type { PlanParticipant } from "../types/profile";
+import { isParticipant } from "./profile-domain";
 
 export function toggleDiet(current: Diet[], selected: Diet): Diet[] {
   if (selected === "none") return ["none"];
@@ -23,6 +28,27 @@ export function toggleDiet(current: Diet[], selected: Diet): Diet[] {
   }
   return next.length ? next : ["none"];
 }
+/** The household is a list of people; the saved size and per-person calories follow from it. */
+export function householdValues(participants: PlanParticipant[]): Pick<PreferenceValues, "householdSize" | "dailyCalories"> {
+  return {
+    householdSize: participants.length,
+    dailyCalories: Math.round(
+      participants.reduce((sum, p) => sum + (p.dailyCalories ?? 0), 0) / participants.length,
+    ),
+  };
+}
+export function validParticipantList(value: unknown): value is PlanParticipant[] {
+  if (!Array.isArray(value) || !value.length || value.length > 10) return false;
+  return value.every(isParticipant) && new Set(value.map((p) => p.id)).size === value.length &&
+    value.filter((p) => p.isCurrentUser).length <= 1;
+}
+export function validSlotDefaults(value: unknown): value is SlotDefaults {
+  if (!value || typeof value !== "object") return false;
+  const slots = value as Record<string, unknown>;
+  return Object.keys(slots).length === mealSlots.length &&
+    mealSlots.every((slot) => typeof slots[slot] === "boolean") &&
+    mealSlots.some((slot) => slots[slot] === true);
+}
 const integerIn = (value: unknown, min: number, max: number) =>
   typeof value === "number" &&
   Number.isInteger(value) &&
@@ -32,6 +58,15 @@ export function validatePreferences(value: PreferenceDraft): PreferenceErrors {
   const errors: PreferenceErrors = {};
   if (!integerIn(value.householdSize, 1, 10))
     errors.householdSize = "Choose between 1 and 10 people.";
+  if (value.participants !== undefined) {
+    if (!validParticipantList(value.participants))
+      errors.participants =
+        "Every person needs a name and a calorie suggestion from 1,000 to 5,000 kcal.";
+    else if (value.participants.length !== value.householdSize)
+      errors.householdSize = "The household size must match the people you added.";
+  }
+  if (value.slotDefaults !== undefined && !validSlotDefaults(value.slotDefaults))
+    errors.slotDefaults = "Choose at least one meal you plan for.";
   if (![3, 5, 7, 14].includes(value.planningDays))
     errors.planningDays = "Choose 3, 5, 7, or 14 days.";
   if (!integerIn(value.dailyCalories, 1000, 5000))
@@ -91,10 +126,19 @@ export function normalizedValues(draft: PreferenceDraft): PreferenceValues {
     weeklyBudgetEur: draft.budgetEnabled ? draft.weeklyBudgetEur : null,
   };
 }
+export const slotLabels: Record<(typeof mealSlots)[number], string> = {
+  breakfast: "Breakfast",
+  lunch: "Lunch",
+  dinner: "Dinner",
+  snack: "Snack",
+};
+export const activeSlotLabels = (p: { slotDefaults?: SlotDefaults }): string[] =>
+  mealSlots.filter((slot) => slotDefaultsOf(p)[slot]).map((slot) => slotLabels[slot]);
 export function preferenceChips(p: UserPreferences): string[] {
   return [
     `${p.planningDays} days`,
     `${p.householdSize} ${p.householdSize === 1 ? "person" : "people"}`,
+    `${activeSlotLabels(p).join(", ")}`,
     `${p.dailyCalories.toLocaleString("en-GB")} kcal`,
     labels[p.primaryGoal],
     ...p.dietaryPreferences.filter((d) => d !== "none").map((d) => labels[d]),
@@ -118,7 +162,9 @@ export function isDraft(value: unknown): value is PreferenceDraft {
     Array.isArray(p.allergens) &&
     p.allergens.every((a) => allergens.includes(a)) &&
     typeof p.budgetEnabled === "boolean" &&
-    (p.weeklyBudgetEur === null || typeof p.weeklyBudgetEur === "number")
+    (p.weeklyBudgetEur === null || typeof p.weeklyBudgetEur === "number") &&
+    (p.participants === undefined || validParticipantList(p.participants)) &&
+    (p.slotDefaults === undefined || validSlotDefaults(p.slotDefaults))
   );
 }
 export function isSaved(value: unknown): value is UserPreferences {

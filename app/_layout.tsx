@@ -8,6 +8,7 @@ import { PreferencesProvider } from "@/context/PreferencesContext";
 import { colors } from "@/lib/theme";
 import {AuthProvider,useAuth} from '@/context/AuthContext';
 import {ProfileProvider} from '@/context/ProfileContext';
+import {WeekPlanProvider} from '@/context/WeekPlanContext';
 import {useRef} from 'react';
 import { View } from 'react-native';
 import { ScreenNavigation } from '@/components/ScreenNavigation';
@@ -26,7 +27,7 @@ function AuthenticatedLayout(){
  else if(ready)identity.current.owner=owner;
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <PreferencesProvider><ProfileProvider><ActiveBasketProvider key={identity.current.generation}>
+      <PreferencesProvider><ProfileProvider><WeekPlanProvider><ActiveBasketProvider key={identity.current.generation}>
         <StatusBar style="dark" />
         <View style={{ flex: 1 }}>
         <Stack
@@ -53,13 +54,17 @@ function AuthenticatedLayout(){
           <Stack.Screen name="auth/callback" options={{ title: "Verify account" }} />
           <Stack.Screen name="personal-profile" options={{ title: "Personal profile" }} />
           <Stack.Screen name="plan-setup" options={{ title: "Plan participants" }} />
+          <Stack.Screen name="plan/week" options={{ title: "Your week" }} />
+          <Stack.Screen name="plan/[date]" options={{ title: "Your day" }} />
+          <Stack.Screen name="plan/[date]/[slot]" options={{ title: "Choose a meal" }} />
+          <Stack.Screen name="plan/day-done" options={{ title: "Day planned" }} />
           <Stack.Screen name="voice-plan" options={{ title: "Plan by voice" }} />
           <Stack.Screen name="saved-meal-plans" options={{ title: "Saved meal plans" }} />
         </Stack>
         <ActiveBasketShortcut />
         <ScreenNavigation />
         </View>
-      </ActiveBasketProvider></ProfileProvider></PreferencesProvider>
+      </ActiveBasketProvider></WeekPlanProvider></ProfileProvider></PreferencesProvider>
     </SafeAreaProvider>
   );
 }

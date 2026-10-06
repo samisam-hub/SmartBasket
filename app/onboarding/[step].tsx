@@ -12,7 +12,6 @@ import {
   EmptyState,
   ErrorMessage,
   InfoCard,
-  NumberStepper,
   PrimaryButton,
   ProgressIndicator,
   Screen,
@@ -22,14 +21,25 @@ import {
   TextButton,
 } from "@/components/ui";
 import { NumberInput } from "@/components/NumberInput";
+import { HouseholdFields } from "@/components/HouseholdFields";
 import { PreferenceSummary } from "@/components/PreferenceSummary";
 import { usePreferences } from "@/context/PreferencesContext";
-import { toggleDiet, validatePreferences } from "@/services/preference-domain";
+import { useProfile } from "@/context/ProfileContext";
+import {
+  householdValues,
+  slotLabels,
+  toggleDiet,
+  validatePreferences,
+} from "@/services/preference-domain";
+import { newParticipant, patchParticipant } from "@/services/profile-domain";
+import type { PlanParticipant } from "@/types/profile";
+import { mealSlots } from "@/types/meal";
 import {
   allergens,
   diets,
   goals,
   labels,
+  slotDefaultsOf,
   steps,
   type OnboardingStep,
   type PreferenceErrors,
@@ -49,12 +59,18 @@ const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
   },
   household: {
     title: "Who are we fueling?",
-    subtitle: "Choose your household and how many days you want to plan for.",
+    subtitle:
+      "One tap per person: adult or child. Add details whenever you like — the daily amount is a suggestion you can correct.",
+  },
+  meals: {
+    title: "Which meals do you plan?",
+    subtitle:
+      "Your usual pattern. The calendar prefills every day you pick with these meals, and you can drop single ones per day.",
   },
   goals: {
     title: "Fuel your goals.",
     subtitle:
-      "Set your daily targets per person. These are your preferences, not a personalized nutrition prescription.",
+      "Your goal shapes the protein share of the suggested amounts. These are your preferences, not a personalized nutrition prescription.",
   },
   diet: {
     title: "Food that fits your life.",
@@ -78,8 +94,9 @@ const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
 };
 const fields: Record<OnboardingStep, (keyof PreferenceErrors)[]> = {
   welcome: [],
-  household: ["householdSize", "planningDays"],
-  goals: ["dailyCalories", "primaryGoal", "proteinMode", "proteinTargetGrams"],
+  household: ["participants", "householdSize", "dailyCalories"],
+  meals: ["slotDefaults"],
+  goals: ["primaryGoal", "proteinMode", "proteinTargetGrams"],
   diet: ["dietaryPreferences"],
   allergies: ["allergens"],
   budget: ["budgetEnabled", "weeklyBudgetEur"],
@@ -112,9 +129,52 @@ export default function OnboardingScreen() {
   const returning = params.review === "1";
   const { draft, ready, saving, configured, localError, store } =
     usePreferences();
+  const profile = useProfile();
   const [attempted, setAttempted] = useState(false);
   const busy = saving || exiting;
   const index = step ? steps.indexOf(step) : 0;
+  const setPeople = useCallback(
+    (people: PlanParticipant[]) =>
+      store.update(
+        people.length
+          ? { participants: people, ...householdValues(people) }
+          : { participants: undefined },
+      ),
+    [store],
+  );
+  // The person holding the phone is the first participant; personal defaults prefill them.
+  useEffect(() => {
+    if (!ready || draft.participants?.length || !profile.ready) return;
+    const you: PlanParticipant = {
+      ...newParticipant("adult", "current-user", "You", draft.primaryGoal),
+      isCurrentUser: true,
+    };
+    const saved = profile.saved;
+    setPeople([
+      saved
+        ? patchParticipant(
+            you,
+            {
+              name: saved.displayName.trim() || "You",
+              age: saved.age,
+              sex: saved.sex,
+              activityLevel: saved.activityLevel,
+              ...(saved.defaultDailyCalories !== null
+                ? { dailyCalories: saved.defaultDailyCalories }
+                : {}),
+            },
+            draft.primaryGoal,
+          )
+        : you,
+    ]);
+  }, [
+    ready,
+    draft.participants,
+    draft.primaryGoal,
+    profile.ready,
+    profile.saved,
+    setPeople,
+  ]);
   useEffect(() => {
     if (step && ready) store.goTo(step);
     setAttempted(false);
@@ -210,39 +270,56 @@ export default function OnboardingScreen() {
           </>
         )}
         {step === "household" && (
-          <SectionCard>
-            <NumberStepper
-              label="Household size"
-              value={draft.householdSize}
-              min={1}
-              max={10}
-              onChange={(householdSize) => store.update({ householdSize })}
+          <>
+            <HouseholdFields
+              people={draft.participants ?? []}
+              goal={draft.primaryGoal}
+              onChange={setPeople}
             />
-            <ErrorMessage message={visible.householdSize} />
-            <Text style={ui.subheading}>Planning period</Text>
+            <ErrorMessage
+              message={
+                visible.participants ??
+                visible.householdSize ??
+                visible.dailyCalories
+              }
+            />
+          </>
+        )}
+        {step === "meals" && (
+          <SectionCard>
             <View style={ui.wrap}>
-              {[3, 5, 7, 14].map((planningDays) => (
+              {mealSlots.map((slot) => (
                 <SelectionChip
-                  key={planningDays}
-                  label={`${planningDays} days`}
-                  selected={draft.planningDays === planningDays}
-                  onPress={() => store.update({ planningDays })}
+                  key={slot}
+                  label={slotLabels[slot]}
+                  selected={slotDefaultsOf(draft)[slot]}
+                  onPress={() =>
+                    store.update({
+                      slotDefaults: {
+                        ...slotDefaultsOf(draft),
+                        [slot]: !slotDefaultsOf(draft)[slot],
+                      },
+                    })
+                  }
                 />
               ))}
             </View>
-            <ErrorMessage message={visible.planningDays} />
+            <Text style={ui.small}>
+              Breakfast, lunch and dinner are on by default, a snack is off.
+              Nothing here is fixed: every day in the calendar starts from this
+              pattern and single meals can be dropped there.
+            </Text>
+            <ErrorMessage message={visible.slotDefaults} />
           </SectionCard>
         )}
         {step === "goals" && (
           <>
             <SectionCard>
-              <NumberInput
-                label="Daily calorie target"
-                hint="1,000–5,000 kcal per person, per day"
-                value={draft.dailyCalories}
-                onChange={(dailyCalories) => store.update({ dailyCalories })}
-                error={visible.dailyCalories}
-              />
+              <Text style={ui.small}>
+                {draft.participants?.length
+                  ? `Suggested for your household: about ${draft.dailyCalories ?? "—"} kcal per person a day. Change it per person in the household step.`
+                  : "Add the people in your household to get a suggested daily amount."}
+              </Text>
               <Text style={ui.subheading}>Main nutrition goal</Text>
               <View style={ui.wrap}>
                 {goals.map((primaryGoal) => (

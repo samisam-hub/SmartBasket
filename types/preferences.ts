@@ -1,3 +1,4 @@
+import { mealSlots, type MealSlot } from "./meal";
 export const goals = [
   "maintain",
   "lose_weight",
@@ -28,6 +29,7 @@ export const allergens = [
 export const steps = [
   "welcome",
   "household",
+  "meals",
   "goals",
   "diet",
   "allergies",
@@ -38,7 +40,25 @@ export type Goal = (typeof goals)[number];
 export type Diet = (typeof diets)[number];
 export type Allergen = (typeof allergens)[number];
 export type OnboardingStep = (typeof steps)[number];
+/** Which meals the household plans by default; the calendar prefills every chosen day with these. */
+export type SlotDefaults = Record<MealSlot, boolean>;
+export const defaultSlotDefaults: SlotDefaults = {
+  breakfast: true,
+  lunch: true,
+  dinner: true,
+  snack: false,
+};
+/** Preferences saved before the meal standard existed fall back to the default. */
+export const slotDefaultsOf = (p: { slotDefaults?: SlotDefaults }): SlotDefaults =>
+  p.slotDefaults ?? defaultSlotDefaults;
+export const activeSlots = (p: { slotDefaults?: SlotDefaults }): MealSlot[] =>
+  mealSlots.filter((slot) => slotDefaultsOf(p)[slot]);
 export interface PreferenceValues {
+  /** Household as people, so each one can carry its own targets and restrictions.
+   *  Absent in preferences saved before the calendar onboarding; householdSize still applies. */
+  participants?: import("./profile").PlanParticipant[];
+  /** Absent before the meal standard existed; slotDefaultsOf falls back to the default. */
+  slotDefaults?: SlotDefaults;
   householdSize: number;
   planningDays: number;
   dailyCalories: number;
@@ -56,7 +76,6 @@ export type PreferenceDraft = Omit<PreferenceValues, "dailyCalories"> & {
 };
 export interface UserPreferences extends PreferenceValues {
   preferredMealIds?: string[];
-  participants?: import('./profile').PlanParticipant[];
   id: string | null;
   userId: string | null;
   onboardingCompleted: boolean;

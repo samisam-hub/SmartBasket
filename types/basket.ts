@@ -1,6 +1,6 @@
 import type { Product } from './product';
 import type { UserPreferences } from './preferences';
-import type { MealPlan, IngredientRequirement, Nutrition } from './meal';
+import type { AnyMealPlan, IngredientRequirement, Nutrition } from './meal';
 export type BasketGroup = 'protein' | 'vegetables' | 'fruit' | 'staples' | 'breakfast' | 'dairy' | 'extras';
 export interface BasketWarning { code: string; message: string; productIds?: string[] }
 export interface SelectionReason { code: string; detail: string }
@@ -35,7 +35,7 @@ export interface BasketGenerationResult {
   removedProductIds?: string[];
   removedIngredientKeys?: string[];
   engineVersion: '1' | '2';
-  mealPlan?: MealPlan;
+  mealPlan?: AnyMealPlan;
   ingredientRequirements?: IngredientRequirement[];
   ingredientRatios?: Record<string, number>;
   matchingDiagnostics?: {ingredientKey:string;candidatesFound:number;rejected:Record<string,number>;eligibleProductIds:string[];selectedProductIds:string[];unresolvedReason:string|null}[];

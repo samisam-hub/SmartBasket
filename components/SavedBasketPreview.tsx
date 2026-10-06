@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
 import { planNutrition } from '../services/meals/planner';
+import { plannedDayCount } from '../services/meals/weekPlan';
 import { splitNutrition } from '../services/meals/portions';
 import type { SavedBasket } from '../types/basket';
 import { colors, ui } from '../lib/theme';
@@ -23,7 +24,7 @@ export function SavedBasketPreview({ basket: b, onOpen, minimal = false }: { bas
         <View style={{ flex: 1, minWidth: 0 }}><BasketMealPreview plan={plan} onOpen={onOpen} showMealSlot={false} compact /></View>
         <View style={{ flex: 1, minWidth: 0, gap: 12, borderLeftWidth: 1, borderLeftColor: colors.border, paddingLeft: 12 }}>
           <Text style={ui.caption}>Daily averages</Text>
-          {splitNutrition(plan, planNutrition(plan), plan.planningDays).map((p, index) => <View key={p.id} style={{ gap: 4, ...(index ? { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 12 } : {}) }}>
+          {splitNutrition(plan, planNutrition(plan), Math.max(1, plannedDayCount(plan))).map((p, index) => <View key={p.id} style={{ gap: 4, ...(index ? { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 12 } : {}) }}>
             <Text style={[ui.small, { fontWeight: '700', color: colors.ink }]}>{p.name}</Text>
             <Text style={ui.small}>{Math.round(p.calories)} kcal · {Math.round(p.protein)} g protein</Text>
           </View>)}
