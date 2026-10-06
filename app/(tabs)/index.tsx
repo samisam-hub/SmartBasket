@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
@@ -8,6 +9,7 @@ import { PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from 
 import { usePreferences } from '@/context/PreferencesContext';
 import { useProfile } from '@/context/ProfileContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
+import { primeBasketCatalog } from '@/hooks/useBasketCatalog';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 import { WeekCalendar, currentWeekStart } from '@/components/WeekCalendar';
 import { preferenceChips } from '@/services/preference-domain';
@@ -15,6 +17,9 @@ import { colors, ui } from '@/lib/theme';
 
 export default function HomeScreen() {
   const { saved, editing } = usePreferences();
+  // Fetch the product catalog while the week is still being picked, so the first meal card does not
+  // have to wait for it. It is cached for the rest of the app run.
+  useEffect(() => { primeBasketCatalog(); }, []);
   const week = useWeekPlan();
   const { saved: profile } = useProfile();
   const flow = useBasketFlow();

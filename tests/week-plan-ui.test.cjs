@@ -10,18 +10,35 @@ const stub = (name) => {
 };
 const pushed = [];
 const animatedView = stub("Animated.View");
+// Every animation the card starts, so a test can see which way it moved and how long it took.
+const animations = [];
+class AnimatedValue {
+  constructor(value) { this.value = value; }
+  setValue(value) { this.value = value; }
+  interpolate() { return this; }
+}
+// Animations finish at once, so a decision that waits for the card to leave still lands in one act().
+const animate = (kind) => (value, config) => ({
+  start: (done) => {
+    animations.push({ kind, to: config.toValue, duration: config.duration });
+    if (typeof config.toValue === "number") value.setValue(config.toValue);
+    done?.({ finished: true });
+  },
+});
 const original = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === "react-native")
     return { Text: "Text", View: "View", Pressable: "Pressable",
-      Animated: { View: animatedView, Value: class { constructor(v) { this.value = v; } setValue(v) { this.value = v; } } },
+      Animated: { View: animatedView, Value: AnimatedValue, timing: animate("timing"), spring: animate("spring") },
+      Easing: { out: (easing) => easing, quad: (t) => t },
       PanResponder: { create: (config) => ({ panHandlers: config }) } };
   if (request === "expo-router") return { router: { push: (to) => pushed.push(to), replace: (to) => pushed.push(to) } };
   if (request === "./ui" || request === "@/components/ui")
     return Object.fromEntries(["PrimaryButton", "SecondaryButton", "SectionCard", "SelectionChip", "TextButton",
+      "ChoiceButton",
       "Screen", "ScreenHeader", "ErrorMessage", "PreferenceRow"].map((name) => [name, stub(name)]));
   if (request === "./MealImage") return { MealImage: stub("MealImage") };
-  if (request === "../lib/theme") return { colors: {}, spacing: {}, ui: {} };
+  if (request === "../lib/theme") return { colors: {}, spacing: {}, radii: {}, ui: {} };
   if (request.startsWith("@/")) request = path.resolve(path.dirname(require.resolve("../package.json")), request.slice(2));
   return original.call(this, request, parent, isMain);
 };
@@ -58,10 +75,15 @@ test("one card at a time: right takes it, left moves on, and tapping does the sa
   const element = () => React.createElement(MealSwipeCards, { suggestions, exhausted: false,
     onTake: (s) => taken.push(s.meal.id), onNext: () => nexts.push(1), onMore: () => mores.push(1) });
   await act(() => { renderer = create(element()); });
-  // Only the first card is on screen.
-  const texts = renderer.root.findAllByType("Text").map((node) => node.props.children);
-  assert.ok(JSON.stringify(texts).includes("Meal A"));
-  assert.ok(!JSON.stringify(texts).includes("Meal B"));
+  // The card in hand is the first suggestion; the second one lies under it, so the deck looks like
+  // a deck and its picture is already loaded. It is covered, so assistive tech skips it.
+  const card = () => renderer.root.findAll((node) => node.props.testID === "meal-card")[0];
+  const inCard = JSON.stringify(card().findAllByType("Text").map((node) => node.props.children));
+  assert.ok(inCard.includes("Meal A"));
+  assert.ok(!inCard.includes("Meal B"), "the next card is not part of the card in hand");
+  const behind = renderer.root.findAll((node) => node.props.accessibilityElementsHidden === true)[0];
+  assert.ok(JSON.stringify(behind.findAllByType("Text").map((node) => node.props.children)).includes("Meal B"));
+  assert.equal(behind.props.importantForAccessibility, "no-hide-descendants");
   const button = (label) => renderer.root.findAll((node) => node.props.label === label)[0];
   await act(() => button("Take this one").props.onPress());
   assert.deepEqual(taken, ["a"]);
@@ -70,7 +92,7 @@ test("one card at a time: right takes it, left moves on, and tapping does the sa
   await act(() => button("Show two others").props.onPress());
   assert.deepEqual(mores, [1]);
   // The same decisions through the gesture handlers.
-  const handlers = renderer.root.findByType(animatedView).props;
+  const handlers = renderer.root.findAll((node) => node.props.testID === "meal-card")[0].props;
   await act(() => handlers.onPanResponderRelease({}, { dx: 200, dy: 5 }));
   assert.deepEqual(taken, ["a", "a"]);
   await act(() => handlers.onPanResponderRelease({}, { dx: -200, dy: 5 }));
@@ -78,6 +100,40 @@ test("one card at a time: right takes it, left moves on, and tapping does the sa
   await act(() => handlers.onPanResponderRelease({}, { dx: 10, dy: 5 }));
   assert.deepEqual(taken, ["a", "a"], "a nudge decides nothing");
   assert.deepEqual(nexts, [1, 1]);
+  await act(() => renderer.unmount());
+});
+
+test("a decision is visible: the card leaves in the direction it was decided", async () => {
+  const taken = [], nexts = [];
+  const suggestions = [{ meal: { id: "a", name: "Meal A", ingredients: [], dietaryTags: [] }, servings: 2 },
+    { meal: { id: "b", name: "Meal B", ingredients: [], dietaryTags: [] }, servings: 2 }];
+  let renderer;
+  await act(() => { renderer = create(React.createElement(MealSwipeCards, { suggestions, exhausted: false,
+    onTake: (s) => taken.push(s.meal.id), onNext: () => nexts.push(1), onMore: () => {} })); });
+  const button = (label) => renderer.root.findAll((node) => node.props.label === label)[0];
+  const handlers = renderer.root.findAll((node) => node.props.testID === "meal-card")[0].props;
+  const since = (start) => animations.slice(start).filter((a) => a.kind === "timing" && a.to !== 1);
+
+  let mark = animations.length;
+  await act(() => button("Take this one").props.onPress());
+  const take = since(mark);
+  assert.equal(take.length, 1, "taking a meal moves the card exactly once");
+  assert.ok(take[0].to > 0, "the card taken leaves to the right");
+  assert.ok(take[0].duration <= 250, `a decision must not feel like waiting, was ${take[0].duration}ms`);
+  assert.deepEqual(taken, ["a"], "the meal is taken once the card has left");
+
+  mark = animations.length;
+  await act(() => button("Show the next one").props.onPress());
+  const next = since(mark);
+  assert.equal(next.length, 1);
+  assert.ok(next[0].to < 0, "a skipped card leaves to the left");
+  assert.deepEqual(nexts, [1]);
+
+  // A nudge decides nothing, so the card springs back instead of leaving.
+  mark = animations.length;
+  await act(() => handlers.onPanResponderRelease({}, { dx: 10, dy: 2 }));
+  assert.deepEqual(since(mark), [], "an undecided card does not fly off");
+  assert.deepEqual(animations.slice(mark).map((a) => [a.kind, a.to]), [["spring", 0]]);
   await act(() => renderer.unmount());
 });
 

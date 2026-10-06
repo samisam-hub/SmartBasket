@@ -59,8 +59,22 @@ interface SlotContext {
   availability: IngredientAvailability;
 }
 type IngredientAvailability = Map<string, { available: boolean; cost: number | null }>;
-/** What the catalog can actually deliver for each curated ingredient, and at what unit price. */
+/** Matching every curated ingredient against a catalog of up to 2,000 products is the most
+ *  expensive part of a suggestion, and it depends on nothing but the catalog and the preferences.
+ *  Both are stable objects while a slot is being decided, so the result is kept per pair instead of
+ *  being rebuilt for every card. The map is only ever read, so sharing it is safe. */
+const availabilityCache = new WeakMap<Product[], WeakMap<UserPreferences, IngredientAvailability>>();
 export function ingredientAvailability(catalog: Product[], p: UserPreferences): IngredientAvailability {
+  let byPreferences = availabilityCache.get(catalog);
+  if (!byPreferences) availabilityCache.set(catalog, byPreferences = new WeakMap());
+  const known = byPreferences.get(p);
+  if (known) return known;
+  const computed = matchAvailability(catalog, p);
+  byPreferences.set(p, computed);
+  return computed;
+}
+/** What the catalog can actually deliver for each curated ingredient, and at what unit price. */
+function matchAvailability(catalog: Product[], p: UserPreferences): IngredientAvailability {
   const products=uniqueCatalog(catalog);
   return new Map(Object.keys(ingredients).map(key=>{
     const matches=matchProducts(key,products,p), priced=matches.filter(x=>packagePrice(x)!==null);

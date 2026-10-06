@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const {
   SUGGESTIONS_PER_SLOT,
   compatibleMeal,
+  ingredientAvailability,
   mealNutrition,
   suggestMeals,
 } = require("../services/meals/planner.ts");
@@ -148,4 +149,35 @@ test("suggestions need valid, completed preferences", () => {
     /preferences/);
   // The catalog is optional: without it the suggestions still come, availability just scores 0.
   assert.equal(suggestMeals(plan, monday, "dinner", preferences).length, 2);
+});
+
+test("matching the catalog is done once per catalog and household, not once per card", () => {
+  const preferences = prefs({ householdSize: 2 });
+  const other = prefs({ householdSize: 2, diets: ["vegan"] });
+  // Every card used to rebuild this, which means matching every curated ingredient against up to
+  // 2,000 products again for each swipe.
+  const first = ingredientAvailability(fullCatalog, preferences);
+  assert.equal(ingredientAvailability(fullCatalog, preferences), first, "the same question is answered once");
+  assert.notEqual(ingredientAvailability(fullCatalog, other), first, "different preferences get their own answer");
+  assert.notEqual(ingredientAvailability([...fullCatalog], preferences), first, "a different catalog is matched again");
+  // The cached answer is the same answer: availability and prices still come from the catalog.
+  const oats = [...first.entries()].find(([, value]) => value.available);
+  assert.ok(oats, "the fixture catalog can deliver something");
+});
+
+test("suggesting a meal many times over does not get slower", () => {
+  const preferences = prefs({ householdSize: 2 });
+  const plan = week(preferences, fullDay());
+  const run = () => {
+    const started = process.hrtime.bigint();
+    suggestMeals(plan, monday, "dinner", preferences, fullCatalog);
+    return Number(process.hrtime.bigint() - started) / 1e6;
+  };
+  run();
+  const repeats = Array.from({ length: 20 }, run);
+  const worst = Math.max(...repeats);
+  // A swipe recomputes suggestions. On this fixture the cached path measures around 0.2ms and the
+  // uncached one around 16ms; with a production catalog of 2,000 products the uncached one was
+  // 538ms, which is the frozen moment this guards against. 5ms leaves ample headroom either way.
+  assert.ok(worst < 5, `a repeated suggestion took ${worst.toFixed(1)}ms`);
 });

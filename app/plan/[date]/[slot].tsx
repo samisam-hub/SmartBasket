@@ -59,7 +59,7 @@ export default function PlanSlotScreen() {
     <ScreenHeader eyebrow={planDateLabel(date).toUpperCase()} title={slotLabels[mealSlot!]}
       subtitle={eatingNames?.length
         ? `For ${eatingNames.join(', ')} only. Whoever eats this leaves the household meal of this slot. Swipe right to take a meal, left for the next one.`
-        : "Swipe right to take a meal, left for the next one. Tapping works just as well."} />
+        : 'Swipe right to take a meal, left for the next one. The two buttons do exactly the same.'} />
     <ErrorMessage message={message ?? error ?? catalog.error} />
     <MealSwipeCards suggestions={suggestions} exhausted={!suggestions.length}
       onTake={(suggestion: MealSuggestion) =>

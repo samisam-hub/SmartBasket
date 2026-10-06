@@ -125,6 +125,50 @@ export function IconButton({
     </Pressable>
   );
 }
+/** A large round decision button, the kind a card deck is swiped with: the icon carries the
+ *  meaning, the caption underneath says it in words, and the press target is a comfortable 64px.
+ *  "take" is the affirmative one, so it gets the filled treatment. */
+export function ChoiceButton({
+  icon,
+  label,
+  caption,
+  tone,
+  onPress,
+  disabled,
+}: {
+  icon: Icon;
+  label: string;
+  caption: string;
+  tone: "take" | "next";
+  onPress: () => void;
+  disabled?: boolean;
+}) {
+  const take = tone === "take";
+  return (
+    <View style={styles.choice}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled }}
+        disabled={disabled}
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.choiceButton,
+          take ? styles.choiceTake : styles.choiceNext,
+          disabled && styles.disabled,
+          pressed && styles.choicePressed,
+        ]}
+      >
+        <Feather
+          name={icon}
+          size={28}
+          color={take ? colors.onPrimary : colors.primary}
+        />
+      </Pressable>
+      <Text style={styles.choiceCaption}>{caption}</Text>
+    </View>
+  );
+}
 export function ErrorMessage({ message }: { message?: string | null }) {
   return message ? (
     <Text
@@ -430,6 +474,20 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.5, backgroundColor: colors.disabled },
   pressed: { opacity: 0.72 },
+  choice: { alignItems: "center", gap: spacing.xs },
+  choiceButton: {
+    width: 64,
+    height: 64,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+  },
+  choiceTake: { backgroundColor: colors.primary, borderColor: colors.primary },
+  choiceNext: { backgroundColor: colors.surface, borderColor: colors.border },
+  // A press is felt as well as seen, because the card moves only after the button is released.
+  choicePressed: { opacity: 0.75, transform: [{ scale: 0.94 }] },
+  choiceCaption: { ...typography.caption, color: colors.muted, fontWeight: "600" },
   iconButton: {
     minWidth: 48,
     minHeight: 48,
