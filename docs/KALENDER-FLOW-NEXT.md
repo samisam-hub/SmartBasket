@@ -27,7 +27,7 @@ Branch: `claude/kalender-flow`, gepusht.
 | 5c | `63ad545` | `chooseMode` (Aufwärmen/Auswärts für offene Slots), `meal_choice_events` + Recorder |
 | 6 | `a03e651` | Korb-Extras: Produktsuche über den geladenen Katalog, feste „Immer dabei"-Liste |
 | 3b · 1 | `1623826` | Anwesenheit pro Mahlzeit: `participantIds`, Menge nach Köpfen, Nährwerte nur unter den Anwesenden |
-| 3b · 2 | folgt | Mehrere Gerichte pro Slot für disjunkte Gruppen, Migration `20261006150000_meals_per_participant_group.sql` |
+| 3b · 2 | `3380eab` | Mehrere Gerichte pro Slot für disjunkte Gruppen, Migration `20261006150000_meals_per_participant_group.sql` |
 
 Wichtige Festlegungen, die über den Plan hinausgehen:
 
