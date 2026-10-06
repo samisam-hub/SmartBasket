@@ -3,10 +3,11 @@ import { activeSlots, type UserPreferences } from '../../types/preferences';
 import { weekNutritionTargets } from './weekTargets';
 import { householdPortionShare } from './portions';
 import { choicePlaceholder } from './choices';
+import { compatibleMeal } from './planner';
 import type { MealSuggestion } from './planner';
 import { isWeekPlan } from './validation';
 import {
-  dayOf, emptyWeekPlan, groupsOverlap, inWeek, isWeekStart, itemGroup, itemsInSlot,
+  addDays, dayOf, emptyWeekPlan, groupsOverlap, inWeek, isWeekStart, itemGroup, itemsInSlot,
   sortSlots, weekDates,
 } from './weekPlan';
 
@@ -50,6 +51,35 @@ export function withTargets(plan: WeekPlan, preferences: UserPreferences): WeekP
 }
 export function startWeek(weekStart: string, preferences: UserPreferences): WeekPlan {
   return withTargets(emptyWeekPlan(weekStart, preferences), preferences);
+}
+/** Reuse last week's decisions as an editable draft. Dates and item keys move together;
+ * cached ready-meal matches must be found again for the new basket. */
+export function copyPreviousWeek(source: WeekPlan, weekStart: string, preferences: UserPreferences): WeekPlan {
+  if (!isWeekStart(weekStart) || addDays(source.weekStart, 7) !== weekStart || !source.days.length)
+    throw Error('There is no planned previous week to copy.');
+  const currentPeople = preferences.participants?.map(person => person.id) ?? [];
+  const previousPeople = source.participants?.map(person => person.id) ?? [];
+  if (source.householdSize !== preferences.householdSize ||
+      currentPeople.length !== previousPeople.length || currentPeople.some(id => !previousPeople.includes(id)))
+    throw Error('The household has changed. Plan this week with the current people.');
+  if (preferences.participants?.some(person => person.dailyCalories !==
+      source.participants?.find(previous => previous.id === person.id)?.dailyCalories))
+    throw Error('Portion needs have changed. Plan this week with the current amounts.');
+  if (source.items.some(item => (!item.mealMode || item.mealMode === 'cook') && !compatibleMeal(item.meal, preferences)))
+    throw Error('A previous meal no longer fits your diet or allergies. Plan this week afresh.');
+  const next = startWeek(weekStart, preferences);
+  return withTargets({ ...next,
+    days: source.days.map(day => ({ date: addDays(day.date, 7), slots: [...day.slots] })),
+    items: source.items.map(item => {
+      const date = addDays(item.date, 7);
+      const { readyMealMatch: _oldMatch, ...choice } = item;
+      void _oldMatch;
+      return { ...choice, date, id: item.id.startsWith(item.date)
+        ? `${date}${item.id.slice(item.date.length)}` : item.id,
+        ...(item.participantIds ? { participantIds: [...item.participantIds] } : {}),
+      };
+    }),
+  }, preferences);
 }
 /** Moving to another week starts that week empty; the current one is not carried over. */
 export const moveWeek = (plan: WeekPlan, weekStart: string, preferences: UserPreferences): WeekPlan =>

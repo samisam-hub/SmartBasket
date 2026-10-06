@@ -9,6 +9,7 @@ Branch: `claude/kalender-flow`, gepusht.
 ## Ergänzung: Familien-Flow und Einkaufsliste
 
 - Wochenentwürfe bleiben beim Wochenwechsel und nach einem Neustart erhalten. Der lokale Cache liest das bisherige Ein-Wochen-Format und speichert beim nächsten Schreiben alle Wochen; ein Reset löscht nur die aktive Woche. Gespeicherte Version-1-Mahlzeitenpläne bleiben unverändert lesbar.
+- Eine noch leere Woche kann die unmittelbar vorherige Woche als bearbeitbaren Entwurf übernehmen: gewählte Tage und Slots, Gerichte und Anwesenheit wandern auf dieselben Wochentage. Die Vorwoche bleibt erhalten; Fertiggerichte werden für den neuen Korb neu abgeglichen. Bei geändertem Haushalt, Portionsbedarf oder unpassenden Rezepten ist die Übernahme nicht verfügbar.
 - Anwesenheits-Chips bleiben nach dem Abwählen sichtbar. Personen mit einem anderen Gericht im selben Slot können nicht doppelt zugeordnet werden. „Not at home“ entfernt nur das ausgewählte Gericht. Nach dem Löschen eines eigenen Gerichts lässt es sich erneut auswählen.
 - Mengen folgen den individuellen Portionsanteilen statt der Kopfzahl, auch bei Fertiggerichten. Die Wochenziele berücksichtigen die tatsächlich anwesenden Personen; offene Slots planen weiterhin für den Haushalt.
 - Die Korbansicht enthält eine abhakbare Einkaufsliste mit Packungsmengen, Extras und noch fehlenden Zutaten nach Vorratsabzug. Haken bleiben lokal pro Konto und Korb erhalten; geänderte Mengen oder Produkte öffnen die betroffene Position erneut. Abhaken verbucht keinen Einkauf.

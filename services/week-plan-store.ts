@@ -3,8 +3,9 @@ import type { UserPreferences } from '../types/preferences';
 import type { MealSuggestion } from './meals/planner';
 import { isWeekPlan } from './meals/validation';
 import {
-  chooseMeal, chooseMode, clearChoice, confirmWeek, setPresence, skipSlot, startWeek, toggleDay, toggleSlot,
+  chooseMeal, chooseMode, clearChoice, confirmWeek, copyPreviousWeek, setPresence, skipSlot, startWeek, toggleDay, toggleSlot,
 } from './meals/weekPlanDraft';
+import { addDays } from './meals/weekPlan';
 import type { LocalStorage } from './preference-store';
 
 export interface WeekPlanState {
@@ -89,6 +90,19 @@ export class WeekPlanStore {
   /** Opens the given week, keeping what is already planned in it. */
   open = (weekStart: string, preferences: UserPreferences) =>
     this.apply(this.plans[weekStart] ?? startWeek(weekStart, preferences));
+  canCopyPreviousWeek = (weekStart: string, preferences: UserPreferences) => {
+    if (!this.state.ready || !this.readable || this.plans[weekStart]?.days.length) return false;
+    const previous = this.plans[addDays(weekStart, -7)];
+    if (!previous?.days.length) return false;
+    try { copyPreviousWeek(previous, weekStart, preferences); return true; } catch { return false; }
+  };
+  copyPreviousWeek = (weekStart: string, preferences: UserPreferences) => {
+    if (!this.state.ready || !this.readable) return this.state.plan;
+    if (this.plans[weekStart]?.days.length) throw Error('This week already has a plan. Clear it before copying.');
+    const previous = this.plans[addDays(weekStart, -7)];
+    if (!previous) throw Error('There is no planned previous week to copy.');
+    return this.apply(copyPreviousWeek(previous, weekStart, preferences));
+  };
   toggleDay = (date: string, preferences: UserPreferences) =>
     this.apply(toggleDay(this.require(), date, preferences));
   toggleSlot = (date: string, slot: MealSlot, preferences: UserPreferences) =>

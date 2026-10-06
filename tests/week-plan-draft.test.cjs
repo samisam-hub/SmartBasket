@@ -2,7 +2,7 @@ require("./register.cjs");
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const {
-  chooseMeal, clearChoice, confirmWeek, moveWeek, skipSlot, startWeek, toggleDay, toggleSlot,
+  chooseMeal, clearChoice, confirmWeek, copyPreviousWeek, moveWeek, skipSlot, startWeek, toggleDay, toggleSlot,
 } = require("../services/meals/weekPlanDraft.ts");
 const { WeekPlanStore } = require("../services/week-plan-store.ts");
 const { isWeekPlan, openPlanSlots } = require("../services/meals/validation.ts");
@@ -188,4 +188,55 @@ test('single-week caches migrate on write and malformed multiweek data is never 
   const broken = new WeekPlanStore(disk, 'broken'); await broken.initialize();
   assert.ok(broken.getSnapshot().error); broken.open(monday, preferences); await broken.flush();
   assert.equal(await disk.getItem('broken'), corrupt);
+});
+
+test('copying last week keeps decisions and attendance on the matching weekdays as an editable draft', async () => {
+  const person = (id, name, kind, dailyCalories) => ({ id, name, kind, dailyCalories,
+    proteinTarget: Math.round(dailyCalories * .2 / 4), age: null, sex: null,
+    dietaryPreferences: ['none'], allergens: [], intolerances: [], isCurrentUser: id === 'anna', activityLevel: null });
+  const people = [person('anna', 'Anna', 'adult', 2200), person('child', 'Mia', 'child', 1400)];
+  const household = prefs({ householdSize: 2, participants: people });
+  const disk = new MemoryStorage(), store = new WeekPlanStore(disk, 'anna-week');
+  await store.initialize(); store.open(monday, household);
+  store.toggleDay(monday, household); store.toggleDay('2026-10-07', household);
+  store.choose(monday, 'dinner', suggest(store.getSnapshot().plan, monday, 'dinner', household), household);
+  store.setPresence(`${monday}-dinner`, ['anna'], household);
+  const old = structuredClone(store.getSnapshot().plan);
+  const nextMonday = '2026-10-12';
+  store.open(nextMonday, household);
+  assert.equal(store.canCopyPreviousWeek(nextMonday, household), true);
+  store.copyPreviousWeek(nextMonday, household);
+  const copied = store.getSnapshot().plan;
+  assert.deepEqual(plannedDates(copied), ['2026-10-12', '2026-10-14']);
+  assert.deepEqual(copied.items[0].participantIds, ['anna']);
+  assert.equal(copied.items[0].id, '2026-10-12-dinner');
+  assert.equal(copied.items[0].meal.id, old.items[0].meal.id);
+  assert.equal(copied.status, 'review');
+  assert.ok(isWeekPlan(copied));
+  assert.equal(store.canCopyPreviousWeek(nextMonday, household), false);
+  assert.throws(() => store.copyPreviousWeek(nextMonday, household), /already has a plan/);
+  store.toggleSlot(nextMonday, 'dinner', household);
+  store.open(monday, household); assert.deepEqual(store.getSnapshot().plan, old);
+  await store.flush();
+  const restarted = new WeekPlanStore(disk, 'anna-week'); await restarted.initialize();
+  restarted.open(nextMonday, household);
+  assert.equal(restarted.getSnapshot().plan.items.length, 0, 'edits to the copy survive restart');
+  restarted.open(monday, household); assert.deepEqual(restarted.getSnapshot().plan, old);
+});
+
+test('copying refuses changed households or incompatible meals without touching either week', () => {
+  const source = toggleDay(startWeek(monday, preferences), monday, preferences);
+  const withDinner = chooseMeal(source, monday, 'dinner', suggest(source, monday, 'dinner'), preferences);
+  assert.throws(() => copyPreviousWeek(withDinner, '2026-10-19', preferences), /previous week/);
+  assert.throws(() => copyPreviousWeek(withDinner, '2026-10-12', prefs({ householdSize: 3 })), /household has changed/);
+  const person = (dailyCalories) => ({ id: 'anna', name: 'Anna', age: null, sex: null, dailyCalories,
+    proteinTarget: 80, dietaryPreferences: ['none'], allergens: [], intolerances: [], isCurrentUser: true });
+  const withPerson = toggleDay(startWeek(monday, prefs({ householdSize: 1, participants: [person(2000)] })), monday,
+    prefs({ householdSize: 1, participants: [person(2000)] }));
+  assert.throws(() => copyPreviousWeek(withPerson, '2026-10-12',
+    prefs({ householdSize: 1, participants: [person(1800)] })), /Portion needs have changed/);
+  const newlyRestricted = { ...withDinner, items: withDinner.items.map(item =>
+    ({ ...item, meal: { ...item.meal, allergens: ['milk'] } })) };
+  assert.throws(() => copyPreviousWeek(newlyRestricted, '2026-10-12', prefs({ householdSize: 2, allergens: ['milk'] })), /no longer fits/);
+  assert.equal(withDinner.items[0].date, monday);
 });

@@ -1,4 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
+import { useState } from 'react';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
@@ -14,6 +15,7 @@ import { preferenceChips } from '@/services/preference-domain';
 import { colors, ui } from '@/lib/theme';
 
 export default function HomeScreen() {
+  const [copyError, setCopyError] = useState<string | null>(null);
   const { saved, editing } = usePreferences();
   const week = useWeekPlan();
   const { saved: profile } = useProfile();
@@ -30,9 +32,13 @@ export default function HomeScreen() {
     </View>
     <WastePrevention />
     <ErrorMessage message={week.error} />
+    <ErrorMessage message={copyError} />
     {saved ? <WeekCalendar plan={week.plan} weekStart={week.plan?.weekStart ?? currentWeekStart()}
       busy={flow.disabled || !week.ready}
       onWeek={weekStart => week.store.open(weekStart, saved)}
+      onCopyPrevious={week.store.canCopyPreviousWeek(week.plan?.weekStart ?? currentWeekStart(), saved)
+        ? () => { try { week.store.copyPreviousWeek(week.plan?.weekStart ?? currentWeekStart(), saved); setCopyError(null); }
+          catch (e) { setCopyError(e instanceof Error ? e.message : 'Could not copy last week.'); } } : undefined}
       onBasket={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />
       : <PrimaryButton label="Set up your preferences" disabled={flow.disabled} onPress={flow.create} />}
     <SecondaryButton label="View recent shops" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
