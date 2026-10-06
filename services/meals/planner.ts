@@ -1,4 +1,4 @@
-import { ingredients, meals } from '../../data/meals';
+import { ingredients, meals, quickIndividualMealIds } from '../../data/meals';
 import { canonicalIngredientKey } from '../../data/ingredient-mappings';
 import type { AnyMealPlan, Meal, MealChoice, MealPlan, MealSlot, Nutrition, WeekPlan } from '../../types/meal';
 import type { UserPreferences } from '../../types/preferences';
@@ -87,6 +87,16 @@ function scoredCandidates(options: Meal[], c: SlotContext): { meal: Meal; servin
 }
 export const SUGGESTIONS_PER_SLOT = 2;
 export interface MealSuggestion { meal: Meal; servings: number }
+/** Family-sized baseline; chooseMeal scales it to the named person's calorie share. */
+export function quickIndividualMeals(plan: WeekPlan, slot: MealSlot, p: UserPreferences): MealSuggestion[] {
+  if (slot !== 'lunch') return [];
+  const householdCalories = plan.participants?.length
+    ? plan.participants.reduce((sum, person) => sum + (person.dailyCalories ?? 0), 0)
+    : p.dailyCalories * plan.householdSize;
+  return meals.filter(meal => quickIndividualMealIds.some(id => id === meal.id) && compatibleMeal(meal, p))
+    .map(meal => ({ meal, servings: Math.min(15, Math.max(.5,
+      householdCalories * slotCalorieShare[slot] / meal.caloriesPerServing)) }));
+}
 /** Two meals for one slot of one day, best first. Fewer when the catalog has nothing left to offer:
  *  the screen then says so and offers skipping, heating something up or eating out, never a silent repeat. */
 export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: UserPreferences,

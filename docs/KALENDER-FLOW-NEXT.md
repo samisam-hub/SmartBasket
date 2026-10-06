@@ -64,7 +64,7 @@ Ein Slot kann mehrere Gerichte tragen, solange sie **verschiedene Personen** ver
 - Migration `20261006150000_meals_per_participant_group.sql`: `meal_plan_items` bekommt `item_key` und `participant_ids`, die Uniqueness wandert von `(plan, plan_date, meal_slot)` auf `(plan, plan_date, meal_slot, item_key)`, bestehende Kalenderzeilen werden aus dem Snapshot nachgefüllt. Version-1-Zeilen behalten ihr „ein Gericht pro Tagesnummer und Slot" und dürfen keine `participant_ids` tragen. Die RPC schreibt beides mit.
 - UI: Auf dem Tagesscreen steht unter jedem Gericht „X isst was anderes"; der Slot-Screen plant dann über `?for=<id>` nur für diese Person, inklusive Auswärts und Aufwärmen.
 
-**Noch nicht drin**: die kuratierten Einfach-Gerichte „belegtes Brot" und „Lunchbox" aus `data/meals.ts`. Die Mechanik funktioniert mit jedem bestehenden passenden Gericht; neue Katalog-Gerichte brauchen vorher Illustrationen in `assets/meals/`, weil `tests/meal-images.test.cjs` für jedes Gericht ein passendes Bild verlangt (und `mealImageSource` bewusst kein Bild liefert, dessen Zutaten nicht exakt stimmen).
+**Ergänzt:** „Cottage cheese and carrot bread“ und „Chicken ham lunchbox“ stehen beim eigenen Mittagsgericht direkt zur Wahl. Beide haben eigene Illustrationen mit genau den verwendeten Zutaten. Allergie- und Ernährungsfilter gelten auch für diese Abkürzung.
 
 ## Fallen, die in Phase 0–6 Zeit gekostet haben
 

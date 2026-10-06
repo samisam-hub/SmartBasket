@@ -57,7 +57,7 @@ test('nutrition recalculates underfill and does not count leftover package calor
  assert.equal(result.adjustedMealNutrition[0].nutrition.calories,720);
 });
 test('meal safety, unknown ingredient and replacement constraints',()=>{
- assert.equal(meals.length,32);
+ assert.equal(meals.length,34);
  for(const diet of ['vegan','vegetarian','pescatarian','lactose_free','gluten_free']){
   const p=prefs({dietaryPreferences:[diet]});const plan=generateMealPlan(p);assert.ok(plan.items.length);assert.ok(plan.items.every(i=>compatibleMeal(i.meal,p)));
  }
