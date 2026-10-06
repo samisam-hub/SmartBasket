@@ -8,7 +8,7 @@ import { packagePrice } from '../basket/quantityPlanner';
 import { isSaved } from '../preference-domain';
 import { mealWeights as w, slotCalorieShare } from './config';
 import { matchProducts, uniqueCatalog } from './matching';
-import { dayOf, itemsOn, planChoices } from './weekPlan';
+import { dayOf, itemsInSlot, itemsOn, planChoices } from './weekPlan';
 import { isCook } from './choices';
 export function compatibleMeal(meal: Meal, p: UserPreferences): boolean {
   if (!meal.ingredients.length || !Array.isArray(meal.allergens) || !Array.isArray(meal.dietaryTags)) return false;
@@ -90,13 +90,20 @@ export interface MealSuggestion { meal: Meal; servings: number }
 /** Two meals for one slot of one day, best first. Fewer when the catalog has nothing left to offer:
  *  the screen then says so and offers skipping, heating something up or eating out, never a silent repeat. */
 export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: UserPreferences,
-  catalog: Product[] = [], exclude: string[] = []): MealSuggestion[] {
+  catalog: Product[] = [], exclude: string[] = [], participantIds?: string[]): MealSuggestion[] {
   if (!isSaved(p) || !p.onboardingCompleted) throw Error('Complete valid preferences before planning meals.');
   const day=dayOf(plan,date);
   if (!day || !day.slots.includes(slot)) return [];
   const planned=itemsOn(plan,date);
-  // One meal per slot: once the slot is decided there is nothing left to choose.
-  if (planned.some(item=>item.mealSlot===slot)) return [];
+  // One meal per slot for the people it is for. Asking for a named group is asking for their own
+  // dish: an existing meal they currently eat does not block it, because they leave that one when
+  // they take their own. Only a dish that already feeds exactly them has nothing left to choose.
+  const dishes=itemsInSlot(plan,date,slot);
+  const sameGroup=(group:string[]|undefined,asked:string[])=>!!group&&group.length===asked.length&&
+    group.every(id=>asked.includes(id));
+  if (participantIds?.length
+    ? dishes.some(item=>sameGroup(item.participantIds,participantIds))
+    : dishes.length) return [];
   // Already shown, and anything else chosen for this day: no silent repetition within a day.
   const skip=new Set([...exclude,...planned.map(item=>item.meal.id)]);
   const options=meals.filter(m=>fitsSlot(m,slot)&&!skip.has(m.id)&&compatibleMeal(m,p));

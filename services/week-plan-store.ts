@@ -74,15 +74,16 @@ export class WeekPlanStore {
     this.apply(toggleDay(this.require(), date, preferences));
   toggleSlot = (date: string, slot: MealSlot, preferences: UserPreferences) =>
     this.apply(toggleSlot(this.require(), date, slot, preferences));
-  choose = (date: string, slot: MealSlot, suggestion: MealSuggestion, preferences: UserPreferences) =>
-    this.apply(chooseMeal(this.require(), date, slot, suggestion, preferences));
+  choose = (date: string, slot: MealSlot, suggestion: MealSuggestion, preferences: UserPreferences,
+    participantIds?: string[]) =>
+    this.apply(chooseMeal(this.require(), date, slot, suggestion, preferences, participantIds));
   chooseMode = (date: string, slot: MealSlot, mode: Exclude<MealMode, 'cook'>,
-    category: ReadyMealCategory | undefined, preferences: UserPreferences) =>
-    this.apply(chooseMode(this.require(), date, slot, mode, category, preferences));
-  setPresence = (date: string, slot: MealSlot, participantIds: string[], preferences: UserPreferences) =>
-    this.apply(setPresence(this.require(), date, slot, participantIds, preferences));
-  clear = (date: string, slot: MealSlot, preferences: UserPreferences) =>
-    this.apply(clearChoice(this.require(), date, slot, preferences));
+    category: ReadyMealCategory | undefined, preferences: UserPreferences, participantIds?: string[]) =>
+    this.apply(chooseMode(this.require(), date, slot, mode, category, preferences, participantIds));
+  setPresence = (itemId: string, participantIds: string[], preferences: UserPreferences) =>
+    this.apply(setPresence(this.require(), itemId, participantIds, preferences));
+  clear = (itemId: string, preferences: UserPreferences) =>
+    this.apply(clearChoice(this.require(), itemId, preferences));
   skip = (date: string, slot: MealSlot, preferences: UserPreferences) =>
     this.apply(skipSlot(this.require(), date, slot, preferences));
   replace = (plan: WeekPlan) => this.apply(plan);

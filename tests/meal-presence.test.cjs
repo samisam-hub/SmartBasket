@@ -32,7 +32,7 @@ test("everybody eats along by default, and that is stored as no list at all", ()
   assert.equal(dinner(plan).participantIds, undefined);
   assert.ok(isWeekPlan({ ...plan, status: "confirmed" }));
   // Marking everybody present again keeps it that way rather than writing the full list.
-  const all = setPresence(plan, monday, "dinner", household.map((p) => p.id), preferences);
+  const all = setPresence(plan, dinner(plan).id, household.map((p) => p.id), preferences);
   assert.equal(dinner(all).participantIds, undefined);
   assert.equal(dinner(all).servings, dinner(plan).servings);
 });
@@ -40,7 +40,7 @@ test("everybody eats along by default, and that is stored as no list at all", ()
 test("the quantity follows the heads at the table", () => {
   const plan = plannedDay();
   const full = dinner(plan).servings;
-  const withoutKid = setPresence(plan, monday, "dinner", ["current-user", "partner"], preferences);
+  const withoutKid = setPresence(plan, dinner(plan).id, ["current-user", "partner"], preferences);
   assert.deepEqual(dinner(withoutKid).participantIds, ["current-user", "partner"]);
   assert.ok(Math.abs(dinner(withoutKid).servings - full * 2 / 3) < 1e-9, `${dinner(withoutKid).servings} of ${full}`);
   // Less food on the list, and less nutrition counted for that meal.
@@ -53,28 +53,28 @@ test("the quantity follows the heads at the table", () => {
       `${requirement.ingredientKey}: ${shrunk.requiredQuantity} should be below ${requirement.requiredQuantity}`);
   }
   // Adding the person back restores the original quantity exactly.
-  const again = setPresence(withoutKid, monday, "dinner", household.map((p) => p.id), preferences);
+  const again = setPresence(withoutKid, dinner(withoutKid).id, household.map((p) => p.id), preferences);
   assert.ok(Math.abs(dinner(again).servings - full) < 1e-9);
   assert.equal(dinner(again).participantIds, undefined);
   // One person alone gets one person's worth.
-  const alone = setPresence(plan, monday, "dinner", ["kid"], preferences);
+  const alone = setPresence(plan, dinner(plan).id, ["kid"], preferences);
   assert.ok(Math.abs(dinner(alone).servings - full / 3) < 1e-9);
 });
 
 test("nobody at the table means the meal is not planned at all", () => {
   const plan = plannedDay();
-  const empty = setPresence(plan, monday, "dinner", [], preferences);
+  const empty = setPresence(plan, dinner(plan).id, [], preferences);
   assert.deepEqual(itemsOn(empty, monday), [], "the decision is dropped with the slot");
   assert.ok(!dayOf(empty, monday).slots.includes("dinner"), "a meal nobody eats at home is skipped");
   assert.ok(isWeekPlan({ ...empty, status: "confirmed" }) || !empty.days.length);
   // A person who is not in this plan cannot be seated at it.
-  assert.throws(() => setPresence(plan, monday, "dinner", ["stranger"], preferences), /not in this plan/);
+  assert.throws(() => setPresence(plan, dinner(plan).id, ["stranger"], preferences), /not in this plan/);
   // And an undecided slot has no presence to set.
-  assert.throws(() => setPresence(plan, monday, "lunch", ["kid"], preferences), /Choose a meal/);
+  assert.throws(() => setPresence(plan, "2026-10-05-lunch", ["kid"], preferences), /Choose a meal/);
 });
 
 test("only the people eating a meal share its nutrition", () => {
-  const plan = setPresence(plannedDay(), monday, "dinner", ["current-user", "kid"], preferences);
+  const plan = (() => { const base = plannedDay(); return setPresence(base, dinner(base).id, ["current-user", "kid"], preferences); })();
   const item = dinner(plan);
   const shares = splitNutrition(plan, mealNutrition(item), 1, item.participantIds);
   assert.deepEqual(shares.map((s) => s.id), ["current-user", "kid"]);
@@ -95,7 +95,7 @@ test("a basket from a week with absences stays valid and buys less", () => {
     plan = chooseMeal(plan, monday, slot, suggestion, preferences);
   }
   const everyone = { ...plan, status: "confirmed" };
-  const kidAway = { ...setPresence(plan, monday, "lunch", ["current-user", "partner"], preferences), status: "confirmed" };
+  const kidAway = { ...setPresence(plan, itemsOn(plan, monday).find((item) => item.mealSlot === "lunch").id, ["current-user", "partner"], preferences), status: "confirmed" };
   assert.ok(isWeekPlan(kidAway));
   const full = basketFromMealPlan(everyone, preferences, fullCatalog);
   const reduced = basketFromMealPlan(kidAway, preferences, fullCatalog);

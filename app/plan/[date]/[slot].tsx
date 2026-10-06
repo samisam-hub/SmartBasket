@@ -18,7 +18,7 @@ import { ui } from '@/lib/theme';
 
 /** Screen 4: choose one meal for one slot. Only one meal per slot: the first yes ends it. */
 export default function PlanSlotScreen() {
-  const { date, slot } = useLocalSearchParams<{ date: string; slot: string }>();
+  const { date, slot, for: forParam } = useLocalSearchParams<{ date: string; slot: string; for?: string }>();
   const { saved } = usePreferences();
   const { session } = useAuth();
   const { plan, ready, error, store } = useWeekPlan();
@@ -27,9 +27,13 @@ export default function PlanSlotScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const rounds = useRef(0);
   const mealSlot = mealSlots.includes(slot as MealSlot) ? (slot as MealSlot) : null;
+  // "for" names the people this dish is for; without it the whole household eats it.
+  const eating = forParam?.split(',').filter(Boolean);
+  const eatingNames = eating?.map(id => plan?.participants?.find(person => person.id === id)?.name || 'Person');
   const valid = ready && saved && plan && mealSlot && isPlanDate(date) && dayOf(plan, date);
-  const suggestions = useMemo(() => valid ? suggestMeals(plan!, date, mealSlot!, saved!, catalog.products, shown) : [],
-    [valid, plan, date, mealSlot, saved, catalog.products, shown]);
+  const suggestions = useMemo(() => valid ? suggestMeals(plan!, date, mealSlot!, saved!, catalog.products, shown, eating) : [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [valid, plan, date, mealSlot, saved, catalog.products, shown, forParam]);
   if (!ready || catalog.loading) return <Screen><Text style={ui.body}>Looking for meals…</Text></Screen>;
   if (!valid) return <Screen bottom>
     <ScreenHeader title="That meal is not planned" subtitle="Pick the day and the meal on the calendar first." />
@@ -50,20 +54,23 @@ export default function PlanSlotScreen() {
   };
   const categories = readyCategories('heat_and_eat', mealSlot!);
   const takeAway = (mode: 'heat_and_eat' | 'ready_to_eat', category?: ReadyMealCategory) =>
-    act(mode, () => store.chooseMode(date, mealSlot!, mode, category, saved!));
+    act(mode, () => store.chooseMode(date, mealSlot!, mode, category, saved!, eating));
   return <Screen bottom>
     <ScreenHeader eyebrow={planDateLabel(date).toUpperCase()} title={slotLabels[mealSlot!]}
-      subtitle="Swipe right to take a meal, left for the next one. Tapping works just as well." />
+      subtitle={eatingNames?.length
+        ? `For ${eatingNames.join(', ')} only. Whoever eats this leaves the household meal of this slot. Swipe right to take a meal, left for the next one.`
+        : "Swipe right to take a meal, left for the next one. Tapping works just as well."} />
     <ErrorMessage message={message ?? error ?? catalog.error} />
     <MealSwipeCards suggestions={suggestions} exhausted={!suggestions.length}
       onTake={(suggestion: MealSuggestion) =>
-        act('chosen', () => store.choose(date, mealSlot!, suggestion, saved!), suggestion.meal.id)}
+        act('chosen', () => store.choose(date, mealSlot!, suggestion, saved!, eating), suggestion.meal.id)}
       onNext={() => setShown(ids => [...ids, suggestions[0].meal.id])}
       onMore={() => { record('shuffled'); rounds.current += 1; setShown(ids => [...ids, ...suggestions.map(s => s.meal.id)]); }} />
     <SectionCard title="Or settle it another way">
-      <SecondaryButton label="Skip this meal" onPress={() => act('skipped', () => store.skip(date, mealSlot!, saved!))} />
+      {!eatingNames?.length && <SecondaryButton label="Skip this meal" onPress={() => act('skipped', () => store.skip(date, mealSlot!, saved!))} />}
       <Text style={ui.small}>Skipping means you are not eating this meal at home. It is an answer, not a gap, so the basket will not flag it.</Text>
-      <SecondaryButton label="I'm eating out" onPress={() => act('eat_out', () => store.chooseMode(date, mealSlot!, 'eat_out', undefined, saved!))} />
+      <SecondaryButton label={eatingNames?.length ? `${eatingNames.join(', ')} eats out` : "I'm eating out"}
+        onPress={() => act('eat_out', () => store.chooseMode(date, mealSlot!, 'eat_out', undefined, saved!, eating))} />
       {categories.length > 0 && <>
         <Text style={ui.subheading}>Heat something up instead</Text>
         <View style={ui.wrap}>

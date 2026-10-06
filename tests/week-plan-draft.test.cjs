@@ -84,7 +84,7 @@ test("the first yes wins, clearing reopens the slot and skipping answers it", ()
   // Only a planned day and a chosen slot can be decided at all.
   assert.throws(() => chooseMeal(plan, "2026-10-07", "dinner", first, preferences), /not planned/);
   assert.throws(() => chooseMeal(plan, monday, "snack", first, preferences), /not planned/);
-  const cleared = clearChoice(plan, monday, "dinner", preferences);
+  const cleared = clearChoice(plan, plan.items[0].id, preferences);
   assert.deepEqual(cleared.items, []);
   assert.ok(openPlanSlots(cleared)[0].slots.includes("dinner"), "clearing reopens the slot");
   const skipped = skipSlot(plan, monday, "dinner", preferences);

@@ -104,3 +104,14 @@ export const itemDayLabel = (plan: AnyMealPlan, item: AnyMealPlanItem): string =
  *  chose to eat at home. A day nobody planned, and a slot they dropped, are not counted as a gap. */
 export const plannedSlotShare = (plan: WeekPlan): number =>
   plan.days.reduce((sum, day) => sum + day.slots.reduce((share, slot) => share + slotCalorieShare[slot], 0), 0);
+/** Who a planned meal is for. An item without a list is for the whole household. */
+export const itemGroup = (plan: AnyMealPlan, item: AnyMealPlanItem): string[] =>
+  item.participantIds ?? plan.participants?.map(person => person.id) ?? [];
+export const itemsInSlot = (plan: WeekPlan, date: string, slot: MealSlot): WeekPlan['items'] =>
+  itemsOn(plan, date).filter(item => item.mealSlot === slot);
+/** True when the two meals would feed the same person, which no slot may do. */
+export const groupsOverlap = (a: string[], b: string[]): boolean =>
+  !a.length || !b.length || a.some(id => b.includes(id));
+/** The people a slot already feeds, across all meals planned in it. */
+export const coveredInSlot = (plan: WeekPlan, date: string, slot: MealSlot): string[] =>
+  [...new Set(itemsInSlot(plan, date, slot).flatMap(item => itemGroup(plan, item)))];

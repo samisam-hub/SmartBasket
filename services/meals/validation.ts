@@ -3,7 +3,7 @@ import { mealSlots } from '../../types/meal';
 import { ingredients } from '../../data/meals';
 import {isParticipant} from '../profile-domain';
 import { isCook, readyCategories } from './choices';
-import { inWeek, isPlanDate, isWeekPlanShape, isWeekStart, sortSlots } from './weekPlan';
+import { groupsOverlap, inWeek, isPlanDate, isWeekPlanShape, isWeekStart, itemGroup, sortSlots } from './weekPlan';
 function validChoice(i: MealChoice) {
   if (isCook(i)) return i.readyMealCategory === undefined && i.readyMealMatch === undefined;
   if (!['ready_to_eat', 'heat_and_eat', 'eat_out'].includes(i.mealMode!) || i.meal?.nutritionSource !== 'unrecorded' || i.meal?.ingredients?.length !== 0) return false;
@@ -60,10 +60,24 @@ export function isWeekPlan(v: unknown): v is WeekPlan {
     Array.isArray(day.slots) && day.slots.length > 0 && day.slots.length <= mealSlots.length &&
     new Set(day.slots).size === day.slots.length && day.slots.every(slot => mealSlots.includes(slot)))) return false;
   const chosen = new Map(p.days.map(day => [day.date, new Set<MealSlot>(day.slots)]));
-  return Array.isArray(p.items) && p.items.length <= p.days.length * mealSlots.length &&
+  return Array.isArray(p.items) &&
+    // A slot holds at most as many dishes as there are people to eat them.
+    p.items.length <= p.days.length * mealSlots.length * Math.max(1, p.householdSize) &&
     new Set(p.items.map(i => i?.id)).size === p.items.length &&
-    new Set(p.items.map(i => `${i?.date}-${i?.mealSlot}`)).size === p.items.length &&
-    p.items.every(i => i && isPlanDate(i.date) && !!chosen.get(i.date)?.has(i.mealSlot) && validItem(i, planPeople(p)));
+    p.items.every(i => i && isPlanDate(i.date) && !!chosen.get(i.date)?.has(i.mealSlot) && validItem(i, planPeople(p))) &&
+    disjointSlots(p);
+}
+/** Several dishes may share a slot, but never a person: each one feeds people the others do not,
+ *  and a dish for the whole household is the only one in its slot. */
+function disjointSlots(plan: WeekPlan): boolean {
+  const slots = new Map<string, string[][]>();
+  for (const item of plan.items) {
+    const key = `${item.date}-${item.mealSlot}`;
+    const groups = slots.get(key) ?? [];
+    if (groups.some(other => groupsOverlap(other, itemGroup(plan, item)))) return false;
+    slots.set(key, [...groups, itemGroup(plan, item)]);
+  }
+  return true;
 }
 export const isAnyMealPlan = (v: unknown): v is AnyMealPlan => isMealPlan(v) || isWeekPlan(v);
 /** Chosen slots of planned days that nobody has decided yet, in day and slot order. */
