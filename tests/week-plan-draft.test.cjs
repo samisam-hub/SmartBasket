@@ -150,3 +150,42 @@ test("the planned week survives a restart and reports a storage failure instead 
   assert.equal(fourth.getSnapshot().plan, null);
   assert.equal(JSON.parse(await broken.getItem("week")).plan.weekStart, "nope", "not overwritten");
 });
+
+test('week navigation retains multiple drafts through restart and reset clears only the active week', async () => {
+  const disk = new MemoryStorage(), a = new WeekPlanStore(disk, 'weeks');
+  await a.initialize(); a.open(monday, preferences); a.toggleDay(monday, preferences);
+  a.choose(monday, 'dinner', suggest(a.getSnapshot().plan, monday, 'dinner'), preferences);
+  const original = structuredClone(a.getSnapshot().plan);
+  a.open('2026-10-12', preferences); a.toggleDay('2026-10-14', preferences);
+  a.open(monday, preferences);
+  assert.deepEqual(a.getSnapshot().plan, original);
+  await a.flush();
+  const b = new WeekPlanStore(disk, 'weeks'); await b.initialize();
+  assert.deepEqual(b.getSnapshot().plan, original);
+  b.open('2026-10-12', preferences);
+  assert.deepEqual(plannedDates(b.getSnapshot().plan), ['2026-10-14']);
+  b.reset(); await b.flush();
+  const c = new WeekPlanStore(disk, 'weeks'); await c.initialize();
+  assert.equal(c.getSnapshot().plan, null);
+  c.open(monday, preferences); assert.deepEqual(c.getSnapshot().plan, original);
+  c.open('2026-10-12', preferences); assert.deepEqual(c.getSnapshot().plan.days, []);
+  const other = new WeekPlanStore(disk, 'other-owner'); await other.initialize();
+  assert.equal(other.getSnapshot().plan, null);
+});
+
+test('single-week caches migrate on write and malformed multiweek data is never overwritten', async () => {
+  const disk = new MemoryStorage();
+  const plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  const legacy = JSON.stringify({ version: 1, plan }); await disk.setItem('week', legacy);
+  const store = new WeekPlanStore(disk, 'week'); await store.initialize();
+  assert.deepEqual(store.getSnapshot().plan, plan); assert.equal(await disk.getItem('week'), legacy);
+  store.open('2026-10-12', preferences); await store.flush();
+  assert.equal(JSON.parse(await disk.getItem('week')).version, 2);
+  const reloaded = new WeekPlanStore(disk, 'week'); await reloaded.initialize();
+  reloaded.open(monday, preferences); assert.deepEqual(reloaded.getSnapshot().plan, plan);
+  const corrupt = JSON.stringify({ version: 2, activeWeek: monday, plans: { [monday]: { ...plan, weekStart: 'invalid' } } });
+  await disk.setItem('broken', corrupt);
+  const broken = new WeekPlanStore(disk, 'broken'); await broken.initialize();
+  assert.ok(broken.getSnapshot().error); broken.open(monday, preferences); await broken.flush();
+  assert.equal(await disk.getItem('broken'), corrupt);
+});

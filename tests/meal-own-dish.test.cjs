@@ -46,9 +46,9 @@ test("one slot can hold a family meal and somebody's own dish", () => {
   assert.deepEqual(kidDish.participantIds, ["kid"]);
   assert.deepEqual(coveredInSlot(split, monday, "dinner").sort(), ["current-user", "kid", "partner"]);
   assert.notEqual(familyDish.id, kidDish.id);
-  // Quantities follow the heads at each table and add up to the household again.
-  assert.ok(Math.abs(familyDish.servings - familyServings * 2 / 3) < 1e-9);
-  assert.ok(Math.abs(kidDish.servings - familyServings / 3) < 1e-9);
+  // Each dish is scaled to the nutritional share of its own group.
+  assert.ok(Math.abs(familyDish.servings - familyServings * 4200 / 5600) < 1e-9);
+  assert.ok(Math.abs(kidDish.servings - suggestMeals(family, monday, "dinner", preferences, fullCatalog, [], ["kid"])[0].servings * 1400 / 5600) < 1e-9);
   assert.ok(isWeekPlan({ ...split, status: "confirmed" }));
   // Everyone keeps eating: the shopping list covers both dishes.
   const requirements = aggregateIngredients(split);
@@ -195,4 +195,13 @@ test("the save RPC stores every dish of a slot with who eats it", async () => {
     assert.deepEqual(dinner.map(row => row.participant_ids).sort(),
       [["current-user", "partner"], ["kid"]].sort());
   } finally { await db.close(); }
+});
+
+test('an absent person can choose a dish again without erasing the remaining family meal', () => {
+  const split = ownDish(familyDinner());
+  const own = itemsInSlot(split, monday, 'dinner').find(item => item.participantIds?.includes('kid'));
+  const without = clearChoice(split, own.id, preferences);
+  const restored = ownDish(without);
+  assert.equal(itemsInSlot(restored, monday, 'dinner').length, 2);
+  assert.deepEqual(coveredInSlot(restored, monday, 'dinner').sort(), ['current-user', 'kid', 'partner']);
 });

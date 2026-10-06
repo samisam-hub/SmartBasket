@@ -2,9 +2,19 @@
 
 Stand: 6. Oktober 2026 · Plan: [docs/KALENDER-FLOW-PLAN.md](KALENDER-FLOW-PLAN.md)
 
-**Alle Phasen des Plans sind umgesetzt und grün** (`npm run typecheck`, `npm run lint`, `npm test` — 182 Tests). Offen sind nur noch die Punkte unter „Offene Entscheidungen" und die kuratierten Einfach-Gerichte, die Bild-Assets brauchen.
+**Alle Phasen des Plans sind umgesetzt.** Der ursprüngliche Stand bestand 182 Tests. Die nachfolgende Familien-Flow-Korrektur ergänzt die unten beschriebenen Funktionen; offene Produktentscheidungen stehen am Ende.
 
 Branch: `claude/kalender-flow`, gepusht.
+
+## Ergänzung: Familien-Flow und Einkaufsliste
+
+- Wochenentwürfe bleiben beim Wochenwechsel und nach einem Neustart erhalten. Der lokale Cache liest das bisherige Ein-Wochen-Format und speichert beim nächsten Schreiben alle Wochen; ein Reset löscht nur die aktive Woche. Gespeicherte Version-1-Mahlzeitenpläne bleiben unverändert lesbar.
+- Anwesenheits-Chips bleiben nach dem Abwählen sichtbar. Personen mit einem anderen Gericht im selben Slot können nicht doppelt zugeordnet werden. „Not at home“ entfernt nur das ausgewählte Gericht. Nach dem Löschen eines eigenen Gerichts lässt es sich erneut auswählen.
+- Mengen folgen den individuellen Portionsanteilen statt der Kopfzahl, auch bei Fertiggerichten. Die Wochenziele berücksichtigen die tatsächlich anwesenden Personen; offene Slots planen weiterhin für den Haushalt.
+- Die Korbansicht enthält eine abhakbare Einkaufsliste mit Packungsmengen, Extras und noch fehlenden Zutaten nach Vorratsabzug. Haken bleiben lokal pro Konto und Korb erhalten; geänderte Mengen oder Produkte öffnen die betroffene Position erneut. Abhaken verbucht keinen Einkauf.
+- „Share shopping list“ teilt eine Textkopie über das Betriebssystem beziehungsweise den Browser, mit auswählbarem Text als Fallback. Haken und Änderungen werden nicht zwischen Geräten synchronisiert. Kontodaten und Ernährungsziele sind nicht Bestandteil des Teilungstextes.
+
+Die folgenden Commit- und Implementierungsbeschreibungen dokumentieren den ursprünglichen Stand; die Ergänzungen ersetzen insbesondere die damalige Mengenberechnung nach Köpfen und den Ein-Wochen-Cache.
 
 ## Pflichtregeln für jede weitere Phase
 

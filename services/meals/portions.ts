@@ -32,3 +32,11 @@ export function splitNutrition(plan: AnyMealPlan, nutrition: { calories: number;
     protein: nutrition.protein * p.share / days,
   }));
 }
+
+/** Share of the original household amount, using the same weights as the plate portions. */
+export function householdPortionShare(plan: AnyMealPlan, participantIds?: string[]): number {
+  if (!participantIds) return 1;
+  if (!plan.participants?.length) return participantIds.length / plan.householdSize;
+  return participantPortions(plan).filter(person => participantIds.includes(person.id))
+    .reduce((sum, person) => sum + person.share, 0);
+}

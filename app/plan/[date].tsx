@@ -41,13 +41,14 @@ export default function PlanDayScreen() {
             For {item.participantIds.map(id => people.find(person => person.id === id)?.name || 'Person').join(', ')}
           </Text>}
           <MealImage meal={item.meal} compact />
-          {people.length > 1 && !item.participantIds && <>
+          {people.length > 1 && <>
             <Text style={ui.caption}>Who is eating this?</Text>
             <View style={ui.wrap}>
               {people.map(person => {
                 const present = itemGroup(plan, item);
                 const eating = present.includes(person.id);
-                return <SelectionChip key={person.id} selected={eating}
+                const atOtherDish = dishes.some(other => other.id !== item.id && itemGroup(plan, other).includes(person.id));
+                return <SelectionChip key={person.id} selected={eating} disabled={atOtherDish}
                   label={`${person.name || 'Person'}${participantKind(person) === 'child' ? ' (child)' : ''}`}
                   onPress={() => run(() => store.setPresence(item.id,
                     eating ? present.filter(id => id !== person.id) : [...present, person.id], saved))} />;
@@ -59,7 +60,7 @@ export default function PlanDayScreen() {
             <TextButton label="Choose another" onPress={() => { store.clear(item.id, saved);
               router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot,
                 ...(item.participantIds ? { for: item.participantIds.join(',') } : {}) } }); }} />
-            <TextButton label="Not at home" onPress={() => run(() => store.skip(date, slot, saved))} />
+            <TextButton label="Not at home" onPress={() => run(() => store.setPresence(item.id, [], saved))} />
           </View>
         </View>)}
         {!dishes.length && <>

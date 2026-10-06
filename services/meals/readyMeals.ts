@@ -33,7 +33,7 @@ export function matchReadyMeals<P extends AnyMealPlan>(plan: P, preferences: Use
   requests.forEach((item, index) => {
     const budgetShare = remaining === null ? null : Math.max(0, remaining) / (requests.length - index);
     const candidates = readyMealCandidates(item, products, preferences).map(product => {
-      const quantity = product.readyMeal!.portionGrams * plan.householdSize;
+      const quantity = product.readyMeal!.portionGrams * (plan.version === '2' ? item.servings : plan.householdSize);
       const already = grouped.get(product.id)?.quantity ?? 0;
       const extraPackages = Math.ceil((already + quantity) / product.packageSize!) - Math.ceil(already / product.packageSize!);
       const price = extraPackages * packagePrice(product)!;

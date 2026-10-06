@@ -4,7 +4,7 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { LatestBasket } from '@/components/LatestBasket';
 import { WastePrevention } from '@/components/WastePrevention';
-import { PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
+import { ErrorMessage, PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
 import { useProfile } from '@/context/ProfileContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
@@ -29,6 +29,7 @@ export default function HomeScreen() {
       <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Open your basket" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
     </View>
     <WastePrevention />
+    <ErrorMessage message={week.error} />
     {saved ? <WeekCalendar plan={week.plan} weekStart={week.plan?.weekStart ?? currentWeekStart()}
       busy={flow.disabled || !week.ready}
       onWeek={weekStart => week.store.open(weekStart, saved)}

@@ -53,6 +53,7 @@ import { useWeekPlan } from '@/context/WeekPlanContext';
 
 import { addBasketProduct } from '@/services/basket/add-product';
 import { BasketExtras } from '@/components/BasketExtras';
+import { ShoppingList } from '@/components/ShoppingList';
 import { addBasketReplacement, replaceBasketProduct } from '@/services/basket/replacements';
 
 export default function BasketSetupScreen() {
@@ -330,6 +331,8 @@ export default function BasketSetupScreen() {
       {basket.result.purchasedAt && <Text style={ui.body}>Purchased · {new Date(basket.result.purchasedAt).toLocaleDateString('en-GB')}</Text>}
 
       <SecondaryButton label="Pantry & purchase history" onPress={()=>router.push('/pantry')} />
+
+      <ShoppingList key={`${basket.ownerId}:${basket.id}`} basket={basket} />
 
       <BasketResult result={basket.result} catalog={catalog.current} preferences={basket.preferences}
         onReplaceProduct={!saving && !basket.result.purchasedAt ? (currentId, product) => {

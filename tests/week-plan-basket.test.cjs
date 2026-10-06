@@ -96,7 +96,9 @@ test("a basket from a week with gaps and dropped slots is not partial", () => {
   // seven chosen slots out of twelve possible ones.
   const share = plannedSlotShare(plan);
   assert.ok(share > 1.9 && share < 2.5, `${share} day equivalents`);
-  assert.equal(result.calorieTarget, nutritionTargets({ ...preferences, planningDays: share }).calorieTarget);
+  const expectedCalorieTarget = nutritionTargets({ ...preferences, planningDays: share }).calorieTarget;
+  assert.ok(Math.abs(result.calorieTarget - expectedCalorieTarget) < 1e-8,
+    `calorie target ${result.calorieTarget}, expected ${expectedCalorieTarget}`);
   assert.ok(result.calorieCoveragePercent >= 90 && result.calorieCoveragePercent <= 110,
     `coverage ${result.calorieCoveragePercent}`);
 });
