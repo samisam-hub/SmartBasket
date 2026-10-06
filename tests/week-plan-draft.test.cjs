@@ -5,6 +5,7 @@ const {
   chooseMeal, clearChoice, confirmWeek, copyPreviousWeek, moveWeek, skipSlot, startWeek, toggleDay, toggleSlot,
 } = require("../services/meals/weekPlanDraft.ts");
 const { WeekPlanStore } = require("../services/week-plan-store.ts");
+const { attendingPeople } = require("../services/meals/attendance.ts");
 const { isWeekPlan, openPlanSlots } = require("../services/meals/validation.ts");
 const { dayOf, plannedDates, plannedSlotShare } = require("../services/meals/weekPlan.ts");
 const { suggestMeals } = require("../services/meals/planner.ts");
@@ -239,4 +240,52 @@ test('copying refuses changed households or incompatible meals without touching 
     ({ ...item, meal: { ...item.meal, allergens: ['milk'] } })) };
   assert.throws(() => copyPreviousWeek(newlyRestricted, '2026-10-12', prefs({ householdSize: 2, allergens: ['milk'] })), /no longer fits/);
   assert.equal(withDinner.items[0].date, monday);
+});
+
+test('a school-lunch routine persists and reduces only new meal portions', async () => {
+  const person = (id, name, kind, dailyCalories) => ({ id, name, kind, dailyCalories,
+    proteinTarget: Math.round(dailyCalories * .2 / 4), age: null, sex: null,
+    dietaryPreferences: ['none'], allergens: [], intolerances: [], isCurrentUser: id === 'anna' });
+  const family = prefs({ householdSize: 2, participants: [
+    person('anna', 'Anna', 'adult', 2200), person('mia', 'Mia', 'child', 1400),
+  ] });
+  const disk = new MemoryStorage(), store = new WeekPlanStore(disk, 'anna');
+  await store.initialize(); store.open(monday, family);
+  const weekdayLunch = { personId: 'mia', weekday: 0, slot: 'lunch' };
+  store.toggleAttendanceRule(weekdayLunch, family);
+  assert.deepEqual(attendingPeople(store.getSnapshot().plan, monday, 'lunch', store.getSnapshot().attendanceRules), ['anna']);
+  store.toggleDay(monday, family);
+  const full = suggest(store.getSnapshot().plan, monday, 'lunch', family);
+  store.choose(monday, 'lunch', full, family);
+  const lunch = store.getSnapshot().plan.items.find(item => item.mealSlot === 'lunch');
+  assert.deepEqual(lunch.participantIds, ['anna']);
+  assert.ok(Math.abs(lunch.servings - full.servings * 2200 / 3600) < 1e-9);
+  const breakfast = suggest(store.getSnapshot().plan, monday, 'breakfast', family);
+  store.choose(monday, 'breakfast', breakfast, family);
+  assert.equal(store.getSnapshot().plan.items.find(item => item.mealSlot === 'breakfast').participantIds, undefined);
+  await store.flush();
+  const again = new WeekPlanStore(disk, 'anna'); await again.initialize();
+  assert.deepEqual(again.getSnapshot().attendanceRules, [weekdayLunch]);
+  again.open('2026-10-12', family); again.toggleDay('2026-10-12', family);
+  const next = suggest(again.getSnapshot().plan, '2026-10-12', 'lunch', family);
+  again.choose('2026-10-12', 'lunch', next, family);
+  assert.deepEqual(again.getSnapshot().plan.items[0].participantIds, ['anna']);
+  again.toggleAttendanceRule(weekdayLunch, family);
+  assert.deepEqual(again.getSnapshot().attendanceRules, []);
+  assert.deepEqual(again.getSnapshot().plan.items[0].participantIds, ['anna'], 'existing choice remains editable');
+});
+
+test('when everybody is regularly away, a new day drops that slot rather than opening a false shopping gap', async () => {
+  const solo = prefs({ householdSize: 1, participants: [{ id: 'anna', name: 'Anna', kind: 'adult', age: null,
+    sex: null, dailyCalories: 2200, proteinTarget: 90, dietaryPreferences: ['none'], allergens: [],
+    intolerances: [], isCurrentUser: true }] });
+  const store = new WeekPlanStore(new MemoryStorage(), 'solo'); await store.initialize(); store.open(monday, solo);
+  store.toggleAttendanceRule({ personId: 'anna', weekday: 0, slot: 'lunch' }, solo);
+  store.toggleDay(monday, solo);
+  assert.deepEqual(dayOf(store.getSnapshot().plan, monday).slots, ['breakfast', 'dinner']);
+  store.toggleAttendanceRule({ personId: 'anna', weekday: 1, slot: 'breakfast' }, solo);
+  store.toggleAttendanceRule({ personId: 'anna', weekday: 1, slot: 'lunch' }, solo);
+  store.toggleAttendanceRule({ personId: 'anna', weekday: 1, slot: 'dinner' }, solo);
+  assert.throws(() => store.toggleDay('2026-10-06', solo), /Nobody is at home/);
+  assert.deepEqual(plannedDates(store.getSnapshot().plan), [monday]);
 });

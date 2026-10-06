@@ -6,6 +6,7 @@ import {
   chooseMeal, chooseMode, clearChoice, confirmWeek, copyPreviousWeek, setPresence, skipSlot, startWeek, toggleDay, toggleSlot,
 } from './meals/weekPlanDraft';
 import { addDays } from './meals/weekPlan';
+import { attendingPeople, validAttendanceRules, type AttendanceRule } from './meals/attendance';
 import type { LocalStorage } from './preference-store';
 
 export interface WeekPlanState {
@@ -13,11 +14,12 @@ export interface WeekPlanState {
   ready: boolean;
   /** Set when the stored week could not be read or written; it is never overwritten silently. */
   error: string | null;
+  attendanceRules: AttendanceRule[];
 }
 /** Keeps drafts by week, scoped to one owner on one device: the draft is local until a
  *  basket is created from it, so a half-planned week survives leaving the app. */
 export class WeekPlanStore {
-  private state: WeekPlanState = { plan: null, ready: false, error: null };
+  private state: WeekPlanState = { plan: null, ready: false, error: null, attendanceRules: [] };
   private listeners = new Set<() => void>();
   private writes: Promise<void> = Promise.resolve();
   private initialization: Promise<void> | null = null;
@@ -50,10 +52,12 @@ export class WeekPlanStore {
         } else if (stored.version === 2) {
           if (!stored.plans || typeof stored.plans !== 'object' || Array.isArray(stored.plans) ||
               !Object.entries(stored.plans).every(([date, plan]) => isWeekPlan(plan) && plan.weekStart === date) ||
+              (stored.attendanceRules !== undefined && !validAttendanceRules(stored.attendanceRules)) ||
               (stored.activeWeek !== null && (typeof stored.activeWeek !== 'string' || !Object.hasOwn(stored.plans, stored.activeWeek))))
             throw Error('Invalid stored weeks');
           this.plans = stored.plans;
-          this.publish({ plan: stored.activeWeek === null ? null : this.plans[stored.activeWeek] });
+          this.publish({ plan: stored.activeWeek === null ? null : this.plans[stored.activeWeek],
+            attendanceRules: stored.attendanceRules ?? [] });
         } else throw Error('Unknown stored week format');
       }
     } catch {
@@ -64,7 +68,8 @@ export class WeekPlanStore {
   }
   private persist(plan: WeekPlan | null) {
     if (!this.readable) return;
-    const json = JSON.stringify({ version: 2, activeWeek: plan?.weekStart ?? null, plans: this.plans });
+    const json = JSON.stringify({ version: 2, activeWeek: plan?.weekStart ?? null, plans: this.plans,
+      attendanceRules: this.state.attendanceRules });
     this.writes = this.writes.catch(() => {}).then(() => this.storage.setItem(this.key, json));
     void this.writes.then(() => this.publish({ error: null }))
       .catch(() => this.publish({ error: 'The planned week could not be saved on this device. Free some storage and retry.' }));
@@ -90,6 +95,18 @@ export class WeekPlanStore {
   /** Opens the given week, keeping what is already planned in it. */
   open = (weekStart: string, preferences: UserPreferences) =>
     this.apply(this.plans[weekStart] ?? startWeek(weekStart, preferences));
+  toggleAttendanceRule = (rule: AttendanceRule, preferences: UserPreferences) => {
+    if (!this.state.ready || !this.readable) return;
+    if (!validAttendanceRules([rule]) || !preferences.participants?.some(person => person.id === rule.personId))
+      throw Error('Choose a person and a valid weekday and meal.');
+    const key = (candidate: AttendanceRule) => candidate.personId === rule.personId &&
+      candidate.weekday === rule.weekday && candidate.slot === rule.slot;
+    const rules = this.state.attendanceRules.some(key)
+      ? this.state.attendanceRules.filter(candidate => !key(candidate))
+      : [...this.state.attendanceRules, rule];
+    this.publish({ attendanceRules: rules });
+    this.persist(this.state.plan);
+  };
   canCopyPreviousWeek = (weekStart: string, preferences: UserPreferences) => {
     if (!this.state.ready || !this.readable || this.plans[weekStart]?.days.length) return false;
     const previous = this.plans[addDays(weekStart, -7)];
@@ -103,16 +120,45 @@ export class WeekPlanStore {
     if (!previous) throw Error('There is no planned previous week to copy.');
     return this.apply(copyPreviousWeek(previous, weekStart, preferences));
   };
-  toggleDay = (date: string, preferences: UserPreferences) =>
-    this.apply(toggleDay(this.require(), date, preferences));
+  toggleDay = (date: string, preferences: UserPreferences) => {
+    const plan = this.require();
+    if (plan.days.some(day => day.date === date) || !plan.participants?.length || !this.state.attendanceRules.length)
+      return this.apply(toggleDay(plan, date, preferences));
+    let next = toggleDay(plan, date, preferences);
+    for (const slot of [...next.days.find(day => day.date === date)!.slots]) {
+      if (!attendingPeople(next, date, slot, this.state.attendanceRules).length)
+        next = skipSlot(next, date, slot, preferences);
+    }
+    if (!next.days.some(day => day.date === date)) throw Error('Nobody is at home for the selected meals on this day.');
+    return this.apply(next);
+  };
   toggleSlot = (date: string, slot: MealSlot, preferences: UserPreferences) =>
     this.apply(toggleSlot(this.require(), date, slot, preferences));
   choose = (date: string, slot: MealSlot, suggestion: MealSuggestion, preferences: UserPreferences,
-    participantIds?: string[]) =>
-    this.apply(chooseMeal(this.require(), date, slot, suggestion, preferences, participantIds));
+    participantIds?: string[]) => {
+    const plan = this.require();
+    let next = chooseMeal(plan, date, slot, suggestion, preferences, participantIds);
+    if (!participantIds && plan.participants?.length && next !== plan) {
+      const attending = attendingPeople(plan, date, slot, this.state.attendanceRules);
+      if (!attending.length) throw Error('Nobody is at home for this meal. Change the routine or the day.');
+      if (attending.length < plan.participants.length)
+        next = setPresence(next, next.items[next.items.length - 1].id, attending, preferences);
+    }
+    return this.apply(next);
+  };
   chooseMode = (date: string, slot: MealSlot, mode: Exclude<MealMode, 'cook'>,
     category: ReadyMealCategory | undefined, preferences: UserPreferences, participantIds?: string[]) =>
-    this.apply(chooseMode(this.require(), date, slot, mode, category, preferences, participantIds));
+    {
+      const plan = this.require();
+      let next = chooseMode(plan, date, slot, mode, category, preferences, participantIds);
+      if (!participantIds && plan.participants?.length && next !== plan) {
+        const attending = attendingPeople(plan, date, slot, this.state.attendanceRules);
+        if (!attending.length) throw Error('Nobody is at home for this meal. Change the routine or the day.');
+        if (attending.length < plan.participants.length)
+          next = setPresence(next, next.items[next.items.length - 1].id, attending, preferences);
+      }
+      return this.apply(next);
+    };
   setPresence = (itemId: string, participantIds: string[], preferences: UserPreferences) =>
     this.apply(setPresence(this.require(), itemId, participantIds, preferences));
   clear = (itemId: string, preferences: UserPreferences) =>
