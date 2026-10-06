@@ -8,11 +8,14 @@ import { PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from 
 import { usePreferences } from '@/context/PreferencesContext';
 import { useProfile } from '@/context/ProfileContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
+import { useWeekPlan } from '@/context/WeekPlanContext';
+import { WeekCalendar, currentWeekStart } from '@/components/WeekCalendar';
 import { preferenceChips } from '@/services/preference-domain';
 import { colors, ui } from '@/lib/theme';
 
 export default function HomeScreen() {
   const { saved, editing } = usePreferences();
+  const week = useWeekPlan();
   const { saved: profile } = useProfile();
   const flow = useBasketFlow();
   const { active } = useActiveBasket();
@@ -26,10 +29,12 @@ export default function HomeScreen() {
       <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Open your basket" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
     </View>
     <WastePrevention />
-    <View style={{ flexDirection: 'row', gap: 10 }}>
-      <View style={{ flex: 1 }}><PrimaryButton label="Plan my next meal" disabled={flow.disabled} onPress={flow.create} /></View>
-      <View style={{ flex: 1 }}><SecondaryButton label="View recent shops" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} /></View>
-    </View>
+    {saved ? <WeekCalendar plan={week.plan} weekStart={week.plan?.weekStart ?? currentWeekStart()}
+      busy={flow.disabled || !week.ready}
+      onWeek={weekStart => week.store.open(weekStart, saved)}
+      onBasket={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />
+      : <PrimaryButton label="Set up your preferences" disabled={flow.disabled} onPress={flow.create} />}
+    <SecondaryButton label="View recent shops" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
     <Pressable accessibilityRole="button" accessibilityLabel="Plan by voice" onPress={() => router.push('/voice-plan')}
       style={({pressed}) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: colors.pale, opacity: pressed ? .75 : 1 })}>
       <Feather name="mic" size={24} color={colors.primary} />

@@ -6,6 +6,9 @@ const {generateBasket}=require('../services/basket/basketGenerator.ts');
 const {newSavedBasket}=require('../services/basket/persistence.ts');
 global.IS_REACT_ACT_ENVIRONMENT=true;
 let params={},generated=0,saveCalls=0,resolveSave,load=async()=>catalog;
+// The calendar's week arrives already decided; confirm() is what the screen asks it for.
+let weekConfirmations=0,weekPlan=null;
+const weekStore={initialize:async()=>{},confirm:()=>{weekConfirmations++;if(!weekPlan)throw Error('Plan at least one meal before creating a basket.');return weekPlan;}};
 const saved=newSavedBasket(generateBasket(prefs(),catalog),prefs(),prefs().userId);
 const preferenceState={ready:true,saved:prefs()};
 const components=Object.fromEntries(['EmptyState','PrimaryButton','Screen','ScreenHeader','SecondaryButton'].map(name=>[name,props=>React.createElement(name,props,props.children)]));
@@ -23,6 +26,7 @@ Module._load=function(request,parent,isMain){
   if(request==='@/services/meals/basket')return {basketFromMealPlan:(plan,p)=>({...generateBasket(p,catalog),engineVersion:'2',mealPlan:plan})};
   if(request==='@/components/BasketResult')return {BasketResult:props=>React.createElement('Result',props)};
   if(request==='@/context/PreferencesContext')return {usePreferences:()=>preferenceState};
+  if(request==='@/context/WeekPlanContext')return {useWeekPlan:()=>({plan:weekPlan,ready:true,error:null,store:weekStore})};
   if(request==='@/hooks/useBasketFlow')return {useBasketFlow:()=>({edit:()=>{},disabled:false})};
   if(request==='@/lib/supabase')return {getSupabaseClient:()=>({})};
   if(request==='@/lib/theme')return {colors:{},ui:{}};
@@ -59,4 +63,29 @@ test('actual screen requires meal confirmation, saves once on double tap, reopen
   await act(()=>{renderer=create(React.createElement(Screen));});await flush();
   await act(()=>renderer.unmount());assert.equal(signal.aborted,true);
   await act(async()=>{resolveLoad(catalog);await Promise.resolve();});await flush();assert.equal(generated,1);
+});
+
+test('a week from the calendar goes straight to a basket, and an empty one says why',async()=>{
+  let renderer;
+  load=async()=>catalog;
+  const generatedBefore=generated;
+  params={week:'1'};weekPlan=null;
+  await act(()=>{renderer=create(React.createElement(Screen));});await flush();
+  // Nothing planned: the screen reports it instead of generating an automatic plan.
+  assert.equal(weekConfirmations,1);
+  assert.equal(renderer.root.findAllByType('Result').length,0);
+  assert.equal(renderer.root.findAllByType('MealReview').length,0,'the calendar is the review');
+  await act(()=>renderer.unmount());
+  const plan={version:'2',weekStart:'2026-10-05',status:'confirmed',householdSize:prefs().householdSize,
+    targetCalories:12000,targetProtein:600,warnings:[],days:[{date:'2026-10-05',slots:['dinner']}],
+    items:[{id:'2026-10-05-dinner',date:'2026-10-05',mealSlot:'dinner',servings:1,
+      meal:{id:'m1',name:'Fixture meal',ingredients:[],dietaryTags:[],allergens:[]}}]};
+  weekPlan=plan;
+  await act(()=>{renderer=create(React.createElement(Screen));});await flush();
+  assert.equal(renderer.root.findAllByType('MealReview').length,0);
+  const result=renderer.root.findByType('Result').props.result;
+  assert.equal(result.mealPlan,plan,'the confirmed week is what the basket was built from');
+  assert.equal(generated,generatedBefore,'no automatic plan is generated for a calendar week');
+  await act(()=>renderer.unmount());
+  params={};
 });

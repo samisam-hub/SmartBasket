@@ -28,7 +28,7 @@ import { basketFromMealPlan } from '@/services/meals/basket';
 
 import { MealPlanReview } from '@/components/MealPlanReview';
 
-import type { MealPlan } from '@/types/meal';
+import type { AnyMealPlan, MealPlan } from '@/types/meal';
 
 import type { Product } from '@/types/product';
 
@@ -49,6 +49,7 @@ import {isSaved} from '@/services/preference-domain';
 import { removeBasketProduct } from '@/services/basket/edit';
 
 import { useActiveBasket } from '@/context/ActiveBasketContext';
+import { useWeekPlan } from '@/context/WeekPlanContext';
 
 import { addBasketProduct } from '@/services/basket/add-product';
 import { addBasketReplacement, replaceBasketProduct } from '@/services/basket/replacements';
@@ -69,7 +70,9 @@ export default function BasketSetupScreen() {
 
   const saved=planPreferences??basePreferences;
 
-  const { savedId,participants,edit } = useLocalSearchParams<{ savedId?: string;participants?:string;edit?:string }>();
+  const { savedId,participants,edit,week } = useLocalSearchParams<{ savedId?: string;participants?:string;edit?:string;week?:string }>();
+
+  const weekPlan = useWeekPlan();
 
   const [editingBasket, setEditingBasket] = useState(false);
 
@@ -170,7 +173,16 @@ export default function BasketSetupScreen() {
 
           catalog.current=products;ownerRef.current=owner;
 
-          setPlan(generateMealPlan(input,products));
+          // The calendar is the review: its week arrives decided, so it goes straight to a basket.
+          if (week === '1') {
+
+            await weekPlan.store.initialize();
+
+            const confirmed = weekPlan.store.confirm(input);
+
+            next = newSavedBasket(basketFromMealPlan(confirmed, input, products, pantry.current), input, owner);
+
+          } else setPlan(generateMealPlan(input,products));
 
         }
 
@@ -184,13 +196,13 @@ export default function BasketSetupScreen() {
 
     return () => controller.abort();
 
-  }, [ready, basePreferences, savedId, retry,participants,edit]);
+  }, [ready, basePreferences, savedId, retry,participants,edit,week,weekPlan.store]);
 
   const confirmPlan=()=>{
 
     if(!plan||!saved)return;
 
-    try { const confirmed:MealPlan={...plan,status:'confirmed'};
+    try { const confirmed:AnyMealPlan={...plan,status:'confirmed'};
 
       setBasket(newSavedBasket(basketFromMealPlan(confirmed,saved,catalog.current,pantry.current),saved,ownerRef.current));setPlan(confirmed);setError(null);
 
