@@ -2,125 +2,72 @@
 
 Stand: 6. Oktober 2026 · Plan: [docs/KALENDER-FLOW-PLAN.md](KALENDER-FLOW-PLAN.md)
 
-**Phase 0, 1 und 2 sind fertig und grün** (`npm run typecheck`, `npm run lint`, `npm test` — 141 Tests). Dieses Dokument beschreibt, was danach dran ist, in welcher Reihenfolge, und was man dabei wissen muss, um nicht in dieselben Fallen zu laufen.
+**Phase 0 bis 6 sind umgesetzt und grün** (`npm run typecheck`, `npm run lint`, `npm test` — 170 Tests). Offen ist **Phase 3b (Anwesenheit pro Mahlzeit)** plus die Punkte unter „Offene Entscheidungen".
 
-Branch: `claude/kalender-flow-phase0-2`, drei Commits über `main` (789193c). Nichts davon ist gepusht.
+Branch: `claude/kalender-flow-phase0-2` (Name stammt aus der ersten Sitzung), neun Commits über `main` (789193c). Nichts davon ist gepusht.
 
 ## Pflichtregeln für jede weitere Phase
 
 1. **Nach jeder Phase anhalten** und `npm run typecheck`, `npm run lint`, `npm test` laufen lassen. Alle drei müssen grün sein, bevor es weitergeht.
 2. **Alte gespeicherte Pläne müssen lesbar bleiben.** Version-1-Pläne (`MealPlan`, `dayIndex`, `planningDays`) werden weder konvertiert noch umgeschrieben. Jedes neue Feld ist optional, und kein vorhandener Pflichtwert wird entfernt.
-3. **Kalorien und Protein bleiben unsichtbar.** Sie dürfen das Scoring beeinflussen, aber im neuen Flow nicht angezeigt werden (`plan` → „Kalorien und Protein laufen unsichtbar weiter").
-4. Keine stillen Wiederholungen oder erfundenen Daten: Wenn etwas nicht geht (keine passenden Gerichte, fehlende Produkte), sagt die App es ehrlich und bietet einen Ausweg.
+3. **Kalorien und Protein bleiben unsichtbar.** Sie beeinflussen das Scoring, werden im Kalender-Flow aber nicht angezeigt.
+4. Keine stillen Wiederholungen oder erfundenen Daten: Wenn etwas nicht geht (keine passenden Gerichte, fehlende Produkte, kein verifiziertes Fertiggericht), sagt die App es und bietet einen Ausweg.
 
-## Was Phase 0–2 geliefert hat
+## Was steht (Commits in Reihenfolge)
 
-### Phase 0 — Onboarding mit Personen (Commit `681ff1f`)
+| Phase | Commit | Inhalt |
+| --- | --- | --- |
+| 0 | `681ff1f` | Onboarding: Haushalt als Personenliste, ein Tipp pro Person (Erwachsener/Kind), optional Alter/Geschlecht/Aktivität, Kalorienempfehlung per Mifflin-St-Jeor (`estimateCalories`, `patchParticipant`), neuer Schritt `meals` für den Mahlzeiten-Standard (`SlotDefaults`) |
+| 1 | `6c986cc` | `WeekPlan`/`WeekPlanItem`/`WeekPlanDay` (Version `'2'`), `AnyMealPlan`, `services/meals/weekPlan.ts` mit UTC-Datumslogik |
+| 2 | `2b4322f` | Migration `20261006090000_calendar_week_plans.sql`: `slot_defaults`/`participants` in `user_preferences`, `plan_version`/`week_start` in `meal_plans`, `plan_date` in `meal_plan_items`, `baskets.planning_days` 1–14, RPC für beide Formen |
+| 3 | `f0bc95f` | `suggestMeals` (genau zwei Gerichte, `exclude`, geteiltes Scoring mit `generateMealPlan`) |
+| 4 | `e64fe7f` | `isWeekPlan`, Korb für beide Formen, Abdeckung über `slotCalorieShare`, `planDays`/`itemDayLabel` für die UI |
+| 5a | `b1c9e27` | `weekPlanDraft.ts` (toggleDay/toggleSlot/chooseMeal/clearChoice/skipSlot/confirmWeek), `WeekPlanStore`, `WeekPlanContext` |
+| 5b | `dd73778` | Wochenkalender als Startansicht, `app/plan/week.tsx`, `app/plan/[date].tsx`, `app/plan/[date]/[slot].tsx` mit Wischgeste, `app/plan/day-done.tsx`, `basket-setup` nimmt den Wochenplan |
+| 5c | `63ad545` | `chooseMode` (Aufwärmen/Auswärts für offene Slots), `meal_choice_events` + Recorder |
+| 6 | `a03e651` | Korb-Extras: Produktsuche über den geladenen Katalog, feste „Immer dabei"-Liste |
 
-| Datei | Inhalt |
-| --- | --- |
-| `components/HouseholdFields.tsx` | Personenliste: ein Tipp = Erwachsener/Kind, optional Alter, Geschlecht, Aktivität, editierbare Kalorienempfehlung |
-| `services/profile-domain.ts` | `estimateCalories` (Mifflin-St-Jeor × Aktivitätsfaktor, auf 50 kcal gerundet, geklemmt auf 1.000–5.000), `estimateProtein`, `newParticipant`, `patchParticipant`, `participantKind`, `activityFactors` |
-| `services/preference-domain.ts` | `householdValues`, `validParticipantList`, `validSlotDefaults`, `slotLabels`, `activeSlotLabels` |
-| `types/preferences.ts` | `SlotDefaults`, `defaultSlotDefaults`, `slotDefaultsOf`, `activeSlots`, Schritt `meals`, `participants?` und `slotDefaults?` in `PreferenceValues` |
-| `types/profile.ts` | `PlanParticipant.kind?`, `.activityLevel?`, `participantKinds`, `onboardingActivities` |
-| `app/onboarding/[step].tsx` | Schritt `household` = Personenliste, neuer Schritt `meals` (Mahlzeiten-Standard), Schritt `goals` ohne Kalorieneingabe |
+Wichtige Festlegungen, die über den Plan hinausgehen:
 
-Wichtig: `patchParticipant` verschiebt die Empfehlung nur, solange der Wert noch der Empfehlung entspricht. Eine selbst eingetippte Zahl bleibt stehen. Dafür gibt es kein zusätzliches Flag im Datenmodell — der Vergleich mit `estimateCalories(person)` ist die Quelle der Wahrheit.
+- **Abdeckung zählt nur geplante Mahlzeiten.** `slotCalorieShare` (`services/meals/config.ts`: Frühstück 0,25 · Mittag 0,32 · Abend 0,32 · Snack 0,08) sagt, welchen Anteil eines Tages ein Slot trägt. Die Ziele eines Wochenplans skalieren mit der Summe der gewählten Slots, und „Rest des Tages" beim Abendessen ist der Rest der *geplanten* Slots. Ein abgewähltes Frühstück wird nirgends nachgeholt. Ohne das war jeder Kalender-Korb `partial`.
+- **`partial` nur bei echten Lücken**: ein gewählter, aber unentschiedener Slot (Warnung `open_slot_<datum>`). Ungeplante Tage und abgewählte Slots sind Antworten, keine Lücken.
+- **`baskets.planning_days`** musste von (3,5,7,14) auf 1–14 gelockert werden, sonst ist eine Woche mit zwei geplanten Tagen nicht speicherbar.
+- **`user_preferences.participants`** ist eine zusätzliche Spalte (im Plan nicht genannt): ohne sie überlebt die Personenliste keinen Cloud-Sync.
+- Die Wischgeste nutzt `PanResponder`/`Animated` aus React Native — **keine neue Abhängigkeit**. `swipeAction(dx, dy, width)` ist die testbare Entscheidung; Tippen macht dasselbe.
+- Der Home-Tab behält Sprachplanung, Pantry, Vorratsanzeige und Produkt-Tiles; nur der automatische Komplettplan ist durch den Kalender ersetzt.
 
-### Phase 1 — Datenmodell (Commit `6c986cc`)
+## Als nächstes: Phase 3b — Anwesenheit pro Mahlzeit
 
-`types/meal.ts`:
+Nicht jede Person isst jede Mahlzeit zu Hause. Standard ist **alle dabei**; Abwesenheit ist die Ausnahme und wird pro Slot gesetzt.
 
-```ts
-interface MealChoice { id, mealSlot, meal, servings, mealMode?, readyMealCategory?, readyMealMatch? }
-export interface MealPlanItem extends MealChoice { dayIndex: number }   // Version 1, unverändert
-export interface WeekPlanItem extends MealChoice { date: string }       // Version 2
-export interface WeekPlanDay { date: string; slots: MealSlot[] }
-export interface WeekPlan { version: '2'; weekStart; days; items: WeekPlanItem[]; householdSize;
-  targetCalories; targetProtein; status; warnings; participants? }
-export type AnyMealPlan = MealPlan | WeekPlan;
-export type AnyMealPlanItem = MealPlanItem | WeekPlanItem;
-export const mealSlots = ['breakfast','lunch','dinner','snack'] as const;
-```
+- Datenmodell: `MealChoice` in `types/meal.ts` bekommt `participantIds?: string[]`. **Fehlt das Feld, sind alle dabei** — so bleiben alle gespeicherten Pläne gültig.
+- Drei Zustände pro Person und Mahlzeit: dabei · ganz weg (keine Menge, kein Einkauf) · eigenes einfaches Gericht.
+- Zustand 3 braucht keinen neuen Modus: ein paar einfache Gerichte in `data/meals.ts` ergänzen (belegtes Brot, Lunchbox) und für diesen Slot statt des Familienessens wählen. Beachten: `meal()` dort leitet `dietaryTags` aus den Zutaten ab, und jedes neue Gericht braucht ein Bild oder einen Fallback in `lib/meal-images.ts`.
+- Mengen: `services/meals/portions.ts` rechnet schon pro Teilnehmer. `participantPortions` muss die Anwesenden eines Slots berücksichtigen, und `aggregateIngredients` die Portionen entsprechend kleiner ansetzen. Dabei gilt weiter: eine Mahlzeit ist eine Einheit — Kalorien und Protein lassen sich nicht unabhängig teilen.
+- UI: auf `app/plan/[date]/[slot].tsx` oder `app/plan/[date].tsx` eine Anwesenheitsliste pro Slot (antippen genügt).
+- Tests: Menge sinkt, wenn jemand nicht dabei ist; ein Slot ohne Anwesende erzeugt keinen Einkauf; alte Items ohne `participantIds` zählen weiter für alle.
+- **Später** (nicht Phase 3b): wiederkehrende Muster wie „Kind, Mo–Fr, Mittag, nicht dabei".
 
-`services/meals/weekPlan.ts` (alles UTC, damit keine Zeitzone einen Tag verschiebt):
-`parsePlanDate`, `planDate`, `isPlanDate`, `addDays`, `weekStartOf`, `isWeekStart`, `weekDates`, `inWeek`, `emptyWeekPlan`, `defaultDaySlots`, `sortSlots`, `plannedDates`, `dayOf`, `itemsOn`, `openSlots`, `isWeekPlanShape`, `itemDate`, `itemDayIndex`, `plannedDayCount`.
+## Fallen, die in Phase 0–6 Zeit gekostet haben
 
-`MealPlanItem.dayIndex` ist **bewusst Pflichtfeld geblieben**. Dadurch musste kein Version-1-Konsument angepasst werden. Wer beide Formen lesen muss, nimmt `AnyMealPlan` plus die Accessoren.
+1. **CHECK-Constraints erlauben keine Subqueries.** Für JSONB-Prüfungen eine `immutable`-Funktion anlegen — und ihr `execute` an `authenticated` **und** `service_role` geben: Der Constraint läuft als die schreibende Rolle. Sonst „permission denied for function".
+2. **RLS schlägt vor CHECK-Constraints zu.** Eine Zeile, die beides verletzt, kommt mit `42501`, nicht mit `23514`.
+3. **pglite liefert Treibertypen, nicht JSON.** `numeric` als String, `timestamptz` als `Date`. Im Test über einen Normalisierer gehen (`asJsonRow` in `tests/week-plan-database.test.cjs`).
+4. **`lib/supabase` zieht React Native herein** und lädt in Node nicht. In Tests `Module._load` patchen (Beispiele: `tests/week-plan-database.test.cjs`, `tests/week-plan-ui.test.cjs`).
+5. **`preference-domain` ↔ `profile-domain` importieren sich gegenseitig.** In Ordnung, solange die Aufrufe in Funktionskörpern stehen; keine Top-Level-Auswertung über die Zyklusgrenze.
+6. **UI-Tests**: `react-test-renderer` mit gestubbten `./ui`-Komponenten. `PreferenceRow` hat `onEdit`, nicht `onPress`. Stubs brauchen einen `displayName` (sonst `react/display-name`). `findAll` trifft **Stub-Komponente und Host-Element**, also nie auf `length === 1` prüfen.
+7. **`PreferenceStore` verwirft seinen Cache** bei unbekanntem Schrittnamen oder ungültigem Draft. Nie einen Schrittnamen entfernen, neue Draft-Felder immer optional.
+8. **Der `WeekPlanStore` speichert `{version:1, plan:null}`** nach einem Reset. Beim Laden muss `plan === null` gültig sein, sonst meldet der Store seinen eigenen leeren Stand als unlesbar.
+9. **Ein synchron werfender Supabase-Client** entkommt `Promise.resolve(...).catch(...)`. `recordChoice` ist deshalb `async` mit `try/catch` — ein Log-Eintrag darf eine getroffene Entscheidung nie scheitern lassen.
+10. **Zähler in `tests/basket-ui.test.cjs` sind kumulativ** über die Tests, und der Katalog-Loader bleibt aus dem vorherigen Test hängen. Am Testbeginn `load` zurücksetzen und Zähler-Baselines nehmen.
+11. **Der Fixture-Katalog deckt nicht jede Zutat** (Teriyaki hat kein Paket). Tests, die einen vollständigen Korb brauchen, über `ingredientAvailability` einen kaufbaren Vorschlag wählen — sonst testet man die Katalog-Lücke statt des Kalenders.
 
-### Phase 2 — Migration (Commit `2b4322f`)
+## Offene Entscheidungen
 
-`supabase/migrations/20261006090000_calendar_week_plans.sql`:
-
-- `user_preferences.slot_defaults jsonb`, `user_preferences.participants jsonb` (beide nullable; `valid_slot_defaults(jsonb)` als Helper-Funktion, weil CHECK keine Subqueries erlaubt; `participants`-Länge muss `household_size` entsprechen)
-- `meal_plans.plan_version text not null default '1'`, `meal_plans.week_start date`, `planning_days` nullable. Version 1: Periode gesetzt, `week_start` null. Version 2: `week_start` ist ein Montag (`extract(isodow)=1`), `planning_days` null.
-- `meal_plan_items.plan_date date`, `day_index` nullable, genau **eines** von beiden pro Zeile; neues `unique(meal_plan_id, plan_date, meal_slot)`.
-- Insert-Policy prüft Datum gegen die Woche des Plans bzw. Tagesnummer gegen die Periode.
-- `baskets.planning_days` jetzt `between 1 and 14` (vorher nur 3, 5, 7, 14) — eine Kalenderwoche kann 2 oder 4 Tage umfassen.
-- `save_generated_basket` schreibt beide Formen; die `planningDays`-Prüfung gegen die Preferences gilt nur noch für Version 1.
-- `services/preferences-repository.ts` trägt `slot_defaults`/`participants` in beide Richtungen.
-
-## Als nächstes: Phase 3 — Vorschläge statt Komplettplan
-
-Datei: `services/meals/planner.ts` (neue Funktion, `generateMealPlan` bleibt bestehen).
-
-```ts
-export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot,
-  preferences: UserPreferences, catalog: Product[] = [], exclude: string[] = []): Meal[]
-```
-
-- Liefert **genau zwei** Gerichte mit unterschiedlicher `meal.id`, oder weniger, wenn der Katalog nichts mehr hergibt (dann ehrlich leer/eines zurückgeben — der Screen bietet Überspringen, Aufwärmen, Auswärts an).
-- Bewertung aus `generateMealPlan` wiederverwenden: Wiederholung, gleiche Mahlzeit am selben Tag, Zutaten-Wiederverwendung (`used`), Verfügbarkeit (`ingredientCosts`), Budget. Die Gewichte stehen in `services/meals/config.ts` (`mealWeights`).
-- `compatibleMeal(meal, preferences)` ist die Kompatibilitätsprüfung — Allergene und Diäten dürfen **nie** verletzt werden.
-- `exclude` sind bereits gezeigte `meal.id`s („Zwei andere zeigen").
-- Die Abendessen-Logik „Rest des Tages" nur anwenden, wenn die anderen Slots des Tages schon gewählt sind (`openSlots(plan, date)` zeigt, was offen ist).
-- `fitsSlot` in `planner.ts` beachten: `lunch` und `dinner` sind austauschbar, `breakfast` und `snack` nicht.
-
-Neuer Test `tests/meal-suggestions.test.cjs`: genau zwei verschiedene kompatible Gerichte; `exclude` greift; Allergene/Diäten werden nie verletzt; bei zu kleinem Katalog kommt weniger zurück statt einer Wiederholung. Fixtures: `tests/basket-fixtures.cjs` (`prefs`, `product`, `catalog`), `tests/meal-fixtures.cjs` (`fullCatalog`).
-
-## Phase 4 — Validierung und Korb
-
-Dateien: `services/meals/validation.ts`, `services/meals/basket.ts`, `services/meals/aggregation.ts`, `services/meals/portions.ts`, `services/basket/edit.ts`, `services/waste-prevention.ts`.
-
-- `isWeekPlan(v): v is WeekPlan` neben `isMealPlan`: `weekStart` ist ein Montag, jedes `days[].date` liegt in der Woche (`inWeek`), jedes Item-Datum ist ein geplanter Tag, der Slot gehört zu den gewählten Slots dieses Tages, keine Dubletten pro Datum + Slot, `items.length <= days.length * 4`. Die restliche Item-Prüfung (Modi, Zutaten, Toleranzen) ist in `isMealPlan` schon vorhanden und sollte geteilt, nicht kopiert werden.
-- Status `partial` nur noch bei fehlenden Produkten oder offenen **gewählten** Slots, nicht bei bewusst leeren Tagen oder abgewählten Slots.
-- Ernährungsabdeckung nur über geplante Tage (`plannedDayCount`), nicht geplante Tage sind keine Lücke.
-- `planNutrition` und `participantPortions` müssen beide Plantypen verstehen. `portions.ts` rechnet heute mit `plan.targetCalories / plan.planningDays / plan.householdSize` — für Version 2 über `plannedDayCount(plan)` gehen.
-- `components/ParticipantNutrition.tsx` zeigt `plan.planningDays` an; auf `plannedDayCount` umstellen.
-- `services/meals/choices.ts` ist auf `MealPlanItem` bzw. `MealPlan` typisiert (`isCook`, `readyCategories`, `replaceMealChoice`). Für Version 2 auf die gemeinsame Basis bzw. `AnyMealPlan` erweitern, statt eine zweite Kopie anzulegen.
-
-## Phase 5 — Screens
-
-`app/(tabs)/index.tsx` wird der Wochenkalender (Screen 6). Neu: `app/plan/week.tsx` (Screen 2), `app/plan/[date].tsx` (Screen 3), `app/plan/[date]/[slot].tsx` (Screen 4), `app/plan/day-done.tsx` (Screen 5). `app/basket-setup.tsx` auf `WeekPlan` umstellen.
-
-Wischregeln auf Screen 4 (Teil des MVP): Karten einzeln; rechts = nehmen, Slot sofort fertig; **nur ein Gericht pro Mahlzeit**, das erste Ja gewinnt; links = nächste Karte; sind alle passenden Gerichte durch, ehrlich melden und Überspringen/Aufwärmen/Auswärts anbieten; Antippen bleibt gleichwertig.
-
-Bestehendes wiederverwenden: `services/meals/choices.ts` (`replaceMealChoice`, `isCook`, `readyCategories`), `lib/meal-images.ts`, `components/MealPlanReview.tsx` als Vorbild für UI-Tests.
-
-## Phase 3b und 6
-
-- **3b Anwesenheit pro Mahlzeit**: `MealPlanItem`/`WeekPlanItem` bekommen `participantIds?` (fehlt = alle dabei, damit alte Pläne gültig bleiben). Drei Zustände pro Person und Mahlzeit: dabei, ganz weg, eigenes einfaches Gericht. Zustand 3 braucht keinen neuen Modus, nur ein paar einfache Gerichte in `data/meals.ts`.
-- **6 Korb-Extras**: Suchfeld „Produkt hinzufügen" über `addBasketProduct` (`services/basket/add-product.ts`, legt Artikel mit `isExtra` und `ingredientKey: extra:<id>` an), „Immer dabei" im MVP als feste Liste.
-
-## Wisch-Entscheidungen speichern
-
-Eigene Tabelle `meal_choice_events` (nur Insert, Lesen nur eigene Zeilen, RLS wie `meal_plans`), Felder siehe Plan. Ab dem MVP schreiben, auch wenn noch nichts daraus lernt. Gehört zu Phase 5, weil die Ereignisse dort entstehen.
-
-## Fallen, die in Phase 0–2 Zeit gekostet haben
-
-1. **CHECK-Constraints erlauben keine Subqueries.** Für Prüfungen über JSONB eine `immutable`-Funktion anlegen — und ihr `execute` an `authenticated` **und** `service_role` geben: Der Constraint läuft als der Rolle, die schreibt, nicht als Owner. Sonst „permission denied for function".
-2. **RLS schlägt vor CHECK-Constraints zu.** Eine Zeile, die beides verletzt, kommt mit `42501` zurück, nicht mit `23514`. Tests, die eine bestimmte Fehlerklasse erwarten, müssen das berücksichtigen.
-3. **pglite liefert Treibertypen, nicht JSON.** `numeric` kommt als String (`"70.00"`), `timestamptz` als `Date`. `fromRow` validiert so eine Rohzeile zu Recht nicht. Im Test über einen kleinen Normalisierer gehen (siehe `asJsonRow` in `tests/week-plan-database.test.cjs`).
-4. **`lib/supabase` zieht React Native herein** und lässt sich in Node nicht laden. In Tests, die ein Modul mit diesem Import brauchen, `Module._load` patchen (Beispiele: `tests/week-plan-database.test.cjs`, `tests/onboarding-ui.test.cjs`).
-5. **`services/preference-domain.ts` und `services/profile-domain.ts` importieren sich gegenseitig.** Das ist in Ordnung, solange die Aufrufe in Funktionskörpern stehen (TypeScript exportiert Funktionsdeklarationen vor der Modulauswertung). Keine Top-Level-Auswertung über die Zyklusgrenze hinweg einbauen.
-6. **UI-Tests** rendern Komponenten mit `react-test-renderer` und gestubbten `./ui`-Komponenten. `PreferenceRow` hat `onEdit`, nicht `onPress`. Stub-Komponenten brauchen einen `displayName`, sonst scheitert `npm run lint` an `react/display-name`.
-7. **`PreferenceStore` verwirft seinen Cache**, wenn `isDraft` fehlschlägt oder ein Schrittname unbekannt ist (`localError` = „Stored preferences could not be read"). Deshalb: niemals einen Schrittnamen entfernen, und neue Draft-Felder immer optional halten.
-
-## Offene Entscheidungen (vor Phase 3 bzw. 5 zu klären, blockieren den Code-Start nicht)
-
-- **`planningDays`**: steckt noch in `PreferenceValues` (Default 7) und wird von `nutritionTargets`, `preferenceChips`, dem Budget-Text und `app/plan-setup.tsx` benutzt. Entfernen gehört in Phase 4/5, wenn der Kalender die Tage liefert. In der DB ist es für Version-2-Pläne schon `null`.
-- **Katalogtiefe**: rund 30 Gerichte, davon 10 Frühstücke. Mit Diätfiltern und „Zwei andere zeigen" gehen die Vorschläge schnell aus. Im Plan zurückgestellt; die größere Idee sind abwandelbare Gerichte statt fester Katalog.
-- **Budget**: Kriterium für die Vorschläge oder nur Anzeige im Korb?
-- **Mahlzeiten-Standard**: gilt für den ganzen Haushalt oder pro Person? Aktuell haushaltsweit (`user_preferences.slot_defaults`).
-- **Branch-Name**: `claude/kalender-flow-phase0-2` trägt Phase 0 bis 2. Ob Phase 3+ dort weiterläuft oder einen eigenen Branch bekommt, ist noch offen.
+- **`planningDays`** steckt noch in `PreferenceValues` (Default 7) und wird von `nutritionTargets`, `preferenceChips`, dem Budget-Text, `app/plan-setup.tsx` und dem alten Sprach-/Automatikpfad benutzt. Für Version-2-Pläne ist es in der DB schon `null`. Ausbauen erst, wenn der alte Flow wirklich weg soll.
+- **Alter Flow**: `generateMealPlan`, `plan-setup.tsx`, `MealPlanReview` leben weiter (Sprachplanung braucht sie). Wann sie verschwinden, ist offen.
+- **Katalogtiefe**: rund 30 Gerichte, davon 10 Frühstücke. Mit Diätfiltern gehen die Vorschläge schnell aus; der Screen sagt es ehrlich. Die größere Idee sind abwandelbare Gerichte statt fester Katalog.
+- **Budget**: derzeit Kriterium im Scoring und Anzeige im Korb; der Gesamtbetrag wird für eine Woche nicht nach geplanten Tagen skaliert.
+- **Mahlzeiten-Standard** gilt haushaltsweit (`user_preferences.slot_defaults`), nicht pro Person.
+- **`meal_choice_events`** wird geschrieben, aber von nichts gelesen. Ein fehlgeschlagener Schreibversuch wird verworfen, nicht gepuffert.
+- **Branch-Name** passt nicht mehr zum Inhalt.
