@@ -25,6 +25,7 @@ Module._load=function(request,parent,isMain){
   if(request==='@/services/meals/planner')return {generateMealPlan:(...args)=>{generated++;return require('../services/meals/planner.ts').generateMealPlan(...args);}};
   if(request==='@/services/meals/basket')return {basketFromMealPlan:(plan,p)=>({...generateBasket(p,catalog),engineVersion:'2',mealPlan:plan})};
   if(request==='@/components/BasketResult')return {BasketResult:props=>React.createElement('Result',props)};
+  if(request==='@/components/BasketExtras')return {BasketExtras:props=>React.createElement('Extras',props)};
   if(request==='@/context/PreferencesContext')return {usePreferences:()=>preferenceState};
   if(request==='@/context/WeekPlanContext')return {useWeekPlan:()=>({plan:weekPlan,ready:true,error:null,store:weekStore})};
   if(request==='@/hooks/useBasketFlow')return {useBasketFlow:()=>({edit:()=>{},disabled:false})};
@@ -86,6 +87,24 @@ test('a week from the calendar goes straight to a basket, and an empty one says 
   const result=renderer.root.findByType('Result').props.result;
   assert.equal(result.mealPlan,plan,'the confirmed week is what the basket was built from');
   assert.equal(generated,generatedBefore,'no automatic plan is generated for a calendar week');
+  // Extras are offered on the basket and land in it as shopping-only items.
+  const extras=renderer.root.findByType('Extras');
+  const {product:fixture,catalog:fixtures}=require('./basket-fixtures.cjs');
+  const newProduct=fixture(99,{name:'Washing-up liquid',category:'other'});
+  await act(()=>extras.props.onAdd(newProduct));
+  const items=()=>renderer.root.findByType('Result').props.result.items;
+  const added=items().find(item=>item.product.id===newProduct.id);
+  assert.ok(added?.isExtra,'a product outside the plan is marked as an extra');
+  assert.equal(added.plannedConsumptionQuantity,0,'extras add no portions to the plan');
+  // A product the plan already buys gets another package instead of more planned portions.
+  const planned=items().find(item=>!item.isExtra&&item.product.id===fixtures[0].id);
+  if(planned){
+    const before=planned.packageCount;
+    await act(()=>extras.props.onAdd(fixtures[0]));
+    const after=items().find(item=>item.product.id===fixtures[0].id);
+    assert.equal(after.packageCount,before+1);
+    assert.equal(after.extraPackageCount,1);
+  }
   await act(()=>renderer.unmount());
   params={};
 });

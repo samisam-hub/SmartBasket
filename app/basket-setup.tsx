@@ -52,6 +52,7 @@ import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 
 import { addBasketProduct } from '@/services/basket/add-product';
+import { BasketExtras } from '@/components/BasketExtras';
 import { addBasketReplacement, replaceBasketProduct } from '@/services/basket/replacements';
 
 export default function BasketSetupScreen() {
@@ -347,6 +348,11 @@ export default function BasketSetupScreen() {
 
       } : undefined} />
 
+      {!basket.result.purchasedAt && <BasketExtras result={basket.result} catalog={catalog.current} preferences={basket.preferences}
+        onAdd={product => {
+          try { setBasket({ ...basket, result: addBasketProduct(basket.result, product), syncStatus: 'local' }); setSavedOnce(false); setNotice(`${product.name} added. Save the basket to keep it.`); }
+          catch (e) { setError(e instanceof Error ? e.message : 'Could not add that product.'); }
+        }} />}
       {!savedId && plan && !basket.result.purchasedAt && <SecondaryButton label="Back to meal review" disabled={saving} onPress={()=>{setBasket(null);setSavedOnce(false);setPlan({...plan,status:'review'});setNotice(null);}} />}
 
       {notice && <Text style={ui.small} accessibilityLiveRegion="polite">{notice}</Text>}
