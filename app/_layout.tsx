@@ -8,6 +8,7 @@ import { PreferencesProvider } from "@/context/PreferencesContext";
 import { colors } from "@/lib/theme";
 import {AuthProvider,useAuth} from '@/context/AuthContext';
 import {ProfileProvider} from '@/context/ProfileContext';
+import {WeekPlanProvider} from '@/context/WeekPlanContext';
 import {useRef} from 'react';
 import { View } from 'react-native';
 import { ScreenNavigation } from '@/components/ScreenNavigation';
@@ -26,7 +27,7 @@ function AuthenticatedLayout(){
  else if(ready)identity.current.owner=owner;
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <PreferencesProvider><ProfileProvider><ActiveBasketProvider key={identity.current.generation}>
+      <PreferencesProvider><ProfileProvider><WeekPlanProvider><ActiveBasketProvider key={identity.current.generation}>
         <StatusBar style="dark" />
         <View style={{ flex: 1 }}>
         <Stack
@@ -59,7 +60,7 @@ function AuthenticatedLayout(){
         <ActiveBasketShortcut />
         <ScreenNavigation />
         </View>
-      </ActiveBasketProvider></ProfileProvider></PreferencesProvider>
+      </ActiveBasketProvider></WeekPlanProvider></ProfileProvider></PreferencesProvider>
     </SafeAreaProvider>
   );
 }
