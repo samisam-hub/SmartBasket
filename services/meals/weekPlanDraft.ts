@@ -1,6 +1,7 @@
-import type { MealSlot, WeekPlan, WeekPlanItem } from '../../types/meal';
+import type { MealMode, MealSlot, ReadyMealCategory, WeekPlan, WeekPlanItem } from '../../types/meal';
 import { activeSlots, type UserPreferences } from '../../types/preferences';
 import { nutritionTargets } from '../basket/nutritionTargets';
+import { choicePlaceholder } from './choices';
 import type { MealSuggestion } from './planner';
 import { isWeekPlan } from './validation';
 import { dayOf, emptyWeekPlan, inWeek, isWeekStart, itemsOn, plannedSlotShare, sortSlots, weekDates } from './weekPlan';
@@ -48,6 +49,19 @@ export function chooseMeal(plan: WeekPlan, date: string, slot: MealSlot, suggest
   if (itemsOn(plan, date).some(item => item.mealSlot === slot)) return plan;
   const item: WeekPlanItem = { id: itemId(date, slot), date, mealSlot: slot,
     meal: suggestion.meal, servings: suggestion.servings };
+  return withTargets({ ...plan, status: 'review', items: [...plan.items, item] }, preferences);
+}
+/** The honest ways out of a slot: heating something up, buying it ready, or eating out. None of
+ *  them carries recorded nutrition, and none of them is a cooked meal in disguise. */
+export function chooseMode(plan: WeekPlan, date: string, slot: MealSlot, mode: Exclude<MealMode, 'cook'>,
+  category: ReadyMealCategory | undefined, preferences: UserPreferences): WeekPlan {
+  const day = dayOf(plan, date);
+  if (!day || !day.slots.includes(slot)) throw Error('That meal is not planned for this day.');
+  if (itemsOn(plan, date).some(item => item.mealSlot === slot)) return plan;
+  const now = new Date().toISOString();
+  const item: WeekPlanItem = { id: itemId(date, slot), date, mealSlot: slot, mealMode: mode,
+    servings: plan.householdSize, ...(mode === 'eat_out' ? {} : { readyMealCategory: category }),
+    meal: choicePlaceholder(mode, slot, category, { createdAt: now, updatedAt: now }) };
   return withTargets({ ...plan, status: 'review', items: [...plan.items, item] }, preferences);
 }
 /** Undo one decision. The slot stays chosen, so it shows up as open again. */

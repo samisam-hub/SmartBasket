@@ -1,4 +1,4 @@
-import type { AnyMealPlan, MealChoice, MealMode, MealSlot, ReadyMealCategory, ReadyMealMetadata } from '../../types/meal';
+import type { AnyMealPlan, Meal, MealChoice, MealMode, MealSlot, ReadyMealCategory, ReadyMealMetadata } from '../../types/meal';
 
 export const readyCategoryLabels: Record<ReadyMealCategory, string> = {
   salad: 'Salad', lasagne: 'Lasagne', pasta: 'Pasta', asian: 'Asian meal', pizza: 'Pizza',
@@ -22,18 +22,23 @@ export function isReadyMealMetadata(value: unknown): value is ReadyMealMetadata 
     Number.isFinite(v.portionGrams) && v.portionGrams > 0 && v.portionGrams <= 2000 &&
     typeof v.available === 'boolean' && typeof v.evidence === 'string' && v.evidence.trim().length > 0;
 }
+/** A meal nobody cooks carries no recorded nutrition: never a guess, never a borrowed recipe. */
+export function choicePlaceholder(mode: Exclude<MealMode, 'cook'>, slot: MealSlot, category: ReadyMealCategory | undefined,
+  timestamps: { createdAt: string; updatedAt: string }): Meal {
+  if (!['ready_to_eat', 'heat_and_eat', 'eat_out'].includes(mode)) throw Error('Invalid meal choice.');
+  if (mode !== 'eat_out' && (!category || !readyCategories(mode, slot).includes(category))) throw Error('This category does not fit this meal.');
+  const name = mode === 'eat_out' ? 'Eating out' : `${readyCategoryLabels[category!]} · ${mode === 'heat_and_eat' ? 'Heat & eat' : 'Ready to eat'}`;
+  return { id: `choice:${mode}:${category ?? 'outside'}`, name, mealType: slot, servings: 1,
+    ingredients: [], allergens: [], dietaryTags: [], caloriesPerServing: 0, proteinPerServing: 0,
+    carbohydratesPerServing: 0, fatPerServing: 0, nutritionSource: 'unrecorded', ...timestamps };
+}
 /** Keeps the item's own day, whether that is a day number or a calendar date. */
 export function replaceMealChoice<P extends AnyMealPlan>(plan: P, itemId: string, mode: Exclude<MealMode, 'cook'>, category?: ReadyMealCategory): P {
   const item = plan.items.find(i => i.id === itemId);
-  if (!item || !['ready_to_eat', 'heat_and_eat', 'eat_out'].includes(mode)) throw Error('Invalid meal choice.');
-  if (mode !== 'eat_out' && (!category || !readyCategories(mode, item.mealSlot).includes(category))) throw Error('This category does not fit this meal.');
-  const name = mode === 'eat_out' ? 'Eating out' : `${readyCategoryLabels[category!]} · ${mode === 'heat_and_eat' ? 'Heat & eat' : 'Ready to eat'}`;
+  if (!item) throw Error('Invalid meal choice.');
   const replacement = { ...item, mealMode: mode, servings: plan.householdSize,
     readyMealCategory: mode === 'eat_out' ? undefined : category,
-    meal: { id: `choice:${mode}:${category ?? 'outside'}`, name, mealType: item.mealSlot, servings: 1,
-      ingredients: [], allergens: [], dietaryTags: [], caloriesPerServing: 0, proteinPerServing: 0,
-      carbohydratesPerServing: 0, fatPerServing: 0, nutritionSource: 'unrecorded' as const,
-      createdAt: item.meal.createdAt, updatedAt: item.meal.updatedAt } };
+    meal: choicePlaceholder(mode, item.mealSlot, category, { createdAt: item.meal.createdAt, updatedAt: item.meal.updatedAt }) };
   delete replacement.readyMealMatch;
   if (replacement.readyMealCategory === undefined) delete replacement.readyMealCategory;
   // Unknown nutrition is never redistributed into the other meals.
