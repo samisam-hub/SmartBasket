@@ -4,6 +4,7 @@ import type { Product } from '../../types/product';
 import type { UserPreferences } from '../../types/preferences';
 import { labels } from '../../types/preferences';
 import { ingredients } from '../../data/meals';
+import { weekNutritionTargets } from './weekTargets';
 import { nutritionTargets } from '../basket/nutritionTargets';
 import { groupOf } from '../basket/scoring';
 import { aggregateIngredients } from './aggregation';
@@ -12,7 +13,7 @@ import { optimizePackages } from './packageOptimizer';
 import { compatibleMeal, mealNutrition, planNutrition } from './planner';
 import { packageWeights } from './config';
 import { isAnyMealPlan, openPlanSlots } from './validation';
-import { isWeekPlanShape, plannedSlotShare } from './weekPlan';
+import { isWeekPlanShape } from './weekPlan';
 import { isSaved } from '../preference-domain';
 import type { PantryLot, PantryUse } from '../../types/pantry';
 import { allocatePantry } from '../pantry-domain';
@@ -27,7 +28,7 @@ export function basketFromMealPlan(plan: AnyMealPlan, preferences: UserPreferenc
   const requirements=aggregateIngredients(plan),products=uniqueCatalog(catalog);
   // Coverage is measured over what the household chose to eat at home, so neither an unplanned
   // day nor a dropped slot counts as a nutrition gap. The floor keeps the targets above zero.
-  const targets=nutritionTargets(isWeekPlanShape(plan)?{...preferences,planningDays:Math.max(0.08,plannedSlotShare(plan))}:preferences);
+  const targets=isWeekPlanShape(plan) ? weekNutritionTargets(plan, preferences) : nutritionTargets(preferences);
   const items: BasketItem[]=[],warnings=[...plan.warnings],ratios:Record<string,number>={};let objective=0;
   const matchingDiagnostics:NonNullable<BasketGenerationResult['matchingDiagnostics']>=[];
   const pantryUsed: PantryUse[] = [], stock = structuredClone(pantry);

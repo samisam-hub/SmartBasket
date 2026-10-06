@@ -132,3 +132,16 @@ test("the calendar shows each day's state and only offers a basket once somethin
   assert.deepEqual(pushed, ["/plan/week"]);
   await act(() => renderer.unmount());
 });
+
+test('an empty calendar offers copying the previous week when one exists', async () => {
+  let copied = 0, renderer;
+  await act(() => { renderer = create(React.createElement(WeekCalendar, {
+    plan: startWeek('2026-10-12', preferences), weekStart: '2026-10-12',
+    onWeek: () => {}, onBasket: () => {}, onCopyPrevious: () => { copied++; },
+  })); });
+  const copy = renderer.root.findAll(node => node.props.label === "Copy last week's plan")[0];
+  assert.ok(copy);
+  await act(() => copy.props.onPress());
+  assert.equal(copied, 1);
+  await act(() => renderer.unmount());
+});

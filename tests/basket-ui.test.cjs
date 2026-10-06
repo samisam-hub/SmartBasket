@@ -25,6 +25,7 @@ Module._load=function(request,parent,isMain){
   if(request==='@/services/meals/planner')return {generateMealPlan:(...args)=>{generated++;return require('../services/meals/planner.ts').generateMealPlan(...args);}};
   if(request==='@/services/meals/basket')return {basketFromMealPlan:(plan,p)=>({...generateBasket(p,catalog),engineVersion:'2',mealPlan:plan})};
   if(request==='@/components/BasketResult')return {BasketResult:props=>React.createElement('Result',props)};
+  if(request==='@/components/ShoppingList')return {ShoppingList:props=>React.createElement('ShoppingList',props)};
   if(request==='@/components/BasketExtras')return {BasketExtras:props=>React.createElement('Extras',props)};
   if(request==='@/context/PreferencesContext')return {usePreferences:()=>preferenceState};
   if(request==='@/context/WeekPlanContext')return {useWeekPlan:()=>({plan:weekPlan,ready:true,error:null,store:weekStore})};

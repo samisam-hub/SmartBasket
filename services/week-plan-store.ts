@@ -3,8 +3,9 @@ import type { UserPreferences } from '../types/preferences';
 import type { MealSuggestion } from './meals/planner';
 import { isWeekPlan } from './meals/validation';
 import {
-  chooseMeal, chooseMode, clearChoice, confirmWeek, moveWeek, setPresence, skipSlot, startWeek, toggleDay, toggleSlot,
+  chooseMeal, chooseMode, clearChoice, confirmWeek, copyPreviousWeek, setPresence, skipSlot, startWeek, toggleDay, toggleSlot,
 } from './meals/weekPlanDraft';
+import { addDays } from './meals/weekPlan';
 import type { LocalStorage } from './preference-store';
 
 export interface WeekPlanState {
@@ -13,7 +14,7 @@ export interface WeekPlanState {
   /** Set when the stored week could not be read or written; it is never overwritten silently. */
   error: string | null;
 }
-/** Holds the week the household is filling in. One owner, one device: the draft is local until a
+/** Keeps drafts by week, scoped to one owner on one device: the draft is local until a
  *  basket is created from it, so a half-planned week survives leaving the app. */
 export class WeekPlanStore {
   private state: WeekPlanState = { plan: null, ready: false, error: null };
@@ -21,6 +22,7 @@ export class WeekPlanStore {
   private writes: Promise<void> = Promise.resolve();
   private initialization: Promise<void> | null = null;
   private readable = true;
+  private plans: Record<string, WeekPlan> = {};
   constructor(private storage: LocalStorage, private key: string) {}
   getSnapshot = () => this.state;
   subscribe = (listener: () => void) => {
@@ -39,10 +41,20 @@ export class WeekPlanStore {
     try {
       const raw = await this.storage.getItem(this.key);
       if (raw) {
-        const stored = JSON.parse(raw) as { version: number; plan: unknown };
-        // A null plan is the stored "no week yet" state, written after a reset.
-        if (stored.version !== 1 || (stored.plan !== null && !isWeekPlan(stored.plan))) throw Error('Invalid stored week');
-        this.publish({ plan: stored.plan });
+        const stored = JSON.parse(raw);
+        if (stored.version === 1) {
+          // Read the original single-week cache without changing its plan or discarding it.
+          if (stored.plan !== null && !isWeekPlan(stored.plan)) throw Error('Invalid stored week');
+          this.plans = stored.plan ? { [stored.plan.weekStart]: stored.plan } : {};
+          this.publish({ plan: stored.plan });
+        } else if (stored.version === 2) {
+          if (!stored.plans || typeof stored.plans !== 'object' || Array.isArray(stored.plans) ||
+              !Object.entries(stored.plans).every(([date, plan]) => isWeekPlan(plan) && plan.weekStart === date) ||
+              (stored.activeWeek !== null && (typeof stored.activeWeek !== 'string' || !Object.hasOwn(stored.plans, stored.activeWeek))))
+            throw Error('Invalid stored weeks');
+          this.plans = stored.plans;
+          this.publish({ plan: stored.activeWeek === null ? null : this.plans[stored.activeWeek] });
+        } else throw Error('Unknown stored week format');
       }
     } catch {
       this.readable = false;
@@ -52,13 +64,21 @@ export class WeekPlanStore {
   }
   private persist(plan: WeekPlan | null) {
     if (!this.readable) return;
-    const json = JSON.stringify({ version: 1, plan });
+    const json = JSON.stringify({ version: 2, activeWeek: plan?.weekStart ?? null, plans: this.plans });
     this.writes = this.writes.catch(() => {}).then(() => this.storage.setItem(this.key, json));
     void this.writes.then(() => this.publish({ error: null }))
       .catch(() => this.publish({ error: 'The planned week could not be saved on this device. Free some storage and retry.' }));
   }
   /** Every change keeps the plan valid and writes it through, so nothing is lost on the way. */
   private apply(next: WeekPlan | null) {
+    if (!this.state.ready || !this.readable) return this.state.plan;
+    if (next) {
+      if (!isWeekPlan(next)) throw Error('Invalid week plan');
+      this.plans = { ...this.plans, [next.weekStart]: next };
+    } else if (this.state.plan) {
+      this.plans = { ...this.plans };
+      delete this.plans[this.state.plan.weekStart];
+    }
     this.publish({ plan: next });
     this.persist(next);
     return next;
@@ -69,7 +89,20 @@ export class WeekPlanStore {
   }
   /** Opens the given week, keeping what is already planned in it. */
   open = (weekStart: string, preferences: UserPreferences) =>
-    this.apply(this.state.plan ? moveWeek(this.state.plan, weekStart, preferences) : startWeek(weekStart, preferences));
+    this.apply(this.plans[weekStart] ?? startWeek(weekStart, preferences));
+  canCopyPreviousWeek = (weekStart: string, preferences: UserPreferences) => {
+    if (!this.state.ready || !this.readable || this.plans[weekStart]?.days.length) return false;
+    const previous = this.plans[addDays(weekStart, -7)];
+    if (!previous?.days.length) return false;
+    try { copyPreviousWeek(previous, weekStart, preferences); return true; } catch { return false; }
+  };
+  copyPreviousWeek = (weekStart: string, preferences: UserPreferences) => {
+    if (!this.state.ready || !this.readable) return this.state.plan;
+    if (this.plans[weekStart]?.days.length) throw Error('This week already has a plan. Clear it before copying.');
+    const previous = this.plans[addDays(weekStart, -7)];
+    if (!previous) throw Error('There is no planned previous week to copy.');
+    return this.apply(copyPreviousWeek(previous, weekStart, preferences));
+  };
   toggleDay = (date: string, preferences: UserPreferences) =>
     this.apply(toggleDay(this.require(), date, preferences));
   toggleSlot = (date: string, slot: MealSlot, preferences: UserPreferences) =>
@@ -89,7 +122,7 @@ export class WeekPlanStore {
   replace = (plan: WeekPlan) => this.apply(plan);
   /** Hands over a confirmed copy for the basket; the draft itself stays open for further changes. */
   confirm = (preferences: UserPreferences) => confirmWeek(this.require(), preferences);
-  /** After a basket was created from the week, or when the household wants to start over. */
+  /** Clears only the active week; the other weeks remain available. */
   reset = () => this.apply(null);
   flush = async () => { await this.writes; };
 }

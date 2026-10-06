@@ -1,12 +1,14 @@
 import type { MealMode, MealSlot, ReadyMealCategory, WeekPlan, WeekPlanItem } from '../../types/meal';
 import { activeSlots, type UserPreferences } from '../../types/preferences';
-import { nutritionTargets } from '../basket/nutritionTargets';
+import { weekNutritionTargets } from './weekTargets';
+import { householdPortionShare } from './portions';
 import { choicePlaceholder } from './choices';
+import { compatibleMeal } from './planner';
 import type { MealSuggestion } from './planner';
 import { isWeekPlan } from './validation';
 import {
-  coveredInSlot, dayOf, emptyWeekPlan, groupsOverlap, inWeek, isWeekStart, itemGroup, itemsInSlot,
-  plannedSlotShare, sortSlots, weekDates,
+  addDays, dayOf, emptyWeekPlan, groupsOverlap, inWeek, isWeekStart, itemGroup, itemsInSlot,
+  sortSlots, weekDates,
 } from './weekPlan';
 
 /** A slot usually holds one meal, named after it. A second one, for people eating something else,
@@ -44,11 +46,40 @@ function release(plan: WeekPlan, date: string, slot: MealSlot, leaving: string[]
 /** Targets follow the meals the household chose to eat at home, the same share the basket measures
  *  coverage against. Recomputed after every change so a plan never carries a stale target. */
 export function withTargets(plan: WeekPlan, preferences: UserPreferences): WeekPlan {
-  const targets = nutritionTargets({ ...preferences, planningDays: Math.max(0.08, plannedSlotShare(plan)) });
+  const targets = weekNutritionTargets(plan, preferences);
   return { ...plan, targetCalories: targets.calorieTarget, targetProtein: targets.proteinTarget };
 }
 export function startWeek(weekStart: string, preferences: UserPreferences): WeekPlan {
   return withTargets(emptyWeekPlan(weekStart, preferences), preferences);
+}
+/** Reuse last week's decisions as an editable draft. Dates and item keys move together;
+ * cached ready-meal matches must be found again for the new basket. */
+export function copyPreviousWeek(source: WeekPlan, weekStart: string, preferences: UserPreferences): WeekPlan {
+  if (!isWeekStart(weekStart) || addDays(source.weekStart, 7) !== weekStart || !source.days.length)
+    throw Error('There is no planned previous week to copy.');
+  const currentPeople = preferences.participants?.map(person => person.id) ?? [];
+  const previousPeople = source.participants?.map(person => person.id) ?? [];
+  if (source.householdSize !== preferences.householdSize ||
+      currentPeople.length !== previousPeople.length || currentPeople.some(id => !previousPeople.includes(id)))
+    throw Error('The household has changed. Plan this week with the current people.');
+  if (preferences.participants?.some(person => person.dailyCalories !==
+      source.participants?.find(previous => previous.id === person.id)?.dailyCalories))
+    throw Error('Portion needs have changed. Plan this week with the current amounts.');
+  if (source.items.some(item => (!item.mealMode || item.mealMode === 'cook') && !compatibleMeal(item.meal, preferences)))
+    throw Error('A previous meal no longer fits your diet or allergies. Plan this week afresh.');
+  const next = startWeek(weekStart, preferences);
+  return withTargets({ ...next,
+    days: source.days.map(day => ({ date: addDays(day.date, 7), slots: [...day.slots] })),
+    items: source.items.map(item => {
+      const date = addDays(item.date, 7);
+      const { readyMealMatch: _oldMatch, ...choice } = item;
+      void _oldMatch;
+      return { ...choice, date, id: item.id.startsWith(item.date)
+        ? `${date}${item.id.slice(item.date.length)}` : item.id,
+        ...(item.participantIds ? { participantIds: [...item.participantIds] } : {}),
+      };
+    }),
+  }, preferences);
 }
 /** Moving to another week starts that week empty; the current one is not carried over. */
 export const moveWeek = (plan: WeekPlan, weekStart: string, preferences: UserPreferences): WeekPlan =>
@@ -90,11 +121,10 @@ function addChoice(plan: WeekPlan, date: string, slot: MealSlot, participantIds:
   // Without a named group this is the household's meal, and a decided slot keeps the one it has.
   if (!eating) return itemsInSlot(plan, date, slot).length ? plan
     : add(plan, build(freeItemId(plan, date, slot), householdServings), undefined, preferences);
-  if (!groupsOverlap(coveredInSlot(plan, date, slot), eating) && itemsInSlot(plan, date, slot).length)
-    return plan;
+  if (itemsInSlot(plan, date, slot).some(item => item.participantIds?.length === eating.length &&
+      item.participantIds.every(id => eating.includes(id)))) return plan;
   const freed = release(plan, date, slot, eating, preferences);
-  const perPerson = householdServings / Math.max(1, plan.householdSize);
-  return add(freed, build(freeItemId(freed, date, slot), perPerson * eating.length), eating, preferences);
+  return add(freed, build(freeItemId(freed, date, slot), householdServings * householdPortionShare(plan, eating)), eating, preferences);
 }
 const add = (plan: WeekPlan, item: WeekPlanItem, eating: string[] | undefined, preferences: UserPreferences) =>
   withTargets({ ...plan, status: 'review',
@@ -111,7 +141,7 @@ export function chooseMode(plan: WeekPlan, date: string, slot: MealSlot, mode: E
 }
 /** Who eats this meal at home. Absent people get no portion and nothing bought for them; when
  *  nobody is left the slot is skipped, because an empty meal is not a meal. The quantity follows
- *  the heads at the table, the same basis the household size always used. */
+ *  individual calorie shares, so removing a child and removing an adult do not remove equal portions. */
 export function setPresence(plan: WeekPlan, itemId: string, participantIds: string[],
   preferences: UserPreferences): WeekPlan {
   const item = plan.items.find(candidate => candidate.id === itemId);
@@ -129,10 +159,11 @@ export function setPresence(plan: WeekPlan, itemId: string, participantIds: stri
     return others.length ? withTargets({ ...without, status: 'review' }, preferences)
       : skipSlot(without, item.date, item.mealSlot, preferences);
   }
-  const before = item.participantIds?.length ?? plan.householdSize;
-  const perPerson = item.servings / Math.max(1, before);
+  const before = householdPortionShare(plan, item.participantIds);
+  const after = householdPortionShare(plan, present);
   const everyone = !others.length && present.length >= plan.householdSize;
-  const updated: WeekPlanItem = { ...item, servings: perPerson * present.length };
+  const updated: WeekPlanItem = { ...item, servings: item.servings * after / before };
+  delete updated.readyMealMatch; // A previous product match used the old quantity.
   // The whole household is the default, so it is stored as no list at all.
   if (everyone) delete updated.participantIds; else updated.participantIds = present;
   return withTargets({ ...plan, status: 'review',

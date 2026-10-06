@@ -24,11 +24,12 @@ export function weekSummary(plan: WeekPlan | null): string {
 }
 
 /** Screen 6: the week as the first thing the household sees, with every day reachable in one tap. */
-export function WeekCalendar({ plan, weekStart, onWeek, onBasket, busy }: {
+export function WeekCalendar({ plan, weekStart, onWeek, onBasket, onCopyPrevious, busy }: {
   plan: WeekPlan | null;
   weekStart: string;
   onWeek: (weekStart: string) => void;
   onBasket: () => void;
+  onCopyPrevious?: () => void;
   busy?: boolean;
 }) {
   const today = todayPlanDate();
@@ -68,6 +69,7 @@ export function WeekCalendar({ plan, weekStart, onWeek, onBasket, busy }: {
       })}
     </View>
     <Text style={ui.small}>{weekSummary(plan)}</Text>
+    {onCopyPrevious && <SecondaryButton label="Copy last week's plan" disabled={busy} onPress={onCopyPrevious} />}
     <SecondaryButton label={plan?.days.length ? 'Change the days' : 'Pick your days'} disabled={busy}
       onPress={() => router.push('/plan/week')} />
     {ready && <PrimaryButton label="Create my basket" disabled={busy} onPress={onBasket} />}
