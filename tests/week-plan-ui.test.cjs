@@ -35,10 +35,11 @@ Module._load = function (request, parent, isMain) {
   if (request === "expo-router") return { router: { push: (to) => pushed.push(to), replace: (to) => pushed.push(to) } };
   if (request === "./ui" || request === "@/components/ui")
     return Object.fromEntries(["PrimaryButton", "SecondaryButton", "SectionCard", "SelectionChip", "TextButton",
-      "ChoiceButton",
+      "ChoiceButton", "IconButton", "FloatingButton",
       "Screen", "ScreenHeader", "ErrorMessage", "PreferenceRow"].map((name) => [name, stub(name)]));
   if (request === "./MealImage") return { MealImage: stub("MealImage") };
-  if (request === "../lib/theme") return { colors: {}, spacing: {}, radii: {}, ui: {} };
+  if (request === "@expo/vector-icons/Feather") return { __esModule: true, default: stub("Feather") };
+  if (request === "../lib/theme") return { colors: {}, spacing: {}, radii: {}, typography: {}, ui: {} };
   if (request.startsWith("@/")) request = path.resolve(path.dirname(require.resolve("../package.json")), request.slice(2));
   return original.call(this, request, parent, isMain);
 };
@@ -47,7 +48,7 @@ for (const extension of [".ts", ".tsx"]) require.extensions[extension] = (module
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText, filename);
 const { MealSwipeCards, swipeAction } = require("../components/MealSwipeCards.tsx");
-const { WeekCalendar, dayState, weekSummary } = require("../components/WeekCalendar.tsx");
+const { WeekCalendar, dayState, mealFacts, openingDate, weekSummary } = require("../components/WeekCalendar.tsx");
 const { startWeek, toggleDay, chooseMeal } = require("../services/meals/weekPlanDraft.ts");
 const { suggestMeals } = require("../services/meals/planner.ts");
 const { prefs } = require("./basket-fixtures.cjs");
@@ -159,32 +160,88 @@ test("the calendar shows each day's state and only offers a basket once somethin
   assert.equal(dayState(plan, monday), "done");
   assert.match(weekSummary(plan), /ready for a basket/);
   assert.equal(dayState(plan, "2026-10-06"), "unplanned");
-  let renderer, baskets = 0, weeks = [];
+
+  let renderer, baskets = 0, weeks = [], picked = [];
+  let shown = monday;
   const render = (current) => React.createElement(WeekCalendar, { plan: current, weekStart: monday,
+    selected: shown, onSelect: (date) => { picked.push(date); shown = date; },
     onWeek: (start) => weeks.push(start), onBasket: () => { baskets++; } });
+  const labelled = (label) => renderer.root.findAll((node) => node.props.label === label);
+  const byLabel = (prefix) => renderer.root.findAll((node) =>
+    typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith(prefix));
+  const texts = () => JSON.stringify(renderer.root.findAllByType("Text").map((node) => node.props.children));
+
   // An empty week offers picking days, not a basket.
   await act(() => { renderer = create(render(startWeek(monday, preferences))); });
-  // findAll matches the stub component and the host element it renders, so count unique labels.
-  const labelled = (label) => renderer.root.findAll((node) => node.props.label === label);
   assert.deepEqual(labelled("Create my basket"), []);
   assert.ok(labelled("Pick your days").length > 0);
+  assert.match(texts(), /Nothing is planned for this day/);
+
   await act(() => { renderer.update(render(plan)); });
   const basket = labelled("Create my basket")[0];
   assert.ok(basket);
   await act(() => basket.props.onPress());
   assert.equal(baskets, 1);
+  // The day on screen shows its meals as cards, with what is actually recorded about them.
+  assert.match(texts(), /Breakfast · \d+ kcal a portion/);
+  assert.deepEqual(labelled("Plan this day"), [], "a planned day is not offered for planning again");
+
   // The arrows move whole weeks.
-  await act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === "Next week")[0].props.onPress());
-  await act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === "Previous week")[0].props.onPress());
+  await act(() => byLabel("Next week")[0].props.onPress());
+  await act(() => byLabel("Previous week")[0].props.onPress());
   assert.deepEqual(weeks, ["2026-10-12", "2026-09-28"]);
-  // A planned day opens that day; an unplanned one goes to the day picker.
+
+  // Tapping a weekday switches the day shown; it does not leave the calendar.
   pushed.length = 0;
-  const days = renderer.root.findAll((node) => typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith("Mon 5 Oct"));
-  await act(() => days[0].props.onPress());
-  assert.deepEqual(pushed, [{ pathname: "/plan/[date]", params: { date: monday } }]);
+  await act(() => byLabel("Wed 7 Oct")[0].props.onPress());
+  assert.deepEqual(picked, ["2026-10-07"]);
+  assert.deepEqual(pushed, [], "picking a day navigates nowhere");
+  await act(() => { renderer.update(render(plan)); });
+  assert.match(texts(), /Nothing is planned for this day/, "an unplanned day says so and offers to plan it");
+  assert.ok(labelled("Plan this day").length > 0);
+
+  // Back on the planned day, a meal's menu opens its two answers.
+  shown = monday;
+  await act(() => { renderer.update(render(plan)); });
+  const options = renderer.root.findAll((node) =>
+    typeof node.props.label === "string" && node.props.label.startsWith("Options for"));
+  assert.ok(options.length, "every card carries a menu");
+  assert.deepEqual(labelled("Choose another"), [], "the menu stays closed until it is asked for");
+  await act(() => options[0].props.onPress());
+  assert.ok(labelled("Choose another").length > 0);
   pushed.length = 0;
-  const wednesday = renderer.root.findAll((node) => typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith("Wed 7 Oct"));
-  await act(() => wednesday[0].props.onPress());
-  assert.deepEqual(pushed, ["/plan/week"]);
+  await act(() => labelled("Choose another")[0].props.onPress());
+  assert.equal(pushed[0].pathname, "/plan/[date]/[slot]");
+  assert.equal(pushed[0].params.date, monday);
   await act(() => renderer.unmount());
+});
+
+test("a planned day with an undecided meal offers that meal, and a week opens on a real day", async () => {
+  const preferences = prefs();
+  let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  plan = chooseMeal(plan, monday, "breakfast", suggestion(plan, monday, "breakfast"), preferences);
+  let renderer;
+  await act(() => { renderer = create(React.createElement(WeekCalendar, { plan, weekStart: monday,
+    selected: monday, onSelect: () => {}, onWeek: () => {}, onBasket: () => {} })); });
+  // What is still open is a line of its own, not a silent gap.
+  const open = renderer.root.findAll((node) => node.props.accessibilityLabel === "Choose Lunch");
+  assert.ok(open.length);
+  pushed.length = 0;
+  await act(() => open[0].props.onPress());
+  assert.deepEqual(pushed, [{ pathname: "/plan/[date]/[slot]", params: { date: monday, slot: "lunch" } }]);
+  await act(() => renderer.unmount());
+
+  // Today when it falls in the week, otherwise the first day that holds something.
+  assert.equal(openingDate(plan, monday, "2026-10-07"), "2026-10-07", "today wins");
+  assert.equal(openingDate(plan, monday, "2026-11-30"), monday, "otherwise the first planned day");
+  assert.equal(openingDate(null, monday, "2026-11-30"), monday, "and failing that the Monday");
+});
+
+test("a meal card says what is recorded and never invents a cooking time", () => {
+  const preferences = prefs();
+  let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  plan = chooseMeal(plan, monday, "dinner", suggestion(plan, monday, "dinner"), preferences);
+  const facts = mealFacts(plan.items[0]);
+  assert.match(facts, /^Dinner · \d+ kcal a portion · [\d.]+ portions?$/);
+  assert.doesNotMatch(facts, /min|Min/, "the curated meals carry no cooking time");
 });

@@ -1,6 +1,6 @@
 import Feather from "@expo/vector-icons/Feather";
 import {StateIllustration,type IllustrationKind} from './BrandAssets';
-import type { ComponentProps, PropsWithChildren } from "react";
+import type { ComponentProps, PropsWithChildren, ReactNode } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -30,7 +30,14 @@ export function Screen({
   top = true,
   bottom = false,
   compact = false,
-}: PropsWithChildren<{ top?: boolean; bottom?: boolean; compact?: boolean }>) {
+  floating,
+}: PropsWithChildren<{
+  top?: boolean;
+  bottom?: boolean;
+  compact?: boolean;
+  /** Sits above the scrolling content and stays put, for the one action a screen is about. */
+  floating?: ReactNode;
+}>) {
   return (
     <SafeAreaView
       style={ui.page}
@@ -46,14 +53,41 @@ export function Screen({
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerStyle={[ui.content, compact && { padding: 16, gap: 12 }]}
+          contentContainerStyle={[ui.content, compact && { padding: 16, gap: 12 },
+            // Room to scroll the last row clear of the floating action instead of under it.
+            floating ? { paddingBottom: 108 } : null]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
           {children}
         </ScrollView>
+        {floating && <View style={styles.floating}>{floating}</View>}
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+/** A round action that floats over a screen, the way a plan invites one more meal. */
+export function FloatingButton({ icon, label, onPress, disabled }: {
+  icon: Icon;
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.floatingButton,
+        disabled && styles.disabled,
+        pressed && styles.choicePressed,
+      ]}
+    >
+      <Feather name={icon} size={28} color={colors.onPrimary} />
+    </Pressable>
   );
 }
 export function Button({
@@ -531,6 +565,20 @@ const styles = StyleSheet.create({
   // A press is felt as well as seen, because the card moves only after the button is released.
   choicePressed: { opacity: 0.75, transform: [{ scale: 0.94 }] },
   choiceCaption: { ...typography.caption, color: colors.muted, fontWeight: "600" },
+  floating: { position: "absolute", right: spacing.xl, bottom: spacing.xl },
+  floatingButton: {
+    width: 60,
+    height: 60,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    elevation: 4,
+    shadowColor: colors.ink,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+  },
   detailRow: {
     flexDirection: "row",
     alignItems: "center",

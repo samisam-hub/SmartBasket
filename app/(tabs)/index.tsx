@@ -1,17 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { LatestBasket } from '@/components/LatestBasket';
 import { WastePrevention } from '@/components/WastePrevention';
-import { PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
+import { FloatingButton, PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
 import { useProfile } from '@/context/ProfileContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
 import { primeBasketCatalog } from '@/hooks/useBasketCatalog';
 import { useWeekPlan } from '@/context/WeekPlanContext';
-import { WeekCalendar, currentWeekStart } from '@/components/WeekCalendar';
+import { dayOf } from '@/services/meals/weekPlan';
+import { WeekCalendar, currentWeekStart, openingDate } from '@/components/WeekCalendar';
 import { preferenceChips } from '@/services/preference-domain';
 import { colors, ui } from '@/lib/theme';
 
@@ -25,18 +26,31 @@ export default function HomeScreen() {
   const flow = useBasketFlow();
   const { active } = useActiveBasket();
   const openCart = () => active ? router.push({ pathname: '/basket-setup', params: { savedId: active.id } }) : router.navigate('/basket');
+  // Which day the week is showing. Null until the plan has loaded, so it can open on a real day.
+  const weekStart = week.plan?.weekStart ?? currentWeekStart();
+  const [picked, setPicked] = useState<string | null>(null);
+  const day = picked ?? openingDate(week.plan, weekStart);
+  // The one action the calendar is about: add another meal to the day on screen.
+  const addMeal = () => router.push(week.plan && dayOf(week.plan, day)
+    ? { pathname: '/plan/[date]', params: { date: day } }
+    : '/plan/week');
   const name = profile?.displayName.trim();
   const details = saved ? preferenceChips(saved).slice(2).filter(label => !label.includes('budget')) : [];
-  return <Screen compact>
+  return <Screen compact floating={saved
+    ? <FloatingButton icon="plus" label="Add a meal to this day" disabled={flow.disabled || !week.ready}
+      onPress={addMeal} />
+    : undefined}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 }}>
       <Text accessibilityRole="header" style={[ui.heading, { flex: 1, fontWeight: '800', fontSize: 22 }]}>Smart<Text style={{ color: colors.primary }}>Basket</Text></Text>
       <Text style={[ui.small, { color: colors.ink, flexShrink: 1 }]} numberOfLines={1}>{name ? `Hi ${name}` : 'Welcome'}</Text>
       <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Open your basket" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
     </View>
     <WastePrevention />
-    {saved ? <WeekCalendar plan={week.plan} weekStart={week.plan?.weekStart ?? currentWeekStart()}
+    {saved ? <WeekCalendar plan={week.plan} weekStart={weekStart}
       busy={flow.disabled || !week.ready}
-      onWeek={weekStart => week.store.open(weekStart, saved)}
+      selected={day}
+      onSelect={setPicked}
+      onWeek={start => { setPicked(null); week.store.open(start, saved); }}
       onBasket={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />
       : <PrimaryButton label="Set up your preferences" disabled={flow.disabled} onPress={flow.create} />}
     <SecondaryButton label="View recent shops" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
