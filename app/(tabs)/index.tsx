@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
-import { useState } from 'react';
-import { router } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { LatestBasket } from '@/components/LatestBasket';
@@ -18,6 +18,9 @@ export default function HomeScreen() {
   const [copyError, setCopyError] = useState<string | null>(null);
   const { saved, editing } = usePreferences();
   const week = useWeekPlan();
+  useFocusEffect(useCallback(() => {
+    if (saved && week.ready) week.store.open(currentWeekStart(), saved);
+  }, [saved, week.ready, week.store]));
   const { saved: profile } = useProfile();
   const flow = useBasketFlow();
   const { active } = useActiveBasket();

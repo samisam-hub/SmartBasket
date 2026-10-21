@@ -15,7 +15,7 @@ export function dayState(plan: WeekPlan | null, date: string): 'unplanned' | 'op
   return openPlanSlots(plan).some(day => day.date === date) ? 'open' : 'done';
 }
 export function weekSummary(plan: WeekPlan | null): string {
-  if (!plan || !plan.days.length) return 'No day planned yet. Pick the days you want to cook for.';
+  if (!plan || !plan.days.length) return 'No meals planned yet. Plan your meals for the days you need.';
   const open = openPlanSlots(plan).reduce((count, day) => count + day.slots.length, 0);
   const meals = plan.items.length;
   const days = `${plan.days.length} ${plan.days.length === 1 ? 'day' : 'days'}`;
@@ -36,6 +36,8 @@ export function WeekCalendar({ plan, weekStart, onWeek, onBasket, onCopyPrevious
   const dates = weekDates(weekStart);
   const ready = !!plan?.items.length;
   return <SectionCard>
+    <Text style={ui.subheading}>{weekStart === currentWeekStart() ? "Your current week" : "Your selected week"}</Text>
+    <Text style={ui.body}>{weekStart === currentWeekStart() ? "Would you like to shop for this week?" : "Would you like to shop for this week’s meals?"}</Text>
     <View style={[ui.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
       <Pressable accessibilityRole="button" accessibilityLabel="Previous week" disabled={busy}
         onPress={() => onWeek(addDays(weekStart, -7))} style={{ padding: spacing.xs }}>
@@ -69,9 +71,10 @@ export function WeekCalendar({ plan, weekStart, onWeek, onBasket, onCopyPrevious
       })}
     </View>
     <Text style={ui.small}>{weekSummary(plan)}</Text>
+    <PrimaryButton label="Plan your meal" disabled={busy}
+      onPress={() => router.push(!plan?.days.length ? '/plan/week' : openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} />
     {onCopyPrevious && <SecondaryButton label="Copy last week's plan" disabled={busy} onPress={onCopyPrevious} />}
-    <SecondaryButton label={plan?.days.length ? 'Change the days' : 'Pick your days'} disabled={busy}
-      onPress={() => router.push('/plan/week')} />
+    {!!plan?.days.length && <SecondaryButton label="Change the days" disabled={busy} onPress={() => router.push('/plan/week')} />}
     {plan?.days.length ? <SecondaryButton label={openPlanSlots(plan).length ? 'Vorlieben & Wochenplan' : 'Wochenplan ansehen'} disabled={busy}
       onPress={() => router.push(openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} /> : null}
     {ready && <PrimaryButton label="Create my basket" disabled={busy} onPress={onBasket} />}
