@@ -35,7 +35,7 @@ export function choicesNutrition(items: MealChoice[], ratios: Record<string,numb
 export const planNutrition = (plan: AnyMealPlan, ratios: Record<string,number> = {}): Nutrition =>
   choicesNutrition(planChoices(plan), ratios);
 const slots: MealSlot[]=['snack','breakfast','lunch','dinner'];
-const fitsSlot = (meal: Meal, slot: MealSlot) => slot==='breakfast'||slot==='snack' ? meal.mealType===slot : meal.mealType==='lunch'||meal.mealType==='dinner';
+export const fitsSlot = (meal: Meal, slot: MealSlot) => meal.mealSlots ? meal.mealSlots.includes(slot) : slot==='breakfast'||slot==='snack' ? meal.mealType===slot : meal.mealType==='lunch'||meal.mealType==='dinner';
 /** What one slot is scored against: the targets, what the plan already holds, and what the catalog offers. */
 interface SlotContext {
   slot: MealSlot;

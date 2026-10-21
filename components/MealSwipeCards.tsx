@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Text, View } from 'react-native';
 import type { Meal } from '../types/meal';
 import type { MealSuggestion } from '../services/meals/planner';
+import { MealPreparation } from './MealPreparation';
 import { MealImage } from './MealImage';
 import { PrimaryButton, SecondaryButton, SectionCard, TextButton } from './ui';
 import { spacing, ui } from '../lib/theme';
@@ -56,6 +57,7 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
       <Text style={ui.eyebrow}>{suggestions.length > 1 ? `1 of ${suggestions.length}` : 'Last one for now'}</Text>
       <Text style={ui.subheading}>{current.meal.name}</Text>
       <MealImage meal={current.meal} />
+      <MealPreparation meal={current.meal} />
       <Text style={ui.small}>{mealLine(current.meal)}</Text>
     </Animated.View>
     <PrimaryButton label="Take this one" disabled={busy} onPress={() => decide('take')} />

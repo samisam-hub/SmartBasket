@@ -30,6 +30,7 @@ const migrations = [
   "20260913090000_diabetes_dietary_preference.sql",
   "20260924144255_ready_meal_metadata.sql",
   "20261006090000_calendar_week_plans.sql",
+  "20261021120000_everyday_meal_allergens.sql",
 ];
 const user = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 const monday = "2026-10-05";
@@ -241,5 +242,17 @@ test("the save RPC accepts both plan versions and still guards the fixed period"
     await assert.rejects(save("unknown", basket({ ...week, version: "9" })), /version/);
     // The week start still has to be a Monday when it arrives through the RPC.
     await assert.rejects(save("tuesday", basket({ ...week, weekStart: "2026-10-06" })), (e) => e.code === "23514");
+  } finally { await db.close(); }
+});
+
+test('mustard and celery persist in preferences and profiles while unknown allergens stay rejected', async () => {
+  const db = await database();
+  try {
+    const result = await insertPreferences(db, { allergens: ['mustard', 'celery'] });
+    assert.deepEqual(fromRow(asJsonRow(result.rows[0])).allergens, ['mustard', 'celery']);
+    await db.query('insert into public.profiles(id, allergens) values($1,$2)', [user, ['mustard', 'celery']]);
+    assert.deepEqual((await db.query('select allergens from public.profiles')).rows[0].allergens, ['mustard', 'celery']);
+    await assert.rejects(insertPreferences(db, { allergens: ['unknown'] }), e => e.code === '23514');
+    await assert.rejects(db.exec("update public.profiles set allergens = array['unknown']"), e => e.code === '23514');
   } finally { await db.close(); }
 });
