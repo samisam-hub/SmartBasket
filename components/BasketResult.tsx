@@ -1,10 +1,10 @@
-import { ProductImage } from './ProductImage';
 import { ProductEstimateNotice } from './ProductEstimateNotice';
 import { planNutrition } from '../services/meals/planner';
 import { mealNutritionKnown } from '../services/meals/choices';
 import { ConfirmedMeals } from './ConfirmedMeals';
 import { ParticipantNutrition } from './ParticipantNutrition';
 import { BasketProductHeading } from './BasketProductHeading';
+import { BasketItemRow } from './BasketItemRow';
 import { generalBasketNotes, productDietaryNotes } from '../lib/basket-notes';
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
@@ -12,7 +12,7 @@ import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Chips, SectionCard, TextButton } from './ui';
 import { CatalogAttribution } from './CatalogAttribution';
-import { colors, spacing, ui } from '../lib/theme';
+import { colors, ui } from '../lib/theme';
 import { groupLabels } from '../services/basket/scoring';
 import type { BasketGenerationResult } from '../types/basket';
 import type { Product } from '../types/product';
@@ -20,8 +20,14 @@ import type { UserPreferences } from '../types/preferences';
 import { replacementCandidatesForItem, replacementCandidatesForRequirement } from '../services/basket/replacements';
 const number = (value: number) => Math.round(value).toLocaleString('en-GB');
 export const basketPrice = (price: number | null) => price === null ? 'Estimate unavailable' : `Est. €${price.toFixed(2)}`;
-export function BasketResult({ result, catalog = [], preferences, onRemoveProduct, onReplaceProduct, onAddReplacement }: { result: BasketGenerationResult; catalog?: Product[]; preferences?: UserPreferences; onRemoveProduct?: (id: string) => void; onReplaceProduct?: (currentId: string, product: Product) => void; onAddReplacement?: (requirement: NonNullable<BasketGenerationResult['ingredientRequirements']>[number], product: Product) => void }) {
+export function BasketResult({ result, catalog = [], preferences, onRemoveProduct, onReplaceProduct, onAddReplacement, ticked, onTick }: { result: BasketGenerationResult; catalog?: Product[]; preferences?: UserPreferences; onRemoveProduct?: (id: string) => void; onReplaceProduct?: (currentId: string, product: Product) => void; onAddReplacement?: (requirement: NonNullable<BasketGenerationResult['ingredientRequirements']>[number], product: Product) => void; ticked?: string[]; onTick?: (productId: string) => void }) {
   const [replacing, setReplacing] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(null);
+  // The screen keeps the ticks when it wants them to survive leaving; otherwise they last the visit.
+  const [ownTicks, setOwnTicks] = useState<string[]>([]);
+  const ticks = ticked ?? ownTicks;
+  const tick = onTick ?? ((id: string) =>
+    setOwnTicks(list => list.includes(id) ? list.filter(other => other !== id) : [...list, id]));
   const generalNotes = generalBasketNotes(result);
   const choose = (key: string, action: () => void) => { action(); setReplacing(null); };
   const replacementButton = (key: string, label: string) => <TextButton label={replacing === key ? 'Close replacements' : label} onPress={() => setReplacing(replacing === key ? null : key)} />;
@@ -70,36 +76,38 @@ export function BasketResult({ result, catalog = [], preferences, onRemoveProduc
         <Text style={ui.subheading}>{item.quantity.toLocaleString('en-GB', { maximumFractionDigits: 1 })} {item.unit}</Text>
       </View>)}
     </SectionCard>}
-    {result.items.map(item => <View key={item.product.id} style={onRemoveProduct ? { paddingTop: 16, paddingRight: 16 } : undefined}>
-      <SectionCard>
-      {item.isExtra && <Text style={ui.eyebrow}>Extra · outside the meal plan</Text>}
-      <BasketProductHeading name={item.product.name} subtitle={<Text style={ui.small}><Text style={{ fontWeight: '700' }}>{item.product.brand ?? 'Brand unavailable'}</Text>{item.estimatedPrice !== null ? ` · €${(item.estimatedPrice/item.packageCount).toFixed(2)} per package` : ''} · {item.packageCount} × {!item.quantityAssumed && item.product.quantityLabel ? item.product.quantityLabel : `${Number(item.packageAmount.toFixed(2))} ${item.quantityUnit}`}{item.quantityAssumed ? ' (assumed package)' : ''}</Text>} notes={productDietaryNotes(result.warnings, item)} report={item.reasonSelected.filter(reason => reason.code !== 'package_fit')} />
-      <View style={{ flexDirection: 'row', alignItems: 'stretch', minHeight: 160, gap: spacing.lg }}>
-        <View style={{ flex: 1, flexBasis: 0, minWidth: 0 }}>
-          <ProductImage large fill uri={item.product.displayImageUrl} width={item.product.imageWidth} height={item.product.imageHeight} name={item.product.name} />
-        </View>
-        <View style={{ flex: 1, flexBasis: 0, minWidth: 0, gap: spacing.sm }}>
+    {result.items.map(item => {
+      const notes = productDietaryNotes(result.warnings, item);
+      const report = item.reasonSelected.filter(reason => reason.code !== 'package_fit');
+      const id = item.product.id;
+      const packages = `${item.packageCount} × ${!item.quantityAssumed && item.product.quantityLabel ? item.product.quantityLabel : `${Number(item.packageAmount.toFixed(2))} ${item.quantityUnit}`}${item.quantityAssumed ? ' (assumed package)' : ''}`;
+      return <View key={id} style={onRemoveProduct ? { paddingTop: 10, paddingRight: 10 } : undefined}>
+        <BasketItemRow name={item.product.name} quantity={packages}
+          price={item.estimatedPrice === null ? null : `€${item.estimatedPrice.toFixed(2)}`}
+          image={{ uri: item.product.displayImageUrl, width: item.product.imageWidth, height: item.product.imageHeight }}
+          ticked={ticks.includes(id)} expanded={open === id} flagged={!!notes.length}
+          onTick={() => tick(id)} onToggle={() => setOpen(open === id ? null : id)}>
+          {item.isExtra && <Text style={ui.eyebrow}>Extra · outside the meal plan</Text>}
+          <BasketProductHeading name={item.product.name} subtitle={<Text style={ui.small}><Text style={{ fontWeight: '700' }}>{item.product.brand ?? 'Brand unavailable'}</Text>{item.estimatedPrice !== null ? ` · €${(item.estimatedPrice/item.packageCount).toFixed(2)} per package` : ''} · {packages}</Text>} notes={notes} report={report} />
           <Text style={ui.small}>{item.isExtra ? `${item.product.caloriesPer100g ?? '—'} kcal · ${item.product.proteinPer100g ?? '—'} g protein / ${item.product.nutritionBasis === '100ml' ? '100 ml' : '100 g'}` : `${number(item.totalCalories)} kcal · ${number(item.totalProtein)} g protein`}</Text>
           {!item.isExtra && item.plannedConsumptionQuantity !== undefined && <>
             <Text style={ui.small}>Planned: {number(item.plannedConsumptionQuantity)} {item.quantityUnit}</Text>
             <Text style={ui.small}>Left for later: {number(item.leftoverQuantity??0)} {item.quantityUnit}</Text>
           </>}
-          <Text style={ui.small}>{item.estimatedPrice === null ? 'Price unavailable' : `€${item.estimatedPrice.toFixed(2)} item total`}</Text>
-        </View>
-      </View>
-      <TextButton label="View product" onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.product.id } })} />
-      {preferences && onReplaceProduct && replacementButton(`product:${item.product.id}`, 'Replace product')}
-      {preferences && onReplaceProduct && replacementOptions(`product:${item.product.id}`, replacementCandidatesForItem(item, catalog, preferences), product => onReplaceProduct(item.product.id, product))}
-      <ProductEstimateNotice product={item.product} />
-      </SectionCard>
-      {onRemoveProduct && <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${item.product.name}`}
-        onPress={() => onRemoveProduct(item.product.id)}
-        style={{ position: 'absolute', top: 0, right: 0, zIndex: 1, width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: colors.surface, backgroundColor: colors.errorBackground, alignItems: 'center', justifyContent: 'center' }}>
-          <Feather name="minus" size={20} color={colors.errorText} />
-        </View>
-      </Pressable>}
-    </View>)}
+          <TextButton label="View product" onPress={() => router.push({ pathname: '/product/[id]', params: { id } })} />
+          {preferences && onReplaceProduct && replacementButton(`product:${id}`, 'Replace product')}
+          {preferences && onReplaceProduct && replacementOptions(`product:${id}`, replacementCandidatesForItem(item, catalog, preferences), product => onReplaceProduct(id, product))}
+          <ProductEstimateNotice product={item.product} />
+        </BasketItemRow>
+        {onRemoveProduct && <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${item.product.name}`}
+          onPress={() => onRemoveProduct(id)}
+          style={{ position: 'absolute', top: 0, right: 0, zIndex: 1, width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: colors.surface, backgroundColor: colors.errorBackground, alignItems: 'center', justifyContent: 'center' }}>
+            <Feather name="minus" size={20} color={colors.errorText} />
+          </View>
+        </Pressable>}
+      </View>;
+    })}
     {!!result.items.length && <CatalogAttribution sources={[...new Set(result.items.map(i => i.product.source))]} />}
   </>;
 }

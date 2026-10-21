@@ -1,3 +1,4 @@
+import { keptTicks, loadTicks, saveTicks } from '@/services/basket/ticks';
 import { loadPantry, checkoutBasket } from '@/services/pantry';
 
 import type { PantryLot } from '@/types/pantry';
@@ -80,6 +81,22 @@ export default function BasketSetupScreen() {
   const originalBasket = useRef<SavedBasket | null>(null);
 
   const [basket, setBasket] = useState<SavedBasket | null>(null), [busy, setBusy] = useState(true);
+  // What is already in the trolley, kept per basket so a trip survives leaving the screen.
+  const [ticked, setTicked] = useState<string[]>([]);
+  const ticketList = basket?.id ?? null;
+  useEffect(() => {
+    if (!ticketList) return;
+    let active = true;
+    void loadTicks(AsyncStorage, ticketList).then(stored => { if (active) setTicked(stored); }).catch(() => {});
+    return () => { active = false; };
+  }, [ticketList]);
+  const toggleTick = (productId: string) => {
+    if (!basket) return;
+    const next = keptTicks(ticked.includes(productId) ? ticked.filter(id => id !== productId) : [...ticked, productId],
+      basket.result.items.map(item => item.product.id));
+    setTicked(next);
+    void saveTicks(AsyncStorage, basket.id, next).catch(() => {});
+  };
 
   useEffect(() => { if (basket) remember(basket); }, [basket, remember]);
 
@@ -332,6 +349,7 @@ export default function BasketSetupScreen() {
       <SecondaryButton label="Pantry & purchase history" onPress={()=>router.push('/pantry')} />
 
       <BasketResult result={basket.result} catalog={catalog.current} preferences={basket.preferences}
+        ticked={ticked} onTick={toggleTick}
         onReplaceProduct={!saving && !basket.result.purchasedAt ? (currentId, product) => {
           try { setBasket({ ...basket, result: replaceBasketProduct(basket.result, currentId, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Product replaced. Save the basket to keep this choice.'); }
           catch (e) { setError(e instanceof Error ? e.message : 'Could not replace product.'); }
