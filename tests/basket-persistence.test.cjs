@@ -49,3 +49,14 @@ test('another device deletion clears cached synced baskets; failed action writes
  await p.save(b);const fail=new BasketPersistence({...storage,setItem:async()=>{throw Error('disk full');}},remote);
  await assert.rejects(fail.rename(b.ownerId,b.id,'New'),/disk full/);await assert.rejects(fail.remove(b.ownerId,b.id),/disk full/);assert.equal(writes,0);
 });
+
+test('discarding an unsaved draft persists deletion across restarts and prevents stale saves', async () => {
+ const storage=memory(), b=draft(), persistence=new BasketPersistence(storage,null);
+ await persistence.discard(b);
+ const restarted=new BasketPersistence(storage,null);
+ assert.equal(await restarted.isDeleted(b.ownerId,b.id),true);
+ assert.equal(await restarted.isDeleted('another-owner',b.id),false);
+ await assert.rejects(restarted.save(b),/deleted/);
+ assert.deepEqual((await restarted.list(b.ownerId)).baskets,[]);
+ await assert.rejects(restarted.discard({...b,result:{...b.result,purchasedAt:new Date().toISOString()}}),/unfinished/);
+});

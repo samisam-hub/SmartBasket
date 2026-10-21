@@ -59,9 +59,11 @@ import { addBasketReplacement, replaceBasketProduct } from '@/services/basket/re
 
 export default function BasketSetupScreen() {
 
-  const { active, remember, clear } = useActiveBasket();
+  const { active, remember, clear, discard, busy: activeBusy } = useActiveBasket();
 
   const pantry = useRef<PantryLot[]>([]);
+
+  const [deleteReview, setDeleteReview] = useState(false);
 
   const [checkoutReview,setCheckoutReview]=useState(false);
 
@@ -384,6 +386,24 @@ export default function BasketSetupScreen() {
       {!basket.result.purchasedAt && (!!basket.result.items.length || !!basket.result.mealPlan?.items.length) && <PrimaryButton label={savedOnce ? basket.syncStatus === 'synced' ? 'Basket saved' : 'Retry cloud save' : basket.result.engineVersion==='2' ? 'Save meal plan & basket' : 'Save basket'}
 
         disabled={savedOnce && (basket.syncStatus === 'synced' || !basket.ownerId)} loading={saving} onPress={() => { void save(); }} />}
+
+      {!basket.result.purchasedAt && <>
+        <SecondaryButton label="Delete basket" disabled={saving || activeBusy} onPress={() => setDeleteReview(true)} />
+        {deleteReview && <>
+          <Text style={ui.body}>Delete this unfinished basket? Your weekly meal plan will remain available.</Text>
+          <PrimaryButton label="Confirm delete basket" disabled={saving || activeBusy} onPress={() => {
+            if (saveLock.current) return;
+            saveLock.current = true; setSaving(true); setError(null);
+            void basketOwner(basket.ownerId).then(owner => {
+              if (owner !== basket.ownerId) throw Error('Your account changed. Reopen the basket before deleting it.');
+              return discard(basket);
+            }).then(() => { generation.current++; setBasket(null); router.dismissTo('/basket'); })
+              .catch(e => setError(e instanceof Error ? e.message : 'Could not delete basket.'))
+              .finally(() => { saveLock.current = false; if (mounted.current) setSaving(false); });
+          }} />
+          <SecondaryButton label="Keep basket" disabled={saving} onPress={() => setDeleteReview(false)} />
+        </>}
+      </>}
 
       <SecondaryButton label="View saved baskets" disabled={saving} onPress={() => router.dismissTo('/basket')} />
 
