@@ -2,6 +2,7 @@ import {BrandLogo} from '@/components/BrandAssets';
 import { router } from "expo-router";
 import { Alert, Text } from "react-native";
 import {
+  DetailRow,
   InfoCard,
   PreferenceRow,
   PrimaryButton,
@@ -56,6 +57,16 @@ export default function ProfileScreen() {
       <SectionCard title="Dietary preferences"><Text style={ui.body}>{p?.dietaryPreferences.map(d=>labels[d]).join(', ')??'Not set'}</Text><TextButton label="Edit personal diet" onPress={()=>editPersonal(2)} /></SectionCard>
       <SectionCard title="Personal allergies & intolerances"><Text style={ui.body}>{p?[...p.allergens,...p.intolerances].join(', ')||'None selected':'Not set'}</Text><TextButton label="Edit personal allergies & intolerances" onPress={()=>editPersonal(3)} /></SectionCard>
       {personal.error&&<Text style={ui.small}>{personal.error}</Text>}
+      <DetailRow
+        icon="users"
+        title="Household"
+        value={
+          saved
+            ? `${saved.householdSize} ${saved.householdSize === 1 ? "person" : "people"} · ${saved.dailyCalories.toLocaleString("en-GB")} kcal a day on average`
+            : "Not set up yet"
+        }
+        onPress={() => router.push("/household")}
+      />
       <SectionCard title="Plan setup preferences">
         {saved ? (
           <PreferenceSummary preferences={saved} />

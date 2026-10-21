@@ -3,12 +3,13 @@ import { Text, View } from "react-native";
 import { NumberInput } from "./NumberInput";
 import { OptionalNumber } from "./ProfileFields";
 import {
-  PreferenceRow,
+  IconButton,
   SecondaryButton,
   SectionCard,
   SelectionChip,
   TextInput,
 } from "./ui";
+import { HouseholdList, kindLabels, maxHousehold } from "./HouseholdList";
 import {
   estimateCalories,
   newParticipant,
@@ -19,16 +20,11 @@ import {
   onboardingActivities,
   participantKinds,
   sexes,
-  type ParticipantKind,
   type PlanParticipant,
 } from "../types/profile";
 import type { Goal } from "../types/preferences";
 import { ui } from "../lib/theme";
 
-const kindLabels: Record<ParticipantKind, string> = {
-  adult: "Adult",
-  child: "Child",
-};
 const activityLabels: Record<keyof typeof onboardingActivities, string> = {
   sedentary: "Mostly sitting",
   normal: "Normal",
@@ -50,10 +46,14 @@ export function HouseholdFields({
   people,
   goal,
   onChange,
+  title,
 }: {
   people: PlanParticipant[];
   goal: Goal;
   onChange: (people: PlanParticipant[]) => void;
+  /** Given on a screen of its own, where this is the heading and adding belongs next to it.
+   *  Left out inside onboarding, which brings its own header. */
+  title?: string;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const open = people.find((person) => person.id === openId) ?? null;
@@ -63,38 +63,37 @@ export function HouseholdFields({
         person.id === id ? patchParticipant(person, values, goal) : person,
       ),
     );
-  const add = (kind: ParticipantKind) => {
+  // One way in, as on the household screen. Adult or child is the first choice in the editor that
+  // opens, so a child is one tap further rather than a second button to read.
+  const add = () => {
     const id = `person-${Date.now()}`;
-    const name = kind === "adult" ? `Adult ${people.length + 1}` : "Child";
-    onChange([...people, newParticipant(kind, id, name, goal)]);
+    onChange([...people, newParticipant("adult", id, `Person ${people.length + 1}`, goal)]);
     setOpenId(id);
   };
   return (
     <View style={ui.stack}>
-      <SectionCard title="Who eats along?">
-        {people.map((person) => (
-          <PreferenceRow
-            key={person.id}
-            label={`${person.name || "Person"}${person.isCurrentUser ? " (you)" : ""}`}
-            value={`${kindLabels[participantKind(person)]} · about ${person.dailyCalories ?? "—"} kcal a day`}
-            onEdit={() => setOpenId(person.id === openId ? null : person.id)}
+      {title && (
+        <View style={ui.row}>
+          <Text accessibilityRole="header" style={[ui.title, { flex: 1 }]}>
+            {title}
+          </Text>
+          <IconButton
+            icon="plus"
+            label="Add person"
+            disabled={people.length >= maxHousehold}
+            onPress={add}
           />
-        ))}
-        <View style={ui.wrap}>
-          {participantKinds.map((kind) => (
-            <SecondaryButton
-              key={kind}
-              label={`Add ${kind === "adult" ? "an adult" : "a child"}`}
-              disabled={people.length >= 10}
-              onPress={() => add(kind)}
-            />
-          ))}
         </View>
-        <Text style={ui.small}>
-          The daily amount is a suggestion from age, sex and activity, not a
-          nutrition prescription. Tap a person to refine or correct it.
-        </Text>
-      </SectionCard>
+      )}
+      <HouseholdList
+        people={people}
+        onOpen={(id) => setOpenId(id === openId ? null : id)}
+        onAdd={add}
+      />
+      <Text style={ui.small}>
+        The daily amount is a suggestion from age, sex and activity, not a
+        nutrition prescription. Tap a person to refine or correct it.
+      </Text>
       {open && (
         <SectionCard title={open.name || "This person"}>
           <TextInput

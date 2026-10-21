@@ -12,8 +12,12 @@ const original = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === "react-native") return { Text: "Text", View: "View" };
   if (request === "./ui" && parent.filename.endsWith("HouseholdFields.tsx"))
-    return Object.fromEntries(["PreferenceRow", "SecondaryButton", "SectionCard", "SelectionChip", "TextInput"]
+    return Object.fromEntries(["IconButton", "SecondaryButton", "SectionCard", "SelectionChip", "TextInput"]
       .map((name) => [name, stub(name)]));
+  // The list has its own test; here it only has to report what it was handed.
+  if (request === "./HouseholdList" && parent.filename.endsWith("HouseholdFields.tsx"))
+    return { HouseholdList: stub("HouseholdList"), maxHousehold: 10,
+      kindLabels: { adult: "Adult", child: "Child" } };
   if (request === "./NumberInput" && parent.filename.endsWith("HouseholdFields.tsx"))
     return { NumberInput: stub("NumberInput") };
   if (request === "./ProfileFields" && parent.filename.endsWith("HouseholdFields.tsx"))
@@ -41,24 +45,28 @@ async function render(initial) {
   const element = () =>
     React.createElement(HouseholdFields, { people, goal: "maintain", onChange });
   await act(() => { renderer = create(element()); });
-  return { get people() { return people; }, renderer,
-    rows: () => renderer.root.findAllByType("PreferenceRow"),
-    press: (type, index = 0) => act(() => renderer.root.findAllByType(type)[index].props.onPress()),
+  const list = () => renderer.root.findAllByType("HouseholdList")[0].props;
+  return { get people() { return people; }, renderer, list,
+    shown: () => list().people,
+    open: (id) => act(() => list().onOpen(id)),
+    add: () => act(() => list().onAdd()),
     chip: (label) => renderer.root.findAllByType("SelectionChip").find((c) => c.props.label === label),
   };
 }
 
 test("one tap adds a person with a calorie suggestion, and removing them is possible", async () => {
   const view = await render([you]);
-  assert.equal(view.rows().length, 1);
-  assert.match(view.rows()[0].props.label, /You \(you\)/);
-  assert.match(view.rows()[0].props.value, /Adult · about \d+ kcal a day/);
-  // "Add a child" is the second of the two add buttons.
-  await view.press("SecondaryButton", 1);
+  assert.equal(view.shown().length, 1);
+  assert.equal(view.shown()[0].name, "You");
+  // One way to add. The person starts as an adult and their editor opens straight away.
+  await view.add();
   assert.equal(view.people.length, 2);
+  assert.equal(view.people[1].kind, "adult");
+  assert.equal(view.people[1].isCurrentUser, false);
+  // Adult or child is the first choice in that editor, so a child is one tap further.
+  await act(() => view.chip("Child").props.onPress());
   const child = view.people[1];
   assert.equal(child.kind, "child");
-  assert.equal(child.isCurrentUser, false);
   assert.equal(child.dailyCalories, estimateCalories(child));
   assert.ok(child.dailyCalories < view.people[0].dailyCalories);
   // The editor opens on the new person, and only they can be removed.
@@ -72,7 +80,7 @@ test("one tap adds a person with a calorie suggestion, and removing them is poss
 
 test("activity and sex refine the suggestion; a typed amount survives further taps", async () => {
   const view = await render([you]);
-  await act(() => view.rows()[0].props.onEdit());
+  await view.open("current-user");
   const before = view.people[0].dailyCalories;
   await act(() => view.chip("Active").props.onPress());
   assert.ok(view.people[0].dailyCalories > before);
@@ -91,9 +99,15 @@ test("activity and sex refine the suggestion; a typed amount survives further ta
   assert.match(input().props.hint, /Our suggestion/);
 });
 
-test("a person saved without a kind is shown as an adult", async () => {
-  const legacy = { id: "p1", name: "Alex", age: 30, sex: null, dailyCalories: 2000,
-    proteinTarget: 100, dietaryPreferences: ["none"], allergens: [], intolerances: [], isCurrentUser: false };
-  const view = await render([legacy]);
-  assert.match(view.rows()[0].props.value, /^Adult · about 2000 kcal a day$/);
+test("a heading and its add button appear only where the screen has no header of its own", async () => {
+  let renderer;
+  const element = (props) => React.createElement(HouseholdFields,
+    { people: [you], goal: "maintain", onChange: () => {}, ...props });
+  await act(() => { renderer = create(element()); });
+  assert.deepEqual(renderer.root.findAllByType("IconButton"), [], "onboarding brings its own header");
+  await act(() => { renderer.update(element({ title: "Household" })); });
+  const add = renderer.root.findAllByType("IconButton")[0];
+  assert.equal(add.props.label, "Add person");
+  assert.equal(add.props.icon, "plus");
+  await act(() => renderer.unmount());
 });

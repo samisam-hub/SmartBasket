@@ -22,6 +22,8 @@ type ButtonProps = {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
+  /** Sits in front of the label, for an action whose shape says what it does. */
+  icon?: Icon;
 };
 export function Screen({
   children,
@@ -59,6 +61,7 @@ export function Button({
   onPress,
   disabled,
   loading,
+  icon,
   secondary = false,
   text = false,
 }: ButtonProps & { secondary?: boolean; text?: boolean }) {
@@ -78,6 +81,13 @@ export function Button({
     >
       {loading && (
         <ActivityIndicator
+          color={secondary || text ? colors.primary : colors.onPrimary}
+        />
+      )}
+      {icon && !loading && (
+        <Feather
+          name={icon}
+          size={18}
           color={secondary || text ? colors.primary : colors.onPrimary}
         />
       )}
@@ -389,6 +399,39 @@ export function PreferenceRow({
     </View>
   );
 }
+/** A settings line that leads somewhere: a tinted badge says what it is about, the value says
+ *  where it stands, and the chevron says the whole line is the button. */
+export function DetailRow({
+  icon,
+  title,
+  value,
+  onPress,
+}: {
+  icon: Icon;
+  title: string;
+  value: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${title}: ${value}`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.detailRow, pressed && styles.pressed]}
+    >
+      <View style={styles.badge}>
+        <Feather name={icon} size={20} color={colors.primary} />
+      </View>
+      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+        <Text style={styles.label}>{title}</Text>
+        <Text numberOfLines={1} style={ui.small}>
+          {value}
+        </Text>
+      </View>
+      <Feather name="chevron-right" size={22} color={colors.muted} />
+    </Pressable>
+  );
+}
 export function ProgressIndicator({
   current,
   total,
@@ -488,6 +531,25 @@ const styles = StyleSheet.create({
   // A press is felt as well as seen, because the card moves only after the button is released.
   choicePressed: { opacity: 0.75, transform: [{ scale: 0.94 }] },
   choiceCaption: { ...typography.caption, color: colors.muted, fontWeight: "600" },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.surface,
+    borderRadius: radii.large,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  badge: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.pale,
+  },
   iconButton: {
     minWidth: 48,
     minHeight: 48,
