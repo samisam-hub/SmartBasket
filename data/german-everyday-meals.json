@@ -1,0 +1,1222 @@
+{
+  "schemaVersion": 1,
+  "locale": "de-DE",
+  "title": "Alltagsgerichte in Deutschland",
+  "status": "editorial-ideas",
+  "timeBasis": {
+    "servings": 4,
+    "description": "Grobe Schätzwerte für vier Portionen in einer Haushaltsküche; aktive Zeit ist Teil der Gesamtzeit. Gesamtzeit umfasst Vorheizen, Kochen und genanntes Warten, aber weder Einkauf noch Aufräumen. Tätigkeiten können parallel laufen. Geräte, Mengen und Erfahrung verändern die Dauer. Salz, Pfeffer und Wasser sind Grundvorräte und nicht einzeln aufgeführt."
+  },
+  "meals": [
+    {
+      "id": "de-kasebrot-mit-gurke",
+      "name": "Käsebrot mit Gurke",
+      "mealSlots": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 10,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Butter",
+        "Schnittkäse",
+        "Gurke"
+      ],
+      "preparationNote": "Brote bestreichen und belegen; Gurke waschen und schneiden."
+    },
+    {
+      "id": "de-wurstbrot-mit-tomate",
+      "name": "Wurstbrot mit Tomate",
+      "mealSlots": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 10,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Butter",
+        "Aufschnitt",
+        "Tomate"
+      ],
+      "preparationNote": "Brote bestreichen und belegen; Tomate waschen und schneiden."
+    },
+    {
+      "id": "de-frischkasebrot-mit-paprika",
+      "name": "Frischkäsebrot mit Paprika",
+      "mealSlots": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 10,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Frischkäse",
+        "Paprika"
+      ],
+      "preparationNote": "Brote bestreichen; Paprika waschen, entkernen und schneiden."
+    },
+    {
+      "id": "de-marmeladenbrot",
+      "name": "Marmeladenbrot",
+      "mealSlots": [
+        "breakfast",
+        "lunch"
+      ],
+      "activeMinutes": 5,
+      "totalMinutes": 5,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Butter",
+        "Marmelade"
+      ],
+      "preparationNote": "Fertig geschnittenes Brot bestreichen."
+    },
+    {
+      "id": "de-honigbrot",
+      "name": "Honigbrot",
+      "mealSlots": [
+        "breakfast",
+        "lunch"
+      ],
+      "activeMinutes": 5,
+      "totalMinutes": 5,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Butter",
+        "Honig"
+      ],
+      "preparationNote": "Fertig geschnittenes Brot bestreichen; Honig nicht für Kinder unter einem Jahr verwenden."
+    },
+    {
+      "id": "de-brotchen-mit-kase-und-marmelade",
+      "name": "Brötchen mit Käse und Marmelade",
+      "mealSlots": [
+        "breakfast"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 10,
+      "method": "assemble",
+      "ingredients": [
+        "Frische Brötchen",
+        "Butter",
+        "Schnittkäse",
+        "Marmelade"
+      ],
+      "preparationNote": "Gekaufte frische Brötchen aufschneiden und belegen; keine Aufbackzeit."
+    },
+    {
+      "id": "de-aufbackbrotchen-mit-belag",
+      "name": "Aufbackbrötchen mit Belag",
+      "mealSlots": [
+        "breakfast"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 25,
+      "method": "bake",
+      "ingredients": [
+        "Aufbackbrötchen",
+        "Butter",
+        "Käse",
+        "Marmelade"
+      ],
+      "preparationNote": "Ofen vorheizen, Brötchen nach Packungsangabe backen und belegen."
+    },
+    {
+      "id": "de-musli-mit-milch-und-apfel",
+      "name": "Müsli mit Milch und Apfel",
+      "mealSlots": [
+        "breakfast"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 10,
+      "method": "assemble",
+      "ingredients": [
+        "Müsli",
+        "Milch",
+        "Apfel"
+      ],
+      "preparationNote": "Apfel waschen und schneiden; alles portionieren."
+    },
+    {
+      "id": "de-naturjoghurt-mit-banane-und-haferflocken",
+      "name": "Naturjoghurt mit Banane und Haferflocken",
+      "mealSlots": [
+        "breakfast"
+      ],
+      "activeMinutes": 5,
+      "totalMinutes": 5,
+      "method": "assemble",
+      "ingredients": [
+        "Naturjoghurt",
+        "Banane",
+        "Haferflocken"
+      ],
+      "preparationNote": "Banane schneiden und mit Joghurt und Flocken portionieren."
+    },
+    {
+      "id": "de-quark-mit-beeren",
+      "name": "Quark mit Beeren",
+      "mealSlots": [
+        "breakfast"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 10,
+      "method": "assemble",
+      "ingredients": [
+        "Quark",
+        "Milch",
+        "Frische Beeren"
+      ],
+      "preparationNote": "Frische Beeren waschen; Quark mit Milch glattrühren und portionieren."
+    },
+    {
+      "id": "de-haferbrei-mit-apfel-und-zimt",
+      "name": "Haferbrei mit Apfel und Zimt",
+      "mealSlots": [
+        "breakfast"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 20,
+      "method": "cook",
+      "ingredients": [
+        "Haferflocken",
+        "Milch",
+        "Apfel",
+        "Zimt"
+      ],
+      "preparationNote": "Apfel schneiden; Flocken mit Milch köcheln lassen und umrühren."
+    },
+    {
+      "id": "de-ubernacht-haferflocken-mit-banane",
+      "name": "Übernacht-Haferflocken mit Banane",
+      "mealSlots": [
+        "breakfast"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 490,
+      "method": "soak",
+      "ingredients": [
+        "Haferflocken",
+        "Milch",
+        "Naturjoghurt",
+        "Banane"
+      ],
+      "preparationNote": "Abends anrühren und acht Stunden im Kühlschrank quellen lassen; morgens Banane schneiden."
+    },
+    {
+      "id": "de-ruhrei-mit-brot",
+      "name": "Rührei mit Brot",
+      "mealSlots": [
+        "breakfast",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 15,
+      "method": "cook",
+      "ingredients": [
+        "Eier",
+        "Milch",
+        "Butter",
+        "Brot",
+        "Schnittlauch"
+      ],
+      "preparationNote": "Eier verquirlen, vollständig stocken lassen; Brot dazu servieren."
+    },
+    {
+      "id": "de-gekochtes-ei-mit-brot",
+      "name": "Gekochtes Ei mit Brot",
+      "mealSlots": [
+        "breakfast",
+        "dinner"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 20,
+      "method": "cook",
+      "ingredients": [
+        "Eier",
+        "Brot",
+        "Butter"
+      ],
+      "preparationNote": "Wasser aufkochen, Eier hart kochen und abschrecken; Brot bestreichen."
+    },
+    {
+      "id": "de-spiegelei-auf-brot",
+      "name": "Spiegelei auf Brot",
+      "mealSlots": [
+        "breakfast",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 15,
+      "method": "cook",
+      "ingredients": [
+        "Eier",
+        "Öl",
+        "Brot",
+        "Tomate"
+      ],
+      "preparationNote": "Eier braten; für kleine Kinder vollständig durchgaren; Tomaten schneiden."
+    },
+    {
+      "id": "de-hummusbrot-mit-gurke",
+      "name": "Hummusbrot mit Gurke",
+      "mealSlots": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 10,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Fertiger Hummus",
+        "Gurke"
+      ],
+      "preparationNote": "Gekauften Hummus verstreichen und Gurke schneiden."
+    },
+    {
+      "id": "de-pfannkuchen-mit-apfelmus",
+      "name": "Pfannkuchen mit Apfelmus",
+      "mealSlots": [
+        "breakfast"
+      ],
+      "activeMinutes": 30,
+      "totalMinutes": 35,
+      "method": "cook",
+      "ingredients": [
+        "Mehl",
+        "Eier",
+        "Milch",
+        "Öl",
+        "Fertiges Apfelmus"
+      ],
+      "preparationNote": "Teig anrühren und Pfannkuchen portionsweise in einer Pfanne ausbacken."
+    },
+    {
+      "id": "de-arme-ritter-mit-obst",
+      "name": "Arme Ritter mit Obst",
+      "mealSlots": [
+        "breakfast"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 25,
+      "method": "cook",
+      "ingredients": [
+        "Brot",
+        "Eier",
+        "Milch",
+        "Butter",
+        "Apfel",
+        "Zimt"
+      ],
+      "preparationNote": "Brot in Eiermilch wenden und portionsweise durchbraten; Obst schneiden."
+    },
+    {
+      "id": "de-spaghetti-mit-tomatensoe",
+      "name": "Spaghetti mit Tomatensoße",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 25,
+      "method": "cook",
+      "ingredients": [
+        "Spaghetti",
+        "Passierte Tomaten",
+        "Zwiebel",
+        "Öl",
+        "Italienische Kräuter"
+      ],
+      "preparationNote": "Nudelwasser erhitzen; währenddessen Soße zubereiten und Nudeln kochen."
+    },
+    {
+      "id": "de-spaghetti-bolognese",
+      "name": "Spaghetti Bolognese",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 50,
+      "method": "cook",
+      "ingredients": [
+        "Spaghetti",
+        "Hackfleisch",
+        "Passierte Tomaten",
+        "Zwiebel",
+        "Möhre",
+        "Öl"
+      ],
+      "preparationNote": "Gemüse schneiden, Hack durchbraten und Soße köcheln; Nudeln parallel kochen."
+    },
+    {
+      "id": "de-spaghetti-mit-linsenbolognese",
+      "name": "Spaghetti mit Linsenbolognese",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 40,
+      "method": "cook",
+      "ingredients": [
+        "Spaghetti",
+        "Rote Linsen",
+        "Passierte Tomaten",
+        "Möhre",
+        "Zwiebel",
+        "Öl"
+      ],
+      "preparationNote": "Trockene rote Linsen in der Soße garen; Nudeln parallel kochen."
+    },
+    {
+      "id": "de-nudeln-mit-pesto-und-tomaten",
+      "name": "Nudeln mit Pesto und Tomaten",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 20,
+      "method": "cook",
+      "ingredients": [
+        "Nudeln",
+        "Fertiges Pesto",
+        "Tomate"
+      ],
+      "preparationNote": "Nudeln kochen; Tomaten schneiden und mit gekauftem Pesto untermischen."
+    },
+    {
+      "id": "de-nudelauflauf-mit-brokkoli",
+      "name": "Nudelauflauf mit Brokkoli",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 50,
+      "method": "bake",
+      "ingredients": [
+        "Nudeln",
+        "Brokkoli",
+        "Sahne",
+        "Milch",
+        "Reibekäse"
+      ],
+      "preparationNote": "Nudeln und Brokkoli vorgaren, Soße mischen und im vorgeheizten Ofen überbacken."
+    },
+    {
+      "id": "de-lasagne-mit-hackfleisch",
+      "name": "Lasagne mit Hackfleisch",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 35,
+      "totalMinutes": 80,
+      "method": "bake",
+      "ingredients": [
+        "Lasagneplatten",
+        "Hackfleisch",
+        "Passierte Tomaten",
+        "Zwiebel",
+        "Milch",
+        "Mehl",
+        "Butter",
+        "Käse"
+      ],
+      "preparationNote": "Hacksoße und Béchamel kochen, schichten und backen; kurze Ruhezeit enthalten."
+    },
+    {
+      "id": "de-kasespatzle-mit-zwiebeln",
+      "name": "Käsespätzle mit Zwiebeln",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 25,
+      "method": "cook",
+      "ingredients": [
+        "Frische Spätzle aus dem Kühlregal",
+        "Käse",
+        "Zwiebel",
+        "Butter"
+      ],
+      "preparationNote": "Gekaufte Spätzle erhitzen, Zwiebeln braten und Käse schmelzen lassen."
+    },
+    {
+      "id": "de-gemusereispfanne",
+      "name": "Gemüsereispfanne",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 35,
+      "method": "cook",
+      "ingredients": [
+        "Reis",
+        "Paprika",
+        "Möhre",
+        "Tiefkühlerbsen",
+        "Zwiebel",
+        "Öl"
+      ],
+      "preparationNote": "Reis frisch kochen; Gemüse parallel schneiden und braten."
+    },
+    {
+      "id": "de-hahnchen-mit-reis-und-gemuse",
+      "name": "Hähnchen mit Reis und Gemüse",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 35,
+      "method": "cook",
+      "ingredients": [
+        "Hähnchenbrust",
+        "Reis",
+        "Brokkoli",
+        "Möhre",
+        "Öl"
+      ],
+      "preparationNote": "Reis kochen; Gemüse garen und Hähnchen vollständig durchbraten."
+    },
+    {
+      "id": "de-hahnchengeschnetzeltes-mit-reis",
+      "name": "Hähnchengeschnetzeltes mit Reis",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 40,
+      "method": "cook",
+      "ingredients": [
+        "Hähnchenbrust",
+        "Reis",
+        "Champignons",
+        "Zwiebel",
+        "Sahne",
+        "Öl"
+      ],
+      "preparationNote": "Reis kochen; Fleisch und Gemüse schneiden, durchbraten und in Soße garen."
+    },
+    {
+      "id": "de-mildes-gemuse-kichererbsen-curry",
+      "name": "Mildes Gemüse-Kichererbsen-Curry",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 35,
+      "method": "cook",
+      "ingredients": [
+        "Reis",
+        "Kichererbsen aus der Dose",
+        "Kokosmilch",
+        "Möhre",
+        "Paprika",
+        "Mildes Currypulver",
+        "Öl"
+      ],
+      "preparationNote": "Reis kochen; Gemüse schneiden und mit abgetropften Kichererbsen köcheln."
+    },
+    {
+      "id": "de-chili-con-carne-mit-reis",
+      "name": "Chili con Carne mit Reis",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 45,
+      "method": "cook",
+      "ingredients": [
+        "Hackfleisch",
+        "Kidneybohnen aus der Dose",
+        "Mais aus der Dose",
+        "Dosentomaten",
+        "Zwiebel",
+        "Reis",
+        "Öl",
+        "Paprikapulver"
+      ],
+      "preparationNote": "Hack durchbraten; abgetropfte Hülsenfrüchte und Tomaten köcheln; Reis parallel kochen."
+    },
+    {
+      "id": "de-chili-sin-carne-mit-reis",
+      "name": "Chili sin Carne mit Reis",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 35,
+      "method": "cook",
+      "ingredients": [
+        "Kidneybohnen aus der Dose",
+        "Mais aus der Dose",
+        "Dosentomaten",
+        "Paprika",
+        "Zwiebel",
+        "Reis",
+        "Öl",
+        "Paprikapulver"
+      ],
+      "preparationNote": "Gemüse schneiden; Dosenbohnen und Tomaten köcheln; Reis parallel kochen."
+    },
+    {
+      "id": "de-kartoffeln-mit-krauterquark",
+      "name": "Kartoffeln mit Kräuterquark",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 35,
+      "method": "cook",
+      "ingredients": [
+        "Kartoffeln",
+        "Quark",
+        "Milch",
+        "Schnittlauch",
+        "Petersilie"
+      ],
+      "preparationNote": "Kartoffeln waschen und kochen; Quark anrühren; Schälzeit am Tisch enthalten."
+    },
+    {
+      "id": "de-kartoffeln-mit-spinat-und-ei",
+      "name": "Kartoffeln mit Spinat und Ei",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 35,
+      "method": "cook",
+      "ingredients": [
+        "Kartoffeln",
+        "Tiefkühlspinat",
+        "Eier",
+        "Butter"
+      ],
+      "preparationNote": "Kartoffeln schälen und kochen; Spinat erhitzen und Eier parallel garen."
+    },
+    {
+      "id": "de-bratkartoffeln-mit-ei",
+      "name": "Bratkartoffeln mit Ei",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 30,
+      "method": "cook",
+      "ingredients": [
+        "Gekochte Kartoffeln",
+        "Eier",
+        "Zwiebel",
+        "Öl"
+      ],
+      "preparationNote": "Bereits gekochte, gekühlt gelagerte Kartoffeln verwenden; Vorkochen nicht enthalten."
+    },
+    {
+      "id": "de-kartoffelgratin-mit-gurkensalat",
+      "name": "Kartoffelgratin mit Gurkensalat",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 70,
+      "method": "bake",
+      "ingredients": [
+        "Kartoffeln",
+        "Milch",
+        "Sahne",
+        "Käse",
+        "Gurke",
+        "Naturjoghurt",
+        "Dill"
+      ],
+      "preparationNote": "Rohe Kartoffeln schälen und dünn schneiden; Gratin backen, Salat parallel machen."
+    },
+    {
+      "id": "de-fischstabchen-mit-kartoffelpuree-und-erbsen",
+      "name": "Fischstäbchen mit Kartoffelpüree und Erbsen",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 40,
+      "method": "cook",
+      "ingredients": [
+        "Tiefkühlfischstäbchen",
+        "Kartoffeln",
+        "Milch",
+        "Butter",
+        "Tiefkühlerbsen"
+      ],
+      "preparationNote": "Püree aus frischen Kartoffeln; Fischstäbchen nach Packungsangabe garen, Erbsen erhitzen."
+    },
+    {
+      "id": "de-ofenlachs-mit-kartoffeln-und-brokkoli",
+      "name": "Ofenlachs mit Kartoffeln und Brokkoli",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 50,
+      "method": "bake",
+      "ingredients": [
+        "Lachsfilet",
+        "Kartoffeln",
+        "Brokkoli",
+        "Öl",
+        "Zitrone"
+      ],
+      "preparationNote": "Kartoffeln klein schneiden und vorgaren im Ofen; Fisch und Brokkoli später dazugeben."
+    },
+    {
+      "id": "de-frikadellen-mit-kartoffeln-und-mohren",
+      "name": "Frikadellen mit Kartoffeln und Möhren",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 35,
+      "totalMinutes": 45,
+      "method": "cook",
+      "ingredients": [
+        "Hackfleisch",
+        "Ei",
+        "Paniermehl",
+        "Zwiebel",
+        "Kartoffeln",
+        "Möhre",
+        "Öl"
+      ],
+      "preparationNote": "Frikadellen formen und durchbraten; Kartoffeln und Möhren parallel garen."
+    },
+    {
+      "id": "de-bratwurst-mit-kartoffelpuree",
+      "name": "Bratwurst mit Kartoffelpüree",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 40,
+      "method": "cook",
+      "ingredients": [
+        "Bratwurst",
+        "Kartoffeln",
+        "Milch",
+        "Butter"
+      ],
+      "preparationNote": "Kartoffeln frisch schälen und kochen; Wurst vollständig garen, Püree stampfen."
+    },
+    {
+      "id": "de-schnitzel-mit-kartoffeln-und-gurkensalat",
+      "name": "Schnitzel mit Kartoffeln und Gurkensalat",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 40,
+      "totalMinutes": 50,
+      "method": "cook",
+      "ingredients": [
+        "Schweineschnitzel",
+        "Ei",
+        "Mehl",
+        "Paniermehl",
+        "Öl",
+        "Kartoffeln",
+        "Gurke",
+        "Naturjoghurt"
+      ],
+      "preparationNote": "Kartoffeln kochen, Schnitzel panieren und durchbraten, Gurkensalat zubereiten."
+    },
+    {
+      "id": "de-kartoffelsuppe-mit-brot",
+      "name": "Kartoffelsuppe mit Brot",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 45,
+      "method": "cook",
+      "ingredients": [
+        "Kartoffeln",
+        "Möhre",
+        "Lauch",
+        "Gemüsebrühe",
+        "Öl",
+        "Brot"
+      ],
+      "preparationNote": "Gemüse waschen, schälen, schneiden und weich kochen; nach Wunsch pürieren."
+    },
+    {
+      "id": "de-linseneintopf-mit-wurstchen",
+      "name": "Linseneintopf mit Würstchen",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 60,
+      "method": "cook",
+      "ingredients": [
+        "Trockene Tellerlinsen",
+        "Möhre",
+        "Sellerie",
+        "Kartoffeln",
+        "Gemüsebrühe",
+        "Wiener Würstchen"
+      ],
+      "preparationNote": "Linsen ohne Einweichen nach Packungsangabe garen; Gemüse mitkochen, Würstchen erhitzen."
+    },
+    {
+      "id": "de-gemusesuppe-mit-kleinen-nudeln",
+      "name": "Gemüsesuppe mit kleinen Nudeln",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 35,
+      "method": "cook",
+      "ingredients": [
+        "Suppennudeln",
+        "Möhre",
+        "Lauch",
+        "Sellerie",
+        "Tiefkühlerbsen",
+        "Gemüsebrühe"
+      ],
+      "preparationNote": "Gemüse schneiden und kochen; Nudeln zum Ende in der Suppe garen."
+    },
+    {
+      "id": "de-tortellini-in-tomatensoe",
+      "name": "Tortellini in Tomatensoße",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 20,
+      "method": "cook",
+      "ingredients": [
+        "Frische Käsetortellini",
+        "Passierte Tomaten",
+        "Zwiebel",
+        "Öl",
+        "Italienische Kräuter"
+      ],
+      "preparationNote": "Tortellini aus dem Kühlregal nach Packungsangabe garen; schnelle Soße kochen."
+    },
+    {
+      "id": "de-gnocchipfanne-mit-tomate-und-mozzarella",
+      "name": "Gnocchipfanne mit Tomate und Mozzarella",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 25,
+      "method": "cook",
+      "ingredients": [
+        "Frische Gnocchi",
+        "Tomate",
+        "Mozzarella",
+        "Öl",
+        "Basilikum"
+      ],
+      "preparationNote": "Gnocchi aus dem Kühlregal braten; Tomaten und Mozzarella zugeben."
+    },
+    {
+      "id": "de-gemuseomelett-mit-brot",
+      "name": "Gemüseomelett mit Brot",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 25,
+      "method": "cook",
+      "ingredients": [
+        "Eier",
+        "Paprika",
+        "Tomate",
+        "Öl",
+        "Brot"
+      ],
+      "preparationNote": "Gemüse schneiden und anbraten; Eier zugeben und vollständig stocken lassen."
+    },
+    {
+      "id": "de-wraps-mit-hahnchen-und-gemuse",
+      "name": "Wraps mit Hähnchen und Gemüse",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 30,
+      "method": "cook",
+      "ingredients": [
+        "Fertige Tortillafladen",
+        "Hähnchenbrust",
+        "Salat",
+        "Gurke",
+        "Tomate",
+        "Naturjoghurt",
+        "Öl"
+      ],
+      "preparationNote": "Fleisch durchbraten; Gemüse waschen und schneiden; Fladen erwärmen und füllen."
+    },
+    {
+      "id": "de-wraps-mit-bohnen-und-gemuse",
+      "name": "Wraps mit Bohnen und Gemüse",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 25,
+      "method": "cook",
+      "ingredients": [
+        "Fertige Tortillafladen",
+        "Kidneybohnen aus der Dose",
+        "Mais aus der Dose",
+        "Paprika",
+        "Naturjoghurt",
+        "Öl"
+      ],
+      "preparationNote": "Bohnen abtropfen; Gemüse und Bohnen erhitzen, Fladen füllen."
+    },
+    {
+      "id": "de-pizza-mit-gemuse-vom-blech",
+      "name": "Pizza mit Gemüse vom Blech",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 50,
+      "method": "bake",
+      "ingredients": [
+        "Fertiger Pizzateig",
+        "Passierte Tomaten",
+        "Paprika",
+        "Champignons",
+        "Käse"
+      ],
+      "preparationNote": "Gekühlten Fertigteig belegen; Ofenvorheizen und Backen enthalten, kein selbst gemachter Hefeteig."
+    },
+    {
+      "id": "de-reibekuchen-mit-apfelmus",
+      "name": "Reibekuchen mit Apfelmus",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 40,
+      "totalMinutes": 50,
+      "method": "cook",
+      "ingredients": [
+        "Kartoffeln",
+        "Zwiebel",
+        "Ei",
+        "Mehl",
+        "Öl",
+        "Fertiges Apfelmus"
+      ],
+      "preparationNote": "Kartoffeln schälen und reiben; Puffer portionsweise in einer Pfanne ausbacken."
+    },
+    {
+      "id": "de-milchreis-mit-apfelmus",
+      "name": "Milchreis mit Apfelmus",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 40,
+      "method": "cook",
+      "ingredients": [
+        "Milchreis",
+        "Milch",
+        "Zimt",
+        "Fertiges Apfelmus"
+      ],
+      "preparationNote": "Trockenen Milchreis kochen und regelmäßig umrühren; gekauftes Apfelmus verwenden."
+    },
+    {
+      "id": "de-griebrei-mit-kirschen",
+      "name": "Grießbrei mit Kirschen",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 20,
+      "method": "cook",
+      "ingredients": [
+        "Weichweizengrieß",
+        "Milch",
+        "Kirschen aus dem Glas"
+      ],
+      "preparationNote": "Milch aufkochen, Grieß einrühren und quellen lassen; Kirschen dazugeben."
+    },
+    {
+      "id": "de-ofenhahnchen-mit-kartoffeln-und-mohren",
+      "name": "Ofenhähnchen mit Kartoffeln und Möhren",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 90,
+      "method": "bake",
+      "ingredients": [
+        "Hähnchenschenkel",
+        "Kartoffeln",
+        "Möhre",
+        "Öl",
+        "Paprikapulver"
+      ],
+      "preparationNote": "Gemüse schneiden, alles würzen und im Ofen vollständig garen; für Tage mit mehr Zeit."
+    },
+    {
+      "id": "de-brotzeit-mit-kase-und-rohkost",
+      "name": "Brotzeit mit Käse und Rohkost",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 15,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Butter",
+        "Schnittkäse",
+        "Gurke",
+        "Paprika",
+        "Möhre"
+      ],
+      "preparationNote": "Brote bestreichen und belegen, Gemüse waschen und schneiden."
+    },
+    {
+      "id": "de-brotzeit-mit-aufschnitt-und-gewurzgurken",
+      "name": "Brotzeit mit Aufschnitt und Gewürzgurken",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 10,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Butter",
+        "Aufschnitt",
+        "Gewürzgurken"
+      ],
+      "preparationNote": "Brote bestreichen und belegen; Gewürzgurken schneiden."
+    },
+    {
+      "id": "de-kasebrot-lunchbox-mit-apfel-und-mohre",
+      "name": "Käsebrot-Lunchbox mit Apfel und Möhre",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 15,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Butter",
+        "Schnittkäse",
+        "Apfel",
+        "Möhre"
+      ],
+      "preparationNote": "Brote schmieren, Obst und Gemüse waschen und schneiden; zum Mitnehmen verpacken."
+    },
+    {
+      "id": "de-wurstbrot-lunchbox-mit-gurke-und-apfel",
+      "name": "Wurstbrot-Lunchbox mit Gurke und Apfel",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 15,
+      "method": "assemble",
+      "ingredients": [
+        "Brot",
+        "Butter",
+        "Aufschnitt",
+        "Gurke",
+        "Apfel"
+      ],
+      "preparationNote": "Brote schmieren; Obst und Gemüse schneiden; bis zum Essen gekühlt aufbewahren."
+    },
+    {
+      "id": "de-tomate-mozzarella-mit-brot",
+      "name": "Tomate-Mozzarella mit Brot",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 15,
+      "method": "assemble",
+      "ingredients": [
+        "Tomate",
+        "Mozzarella",
+        "Brot",
+        "Olivenöl",
+        "Basilikum"
+      ],
+      "preparationNote": "Tomaten und Mozzarella schneiden und mit Brot anrichten."
+    },
+    {
+      "id": "de-gemischter-salat-mit-ei-und-brot",
+      "name": "Gemischter Salat mit Ei und Brot",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 20,
+      "totalMinutes": 25,
+      "method": "cook",
+      "ingredients": [
+        "Blattsalat",
+        "Gurke",
+        "Tomate",
+        "Eier",
+        "Brot",
+        "Öl",
+        "Essig"
+      ],
+      "preparationNote": "Eier frisch hart kochen; Gemüse waschen, schneiden und Dressing anrühren."
+    },
+    {
+      "id": "de-nudelsalat-mit-erbsen-und-kase",
+      "name": "Nudelsalat mit Erbsen und Käse",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 25,
+      "totalMinutes": 60,
+      "method": "cook",
+      "ingredients": [
+        "Nudeln",
+        "Tiefkühlerbsen",
+        "Käse",
+        "Gurke",
+        "Naturjoghurt",
+        "Senf"
+      ],
+      "preparationNote": "Nudeln und Erbsen frisch kochen, zügig abkühlen lassen; Gemüse schneiden und mischen."
+    },
+    {
+      "id": "de-kartoffelsalat-mit-wurstchen",
+      "name": "Kartoffelsalat mit Würstchen",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 30,
+      "totalMinutes": 75,
+      "method": "cook",
+      "ingredients": [
+        "Kartoffeln",
+        "Gewürzgurken",
+        "Zwiebel",
+        "Gemüsebrühe",
+        "Essig",
+        "Öl",
+        "Wiener Würstchen"
+      ],
+      "preparationNote": "Kartoffeln frisch kochen, abkühlen und pellen; Salat mischen und Würstchen erhitzen."
+    },
+    {
+      "id": "de-uberbackener-kasetoast-mit-tomate",
+      "name": "Überbackener Käsetoast mit Tomate",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 25,
+      "method": "bake",
+      "ingredients": [
+        "Toastbrot",
+        "Käse",
+        "Tomate",
+        "Butter"
+      ],
+      "preparationNote": "Toast belegen und im vorgeheizten Ofen überbacken."
+    },
+    {
+      "id": "de-flammkuchen-mit-zwiebeln-und-speck",
+      "name": "Flammkuchen mit Zwiebeln und Speck",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 15,
+      "totalMinutes": 35,
+      "method": "bake",
+      "ingredients": [
+        "Fertiger Flammkuchenteig",
+        "Schmand",
+        "Zwiebel",
+        "Speck"
+      ],
+      "preparationNote": "Gekühlten Fertigteig belegen und backen; Ofenvorheizen enthalten."
+    },
+    {
+      "id": "de-maultaschen-in-gemusebruhe",
+      "name": "Maultaschen in Gemüsebrühe",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 10,
+      "totalMinutes": 20,
+      "method": "cook",
+      "ingredients": [
+        "Maultaschen aus dem Kühlregal",
+        "Gemüsebrühe",
+        "Schnittlauch"
+      ],
+      "preparationNote": "Gekaufte Maultaschen nach Packungsangabe in Brühe garen; regional süddeutsch geprägt."
+    }
+  ]
+}
