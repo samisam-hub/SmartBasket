@@ -94,7 +94,7 @@ test("an exhausted slot says so instead of offering a repeat", async () => {
 test("the calendar shows each day's state and only offers a basket once something is planned", async () => {
   let plan = startWeek(monday, preferences);
   assert.equal(dayState(plan, monday), "unplanned");
-  assert.match(weekSummary(plan), /No day planned yet/);
+  assert.match(weekSummary(plan), /No meals planned yet/);
   plan = toggleDay(plan, monday, preferences);
   assert.equal(dayState(plan, monday), "open");
   assert.match(weekSummary(plan), /1 day planned · 0 meals chosen · 3 still open/);
@@ -111,7 +111,7 @@ test("the calendar shows each day's state and only offers a basket once somethin
   // findAll matches the stub component and the host element it renders, so count unique labels.
   const labelled = (label) => renderer.root.findAll((node) => node.props.label === label);
   assert.deepEqual(labelled("Create my basket"), []);
-  assert.ok(labelled("Pick your days").length > 0);
+  assert.ok(labelled("Plan your meal").length > 0);
   await act(() => { renderer.update(render(plan)); });
   const basket = labelled("Create my basket")[0];
   assert.ok(basket);
@@ -141,6 +141,11 @@ test('an empty calendar offers copying the previous week when one exists', async
   })); });
   const copy = renderer.root.findAll(node => node.props.label === "Copy last week's plan")[0];
   assert.ok(copy);
+  const labels = renderer.root.findAll(node => typeof node.type === 'string' && node.props.label).map(node => node.props.label);
+  assert.ok(labels.indexOf('Plan your meal') < labels.indexOf("Copy last week's plan"));
+  pushed.length = 0;
+  await act(() => renderer.root.findAll(node => node.props.label === 'Plan your meal')[0].props.onPress());
+  assert.deepEqual(pushed, ['/plan/week']);
   await act(() => copy.props.onPress());
   assert.equal(copied, 1);
   await act(() => renderer.unmount());
