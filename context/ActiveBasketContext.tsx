@@ -9,7 +9,7 @@ import { addBasketProduct } from '../services/basket/add-product';
 
 const Context = createContext<{
   active: SavedBasket | null; remember: (b: SavedBasket) => void; clear: (id: string) => void;
-  add: (p: Product) => Promise<string>; busy: boolean;
+  discard: (b: SavedBasket) => Promise<void>; add: (p: Product) => Promise<string>; busy: boolean;
 } | null>(null);
 export function ActiveBasketProvider({ children }: PropsWithChildren) {
   const { session } = useAuth();
@@ -28,13 +28,26 @@ export function ActiveBasketProvider({ children }: PropsWithChildren) {
   }, [key]);
   useEffect(() => {
     let alive = true; const version = revision.current;
-    void AsyncStorage.getItem(key).then(raw => {
+    void AsyncStorage.getItem(key).then(async raw => {
       if (!alive || version !== revision.current || !raw) return;
       const b: unknown = JSON.parse(raw);
-      if (isSavedBasket(b) && b.ownerId === owner && !b.result.purchasedAt) { current.current = b; setActive(b); }
+      if (isSavedBasket(b) && b.ownerId === owner && !b.result.purchasedAt && !await basketPersistence().isDeleted(owner, b.id) && alive && version === revision.current) { current.current = b; setActive(b); }
     }).catch(() => {});
     return () => { alive = false; };
   }, [key, owner]);
+  const discard = async (b: SavedBasket) => {
+    if (lock.current) throw Error('Please wait for the current product to finish saving.');
+    if (b.ownerId !== owner) throw Error('This basket belongs to another account.');
+    lock.current = true; setBusy(true);
+    try {
+      await basketPersistence().discard(b);
+      // The persisted deletion marker also blocks stale drafts and offline cloud copies.
+      if (current.current?.id === b.id) {
+        revision.current++; current.current = null; setActive(null);
+        await AsyncStorage.removeItem(key).catch(() => {});
+      }
+    } finally { lock.current = false; setBusy(false); }
+  };
   const add = async (p: Product) => {
     if (lock.current) throw Error('Please wait for the current product to finish saving.');
     const b = current.current;
@@ -48,6 +61,6 @@ export function ActiveBasketProvider({ children }: PropsWithChildren) {
       return response.warning ?? `Added to ${b.name}`;
     } finally { lock.current = false; setBusy(false); }
   };
-  return <Context.Provider value={{ active, remember, clear, add, busy }}>{children}</Context.Provider>;
+  return <Context.Provider value={{ active, remember, clear, discard, add, busy }}>{children}</Context.Provider>;
 }
 export function useActiveBasket() { const value = useContext(Context); if (!value) throw Error('ActiveBasketProvider missing'); return value; }

@@ -99,6 +99,14 @@ export class BasketPersistence {
   const name=basketName(value);if(!(await this.local(owner)).some(b=>b.id===id))throw Error('Basket not found in this account.');
   const changes=await this.changes(owner);changes[id]={kind:'rename',name};await this.putChanges(owner,changes);return {warning:await this.syncChanges(owner)};
  });}
+ isDeleted(owner:string|null,id:string){return this.queue(async()=> (await this.changes(owner))[id]?.kind==='delete');}
+ discard(b:SavedBasket){return this.queue(async()=>{
+  if(!isSavedBasket(b)||b.result.purchasedAt)throw Error('Only an unfinished basket can be discarded.');
+  const existing=(await this.local(b.ownerId)).find(x=>x.id===b.id);
+  if(existing?.result.purchasedAt)throw Error('Purchased baskets cannot be discarded.');
+  const changes=await this.changes(b.ownerId);changes[b.id]={kind:'delete'};
+  await this.putChanges(b.ownerId,changes);return {warning:await this.syncChanges(b.ownerId)};
+ });}
  remove(owner:string|null,id:string){return this.queue(async()=>{
   const changes=await this.changes(owner);if(changes[id]?.kind!=='delete'&&!(await this.local(owner)).some(b=>b.id===id))throw Error('Basket not found in this account.');
   changes[id]={kind:'delete'};await this.putChanges(owner,changes);return {warning:await this.syncChanges(owner)};

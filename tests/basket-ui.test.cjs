@@ -5,6 +5,7 @@ const {prefs,catalog}=require('./basket-fixtures.cjs');
 const {generateBasket}=require('../services/basket/basketGenerator.ts');
 const {newSavedBasket}=require('../services/basket/persistence.ts');
 global.IS_REACT_ACT_ENVIRONMENT=true;
+let discards=0, dismissed=0;
 let params={},generated=0,saveCalls=0,resolveSave,load=async()=>catalog;
 // The calendar's week arrives already decided; confirm() is what the screen asks it for.
 let weekConfirmations=0,weekPlan=null;
@@ -16,10 +17,10 @@ const remember=()=>{};
 const originalLoad=Module._load;
 Module._load=function(request,parent,isMain){
   if(request==='@react-native-async-storage/async-storage')return {__esModule:true,default:{getItem:async()=>null,setItem:async()=>{}}};
-  if(request==='@/context/ActiveBasketContext')return {useActiveBasket:()=>({active:null,remember,clear:()=>{}})};
+  if(request==='@/context/ActiveBasketContext')return {useActiveBasket:()=>({active:null,remember,clear:()=>{},discard:async()=>{discards++;},busy:false})};
   if(request==='@/services/pantry')return {loadPantry:async()=>({state:{version:0,lots:[]},purchases:[]})};
   if(request==='react-native')return {ActivityIndicator:'Spinner',Text:'Text'};
-  if(request==='expo-router')return {router:{dismissTo:()=>{}},useLocalSearchParams:()=>params};
+  if(request==='expo-router')return {router:{dismissTo:()=>{dismissed++;}},useLocalSearchParams:()=>params};
   if(request==='@/components/ui')return components;
   if(request==='@/components/MealPlanReview')return {MealPlanReview:props=>React.createElement('MealReview',props)};
   if(request==='@/services/meals/planner')return {generateMealPlan:(...args)=>{generated++;return require('../services/meals/planner.ts').generateMealPlan(...args);}};
@@ -108,4 +109,19 @@ test('a week from the calendar goes straight to a basket, and an empty one says 
   }
   await act(()=>renderer.unmount());
   params={};
+});
+
+test('unfinished basket deletion requires confirmation and keeps the meal plan', async () => {
+ params={savedId:saved.id}; discards=0; dismissed=0;
+ let renderer;
+ await act(()=>{renderer=create(React.createElement(Screen));}); await flush();
+ const button=label=>renderer.root.findAll(node=>node.props.label===label)[0];
+ await act(()=>button('Delete basket').props.onPress());
+ assert.equal(discards,0);
+ await act(()=>button('Keep basket').props.onPress());
+ assert.equal(discards,0);
+ await act(()=>button('Delete basket').props.onPress());
+ await act(()=>button('Confirm delete basket').props.onPress()); await flush();
+ assert.equal(discards,1); assert.equal(dismissed,1);
+ await act(()=>renderer.unmount()); params={};
 });
