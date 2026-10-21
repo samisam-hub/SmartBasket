@@ -1,3 +1,4 @@
+import type { MealRatings } from './taste';
 import { ingredients, meals, quickIndividualMealIds } from '../../data/meals';
 import { canonicalIngredientKey } from '../../data/ingredient-mappings';
 import type { AnyMealPlan, Meal, MealChoice, MealPlan, MealSlot, Nutrition, WeekPlan } from '../../types/meal';
@@ -58,7 +59,7 @@ interface SlotContext {
   sameDay: (mealId: string) => boolean;
   availability: IngredientAvailability;
 }
-type IngredientAvailability = Map<string, { available: boolean; cost: number | null }>;
+export type IngredientAvailability = Map<string, { available: boolean; cost: number | null }>;
 /** What the catalog can actually deliver for each curated ingredient, and at what unit price. */
 export function ingredientAvailability(catalog: Product[], p: UserPreferences): IngredientAvailability {
   const products=uniqueCatalog(catalog);
@@ -100,7 +101,8 @@ export function quickIndividualMeals(plan: WeekPlan, slot: MealSlot, p: UserPref
 /** Two meals for one slot of one day, best first. Fewer when the catalog has nothing left to offer:
  *  the screen then says so and offers skipping, heating something up or eating out, never a silent repeat. */
 export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: UserPreferences,
-  catalog: Product[] = [], exclude: string[] = [], participantIds?: string[]): MealSuggestion[] {
+  catalog: Product[] = [], exclude: string[] = [], participantIds?: string[], ratings: MealRatings = {},
+  availability?: IngredientAvailability): MealSuggestion[] {
   if (!isSaved(p) || !p.onboardingCompleted) throw Error('Complete valid preferences before planning meals.');
   const day=dayOf(plan,date);
   if (!day || !day.slots.includes(slot)) return [];
@@ -116,7 +118,7 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
     : dishes.length) return [];
   // Already shown, and anything else chosen for this day: no silent repetition within a day.
   const skip=new Set([...exclude,...planned.map(item=>item.meal.id)]);
-  const options=meals.filter(m=>fitsSlot(m,slot)&&!skip.has(m.id)&&compatibleMeal(m,p));
+  const options=meals.filter(m=>fitsSlot(m,slot)&&!skip.has(m.id)&&ratings[m.id]!==false&&compatibleMeal(m,p));
   const targets=nutritionTargets(p);
   const prior=planned.reduce((n,item)=>{const x=mealNutrition(item);
     return {calories:n.calories+x.calories/plan.householdSize,protein:n.protein+x.protein/plan.householdSize};},{calories:0,protein:0});
@@ -128,13 +130,16 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
     slot,householdSize:plan.householdSize,dailyCalories:p.dailyCalories,dailyProteinTarget:targets.dailyProteinTarget,
     dayCalories:p.dailyCalories*dayShare,dayProtein:targets.dailyProteinTarget*dayShare,
     budgetPerSlot:targets.budgetTarget?targets.budgetTarget/(Math.max(1,plan.days.length)*4):null,
-    prior,restOfDay:slot==='dinner'&&decided,
+    prior,restOfDay:slot==='dinner'&&decided&&planned.every(item => isCook(item) &&
+      (!item.participantIds || item.participantIds.length === plan.householdSize)),
     used:new Set(plan.items.flatMap(item=>item.meal.ingredients.map(l=>l.ingredientKey))),
     repeat:id=>plan.items.filter(item=>item.meal.id===id).length,
     sameDay:id=>planned.some(item=>item.meal.id===id),
-    availability:ingredientAvailability(catalog,p),
+    availability:availability ?? ingredientAvailability(catalog,p),
   })) if (!best.has(candidate.meal.id)) best.set(candidate.meal.id,{meal:candidate.meal,servings:candidate.servings});
-  return [...best.values()].slice(0,SUGGESTIONS_PER_SLOT);
+  return [...best.values()].sort((a, b) =>
+    Number(!!(ratings[b.meal.id] === true || p.preferredMealIds?.includes(b.meal.id))) -
+    Number(!!(ratings[a.meal.id] === true || p.preferredMealIds?.includes(a.meal.id)))).slice(0,SUGGESTIONS_PER_SLOT);
 }
 export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): MealPlan {
   if (!isSaved(p) || !p.onboardingCompleted) throw Error('Complete valid preferences before planning meals.');

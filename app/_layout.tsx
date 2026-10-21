@@ -54,6 +54,8 @@ function AuthenticatedLayout(){
           <Stack.Screen name="auth/callback" options={{ title: "Verify account" }} />
           <Stack.Screen name="personal-profile" options={{ title: "Personal profile" }} />
           <Stack.Screen name="plan-setup" options={{ title: "Plan participants" }} />
+          <Stack.Screen name="plan/taste" options={{ title: "Was mögt ihr?" }} />
+          <Stack.Screen name="plan/overview" options={{ title: "Dein Wochenplan" }} />
           <Stack.Screen name="plan/week" options={{ title: "Your week" }} />
           <Stack.Screen name="plan/[date]" options={{ title: "Your day" }} />
           <Stack.Screen name="plan/[date]/[slot]" options={{ title: "Choose a meal" }} />

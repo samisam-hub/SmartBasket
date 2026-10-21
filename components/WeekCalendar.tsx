@@ -72,6 +72,8 @@ export function WeekCalendar({ plan, weekStart, onWeek, onBasket, onCopyPrevious
     {onCopyPrevious && <SecondaryButton label="Copy last week's plan" disabled={busy} onPress={onCopyPrevious} />}
     <SecondaryButton label={plan?.days.length ? 'Change the days' : 'Pick your days'} disabled={busy}
       onPress={() => router.push('/plan/week')} />
+    {plan?.days.length ? <SecondaryButton label={openPlanSlots(plan).length ? 'Vorlieben & Wochenplan' : 'Wochenplan ansehen'} disabled={busy}
+      onPress={() => router.push(openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} /> : null}
     {ready && <PrimaryButton label="Create my basket" disabled={busy} onPress={onBasket} />}
   </SectionCard>;
 }

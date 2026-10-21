@@ -1,0 +1,114 @@
+require('./register.cjs');
+const { test } = require('node:test'), assert = require('node:assert/strict');
+const React = require('react'), { create, act } = require('react-test-renderer');
+const fs = require('node:fs'), path = require('node:path'), Module = require('node:module'), ts = require('typescript');
+const { WeekPlanStore } = require('../services/week-plan-store.ts');
+const { prefs } = require('./basket-fixtures.cjs');
+const { fullCatalog } = require('./meal-fixtures.cjs');
+global.IS_REACT_ACT_ENVIRONMENT = true;
+const preferences = prefs(), routes = [];
+let store, failWrites = false, routeParams = {};
+const stub = name => { function Stub(props) { return React.createElement(name, props, props.children); } return Stub; };
+const original = Module._load;
+Module._load = function(request, parent, isMain) {
+  if (request === 'react-native') return { Text: 'Text', View: 'View' };
+  if (request === 'expo-router') return { router: { push: to => routes.push(to), replace: to => routes.push(to) }, useLocalSearchParams: () => routeParams };
+  if (request === '@/components/ui') return Object.fromEntries(['ErrorMessage','PrimaryButton','Screen','ScreenHeader','SecondaryButton','SectionCard','SelectionChip','TextButton'].map(n => [n, stub(n)]));
+  if (request === '@/context/PreferencesContext') return { usePreferences: () => ({ saved: preferences }) };
+  if (request === '@/context/WeekPlanContext') return { useWeekPlan: () => ({ ...React.useSyncExternalStore(store.subscribe, store.getSnapshot), store }) };
+  if (request === '@/context/AuthContext') return { useAuth: () => ({ session: null }) };
+  if (request === '@/lib/supabase') return { getSupabaseClient: () => null };
+  if (request === '@/components/MealImage') return { MealImage: stub('MealImage') };
+  if (request === '@/hooks/useBasketCatalog') return { useBasketCatalog: () => ({ products: fullCatalog, loading: false, error: null }) };
+  if (request === '@/components/MealSwipeCards') return { MealSwipeCards: stub('MealSwipeCards') };
+  if (request === '@/components/WeekCalendar') return { currentWeekStart: () => '2026-10-19' };
+  if (request === '@/lib/theme') return { ui: {} };
+  if (request.startsWith('@/')) request = path.resolve(path.dirname(require.resolve('../package.json')), request.slice(2));
+  return original.call(this, request, parent, isMain);
+};
+require.extensions['.tsx'] = (module, file) => module._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText, file);
+const Taste = require('../app/plan/taste.tsx').default;
+const Overview = require('../app/plan/overview.tsx').default;
+const Week = require('../app/plan/week.tsx').default;
+const Day = require('../app/plan/[date].tsx').default;
+const Slot = require('../app/plan/[date]/[slot].tsx').default;
+Module._load = original;
+const button = (screen, type, label) => screen.root.findAllByType(type).find(node => node.props.label === label);
+async function setup() {
+  failWrites = false; routes.length = 0;
+  store = new WeekPlanStore({ getItem: async () => null, setItem: async () => { if (failWrites) throw Error('storage full'); } }, 'ui');
+  await store.initialize(); store.open('2026-10-19', preferences); store.toggleDay('2026-10-19', preferences); await store.flush();
+}
+
+test('week → taste → automatic plan → editable day or basket, without selecting each meal manually', async () => {
+  await setup();
+  let screen;
+  await act(() => { screen = create(React.createElement(Week)); });
+  await act(() => button(screen, 'PrimaryButton', 'Weiter: Was mögt ihr?').props.onPress());
+  assert.equal(routes.pop(), '/plan/taste');
+  await act(() => screen.update(React.createElement(Taste)));
+  await act(() => button(screen, 'SecondaryButton', 'Frühstück wischen').props.onPress());
+  let card = screen.root.findByType('MealSwipeCards');
+  const first = card.props.suggestions[0].meal.id;
+  assert.equal(card.props.mode, 'taste');
+  await act(() => card.props.onTake());
+  assert.equal(store.getSnapshot().mealRatings[first], true);
+  assert.equal(store.getSnapshot().plan.items.length, 0);
+  card = screen.root.findByType('MealSwipeCards');
+  const second = card.props.suggestions[0].meal.id;
+  await act(() => card.props.onNext());
+  assert.equal(store.getSnapshot().mealRatings[second], false);
+  await act(() => button(screen, 'TextButton', 'Letzte Bewertung zurücknehmen').props.onPress());
+  assert.equal(store.getSnapshot().mealRatings[second], undefined);
+  await act(async () => { button(screen, 'PrimaryButton', 'Wochenplan erstellen').props.onPress(); await store.flush(); await new Promise(resolve => setImmediate(resolve)); });
+  assert.equal(routes.pop(), '/plan/overview');
+  assert.equal(store.getSnapshot().plan.items.length, 3);
+  assert.equal(store.getSnapshot().plan.items.find(item => item.mealSlot === 'breakfast').meal.id, first);
+  await act(() => screen.update(React.createElement(Overview)));
+  await act(() => screen.root.findAllByType('SecondaryButton').find(node => node.props.label.endsWith('bearbeiten')).props.onPress());
+  assert.deepEqual(routes.pop(), { pathname: '/plan/[date]', params: { date: '2026-10-19', returnTo: 'week' } });
+  const basket = button(screen, 'PrimaryButton', 'Weiter zur Einkaufsliste');
+  assert.equal(basket.props.disabled, false);
+  await act(() => basket.props.onPress());
+  assert.deepEqual(routes.pop(), { pathname: '/basket-setup', params: { week: '1' } });
+  await act(() => screen.unmount());
+});
+
+test('a failed local save keeps the user on taste with an error instead of claiming a saved plan', async () => {
+  await setup(); failWrites = true;
+  let screen; await act(() => { screen = create(React.createElement(Taste)); });
+  await act(() => button(screen, 'SecondaryButton', 'Frühstück wischen').props.onPress());
+  await act(() => screen.root.findByType('MealSwipeCards').props.onTake());
+  await act(async () => { button(screen, 'PrimaryButton', 'Wochenplan erstellen').props.onPress(); await new Promise(resolve => setImmediate(resolve)); });
+  assert.deepEqual(routes, []);
+  assert.ok(screen.root.findByType('ErrorMessage').props.message);
+  assert.equal(store.getSnapshot().plan.items.length, 0);
+  failWrites = false;
+  await act(async () => { button(screen, 'PrimaryButton', 'Wochenplan erstellen').props.onPress(); await new Promise(resolve => setImmediate(resolve)); });
+  assert.equal(routes.pop(), '/plan/overview');
+  await act(() => screen.unmount());
+});
+
+
+test('opening a swap keeps the existing meal; confirming changes it and returns directly to the week', async () => {
+  await setup(); store.generate(preferences, fullCatalog); await store.flush();
+  const before = structuredClone(store.getSnapshot().plan);
+  routeParams = { date: '2026-10-19', returnTo: 'week' };
+  let screen; await act(() => { screen = create(React.createElement(Day)); });
+  await act(() => screen.root.findAllByType('TextButton').find(node => node.props.label === 'Choose another').props.onPress());
+  const destination = routes.pop();
+  assert.ok(destination.params.replaceItem);
+  assert.deepEqual(store.getSnapshot().plan, before);
+  routeParams = destination.params;
+  await act(() => screen.update(React.createElement(Slot)));
+  await act(() => button(screen, 'SecondaryButton', 'Back to the day').props.onPress());
+  assert.deepEqual(store.getSnapshot().plan, before);
+  const card = screen.root.findByType('MealSwipeCards');
+  const chosen = card.props.suggestions[0];
+  await act(() => card.props.onTake(chosen));
+  assert.equal(routes.pop(), '/plan/overview');
+  const after = store.getSnapshot().plan;
+  assert.equal(after.items.length, before.items.length);
+  assert.equal(after.items.find(item => item.id === routeParams.replaceItem).meal.id, chosen.meal.id);
+  await act(() => screen.unmount());
+});

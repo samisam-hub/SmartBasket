@@ -1,3 +1,7 @@
+import { meals } from '../data/meals';
+import type { Product } from '../types/product';
+import { validMealRatings, type MealRatings } from './meals/taste';
+import { fillWeek } from './meals/autoWeek';
 import type { MealMode, MealSlot, ReadyMealCategory, WeekPlan } from '../types/meal';
 import type { UserPreferences } from '../types/preferences';
 import type { MealSuggestion } from './meals/planner';
@@ -15,11 +19,12 @@ export interface WeekPlanState {
   /** Set when the stored week could not be read or written; it is never overwritten silently. */
   error: string | null;
   attendanceRules: AttendanceRule[];
+  mealRatings: MealRatings;
 }
 /** Keeps drafts by week, scoped to one owner on one device: the draft is local until a
  *  basket is created from it, so a half-planned week survives leaving the app. */
 export class WeekPlanStore {
-  private state: WeekPlanState = { plan: null, ready: false, error: null, attendanceRules: [] };
+  private state: WeekPlanState = { plan: null, ready: false, error: null, attendanceRules: [], mealRatings: {} };
   private listeners = new Set<() => void>();
   private writes: Promise<void> = Promise.resolve();
   private initialization: Promise<void> | null = null;
@@ -53,11 +58,12 @@ export class WeekPlanStore {
           if (!stored.plans || typeof stored.plans !== 'object' || Array.isArray(stored.plans) ||
               !Object.entries(stored.plans).every(([date, plan]) => isWeekPlan(plan) && plan.weekStart === date) ||
               (stored.attendanceRules !== undefined && !validAttendanceRules(stored.attendanceRules)) ||
+              (stored.mealRatings !== undefined && !validMealRatings(stored.mealRatings)) ||
               (stored.activeWeek !== null && (typeof stored.activeWeek !== 'string' || !Object.hasOwn(stored.plans, stored.activeWeek))))
             throw Error('Invalid stored weeks');
           this.plans = stored.plans;
           this.publish({ plan: stored.activeWeek === null ? null : this.plans[stored.activeWeek],
-            attendanceRules: stored.attendanceRules ?? [] });
+            attendanceRules: stored.attendanceRules ?? [], mealRatings: stored.mealRatings ?? {} });
         } else throw Error('Unknown stored week format');
       }
     } catch {
@@ -69,7 +75,7 @@ export class WeekPlanStore {
   private persist(plan: WeekPlan | null) {
     if (!this.readable) return;
     const json = JSON.stringify({ version: 2, activeWeek: plan?.weekStart ?? null, plans: this.plans,
-      attendanceRules: this.state.attendanceRules });
+      attendanceRules: this.state.attendanceRules, mealRatings: this.state.mealRatings });
     this.writes = this.writes.catch(() => {}).then(() => this.storage.setItem(this.key, json));
     void this.writes.then(() => this.publish({ error: null }))
       .catch(() => this.publish({ error: 'The planned week could not be saved on this device. Free some storage and retry.' }));
@@ -95,6 +101,20 @@ export class WeekPlanStore {
   /** Opens the given week, keeping what is already planned in it. */
   open = (weekStart: string, preferences: UserPreferences) =>
     this.apply(this.plans[weekStart] ?? startWeek(weekStart, preferences));
+  rateMeal = (mealId: string, rating: boolean | null) => {
+    if (!this.state.ready || !this.readable) throw Error('Meal preferences are not ready.');
+    if (!meals.some(meal => meal.id === mealId) || (rating !== null && typeof rating !== 'boolean'))
+      throw Error('Choose a valid meal preference.');
+    const mealRatings = { ...this.state.mealRatings };
+    if (rating === null) delete mealRatings[mealId];
+    else mealRatings[mealId] = rating;
+    this.publish({ mealRatings });
+    this.persist(this.state.plan);
+  };
+  generate = (preferences: UserPreferences, catalog: Product[]) => {
+    if (!this.state.ready || !this.readable) throw Error('The week is not ready.');
+    return this.apply(fillWeek(this.require(), preferences, catalog, this.state.mealRatings, this.state.attendanceRules));
+  };
   toggleAttendanceRule = (rule: AttendanceRule, preferences: UserPreferences) => {
     if (!this.state.ready || !this.readable) return;
     if (!validAttendanceRules([rule]) || !preferences.participants?.some(person => person.id === rule.personId))
@@ -159,6 +179,19 @@ export class WeekPlanStore {
       }
       return this.apply(next);
     };
+  replaceMeal = (itemId: string, suggestion: MealSuggestion, preferences: UserPreferences) => {
+    const plan = this.require(), item = plan.items.find(choice => choice.id === itemId);
+    if (!item) throw Error('The meal to replace no longer exists.');
+    return this.apply(chooseMeal(clearChoice(plan, itemId, preferences), item.date, item.mealSlot,
+      suggestion, preferences, item.participantIds));
+  };
+  replaceMode = (itemId: string, mode: Exclude<MealMode, 'cook'>, category: ReadyMealCategory | undefined,
+    preferences: UserPreferences) => {
+    const plan = this.require(), item = plan.items.find(choice => choice.id === itemId);
+    if (!item) throw Error('The meal to replace no longer exists.');
+    return this.apply(chooseMode(clearChoice(plan, itemId, preferences), item.date, item.mealSlot,
+      mode, category, preferences, item.participantIds));
+  };
   setPresence = (itemId: string, participantIds: string[], preferences: UserPreferences) =>
     this.apply(setPresence(this.require(), itemId, participantIds, preferences));
   clear = (itemId: string, preferences: UserPreferences) =>
@@ -170,5 +203,11 @@ export class WeekPlanStore {
   confirm = (preferences: UserPreferences) => confirmWeek(this.require(), preferences);
   /** Clears only the active week; the other weeks remain available. */
   reset = () => this.apply(null);
+  /** Retry the current snapshot after a device storage failure before leaving a screen. */
+  saveDraft = async () => {
+    if (!this.state.ready || !this.readable) throw Error('The week could not be read; it has not been overwritten.');
+    this.persist(this.state.plan);
+    await this.flush();
+  };
   flush = async () => { await this.writes; };
 }

@@ -17,7 +17,7 @@ export function swipeAction(dx: number, dy: number, width: number): 'take' | 'ne
 
 /** Screen 4: one card at a time. Right takes it and the meal is done; left shows the next card.
  *  Tapping does exactly the same, so nobody has to swipe. */
-export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore, busy }: {
+export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore, busy, mode = 'choice' }: {
   suggestions: MealSuggestion[];
   /** No compatible meal is left to show, so only the honest ways out remain. */
   exhausted: boolean;
@@ -25,6 +25,7 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
   onNext: () => void;
   onMore: () => void;
   busy?: boolean;
+  mode?: 'choice' | 'taste';
 }) {
   const [width, setWidth] = useState(0);
   const offset = useRef(new Animated.Value(0)).current;
@@ -40,7 +41,7 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
     onPanResponderRelease: (_event, gesture) => decide(swipeAction(gesture.dx, gesture.dy, width)),
     onPanResponderTerminate: () => offset.setValue(0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [width, current?.meal.id, busy]);
+  }), [width, current?.meal.id, busy, mode]);
   if (!current) return <SectionCard title={exhausted ? 'No more meals fit this slot' : 'Nothing to show'}>
     <Text style={ui.body}>{exhausted
       ? 'Every compatible meal for this slot has been shown. Rather than repeating one, pick one of these:'
@@ -51,18 +52,18 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
     if (next > 0 && next !== width) setWidth(next);
   }}>
     <Animated.View accessible accessibilityRole="button"
-      accessibilityLabel={`${current.meal.name}. Swipe right to take it, left for the next one.`}
+      accessibilityLabel={`${current.meal.name}. ${mode === 'taste' ? 'Rechts: mögen. Links: nicht mögen.' : 'Swipe right to take it, left for the next one.'}`}
       {...(busy ? {} : responder.panHandlers)}
       style={[ui.card, { gap: spacing.sm, transform: [{ translateX: offset }] }]}>
-      <Text style={ui.eyebrow}>{suggestions.length > 1 ? `1 of ${suggestions.length}` : 'Last one for now'}</Text>
+      <Text style={ui.eyebrow}>{mode === 'taste' ? 'GESCHMACK' : suggestions.length > 1 ? `1 of ${suggestions.length}` : 'Last one for now'}</Text>
       <Text style={ui.subheading}>{current.meal.name}</Text>
       <MealImage meal={current.meal} />
       <MealPreparation meal={current.meal} />
       <Text style={ui.small}>{mealLine(current.meal)}</Text>
     </Animated.View>
-    <PrimaryButton label="Take this one" disabled={busy} onPress={() => decide('take')} />
-    <SecondaryButton label="Show the next one" disabled={busy || suggestions.length < 2} onPress={() => decide('next')} />
-    <TextButton label="Show two others" disabled={busy} onPress={onMore} />
+    <PrimaryButton label={mode === 'taste' ? 'Mögen wir' : 'Take this one'} disabled={busy} onPress={() => decide('take')} />
+    <SecondaryButton label={mode === 'taste' ? 'Mögen wir nicht' : 'Show the next one'} disabled={busy || (mode !== 'taste' && suggestions.length < 2)} onPress={() => decide('next')} />
+    {mode !== 'taste' && <TextButton label="Show two others" disabled={busy} onPress={onMore} />}
   </View>;
 }
 const mealLine = (meal: Meal) =>

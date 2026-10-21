@@ -13,7 +13,7 @@ import { ui } from '@/lib/theme';
 
 /** Screen 3: one day. Every chosen meal is either decided or waiting, and single meals can go. */
 export default function PlanDayScreen() {
-  const { date } = useLocalSearchParams<{ date: string }>();
+  const { date, returnTo } = useLocalSearchParams<{ date: string; returnTo?: string }>();
   const [message, setMessage] = useState<string | null>(null);
   const { saved } = usePreferences();
   const { plan, ready, error, store } = useWeekPlan();
@@ -57,8 +57,8 @@ export default function PlanDayScreen() {
             <Text style={ui.small}>Nothing is bought for whoever is not eating at home.</Text>
           </>}
           <View style={[ui.row, { gap: 8 }]}>
-            <TextButton label="Choose another" onPress={() => { store.clear(item.id, saved);
-              router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot,
+            <TextButton label="Choose another" onPress={() => {
+              router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo, replaceItem: item.id,
                 ...(item.participantIds ? { for: item.participantIds.join(',') } : {}) } }); }} />
             <TextButton label="Not at home" onPress={() => run(() => store.setPresence(item.id, [], saved))} />
           </View>
@@ -66,11 +66,11 @@ export default function PlanDayScreen() {
         {!dishes.length && <>
           <Text style={ui.small}>Not chosen yet.</Text>
           <PrimaryButton label={`Choose ${slotLabels[slot].toLowerCase()}`}
-            onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot } })} />
+            onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo } })} />
         </>}
         {!!dishes.length && people.length > 1 && people.filter(person => !eatingSomethingElse.includes(person.id)).map(person =>
           <TextButton key={`own-${person.id}`} label={`${person.name || 'Person'} eats something else`}
-            onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, for: person.id } })} />)}
+            onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo, for: person.id } })} />)}
       </SectionCard>;
     })}
     <SectionCard title="Meals of this day">
@@ -82,8 +82,8 @@ export default function PlanDayScreen() {
     </SectionCard>
     <PrimaryButton label={openSlots.length ? 'Keep choosing' : 'This day is done'}
       onPress={() => openSlots.length
-        ? router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot: openSlots[0] } })
-        : router.replace({ pathname: '/plan/day-done', params: { date } })} />
-    <SecondaryButton label="Back to the calendar" onPress={() => router.replace('/')} />
+        ? router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot: openSlots[0], returnTo } })
+        : returnTo === 'week' ? router.replace('/plan/overview') : router.replace({ pathname: '/plan/day-done', params: { date } })} />
+    <SecondaryButton label={returnTo === 'week' ? 'Zurück zum Wochenplan' : 'Back to the calendar'} onPress={() => router.replace(returnTo === 'week' ? '/plan/overview' : '/')} />
   </Screen>;
 }
