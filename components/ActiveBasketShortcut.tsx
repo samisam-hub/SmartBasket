@@ -1,3 +1,4 @@
+import { basketDisplayName } from '../services/basket/naming';
 import Feather from '@expo/vector-icons/Feather';
 import { router, useSegments } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,11 +9,11 @@ export function ActiveBasketShortcut() {
   const { active } = useActiveBasket();
   const insets = useSafeAreaInsets(), segments = useSegments();
   if (!active) return null;
-  return <Pressable accessibilityRole="button" accessibilityLabel={`Open active basket: ${active.name}`}
+  return <Pressable accessibilityRole="button" accessibilityLabel={`Open active basket: ${basketDisplayName(active)}`}
     onPress={() => router.push({ pathname: '/basket-setup', params: { savedId: active.id } })}
     style={{ minHeight: 48, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 8 + (segments[0] === '(tabs)' ? insets.bottom : 0), flexDirection: 'row', gap: 12, alignItems: 'center', backgroundColor: colors.primary }}>
     <Feather name="shopping-cart" size={23} color={colors.onPrimary} />
-    <Text numberOfLines={1} style={[ui.small, { flex: 1, color: colors.onPrimary, fontWeight: '700' }]}>{active.name}</Text>
+    <Text numberOfLines={1} style={[ui.small, { flex: 1, color: colors.onPrimary, fontWeight: '700' }]}>{basketDisplayName(active)}</Text>
     <Text style={[ui.small, { color: colors.onPrimary }]}>{active.result.estimatedTotalPrice === null ? '—' : `€${active.result.estimatedTotalPrice.toFixed(2)}`}</Text>
   </Pressable>;
 }

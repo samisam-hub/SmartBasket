@@ -32,6 +32,7 @@ import type { AnyMealPlan, MealPlan } from '@/types/meal';
 
 import type { Product } from '@/types/product';
 
+import { basketDayCount } from '@/services/basket/naming';
 import { newSavedBasket } from '@/services/basket/persistence';
 
 import { basketOwner, basketPersistence } from '@/services/baskets';
@@ -314,7 +315,7 @@ export default function BasketSetupScreen() {
 
     {basket && <>
 
-      <Text style={ui.small}>{basket.preferences.planningDays} days · {basket.preferences.householdSize} people · {basket.preferences.dailyCalories} kcal per person per day</Text>
+      <Text style={ui.small}>{basketDayCount(basket.result, basket.preferences)} days · {basket.preferences.householdSize} people · {basket.preferences.dailyCalories} kcal per person per day</Text>
 
       {savedId && !editingBasket && !basket.result.purchasedAt && <SecondaryButton label="Edit basket" disabled={saving} onPress={() => { originalBasket.current = basket; setEditingBasket(true); }} />}
 
