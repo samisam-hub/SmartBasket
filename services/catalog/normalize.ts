@@ -52,6 +52,7 @@ const allergenMap: Record<string, string> = {
   "en:milk": "milk", "en:eggs": "eggs", "en:fish": "fish", "en:crustaceans": "shellfish",
   "en:molluscs": "shellfish", "en:peanuts": "peanuts", "en:nuts": "tree_nuts",
   "en:soybeans": "soy", "en:soy": "soy", "en:wheat": "wheat", "en:gluten": "gluten",
+  "en:mustard": "mustard", "en:celery": "celery",
   "en:sesame-seeds": "sesame", "en:sesame": "sesame",
   "en:almonds": "tree_nuts", "en:hazelnuts": "tree_nuts", "en:walnuts": "tree_nuts",
   "en:cashew-nuts": "tree_nuts", "en:cashews": "tree_nuts", "en:pecan-nuts": "tree_nuts",

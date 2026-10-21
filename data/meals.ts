@@ -1,3 +1,4 @@
+import { buildEverydayMeals, everydayIngredients } from './everyday-meals';
 import { canonicalIngredientKey, ingredientMappings, legacyIngredientKeys } from './ingredient-mappings';
 import type { IngredientDefinition, Meal } from '../types/meal';
 import type { Allergen, Diet } from '../types/preferences';
@@ -60,7 +61,7 @@ export const ingredients: Record<string, IngredientDefinition> = Object.fromEntr
   ingredient('yogurt', 'Plain Greek yogurt', 'protein', ['dairy'], ['greek yogurt','greek yoghurt','griechischer joghurt'], [73,10,4,2], ['vegetarian','pescatarian','gluten_free'], ['milk']),
   ingredient('cottage', 'Cottage cheese', 'protein', ['dairy'], ['cottage cheese','hüttenkäse'], [98,12,3,4], ['vegetarian','pescatarian','gluten_free'], ['milk']),
   ingredient('oil', 'Olive oil', 'oil', ['other'], ['olive oil','olivenöl'], [884,0,0,100]),
-].map(i=>[i.key,i]));
+].concat(everydayIngredients).map(i=>[i.key,i]));
 // Non-enumerable aliases keep saved Phase 3B meal snapshots readable.
 for(const [old,key] of Object.entries(legacyIngredientKeys))Object.defineProperty(ingredients,old,{value:ingredients[key],enumerable:false});
 function meal(id: string, name: string, mealType: Meal['mealType'], amounts: [string,number][]): Meal {
@@ -117,4 +118,5 @@ export const meals: Meal[] = [
   meal('snack-yogurt','Yogurt and berry snack','snack',[['yogurt',150],['berries',60]]),
   meal('snack-banana-chocolate','Banana and dark chocolate','snack',[['banana',60],['dark_chocolate',10]]),
 ];
+meals.push(...buildEverydayMeals(ingredients));
 export const quickIndividualMealIds = ['cottage-carrot-bread', 'chicken-ham-lunchbox'] as const;

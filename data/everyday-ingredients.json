@@ -1,0 +1,2106 @@
+{
+  "nutritionSource": "curated-development-estimate",
+  "basis": "Per 100 g or 100 ml as declared by unit; edible raw/dry/drained reference amounts. Product formulas and allergen declarations vary.",
+  "ingredients": [
+    {
+      "key": "butter",
+      "name": "Butter",
+      "unit": "g",
+      "group": "oil",
+      "categories": [
+        "dairy"
+      ],
+      "aliases": [
+        "Butter"
+      ],
+      "exclude": [
+        "margarine",
+        "kräuter",
+        "herb",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 744.0,
+        "protein": 0.7,
+        "carbohydrates": 0.6,
+        "fat": 82.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk"
+      ]
+    },
+    {
+      "key": "cheese",
+      "name": "Gouda mit mikrobiellem Lab",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "dairy"
+      ],
+      "aliases": [
+        "Gouda"
+      ],
+      "exclude": [
+        "vegan",
+        "schmelzkäse",
+        "processed",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 356.0,
+        "protein": 25.0,
+        "carbohydrates": 0.0,
+        "fat": 28.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk"
+      ]
+    },
+    {
+      "key": "cucumber",
+      "name": "Gurke",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Gurke",
+        "cucumber"
+      ],
+      "exclude": [
+        "gewürzgurken",
+        "eingelegt",
+        "pickled",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 12.0,
+        "protein": 0.6,
+        "carbohydrates": 1.8,
+        "fat": 0.2
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "cold_cuts",
+      "name": "Gekochter Schweineschinken",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Kochschinken",
+        "cooked ham"
+      ],
+      "exclude": [
+        "roh",
+        "raw",
+        "geräuchert",
+        "smoked",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 110.0,
+        "protein": 20.0,
+        "carbohydrates": 1.0,
+        "fat": 3.0
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "fresh_tomato",
+      "name": "Tomate",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Tomaten",
+        "tomatoes"
+      ],
+      "exclude": [
+        "gehackt",
+        "chopped",
+        "passiert",
+        "passata",
+        "dose",
+        "canned",
+        "getrocknet",
+        "dried",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 18.0,
+        "protein": 0.9,
+        "carbohydrates": 2.6,
+        "fat": 0.2
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "cream_cheese",
+      "name": "Frischkäse natur",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "dairy"
+      ],
+      "aliases": [
+        "Frischkäse natur",
+        "plain cream cheese"
+      ],
+      "exclude": [
+        "körniger",
+        "cottage",
+        "kräuter",
+        "herb",
+        "vegan",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 240.0,
+        "protein": 6.0,
+        "carbohydrates": 4.0,
+        "fat": 22.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk"
+      ]
+    },
+    {
+      "key": "bell_pepper",
+      "name": "Paprika frisch",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Paprika",
+        "red pepper"
+      ],
+      "exclude": [
+        "pulver",
+        "powder",
+        "eingelegt",
+        "pickled",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 31.0,
+        "protein": 1.0,
+        "carbohydrates": 5.0,
+        "fat": 0.3
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "jam",
+      "name": "Erdbeerkonfitüre",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "breakfast"
+      ],
+      "aliases": [
+        "Erdbeerkonfitüre",
+        "strawberry jam"
+      ],
+      "exclude": [
+        "light",
+        "zuckerreduziert",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 250.0,
+        "protein": 0.3,
+        "carbohydrates": 60.0,
+        "fat": 0.1
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "honey",
+      "name": "Honig",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "breakfast"
+      ],
+      "aliases": [
+        "Honig",
+        "honey"
+      ],
+      "exclude": [
+        "drink",
+        "senf",
+        "mustard",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 304.0,
+        "protein": 0.3,
+        "carbohydrates": 75.0,
+        "fat": 0.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "bread_roll",
+      "name": "Weizenbrötchen frisch",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "bread"
+      ],
+      "aliases": [
+        "Weizenbrötchen"
+      ],
+      "exclude": [
+        "aufback",
+        "tiefgekühlt",
+        "frozen",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 270.0,
+        "protein": 9.0,
+        "carbohydrates": 53.0,
+        "fat": 2.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "bake_roll",
+      "name": "Aufbackbrötchen",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "bread"
+      ],
+      "aliases": [
+        "Aufbackbrötchen"
+      ],
+      "exclude": [
+        "gefüllt",
+        "filled",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 270.0,
+        "protein": 9.0,
+        "carbohydrates": 53.0,
+        "fat": 2.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "muesli",
+      "name": "Basismüsli ohne Nüsse",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "breakfast"
+      ],
+      "aliases": [
+        "Basismüsli"
+      ],
+      "exclude": [
+        "nuss",
+        "nüsse",
+        "nuts",
+        "schoko",
+        "chocolate",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 365.0,
+        "protein": 11.0,
+        "carbohydrates": 62.0,
+        "fat": 6.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "milk",
+      "name": "Vollmilch 3,5 %",
+      "unit": "ml",
+      "group": "precise",
+      "categories": [
+        "dairy"
+      ],
+      "aliases": [
+        "Vollmilch",
+        "whole milk"
+      ],
+      "exclude": [
+        "pulver",
+        "powder",
+        "drink",
+        "schoko",
+        "chocolate",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 64.0,
+        "protein": 3.3,
+        "carbohydrates": 4.8,
+        "fat": 3.5
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk"
+      ]
+    },
+    {
+      "key": "plain_yogurt",
+      "name": "Naturjoghurt 3,5 %",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "dairy"
+      ],
+      "aliases": [
+        "Naturjoghurt",
+        "plain yogurt"
+      ],
+      "exclude": [
+        "griechisch",
+        "greek",
+        "frucht",
+        "fruit",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 64.0,
+        "protein": 3.5,
+        "carbohydrates": 4.7,
+        "fat": 3.5
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk"
+      ]
+    },
+    {
+      "key": "quark",
+      "name": "Magerquark",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "dairy"
+      ],
+      "aliases": [
+        "Magerquark",
+        "low fat quark"
+      ],
+      "exclude": [
+        "frucht",
+        "fruit",
+        "kräuter",
+        "herb",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 67.0,
+        "protein": 12.0,
+        "carbohydrates": 4.0,
+        "fat": 0.2
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk"
+      ]
+    },
+    {
+      "key": "cinnamon",
+      "name": "Zimt gemahlen",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Zimt",
+        "cinnamon"
+      ],
+      "exclude": [
+        "zucker",
+        "sugar",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 247.0,
+        "protein": 4.0,
+        "carbohydrates": 28.0,
+        "fat": 1.2
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "chives",
+      "name": "Schnittlauch frisch",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Schnittlauch",
+        "chives"
+      ],
+      "exclude": [
+        "getrocknet",
+        "dried",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 30.0,
+        "protein": 3.3,
+        "carbohydrates": 2.0,
+        "fat": 0.7
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "hummus",
+      "name": "Hummus natur mit Sesam",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "legumes"
+      ],
+      "aliases": [
+        "Hummus natur",
+        "plain hummus"
+      ],
+      "exclude": [
+        "paprika",
+        "chili",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 240.0,
+        "protein": 7.0,
+        "carbohydrates": 14.0,
+        "fat": 17.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": [
+        "sesame"
+      ]
+    },
+    {
+      "key": "flour",
+      "name": "Weizenmehl Type 405",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "grains"
+      ],
+      "aliases": [
+        "Weizenmehl",
+        "wheat flour"
+      ],
+      "exclude": [
+        "vollkorn",
+        "wholemeal",
+        "selbstaufgehend",
+        "self raising",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 343.0,
+        "protein": 10.0,
+        "carbohydrates": 70.0,
+        "fat": 1.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "applesauce",
+      "name": "Apfelmus",
+      "unit": "g",
+      "group": "fruit",
+      "categories": [
+        "fruit"
+      ],
+      "aliases": [
+        "Apfelmus",
+        "apple sauce"
+      ],
+      "exclude": [
+        "zuckerfrei",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 75.0,
+        "protein": 0.2,
+        "carbohydrates": 18.0,
+        "fat": 0.1
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "passata",
+      "name": "Passierte Tomaten natur",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Passierte Tomaten",
+        "passata"
+      ],
+      "exclude": [
+        "basilikum",
+        "basil",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 30.0,
+        "protein": 1.5,
+        "carbohydrates": 4.5,
+        "fat": 0.2
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "italian_herbs",
+      "name": "Italienische Kräuter getrocknet",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Italienische Kräuter",
+        "italian herbs"
+      ],
+      "exclude": [
+        "öl",
+        "oil",
+        "frisch",
+        "fresh",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 250.0,
+        "protein": 10.0,
+        "carbohydrates": 25.0,
+        "fat": 5.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "mince",
+      "name": "Rinderhackfleisch roh",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Rinderhackfleisch",
+        "beef mince"
+      ],
+      "exclude": [
+        "minced mixed",
+        "gemischt",
+        "gegart",
+        "cooked",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 220.0,
+        "protein": 20.0,
+        "carbohydrates": 0.0,
+        "fat": 15.0
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "red_lentils",
+      "name": "Rote Linsen trocken",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "legumes"
+      ],
+      "aliases": [
+        "Rote Linsen",
+        "red lentils"
+      ],
+      "exclude": [
+        "dose",
+        "canned",
+        "gekocht",
+        "cooked",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 350.0,
+        "protein": 25.0,
+        "carbohydrates": 52.0,
+        "fat": 2.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "pesto",
+      "name": "Basilikumpesto mit mikrobiellem Lab",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Basilikumpesto",
+        "pesto genovese"
+      ],
+      "exclude": [
+        "rosso",
+        "vegan",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 480.0,
+        "protein": 5.0,
+        "carbohydrates": 6.0,
+        "fat": 48.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk",
+        "tree_nuts"
+      ]
+    },
+    {
+      "key": "cream",
+      "name": "Schlagsahne 30 %",
+      "unit": "ml",
+      "group": "precise",
+      "categories": [
+        "dairy"
+      ],
+      "aliases": [
+        "Schlagsahne",
+        "whipping cream"
+      ],
+      "exclude": [
+        "sprüh",
+        "light",
+        "spray",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 292.0,
+        "protein": 2.0,
+        "carbohydrates": 3.0,
+        "fat": 30.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk"
+      ]
+    },
+    {
+      "key": "lasagne_sheets",
+      "name": "Lasagneplatten trocken ohne Ei",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "pasta"
+      ],
+      "aliases": [
+        "Lasagneplatten",
+        "lasagne sheets"
+      ],
+      "exclude": [
+        "fertig",
+        "ready",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 350.0,
+        "protein": 12.0,
+        "carbohydrates": 70.0,
+        "fat": 2.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "spaetzle",
+      "name": "Eierspätzle frisch",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "pasta"
+      ],
+      "aliases": [
+        "Eierspätzle",
+        "frische spätzle"
+      ],
+      "exclude": [
+        "trocken",
+        "dry",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 160.0,
+        "protein": 6.0,
+        "carbohydrates": 27.0,
+        "fat": 3.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat",
+        "eggs"
+      ]
+    },
+    {
+      "key": "peas",
+      "name": "Erbsen tiefgekühlt",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Erbsen",
+        "peas"
+      ],
+      "exclude": [
+        "dose",
+        "canned",
+        "getrocknet",
+        "dried",
+        "möhren",
+        "carrots",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 81.0,
+        "protein": 5.0,
+        "carbohydrates": 10.0,
+        "fat": 0.5
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "coconut_milk",
+      "name": "Kokosmilch",
+      "unit": "ml",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Kokosmilch",
+        "coconut milk"
+      ],
+      "exclude": [
+        "light",
+        "drink",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 180.0,
+        "protein": 1.5,
+        "carbohydrates": 2.0,
+        "fat": 18.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "curry_powder",
+      "name": "Currypulver mild",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Currypulver",
+        "curry powder"
+      ],
+      "exclude": [
+        "paste",
+        "sauce",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 325.0,
+        "protein": 13.0,
+        "carbohydrates": 33.0,
+        "fat": 14.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": [
+        "mustard"
+      ]
+    },
+    {
+      "key": "kidney_beans",
+      "name": "Kidneybohnen aus der Dose abgetropft",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "legumes"
+      ],
+      "aliases": [
+        "Kidneybohnen",
+        "kidney beans"
+      ],
+      "exclude": [
+        "trocken",
+        "dried",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 100.0,
+        "protein": 7.0,
+        "carbohydrates": 14.0,
+        "fat": 0.5
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "corn",
+      "name": "Mais aus der Dose abgetropft",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Mais",
+        "sweetcorn"
+      ],
+      "exclude": [
+        "mehl",
+        "flour",
+        "grieß",
+        "popcorn",
+        "frisch",
+        "fresh",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 80.0,
+        "protein": 3.0,
+        "carbohydrates": 13.0,
+        "fat": 1.5
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "paprika_powder",
+      "name": "Paprikapulver edelsüß",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Paprikapulver",
+        "paprika powder"
+      ],
+      "exclude": [
+        "geräuchert",
+        "smoked",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 282.0,
+        "protein": 14.0,
+        "carbohydrates": 19.0,
+        "fat": 13.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "fish_fingers",
+      "name": "Fischstäbchen tiefgekühlt",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "fish"
+      ],
+      "aliases": [
+        "Fischstäbchen",
+        "fish fingers"
+      ],
+      "exclude": [
+        "vegan",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 200.0,
+        "protein": 13.0,
+        "carbohydrates": 18.0,
+        "fat": 8.0
+      },
+      "diets": [
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "fish",
+        "wheat"
+      ]
+    },
+    {
+      "key": "lemon",
+      "name": "Zitrone essbarer Anteil",
+      "unit": "g",
+      "group": "fruit",
+      "categories": [
+        "fruit"
+      ],
+      "aliases": [
+        "Zitronen",
+        "lemons"
+      ],
+      "exclude": [
+        "saft",
+        "juice",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 29.0,
+        "protein": 1.0,
+        "carbohydrates": 3.0,
+        "fat": 0.3
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "breadcrumbs",
+      "name": "Paniermehl",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "bread"
+      ],
+      "aliases": [
+        "Paniermehl",
+        "breadcrumbs"
+      ],
+      "exclude": [
+        "gewürzt",
+        "seasoned",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 350.0,
+        "protein": 12.0,
+        "carbohydrates": 70.0,
+        "fat": 2.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "bratwurst",
+      "name": "Schweinebratwurst roh",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Bratwurst"
+      ],
+      "exclude": [
+        "vegan",
+        "gegart",
+        "cooked",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 290.0,
+        "protein": 14.0,
+        "carbohydrates": 1.0,
+        "fat": 25.0
+      },
+      "diets": [],
+      "allergens": [
+        "mustard"
+      ]
+    },
+    {
+      "key": "pork_schnitzel",
+      "name": "Schweineschnitzel natur roh",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Schweineschnitzel",
+        "pork schnitzel"
+      ],
+      "exclude": [
+        "paniert",
+        "breaded",
+        "mariniert",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 110.0,
+        "protein": 22.0,
+        "carbohydrates": 0.0,
+        "fat": 2.0
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "leek",
+      "name": "Lauch frisch",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Lauch",
+        "leek"
+      ],
+      "exclude": [
+        "getrocknet",
+        "dried",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 30.0,
+        "protein": 1.5,
+        "carbohydrates": 3.5,
+        "fat": 0.3
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "broth",
+      "name": "Gemüsebrühe Pulver",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Gemüsebrühe",
+        "vegetable stock"
+      ],
+      "exclude": [
+        "flüssig",
+        "liquid",
+        "fond",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 180.0,
+        "protein": 5.0,
+        "carbohydrates": 25.0,
+        "fat": 6.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": [
+        "celery"
+      ]
+    },
+    {
+      "key": "brown_lentils",
+      "name": "Tellerlinsen trocken",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "legumes"
+      ],
+      "aliases": [
+        "Tellerlinsen",
+        "brown lentils"
+      ],
+      "exclude": [
+        "gekocht",
+        "cooked",
+        "dose",
+        "canned",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 340.0,
+        "protein": 24.0,
+        "carbohydrates": 49.0,
+        "fat": 2.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "celery",
+      "name": "Knollensellerie",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Knollensellerie",
+        "celeriac"
+      ],
+      "exclude": [
+        "salat",
+        "salad",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 27.0,
+        "protein": 1.5,
+        "carbohydrates": 3.0,
+        "fat": 0.3
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": [
+        "celery"
+      ]
+    },
+    {
+      "key": "wiener",
+      "name": "Wiener Würstchen",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Wiener Würstchen",
+        "wiener sausages"
+      ],
+      "exclude": [
+        "vegan",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 280.0,
+        "protein": 12.0,
+        "carbohydrates": 1.0,
+        "fat": 25.0
+      },
+      "diets": [],
+      "allergens": [
+        "mustard"
+      ]
+    },
+    {
+      "key": "soup_noodles",
+      "name": "Suppennudeln trocken ohne Ei",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "pasta"
+      ],
+      "aliases": [
+        "Suppennudeln",
+        "soup noodles"
+      ],
+      "exclude": [
+        "eier",
+        "egg",
+        "instant",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 350.0,
+        "protein": 12.0,
+        "carbohydrates": 70.0,
+        "fat": 2.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "cheese_tortellini",
+      "name": "Käsetortellini frisch mit mikrobiellem Lab",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "pasta"
+      ],
+      "aliases": [
+        "Käsetortellini",
+        "cheese tortellini"
+      ],
+      "exclude": [
+        "trocken",
+        "dry",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 250.0,
+        "protein": 10.0,
+        "carbohydrates": 35.0,
+        "fat": 7.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian"
+      ],
+      "allergens": [
+        "wheat",
+        "eggs",
+        "milk"
+      ]
+    },
+    {
+      "key": "fresh_gnocchi",
+      "name": "Gnocchi frisch ohne Ei",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "pasta"
+      ],
+      "aliases": [
+        "Gnocchi"
+      ],
+      "exclude": [
+        "gefüllt",
+        "filled",
+        "trocken",
+        "dry",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 150.0,
+        "protein": 3.0,
+        "carbohydrates": 32.0,
+        "fat": 1.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "mozzarella",
+      "name": "Mozzarella mit mikrobiellem Lab",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "dairy"
+      ],
+      "aliases": [
+        "Mozzarella"
+      ],
+      "exclude": [
+        "light",
+        "vegan",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 250.0,
+        "protein": 18.0,
+        "carbohydrates": 1.0,
+        "fat": 19.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk"
+      ]
+    },
+    {
+      "key": "basil",
+      "name": "Basilikum frisch",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Basilikum",
+        "basil"
+      ],
+      "exclude": [
+        "getrocknet",
+        "dried",
+        "pesto",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 23.0,
+        "protein": 3.0,
+        "carbohydrates": 1.0,
+        "fat": 0.6
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "tortilla",
+      "name": "Weizentortillas",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "bread"
+      ],
+      "aliases": [
+        "Weizentortillas",
+        "wheat tortillas"
+      ],
+      "exclude": [
+        "chips",
+        "gefüllt",
+        "filled",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 310.0,
+        "protein": 8.0,
+        "carbohydrates": 52.0,
+        "fat": 8.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "lettuce",
+      "name": "Blattsalat frisch",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Blattsalat",
+        "lettuce"
+      ],
+      "exclude": [
+        "dressing",
+        "mix",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 14.0,
+        "protein": 1.0,
+        "carbohydrates": 1.0,
+        "fat": 0.2
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "pizza_dough",
+      "name": "Pizzateig gekühlt",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "bread"
+      ],
+      "aliases": [
+        "Pizzateig",
+        "pizza dough"
+      ],
+      "exclude": [
+        "mehl",
+        "flour",
+        "backmischung",
+        "mix",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 270.0,
+        "protein": 7.0,
+        "carbohydrates": 48.0,
+        "fat": 5.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "pudding_rice",
+      "name": "Milchreis trocken",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "grains"
+      ],
+      "aliases": [
+        "Milchreis",
+        "rice pudding rice"
+      ],
+      "exclude": [
+        "gekocht",
+        "cooked",
+        "ready",
+        "becher",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 350.0,
+        "protein": 7.0,
+        "carbohydrates": 78.0,
+        "fat": 1.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "semolina",
+      "name": "Weichweizengrieß",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "grains"
+      ],
+      "aliases": [
+        "Weichweizengrieß",
+        "wheat semolina"
+      ],
+      "exclude": [
+        "hartweizen",
+        "durum",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 340.0,
+        "protein": 11.0,
+        "carbohydrates": 69.0,
+        "fat": 1.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "jar_cherries",
+      "name": "Sauerkirschen aus dem Glas abgetropft",
+      "unit": "g",
+      "group": "fruit",
+      "categories": [
+        "fruit"
+      ],
+      "aliases": [
+        "Sauerkirschen",
+        "sour cherries"
+      ],
+      "exclude": [
+        "frisch",
+        "fresh",
+        "tiefgekühlt",
+        "frozen",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 80.0,
+        "protein": 0.5,
+        "carbohydrates": 19.0,
+        "fat": 0.2
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "chicken_thigh",
+      "name": "Hähnchenschenkelfleisch mit Haut ohne Knochen roh",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Hähnchenschenkelfleisch",
+        "chicken thigh fillet"
+      ],
+      "exclude": [
+        "knochen",
+        "bone",
+        "skinless",
+        "ohne haut",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 210.0,
+        "protein": 18.0,
+        "carbohydrates": 0.0,
+        "fat": 15.0
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "pickles",
+      "name": "Gewürzgurken abgetropft",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Gewürzgurken",
+        "pickled gherkins"
+      ],
+      "exclude": [
+        "salat",
+        "salad",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 25.0,
+        "protein": 0.5,
+        "carbohydrates": 4.0,
+        "fat": 0.2
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": [
+        "mustard"
+      ]
+    },
+    {
+      "key": "vinegar",
+      "name": "Branntweinessig",
+      "unit": "ml",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Branntweinessig",
+        "spirit vinegar"
+      ],
+      "exclude": [
+        "balsamico",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 18.0,
+        "protein": 0.0,
+        "carbohydrates": 0.5,
+        "fat": 0.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "mustard",
+      "name": "Senf mittelscharf",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Senf mittelscharf",
+        "medium mustard"
+      ],
+      "exclude": [
+        "honig",
+        "honey",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 100.0,
+        "protein": 6.0,
+        "carbohydrates": 6.0,
+        "fat": 5.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": [
+        "mustard"
+      ]
+    },
+    {
+      "key": "toast",
+      "name": "Weizentoast",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "bread"
+      ],
+      "aliases": [
+        "Weizentoast",
+        "wheat toast"
+      ],
+      "exclude": [
+        "vollkorn",
+        "wholemeal",
+        "sandwich gefüllt",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 265.0,
+        "protein": 8.0,
+        "carbohydrates": 49.0,
+        "fat": 4.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "flammkuchen_dough",
+      "name": "Flammkuchenteig gekühlt",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "bread"
+      ],
+      "aliases": [
+        "Flammkuchenteig"
+      ],
+      "exclude": [
+        "backmischung",
+        "mix",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 280.0,
+        "protein": 8.0,
+        "carbohydrates": 52.0,
+        "fat": 4.0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free"
+      ],
+      "allergens": [
+        "wheat"
+      ]
+    },
+    {
+      "key": "sour_cream",
+      "name": "Schmand 24 %",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "dairy"
+      ],
+      "aliases": [
+        "Schmand"
+      ],
+      "exclude": [
+        "light",
+        "kräuter",
+        "herb",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 240.0,
+        "protein": 2.5,
+        "carbohydrates": 3.5,
+        "fat": 24.0
+      },
+      "diets": [
+        "vegetarian",
+        "pescatarian",
+        "gluten_free"
+      ],
+      "allergens": [
+        "milk"
+      ]
+    },
+    {
+      "key": "bacon",
+      "name": "Speck gewürfelt",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Speck",
+        "bacon"
+      ],
+      "exclude": [
+        "vegan",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 330.0,
+        "protein": 16.0,
+        "carbohydrates": 0.0,
+        "fat": 29.0
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "maultaschen",
+      "name": "Maultaschen mit Fleisch frisch",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "pasta"
+      ],
+      "aliases": [
+        "Maultaschen"
+      ],
+      "exclude": [
+        "vegetarisch",
+        "vegetarian",
+        "vegan",
+        "fertiggericht"
+      ],
+      "nutritionPer100": {
+        "calories": 200.0,
+        "protein": 10.0,
+        "carbohydrates": 24.0,
+        "fat": 7.0
+      },
+      "diets": [],
+      "allergens": [
+        "wheat",
+        "eggs",
+        "celery"
+      ]
+    }
+  ]
+}

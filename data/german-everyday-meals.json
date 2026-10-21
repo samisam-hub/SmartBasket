@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "locale": "de-DE",
   "title": "Alltagsgerichte in Deutschland",
-  "status": "editorial-ideas",
+  "status": "active-estimated-recipes",
   "timeBasis": {
     "servings": 4,
     "description": "Grobe Schätzwerte für vier Portionen in einer Haushaltsküche; aktive Zeit ist Teil der Gesamtzeit. Gesamtzeit umfasst Vorheizen, Kochen und genanntes Warten, aber weder Einkauf noch Aufräumen. Tätigkeiten können parallel laufen. Geräte, Mengen und Erfahrung verändern die Dauer. Salz, Pfeffer und Wasser sind Grundvorräte und nicht einzeln aufgeführt."
@@ -25,7 +25,27 @@
         "Schnittkäse",
         "Gurke"
       ],
-      "preparationNote": "Brote bestreichen und belegen; Gurke waschen und schneiden."
+      "preparationNote": "Brote bestreichen und belegen; Gurke waschen und schneiden. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "cucumber",
+          "quantity": 400.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-wurstbrot-mit-tomate",
@@ -44,7 +64,27 @@
         "Aufschnitt",
         "Tomate"
       ],
-      "preparationNote": "Brote bestreichen und belegen; Tomate waschen und schneiden."
+      "preparationNote": "Brote bestreichen und belegen; Tomate waschen und schneiden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "cold_cuts",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "fresh_tomato",
+          "quantity": 400.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-frischkasebrot-mit-paprika",
@@ -62,7 +102,23 @@
         "Frischkäse",
         "Paprika"
       ],
-      "preparationNote": "Brote bestreichen; Paprika waschen, entkernen und schneiden."
+      "preparationNote": "Brote bestreichen; Paprika waschen, entkernen und schneiden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "cream_cheese",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "bell_pepper",
+          "quantity": 400.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-marmeladenbrot",
@@ -79,7 +135,23 @@
         "Butter",
         "Marmelade"
       ],
-      "preparationNote": "Fertig geschnittenes Brot bestreichen."
+      "preparationNote": "Fertig geschnittenes Brot bestreichen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "jam",
+          "quantity": 120.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-honigbrot",
@@ -96,7 +168,23 @@
         "Butter",
         "Honig"
       ],
-      "preparationNote": "Fertig geschnittenes Brot bestreichen; Honig nicht für Kinder unter einem Jahr verwenden."
+      "preparationNote": "Fertig geschnittenes Brot bestreichen; Honig nicht für Kinder unter einem Jahr verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "honey",
+          "quantity": 80.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-brotchen-mit-kase-und-marmelade",
@@ -113,7 +201,27 @@
         "Schnittkäse",
         "Marmelade"
       ],
-      "preparationNote": "Gekaufte frische Brötchen aufschneiden und belegen; keine Aufbackzeit."
+      "preparationNote": "Gekaufte frische Brötchen aufschneiden und belegen; keine Aufbackzeit. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "bread_roll",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 120.0
+        },
+        {
+          "ingredientKey": "jam",
+          "quantity": 80.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-aufbackbrotchen-mit-belag",
@@ -130,7 +238,27 @@
         "Käse",
         "Marmelade"
       ],
-      "preparationNote": "Ofen vorheizen, Brötchen nach Packungsangabe backen und belegen."
+      "preparationNote": "Ofen vorheizen, Brötchen nach Packungsangabe backen und belegen. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "bake_roll",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 120.0
+        },
+        {
+          "ingredientKey": "jam",
+          "quantity": 80.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-musli-mit-milch-und-apfel",
@@ -146,7 +274,23 @@
         "Milch",
         "Apfel"
       ],
-      "preparationNote": "Apfel waschen und schneiden; alles portionieren."
+      "preparationNote": "Apfel waschen und schneiden; alles portionieren.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "muesli",
+          "quantity": 280.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "apple",
+          "quantity": 600.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-naturjoghurt-mit-banane-und-haferflocken",
@@ -162,7 +306,23 @@
         "Banane",
         "Haferflocken"
       ],
-      "preparationNote": "Banane schneiden und mit Joghurt und Flocken portionieren."
+      "preparationNote": "Banane schneiden und mit Joghurt und Flocken portionieren.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "plain_yogurt",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "banana",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "oats",
+          "quantity": 200.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-quark-mit-beeren",
@@ -178,7 +338,23 @@
         "Milch",
         "Frische Beeren"
       ],
-      "preparationNote": "Frische Beeren waschen; Quark mit Milch glattrühren und portionieren."
+      "preparationNote": "Frische Beeren waschen; Quark mit Milch glattrühren und portionieren.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "quark",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "berries",
+          "quantity": 600.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-haferbrei-mit-apfel-und-zimt",
@@ -195,7 +371,27 @@
         "Apfel",
         "Zimt"
       ],
-      "preparationNote": "Apfel schneiden; Flocken mit Milch köcheln lassen und umrühren."
+      "preparationNote": "Apfel schneiden; Flocken mit Milch köcheln lassen und umrühren.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "oats",
+          "quantity": 280.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 1000.0
+        },
+        {
+          "ingredientKey": "apple",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "cinnamon",
+          "quantity": 4.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-ubernacht-haferflocken-mit-banane",
@@ -212,7 +408,27 @@
         "Naturjoghurt",
         "Banane"
       ],
-      "preparationNote": "Abends anrühren und acht Stunden im Kühlschrank quellen lassen; morgens Banane schneiden."
+      "preparationNote": "Abends anrühren und acht Stunden im Kühlschrank quellen lassen; morgens Banane schneiden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "oats",
+          "quantity": 280.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "plain_yogurt",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "banana",
+          "quantity": 480.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-ruhrei-mit-brot",
@@ -231,7 +447,31 @@
         "Brot",
         "Schnittlauch"
       ],
-      "preparationNote": "Eier verquirlen, vollständig stocken lassen; Brot dazu servieren."
+      "preparationNote": "Eier verquirlen, vollständig stocken lassen; Brot dazu servieren.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "eggs",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 80.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 20.0
+        },
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "chives",
+          "quantity": 12.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-gekochtes-ei-mit-brot",
@@ -248,7 +488,23 @@
         "Brot",
         "Butter"
       ],
-      "preparationNote": "Wasser aufkochen, Eier hart kochen und abschrecken; Brot bestreichen."
+      "preparationNote": "Wasser aufkochen, Eier hart kochen und abschrecken; Brot bestreichen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "eggs",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-spiegelei-auf-brot",
@@ -266,7 +522,27 @@
         "Brot",
         "Tomate"
       ],
-      "preparationNote": "Eier braten; für kleine Kinder vollständig durchgaren; Tomaten schneiden."
+      "preparationNote": "Eier braten; für kleine Kinder vollständig durchgaren; Tomaten schneiden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "eggs",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 20.0
+        },
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "fresh_tomato",
+          "quantity": 400.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-hummusbrot-mit-gurke",
@@ -284,7 +560,23 @@
         "Fertiger Hummus",
         "Gurke"
       ],
-      "preparationNote": "Gekauften Hummus verstreichen und Gurke schneiden."
+      "preparationNote": "Gekauften Hummus verstreichen und Gurke schneiden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "hummus",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "cucumber",
+          "quantity": 400.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-pfannkuchen-mit-apfelmus",
@@ -302,7 +594,31 @@
         "Öl",
         "Fertiges Apfelmus"
       ],
-      "preparationNote": "Teig anrühren und Pfannkuchen portionsweise in einer Pfanne ausbacken."
+      "preparationNote": "Teig anrühren und Pfannkuchen portionsweise in einer Pfanne ausbacken.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "flour",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "applesauce",
+          "quantity": 600.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-arme-ritter-mit-obst",
@@ -321,7 +637,35 @@
         "Apfel",
         "Zimt"
       ],
-      "preparationNote": "Brot in Eiermilch wenden und portionsweise durchbraten; Obst schneiden."
+      "preparationNote": "Brot in Eiermilch wenden und portionsweise durchbraten; Obst schneiden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "apple",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "cinnamon",
+          "quantity": 4.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-spaghetti-mit-tomatensoe",
@@ -340,7 +684,31 @@
         "Öl",
         "Italienische Kräuter"
       ],
-      "preparationNote": "Nudelwasser erhitzen; währenddessen Soße zubereiten und Nudeln kochen."
+      "preparationNote": "Nudelwasser erhitzen; währenddessen Soße zubereiten und Nudeln kochen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "pasta",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "passata",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "italian_herbs",
+          "quantity": 4.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-spaghetti-bolognese",
@@ -360,7 +728,35 @@
         "Möhre",
         "Öl"
       ],
-      "preparationNote": "Gemüse schneiden, Hack durchbraten und Soße köcheln; Nudeln parallel kochen."
+      "preparationNote": "Gemüse schneiden, Hack durchbraten und Soße köcheln; Nudeln parallel kochen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "pasta",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "mince",
+          "quantity": 500.0
+        },
+        {
+          "ingredientKey": "passata",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 20.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-spaghetti-mit-linsenbolognese",
@@ -380,7 +776,35 @@
         "Zwiebel",
         "Öl"
       ],
-      "preparationNote": "Trockene rote Linsen in der Soße garen; Nudeln parallel kochen."
+      "preparationNote": "Trockene rote Linsen in der Soße garen; Nudeln parallel kochen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "pasta",
+          "quantity": 340.0
+        },
+        {
+          "ingredientKey": "red_lentils",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "passata",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 20.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-nudeln-mit-pesto-und-tomaten",
@@ -397,7 +821,23 @@
         "Fertiges Pesto",
         "Tomate"
       ],
-      "preparationNote": "Nudeln kochen; Tomaten schneiden und mit gekauftem Pesto untermischen."
+      "preparationNote": "Nudeln kochen; Tomaten schneiden und mit gekauftem Pesto untermischen. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "pasta",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "pesto",
+          "quantity": 140.0
+        },
+        {
+          "ingredientKey": "fresh_tomato",
+          "quantity": 600.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-nudelauflauf-mit-brokkoli",
@@ -416,7 +856,31 @@
         "Milch",
         "Reibekäse"
       ],
-      "preparationNote": "Nudeln und Brokkoli vorgaren, Soße mischen und im vorgeheizten Ofen überbacken."
+      "preparationNote": "Nudeln und Brokkoli vorgaren, Soße mischen und im vorgeheizten Ofen überbacken. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "pasta",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "broccoli",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "cream",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 160.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-lasagne-mit-hackfleisch",
@@ -438,7 +902,43 @@
         "Butter",
         "Käse"
       ],
-      "preparationNote": "Hacksoße und Béchamel kochen, schichten und backen; kurze Ruhezeit enthalten."
+      "preparationNote": "Hacksoße und Béchamel kochen, schichten und backen; kurze Ruhezeit enthalten. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "lasagne_sheets",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "mince",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "passata",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "flour",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 120.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-kasespatzle-mit-zwiebeln",
@@ -456,7 +956,27 @@
         "Zwiebel",
         "Butter"
       ],
-      "preparationNote": "Gekaufte Spätzle erhitzen, Zwiebeln braten und Käse schmelzen lassen."
+      "preparationNote": "Gekaufte Spätzle erhitzen, Zwiebeln braten und Käse schmelzen lassen. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "spaetzle",
+          "quantity": 1000.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-gemusereispfanne",
@@ -476,7 +996,35 @@
         "Zwiebel",
         "Öl"
       ],
-      "preparationNote": "Reis frisch kochen; Gemüse parallel schneiden und braten."
+      "preparationNote": "Reis frisch kochen; Gemüse parallel schneiden und braten.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "rice",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "bell_pepper",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "peas",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-hahnchen-mit-reis-und-gemuse",
@@ -495,7 +1043,31 @@
         "Möhre",
         "Öl"
       ],
-      "preparationNote": "Reis kochen; Gemüse garen und Hähnchen vollständig durchbraten."
+      "preparationNote": "Reis kochen; Gemüse garen und Hähnchen vollständig durchbraten.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "chicken_breast",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "rice",
+          "quantity": 360.0
+        },
+        {
+          "ingredientKey": "broccoli",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-hahnchengeschnetzeltes-mit-reis",
@@ -515,7 +1087,35 @@
         "Sahne",
         "Öl"
       ],
-      "preparationNote": "Reis kochen; Fleisch und Gemüse schneiden, durchbraten und in Soße garen."
+      "preparationNote": "Reis kochen; Fleisch und Gemüse schneiden, durchbraten und in Soße garen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "chicken_breast",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "rice",
+          "quantity": 360.0
+        },
+        {
+          "ingredientKey": "mushrooms",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "cream",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 20.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-mildes-gemuse-kichererbsen-curry",
@@ -536,7 +1136,39 @@
         "Mildes Currypulver",
         "Öl"
       ],
-      "preparationNote": "Reis kochen; Gemüse schneiden und mit abgetropften Kichererbsen köcheln."
+      "preparationNote": "Reis kochen; Gemüse schneiden und mit abgetropften Kichererbsen köcheln.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "rice",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "chickpeas",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "coconut_milk",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "bell_pepper",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "curry_powder",
+          "quantity": 8.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 20.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-chili-con-carne-mit-reis",
@@ -558,7 +1190,43 @@
         "Öl",
         "Paprikapulver"
       ],
-      "preparationNote": "Hack durchbraten; abgetropfte Hülsenfrüchte und Tomaten köcheln; Reis parallel kochen."
+      "preparationNote": "Hack durchbraten; abgetropfte Hülsenfrüchte und Tomaten köcheln; Reis parallel kochen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "mince",
+          "quantity": 500.0
+        },
+        {
+          "ingredientKey": "kidney_beans",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "corn",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "chopped_tomatoes",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "rice",
+          "quantity": 280.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 20.0
+        },
+        {
+          "ingredientKey": "paprika_powder",
+          "quantity": 8.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-chili-sin-carne-mit-reis",
@@ -580,7 +1248,43 @@
         "Öl",
         "Paprikapulver"
       ],
-      "preparationNote": "Gemüse schneiden; Dosenbohnen und Tomaten köcheln; Reis parallel kochen."
+      "preparationNote": "Gemüse schneiden; Dosenbohnen und Tomaten köcheln; Reis parallel kochen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "kidney_beans",
+          "quantity": 720.0
+        },
+        {
+          "ingredientKey": "corn",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "chopped_tomatoes",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "bell_pepper",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "rice",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "paprika_powder",
+          "quantity": 8.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-kartoffeln-mit-krauterquark",
@@ -599,7 +1303,31 @@
         "Schnittlauch",
         "Petersilie"
       ],
-      "preparationNote": "Kartoffeln waschen und kochen; Quark anrühren; Schälzeit am Tisch enthalten."
+      "preparationNote": "Kartoffeln waschen und kochen; Quark anrühren; Schälzeit am Tisch enthalten.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1400.0
+        },
+        {
+          "ingredientKey": "quark",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 120.0
+        },
+        {
+          "ingredientKey": "chives",
+          "quantity": 12.0
+        },
+        {
+          "ingredientKey": "parsley",
+          "quantity": 12.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-kartoffeln-mit-spinat-und-ei",
@@ -617,7 +1345,27 @@
         "Eier",
         "Butter"
       ],
-      "preparationNote": "Kartoffeln schälen und kochen; Spinat erhitzen und Eier parallel garen."
+      "preparationNote": "Kartoffeln schälen und kochen; Spinat erhitzen und Eier parallel garen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1200.0
+        },
+        {
+          "ingredientKey": "spinach",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-bratkartoffeln-mit-ei",
@@ -626,16 +1374,36 @@
         "lunch",
         "dinner"
       ],
-      "activeMinutes": 25,
-      "totalMinutes": 30,
+      "activeMinutes": 35,
+      "totalMinutes": 60,
       "method": "cook",
       "ingredients": [
-        "Gekochte Kartoffeln",
+        "Kartoffeln roh",
         "Eier",
         "Zwiebel",
         "Öl"
       ],
-      "preparationNote": "Bereits gekochte, gekühlt gelagerte Kartoffeln verwenden; Vorkochen nicht enthalten."
+      "preparationNote": "Kartoffeln frisch schälen, würfeln und vorgaren; abgießen, abdampfen lassen und mit Zwiebeln braten. Eier vollständig garen. Vorkochen ist enthalten.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1400.0
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 60.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-kartoffelgratin-mit-gurkensalat",
@@ -656,7 +1424,39 @@
         "Naturjoghurt",
         "Dill"
       ],
-      "preparationNote": "Rohe Kartoffeln schälen und dünn schneiden; Gratin backen, Salat parallel machen."
+      "preparationNote": "Rohe Kartoffeln schälen und dünn schneiden; Gratin backen, Salat parallel machen. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1400.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "cream",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "cucumber",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "plain_yogurt",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "dill",
+          "quantity": 12.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-fischstabchen-mit-kartoffelpuree-und-erbsen",
@@ -675,7 +1475,31 @@
         "Butter",
         "Tiefkühlerbsen"
       ],
-      "preparationNote": "Püree aus frischen Kartoffeln; Fischstäbchen nach Packungsangabe garen, Erbsen erhitzen."
+      "preparationNote": "Püree aus frischen Kartoffeln; Fischstäbchen nach Packungsangabe garen, Erbsen erhitzen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "fish_fingers",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1200.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "peas",
+          "quantity": 600.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-ofenlachs-mit-kartoffeln-und-brokkoli",
@@ -694,7 +1518,31 @@
         "Öl",
         "Zitrone"
       ],
-      "preparationNote": "Kartoffeln klein schneiden und vorgaren im Ofen; Fisch und Brokkoli später dazugeben."
+      "preparationNote": "Kartoffeln klein schneiden und vorgaren im Ofen; Fisch und Brokkoli später dazugeben.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "salmon",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1200.0
+        },
+        {
+          "ingredientKey": "broccoli",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "lemon",
+          "quantity": 80.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-frikadellen-mit-kartoffeln-und-mohren",
@@ -715,7 +1563,39 @@
         "Möhre",
         "Öl"
       ],
-      "preparationNote": "Frikadellen formen und durchbraten; Kartoffeln und Möhren parallel garen."
+      "preparationNote": "Frikadellen formen und durchbraten; Kartoffeln und Möhren parallel garen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "mince",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 100.0
+        },
+        {
+          "ingredientKey": "breadcrumbs",
+          "quantity": 80.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1200.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-bratwurst-mit-kartoffelpuree",
@@ -733,7 +1613,27 @@
         "Milch",
         "Butter"
       ],
-      "preparationNote": "Kartoffeln frisch schälen und kochen; Wurst vollständig garen, Püree stampfen."
+      "preparationNote": "Kartoffeln frisch schälen und kochen; Wurst vollständig garen, Püree stampfen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "bratwurst",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1400.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-schnitzel-mit-kartoffeln-und-gurkensalat",
@@ -755,7 +1655,43 @@
         "Gurke",
         "Naturjoghurt"
       ],
-      "preparationNote": "Kartoffeln kochen, Schnitzel panieren und durchbraten, Gurkensalat zubereiten."
+      "preparationNote": "Kartoffeln kochen, Schnitzel panieren und durchbraten, Gurkensalat zubereiten.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "pork_schnitzel",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 100.0
+        },
+        {
+          "ingredientKey": "flour",
+          "quantity": 60.0
+        },
+        {
+          "ingredientKey": "breadcrumbs",
+          "quantity": 120.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 60.0
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1000.0
+        },
+        {
+          "ingredientKey": "cucumber",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "plain_yogurt",
+          "quantity": 200.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-kartoffelsuppe-mit-brot",
@@ -775,7 +1711,35 @@
         "Öl",
         "Brot"
       ],
-      "preparationNote": "Gemüse waschen, schälen, schneiden und weich kochen; nach Wunsch pürieren."
+      "preparationNote": "Gemüse waschen, schälen, schneiden und weich kochen; nach Wunsch pürieren. Brühe ist als Trockenpulver erfasst; Wasser nach Packungsangabe zugeben.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1200.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "leek",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "broth",
+          "quantity": 20.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 320.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-linseneintopf-mit-wurstchen",
@@ -795,7 +1759,35 @@
         "Gemüsebrühe",
         "Wiener Würstchen"
       ],
-      "preparationNote": "Linsen ohne Einweichen nach Packungsangabe garen; Gemüse mitkochen, Würstchen erhitzen."
+      "preparationNote": "Linsen ohne Einweichen nach Packungsangabe garen; Gemüse mitkochen, Würstchen erhitzen. Brühe ist als Trockenpulver erfasst; Wasser nach Packungsangabe zugeben.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "brown_lentils",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "celery",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "broth",
+          "quantity": 20.0
+        },
+        {
+          "ingredientKey": "wiener",
+          "quantity": 400.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-gemusesuppe-mit-kleinen-nudeln",
@@ -815,7 +1807,35 @@
         "Tiefkühlerbsen",
         "Gemüsebrühe"
       ],
-      "preparationNote": "Gemüse schneiden und kochen; Nudeln zum Ende in der Suppe garen."
+      "preparationNote": "Gemüse schneiden und kochen; Nudeln zum Ende in der Suppe garen. Brühe ist als Trockenpulver erfasst; Wasser nach Packungsangabe zugeben.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "soup_noodles",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "leek",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "celery",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "peas",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "broth",
+          "quantity": 20.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-tortellini-in-tomatensoe",
@@ -834,7 +1854,31 @@
         "Öl",
         "Italienische Kräuter"
       ],
-      "preparationNote": "Tortellini aus dem Kühlregal nach Packungsangabe garen; schnelle Soße kochen."
+      "preparationNote": "Tortellini aus dem Kühlregal nach Packungsangabe garen; schnelle Soße kochen. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "cheese_tortellini",
+          "quantity": 1000.0
+        },
+        {
+          "ingredientKey": "passata",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 20.0
+        },
+        {
+          "ingredientKey": "italian_herbs",
+          "quantity": 4.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-gnocchipfanne-mit-tomate-und-mozzarella",
@@ -853,7 +1897,31 @@
         "Öl",
         "Basilikum"
       ],
-      "preparationNote": "Gnocchi aus dem Kühlregal braten; Tomaten und Mozzarella zugeben."
+      "preparationNote": "Gnocchi aus dem Kühlregal braten; Tomaten und Mozzarella zugeben. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "fresh_gnocchi",
+          "quantity": 1000.0
+        },
+        {
+          "ingredientKey": "fresh_tomato",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "mozzarella",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "basil",
+          "quantity": 12.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-gemuseomelett-mit-brot",
@@ -872,7 +1940,31 @@
         "Öl",
         "Brot"
       ],
-      "preparationNote": "Gemüse schneiden und anbraten; Eier zugeben und vollständig stocken lassen."
+      "preparationNote": "Gemüse schneiden und anbraten; Eier zugeben und vollständig stocken lassen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "eggs",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "bell_pepper",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "fresh_tomato",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-wraps-mit-hahnchen-und-gemuse",
@@ -893,7 +1985,39 @@
         "Naturjoghurt",
         "Öl"
       ],
-      "preparationNote": "Fleisch durchbraten; Gemüse waschen und schneiden; Fladen erwärmen und füllen."
+      "preparationNote": "Fleisch durchbraten; Gemüse waschen und schneiden; Fladen erwärmen und füllen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "tortilla",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "chicken_breast",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "lettuce",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "cucumber",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "fresh_tomato",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "plain_yogurt",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 20.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-wraps-mit-bohnen-und-gemuse",
@@ -913,7 +2037,35 @@
         "Naturjoghurt",
         "Öl"
       ],
-      "preparationNote": "Bohnen abtropfen; Gemüse und Bohnen erhitzen, Fladen füllen."
+      "preparationNote": "Bohnen abtropfen; Gemüse und Bohnen erhitzen, Fladen füllen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "tortilla",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "kidney_beans",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "corn",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "bell_pepper",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "plain_yogurt",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 20.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-pizza-mit-gemuse-vom-blech",
@@ -932,7 +2084,31 @@
         "Champignons",
         "Käse"
       ],
-      "preparationNote": "Gekühlten Fertigteig belegen; Ofenvorheizen und Backen enthalten, kein selbst gemachter Hefeteig."
+      "preparationNote": "Gekühlten Fertigteig belegen; Ofenvorheizen und Backen enthalten, kein selbst gemachter Hefeteig. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "pizza_dough",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "passata",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "bell_pepper",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "mushrooms",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 240.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-reibekuchen-mit-apfelmus",
@@ -952,7 +2128,35 @@
         "Öl",
         "Fertiges Apfelmus"
       ],
-      "preparationNote": "Kartoffeln schälen und reiben; Puffer portionsweise in einer Pfanne ausbacken."
+      "preparationNote": "Kartoffeln schälen und reiben; Puffer portionsweise in einer Pfanne ausbacken.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1400.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 100.0
+        },
+        {
+          "ingredientKey": "flour",
+          "quantity": 80.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 80.0
+        },
+        {
+          "ingredientKey": "applesauce",
+          "quantity": 600.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-milchreis-mit-apfelmus",
@@ -970,7 +2174,27 @@
         "Zimt",
         "Fertiges Apfelmus"
       ],
-      "preparationNote": "Trockenen Milchreis kochen und regelmäßig umrühren; gekauftes Apfelmus verwenden."
+      "preparationNote": "Trockenen Milchreis kochen und regelmäßig umrühren; gekauftes Apfelmus verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "pudding_rice",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 1200.0
+        },
+        {
+          "ingredientKey": "cinnamon",
+          "quantity": 4.0
+        },
+        {
+          "ingredientKey": "applesauce",
+          "quantity": 600.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-griebrei-mit-kirschen",
@@ -987,7 +2211,23 @@
         "Milch",
         "Kirschen aus dem Glas"
       ],
-      "preparationNote": "Milch aufkochen, Grieß einrühren und quellen lassen; Kirschen dazugeben."
+      "preparationNote": "Milch aufkochen, Grieß einrühren und quellen lassen; Kirschen dazugeben.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "semolina",
+          "quantity": 280.0
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 1200.0
+        },
+        {
+          "ingredientKey": "jar_cherries",
+          "quantity": 600.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-ofenhahnchen-mit-kartoffeln-und-mohren",
@@ -1000,13 +2240,37 @@
       "totalMinutes": 90,
       "method": "bake",
       "ingredients": [
-        "Hähnchenschenkel",
+        "Hähnchenschenkelfleisch mit Haut ohne Knochen",
         "Kartoffeln",
         "Möhre",
         "Öl",
         "Paprikapulver"
       ],
-      "preparationNote": "Gemüse schneiden, alles würzen und im Ofen vollständig garen; für Tage mit mehr Zeit."
+      "preparationNote": "Gemüse schneiden, alles würzen und im Ofen vollständig garen; für Tage mit mehr Zeit. Die Mengen beziehen sich auf ausgelöstes Schenkelfleisch mit Haut, ohne Knochen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "chicken_thigh",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1200.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 800.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "paprika_powder",
+          "quantity": 8.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-brotzeit-mit-kase-und-rohkost",
@@ -1026,7 +2290,35 @@
         "Paprika",
         "Möhre"
       ],
-      "preparationNote": "Brote bestreichen und belegen, Gemüse waschen und schneiden."
+      "preparationNote": "Brote bestreichen und belegen, Gemüse waschen und schneiden. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "cucumber",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "bell_pepper",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 320.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-brotzeit-mit-aufschnitt-und-gewurzgurken",
@@ -1044,7 +2336,27 @@
         "Aufschnitt",
         "Gewürzgurken"
       ],
-      "preparationNote": "Brote bestreichen und belegen; Gewürzgurken schneiden."
+      "preparationNote": "Brote bestreichen und belegen; Gewürzgurken schneiden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "cold_cuts",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "pickles",
+          "quantity": 320.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-kasebrot-lunchbox-mit-apfel-und-mohre",
@@ -1063,7 +2375,31 @@
         "Apfel",
         "Möhre"
       ],
-      "preparationNote": "Brote schmieren, Obst und Gemüse waschen und schneiden; zum Mitnehmen verpacken."
+      "preparationNote": "Brote schmieren, Obst und Gemüse waschen und schneiden; zum Mitnehmen verpacken. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "apple",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 400.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-wurstbrot-lunchbox-mit-gurke-und-apfel",
@@ -1082,7 +2418,31 @@
         "Gurke",
         "Apfel"
       ],
-      "preparationNote": "Brote schmieren; Obst und Gemüse schneiden; bis zum Essen gekühlt aufbewahren."
+      "preparationNote": "Brote schmieren; Obst und Gemüse schneiden; bis zum Essen gekühlt aufbewahren.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "cold_cuts",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "cucumber",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "apple",
+          "quantity": 600.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-tomate-mozzarella-mit-brot",
@@ -1101,7 +2461,31 @@
         "Olivenöl",
         "Basilikum"
       ],
-      "preparationNote": "Tomaten und Mozzarella schneiden und mit Brot anrichten."
+      "preparationNote": "Tomaten und Mozzarella schneiden und mit Brot anrichten. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "fresh_tomato",
+          "quantity": 1000.0
+        },
+        {
+          "ingredientKey": "mozzarella",
+          "quantity": 500.0
+        },
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "basil",
+          "quantity": 12.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-gemischter-salat-mit-ei-und-brot",
@@ -1122,7 +2506,39 @@
         "Öl",
         "Essig"
       ],
-      "preparationNote": "Eier frisch hart kochen; Gemüse waschen, schneiden und Dressing anrühren."
+      "preparationNote": "Eier frisch hart kochen; Gemüse waschen, schneiden und Dressing anrühren.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "lettuce",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "cucumber",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "fresh_tomato",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "wholemeal_bread",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "vinegar",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-nudelsalat-mit-erbsen-und-kase",
@@ -1142,7 +2558,35 @@
         "Naturjoghurt",
         "Senf"
       ],
-      "preparationNote": "Nudeln und Erbsen frisch kochen, zügig abkühlen lassen; Gemüse schneiden und mischen."
+      "preparationNote": "Nudeln und Erbsen frisch kochen, zügig abkühlen lassen; Gemüse schneiden und mischen. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "pasta",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "peas",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 200.0
+        },
+        {
+          "ingredientKey": "cucumber",
+          "quantity": 400.0
+        },
+        {
+          "ingredientKey": "plain_yogurt",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "mustard",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-kartoffelsalat-mit-wurstchen",
@@ -1163,7 +2607,39 @@
         "Öl",
         "Wiener Würstchen"
       ],
-      "preparationNote": "Kartoffeln frisch kochen, abkühlen und pellen; Salat mischen und Würstchen erhitzen."
+      "preparationNote": "Kartoffeln frisch kochen, abkühlen und pellen; Salat mischen und Würstchen erhitzen. Brühe ist als Trockenpulver erfasst; Wasser nach Packungsangabe zugeben.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1400.0
+        },
+        {
+          "ingredientKey": "pickles",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 160.0
+        },
+        {
+          "ingredientKey": "broth",
+          "quantity": 8.0
+        },
+        {
+          "ingredientKey": "vinegar",
+          "quantity": 60.0
+        },
+        {
+          "ingredientKey": "olive_oil",
+          "quantity": 40.0
+        },
+        {
+          "ingredientKey": "wiener",
+          "quantity": 400.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-uberbackener-kasetoast-mit-tomate",
@@ -1181,7 +2657,27 @@
         "Tomate",
         "Butter"
       ],
-      "preparationNote": "Toast belegen und im vorgeheizten Ofen überbacken."
+      "preparationNote": "Toast belegen und im vorgeheizten Ofen überbacken. Für die vegetarische Variante Käse/Pesto mit mikrobiellem Lab verwenden.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "toast",
+          "quantity": 480.0
+        },
+        {
+          "ingredientKey": "cheese",
+          "quantity": 240.0
+        },
+        {
+          "ingredientKey": "fresh_tomato",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-flammkuchen-mit-zwiebeln-und-speck",
@@ -1199,7 +2695,27 @@
         "Zwiebel",
         "Speck"
       ],
-      "preparationNote": "Gekühlten Fertigteig belegen und backen; Ofenvorheizen enthalten."
+      "preparationNote": "Gekühlten Fertigteig belegen und backen; Ofenvorheizen enthalten.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "flammkuchen_dough",
+          "quantity": 600.0
+        },
+        {
+          "ingredientKey": "sour_cream",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 320.0
+        },
+        {
+          "ingredientKey": "bacon",
+          "quantity": 240.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     },
     {
       "id": "de-maultaschen-in-gemusebruhe",
@@ -1216,7 +2732,24 @@
         "Gemüsebrühe",
         "Schnittlauch"
       ],
-      "preparationNote": "Gekaufte Maultaschen nach Packungsangabe in Brühe garen; regional süddeutsch geprägt."
+      "preparationNote": "Gekaufte Maultaschen nach Packungsangabe in Brühe garen; regional süddeutsch geprägt. Brühe ist als Trockenpulver erfasst; Wasser nach Packungsangabe zugeben.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "maultaschen",
+          "quantity": 1000.0
+        },
+        {
+          "ingredientKey": "broth",
+          "quantity": 20.0
+        },
+        {
+          "ingredientKey": "chives",
+          "quantity": 12.0
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
     }
-  ]
+  ],
+  "nutritionNote": "Redaktionelle Referenzwerte pro 100 g bzw. 100 ml, keine Laborwerte oder markenspezifischen Produktangaben. Mengen sind essbare Rohgewichte, Trockengewichte bzw. ausdrücklich abgetropfte Gewichte. Nährwerte werden aus den Zutaten berechnet; die App skaliert Portionen nach Kalorienbedarf. Zeiten gelten weiterhin für vier Basisportionen."
 }

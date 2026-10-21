@@ -30,8 +30,9 @@ test("a slot gets exactly two different meals that fit the slot and the househol
     for (const { meal, servings } of suggestions) {
       assert.ok(compatibleMeal(meal, preferences));
       assert.ok(servings > 0 && servings <= preferences.householdSize * 1.5);
-      // Breakfast and snack are their own slots; lunch and dinner meals are interchangeable.
-      if (slot === "breakfast") assert.equal(meal.mealType, "breakfast");
+      // New recipes declare their slots; old recipes retain their original fallback.
+      if (meal.mealSlots) assert.ok(meal.mealSlots.includes(slot));
+      else if (slot === "breakfast") assert.equal(meal.mealType, "breakfast");
       else assert.ok(["lunch", "dinner"].includes(meal.mealType));
     }
   }

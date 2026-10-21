@@ -29,7 +29,7 @@ export function diagnoseMatches(inputKey:string,products:Product[],preferences:U
   const keyword=config.requiredKeywords.some(a=>normalizeIngredientText(a).split(' ').every(token=>contains(name,token)));
   if(!manual&&!alias&&!keyword){reject(p,'naming_mismatch');continue;}
   if(!config.allowedCategories.includes(p.category)){reject(p,'category_mismatch');continue;}
-  if([...config.blockedKeywords,...preparedFoodKeywords].some(a=>contains(name,a))||
+  if([...config.blockedKeywords,...preparedFoodKeywords.filter(word => !config.allowedPreparedKeywords?.includes(word))].some(a=>contains(name,a))||
     (key==='salmon'&&/seelachs|pollock/.test(name))||
     (key==='tofu'&&/caseinat|milk|cheese|jalape/i.test(p.ingredientsText??''))){reject(p,'unsuitable_product_form');continue;}
   if(['chicken_breast','turkey'].includes(key)&&/nitrit|nitrite|carrageen|rauch|dextrose|gegart|stabilisator|konservierungs/i.test(p.ingredientsText??'')){reject(p,'unsuitable_product_form');continue;}
@@ -45,7 +45,7 @@ export function diagnoseMatches(inputKey:string,products:Product[],preferences:U
   else if(size===null)issue='package_size_unknown';
   if(unit==='piece'&&size!==null){if(p.packageMassPerUnit) {size*=p.packageMassPerUnit;unit='g';}else issue='piece_mass_unknown';}
   if(key==='eggs'&&unit==='g'&&size!==null&&size<150)issue='possible_serving_not_package';
-  if(['tuna','chickpeas'].includes(key)){const drained=p.packageDrainedWeight??pack.packageDrainedWeight;
+  if(config.drainedWeight || ['tuna','chickpeas'].includes(key)){const drained=p.packageDrainedWeight??pack.packageDrainedWeight;
    if(drained&&size&&drained<=size){size=drained;unit='g';}else issue='drained_weight_unknown';}
   if(!issue&&unit!==definition.unit)issue='unit_conversion_unknown';
   const stage=manual?'curated':alias?'alias':'category-keyword';

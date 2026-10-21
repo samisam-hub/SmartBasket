@@ -1,6 +1,6 @@
 // Shared by the mobile app and the isolated voice backend. No platform dependencies.
 export const voiceDiets = ['none', 'vegetarian', 'vegan', 'pescatarian', 'lactose_free', 'gluten_free', 'diabetes'] as const;
-export const voiceAllergens = ['milk', 'eggs', 'fish', 'shellfish', 'peanuts', 'tree_nuts', 'soy', 'wheat', 'sesame'] as const;
+export const voiceAllergens = ['milk', 'eggs', 'fish', 'shellfish', 'peanuts', 'tree_nuts', 'soy', 'wheat', 'sesame', 'mustard', 'celery'] as const;
 export interface VoicePerson {
   name: string;
   calories: number | null;
@@ -50,7 +50,7 @@ export function isVoicePlan(value: unknown): value is VoicePlan {
     && Array.isArray(p.preferredMealIds) && p.preferredMealIds.length <= 32 && p.preferredMealIds.every(x => typeof x === 'string' && x.length < 100)
     && Array.isArray(p.people) && p.people.length <= 20 && p.people.every(x => x && typeof x.name === 'string' && x.name.length <= 80
       && number(x.calories) && number(x.protein) && Array.isArray(x.diets) && x.diets.length <= 6 && x.diets.every(d => voiceDiets.includes(d))
-      && Array.isArray(x.allergens) && x.allergens.length <= 9 && x.allergens.every(a => voiceAllergens.includes(a)));
+      && Array.isArray(x.allergens) && x.allergens.length <= voiceAllergens.length && x.allergens.every(a => voiceAllergens.includes(a)));
 }
 export function isVoiceReply(value: unknown): value is VoiceReply {
   if (!value || typeof value !== 'object') return false;
