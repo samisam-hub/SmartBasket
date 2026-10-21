@@ -1,3 +1,4 @@
+import { basketDayCount } from './naming';
 import type { SavedBasket, BasketGenerationResult } from '../../types/basket';
 import type { UserPreferences } from '../../types/preferences';
 import { isSaved } from '../preference-domain';
@@ -117,6 +118,6 @@ export class BasketPersistence {
 }
 export function newSavedBasket(result: BasketGenerationResult, preferences: UserPreferences, ownerId: string | null): SavedBasket {
   return { id: `basket-${Date.now()}-${Math.random().toString(36).slice(2)}`, cloudId: null, ownerId,
-    name: `${preferences.planningDays}-day basket`, createdAt: new Date().toISOString(), preferences,
+    name: `${basketDayCount(result, preferences)}-day basket`, createdAt: new Date().toISOString(), preferences,
     result, syncStatus: 'local' };
 }

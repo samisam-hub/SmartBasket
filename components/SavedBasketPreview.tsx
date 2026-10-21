@@ -1,3 +1,4 @@
+import { basketDisplayName } from '../services/basket/naming';
 import { Pressable, Text, View } from 'react-native';
 import { planNutrition } from '../services/meals/planner';
 import { plannedDayCount } from '../services/meals/weekPlan';
@@ -10,7 +11,8 @@ import { BasketMealPreview } from './BasketMealPreview';
 export function SavedBasketPreview({ basket: b, onOpen, minimal = false }: { basket: SavedBasket; onOpen: () => void; minimal?: boolean }) {
   const date = new Date(b.createdAt);
   const suffix = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
-  const title = b.name.endsWith(` ${suffix}`) ? b.name : `${b.name} ${suffix}`;
+  const name = basketDisplayName(b);
+  const title = name.endsWith(` ${suffix}`) ? name : `${name} ${suffix}`;
   if (minimal && b.result.mealPlan?.items.length) {
     const plan = b.result.mealPlan;
     return <>
