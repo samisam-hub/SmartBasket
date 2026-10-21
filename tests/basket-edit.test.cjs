@@ -21,3 +21,39 @@ test('removal recalculates totals, preserves meals and persists without changing
  let empty=next;for(const item of next.items)empty=removeBasketProduct(empty,item.product.id);
  assert.equal(empty.totalCalories,0);assert.equal(empty.estimatedTotalPrice,0);assert.ok(isBasketResult(empty));
 });
+
+test('checkbox deselection persists, reduces totals and restores the exact quantities without duplicates', async()=>{
+ const {toggleBasketProduct}=require('../services/basket/edit.ts');
+ const p=prefs(),plan={...generateMealPlan(p),status:'confirmed'};
+ const original=basketFromMealPlan(plan,p,fullCatalog),item=original.items[0];
+ const unchecked=toggleBasketProduct(original,item.product.id);
+ assert.ok(!unchecked.items.some(i=>i.product.id===item.product.id));
+ assert.deepEqual(unchecked.excludedItems,[item]); assert.ok(isBasketResult(unchecked));
+ assert.ok(Math.abs(unchecked.knownPriceSubtotal-(original.knownPriceSubtotal-item.estimatedPrice))<.02);
+ const data=new Map(),persistence=new BasketPersistence({getItem:async k=>data.get(k)??null,setItem:async(k,v)=>data.set(k,v)},null);
+ const b=newSavedBasket(unchecked,p,null);await persistence.save(b);
+ const reopened=(await persistence.list(null)).baskets[0];
+ const restored=toggleBasketProduct(reopened.result,item.product.id);
+ assert.deepEqual(restored.items.find(i=>i.product.id===item.product.id),item);
+ assert.equal(restored.excludedItems.length,0);assert.equal(restored.knownPriceSubtotal,original.knownPriceSubtotal);
+ assert.ok(Math.abs(restored.totalCalories-original.totalCalories)<.01);assert.ok(isBasketResult(restored));
+ assert.equal(isBasketResult({...unchecked,excludedItems:[null]}),false);
+ assert.equal(isBasketResult({...original,excludedItems:[item]}),false);
+ assert.throws(()=>toggleBasketProduct({...unchecked,items:[...unchecked.items,{...item,product:{...item.product,id:'replacement'}}]},item.product.id),/replacement/);
+ assert.throws(()=>toggleBasketProduct({...original,purchasedAt:'2026-10-21'},item.product.id),/Purchased/);
+ let empty=original;for(const row of original.items)empty=toggleBasketProduct(empty,row.product.id);
+ assert.equal(empty.items.length,0);assert.equal(empty.knownPriceSubtotal,0);assert.ok(isBasketResult(empty));
+});
+
+test('choosing an unchecked product as a replacement reconciles checkbox state',()=>{
+ const {toggleBasketProduct}=require('../services/basket/edit.ts');
+ const {addBasketReplacement}=require('../services/basket/replacements.ts');
+ const p=prefs(),plan={...generateMealPlan(p),status:'confirmed'};
+ const original=basketFromMealPlan(plan,p,fullCatalog),item=original.items[0];
+ const unchecked=toggleBasketProduct(original,item.product.id);
+ const requirement=original.ingredientRequirements.find(r=>r.ingredientKey===item.ingredientKey);
+ const selected=addBasketReplacement(unchecked,requirement,item.product);
+ assert.equal(selected.excludedItems.length,0);assert.ok(isBasketResult(selected));
+ assert.ok(!selected.removedIngredientKeys.includes(item.ingredientKey));
+ assert.throws(()=>addBasketReplacement(selected,requirement,item.product),/already selected/);
+});

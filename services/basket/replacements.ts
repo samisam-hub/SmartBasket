@@ -34,6 +34,7 @@ function packageFor(planned: number, product: Product) {
 
 export function replaceBasketProduct(original: BasketGenerationResult, currentId: string, product: Product) {
   const result = structuredClone(original);
+  if (result.items.some(i => i.product.id === product.id && i.product.id !== currentId)) throw Error('This product is already selected.');
   const item = result.items.find(candidate => candidate.product.id === currentId);
   if (!item || !item.ingredientKey) throw Error('This product cannot be replaced in the current basket.');
   const packed = packageFor(item.plannedConsumptionQuantity ?? item.packageAmount, product);
@@ -47,6 +48,7 @@ export function replaceBasketProduct(original: BasketGenerationResult, currentId
     totalCalories: nutrition.calories * factor, totalProtein: nutrition.protein * factor, totalCarbohydrates: nutrition.carbohydrates * factor,
     totalFat: nutrition.fat * factor, totalFiber: null, estimatedPrice: packagePrice(product) === null ? null : packagePrice(product)! * packed.packageCount,
     reasonSelected: [{ code: 'manual_replacement', detail: `Replaced with another ${product.category} product at your request.` }] };
+  result.excludedItems = result.excludedItems?.filter(i => i.product.id !== product.id);
   result.items = result.items.map(candidate => candidate.product.id === currentId ? replacement : candidate);
   result.removedProductIds = (result.removedProductIds ?? []).filter(id => id !== product.id);
   result.warnings = result.warnings.filter(w => w.code !== `unmatched_${item.ingredientKey}`);
@@ -66,6 +68,10 @@ export function addBasketReplacement(original: BasketGenerationResult, requireme
     totalFat: nutrition.fat * factor, totalFiber: null, estimatedPrice: packagePrice(product) === null ? null : packagePrice(product)! * packed.packageCount,
     reasonSelected: [{ code: 'manual_replacement', detail: `Added as a ${product.category} replacement for ${requirement.ingredientName}.` }] };
   const result = structuredClone(original);
+  if (result.items.some(i => i.product.id === product.id || i.ingredientKey === requirement.ingredientKey)) throw Error('This product or ingredient is already selected.');
+  result.excludedItems = result.excludedItems?.filter(i => i.product.id !== product.id);
+  result.removedProductIds = result.removedProductIds?.filter(id => id !== product.id);
+  result.removedIngredientKeys = result.removedIngredientKeys?.filter(key => key !== requirement.ingredientKey);
   result.items.push(item);
   result.warnings = result.warnings.filter(w => w.code !== `unmatched_${requirement.ingredientKey}`);
   return recalculateBasket(result);

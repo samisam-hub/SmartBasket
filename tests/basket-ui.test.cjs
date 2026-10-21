@@ -26,6 +26,7 @@ Module._load=function(request,parent,isMain){
   if(request==='@/services/meals/planner')return {generateMealPlan:(...args)=>{generated++;return require('../services/meals/planner.ts').generateMealPlan(...args);}};
   if(request==='@/services/meals/basket')return {basketFromMealPlan:(plan,p)=>({...generateBasket(p,catalog),engineVersion:'2',mealPlan:plan})};
   if(request==='@/components/BasketResult')return {BasketResult:props=>React.createElement('Result',props)};
+  if(request==='@/components/ShareBasket')return {ShareBasket:props=>React.createElement('ShareBasket',props)};
   if(request==='@/components/ShoppingList')return {ShoppingList:props=>React.createElement('ShoppingList',props)};
   if(request==='@/components/BasketExtras')return {BasketExtras:props=>React.createElement('Extras',props)};
   if(request==='@/context/PreferencesContext')return {usePreferences:()=>preferenceState};
@@ -52,6 +53,8 @@ test('actual screen requires meal confirmation, saves once on double tap, reopen
   assert.equal(renderer.root.findAllByType('MealReview').length,1);
   await act(()=>renderer.root.findByType('MealReview').props.onConfirm());
   assert.equal(renderer.root.findAllByType('Result').length,1);
+  assert.equal(renderer.root.findAllByType('ShoppingList').length,0);
+  assert.equal(typeof renderer.root.findByType('Result').props.onToggleProduct,'function');
   assert.equal(renderer.root.findByType('Screen').props.bottom,true);assert.equal(renderer.root.findByType('Screen').props.top,false);
   const saveButton=renderer.root.findAllByType('PrimaryButton').find(b=>b.props.label==='Save meal plan & basket');
   await act(async()=>{saveButton.props.onPress();saveButton.props.onPress();await Promise.resolve();});

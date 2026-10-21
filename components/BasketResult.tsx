@@ -20,7 +20,7 @@ import type { UserPreferences } from '../types/preferences';
 import { replacementCandidatesForItem, replacementCandidatesForRequirement } from '../services/basket/replacements';
 const number = (value: number) => Math.round(value).toLocaleString('en-GB');
 export const basketPrice = (price: number | null) => price === null ? 'Estimate unavailable' : `Est. €${price.toFixed(2)}`;
-export function BasketResult({ result, catalog = [], preferences, onRemoveProduct, onReplaceProduct, onAddReplacement }: { result: BasketGenerationResult; catalog?: Product[]; preferences?: UserPreferences; onRemoveProduct?: (id: string) => void; onReplaceProduct?: (currentId: string, product: Product) => void; onAddReplacement?: (requirement: NonNullable<BasketGenerationResult['ingredientRequirements']>[number], product: Product) => void }) {
+export function BasketResult({ result, catalog = [], preferences, onToggleProduct, onReplaceProduct, onAddReplacement }: { result: BasketGenerationResult; catalog?: Product[]; preferences?: UserPreferences; onToggleProduct?: (id: string) => void; onReplaceProduct?: (currentId: string, product: Product) => void; onAddReplacement?: (requirement: NonNullable<BasketGenerationResult['ingredientRequirements']>[number], product: Product) => void }) {
   const [replacing, setReplacing] = useState<string | null>(null);
   const generalNotes = generalBasketNotes(result);
   const choose = (key: string, action: () => void) => { action(); setReplacing(null); };
@@ -52,7 +52,7 @@ export function BasketResult({ result, catalog = [], preferences, onRemoveProduc
     {result.remaining && <SectionCard title="Purchased and planned"><Text style={ui.body}>{number(result.remaining.totalPurchasedWeight)} g purchased · {number(result.remaining.totalPlannedConsumption)} g planned · {number(result.remaining.totalLeftoverWeight)} g left for later</Text><Text style={ui.small}>Remaining mass: {result.remaining.estimatedWastePercent}%. This may be used later.</Text>{result.remaining.totalPurchasedVolume>0 && <Text style={ui.small}>{number(result.remaining.totalPurchasedVolume)} ml purchased · {number(result.remaining.totalPlannedVolume)} ml planned · {number(result.remaining.totalLeftoverVolume)} ml left for later</Text>}</SectionCard>}
     {result.mealPlan?.participants&&<SectionCard title="People in this plan">{result.mealPlan.participants.map(p=><Text key={p.id} style={ui.small}>{p.name}: {[...p.dietaryPreferences,...p.allergens,...p.intolerances].join(', ')}</Text>)}<Text style={ui.caption}>One shared menu meets the combined restrictions.</Text></SectionCard>}
     {result.mealPlan && <ConfirmedMeals plan={result.mealPlan} />}
-    {!!result.ingredientRequirements?.some(r => !result.items.some(i => i.ingredientKey === r.ingredientKey) && (result.pantryUsed??[]).filter(u=>u.ingredientKey===r.ingredientKey).reduce((n,u)=>n+u.quantity,0)<r.requiredQuantity-.001) && <SectionCard title="Still on your shopping list">
+    {!!result.ingredientRequirements?.some(r => !result.items.some(i => i.ingredientKey === r.ingredientKey) && (result.pantryUsed??[]).filter(u=>u.ingredientKey===r.ingredientKey).reduce((n,u)=>n+u.quantity,0)<r.requiredQuantity-.001) && <SectionCard title="Missing ingredients">
       {result.ingredientRequirements.filter(r => !result.items.some(i => i.ingredientKey === r.ingredientKey) && (result.pantryUsed??[]).filter(u=>u.ingredientKey===r.ingredientKey).reduce((n,u)=>n+u.quantity,0)<r.requiredQuantity-.001).map(r => <View key={r.ingredientKey} style={{ gap: 4 }}>
         <Text style={ui.body}>{r.ingredientName} · {Math.round(r.requiredQuantity)} {r.unit}</Text>
         <Text style={ui.caption}>{result.removedIngredientKeys?.includes(r.ingredientKey) ? 'Removed from purchases' : 'No matching product selected'} · excluded from purchase cost</Text>
@@ -70,8 +70,9 @@ export function BasketResult({ result, catalog = [], preferences, onRemoveProduc
         <Text style={ui.subheading}>{item.quantity.toLocaleString('en-GB', { maximumFractionDigits: 1 })} {item.unit}</Text>
       </View>)}
     </SectionCard>}
-    {result.items.map(item => <View key={item.product.id} style={onRemoveProduct ? { paddingTop: 16, paddingRight: 16 } : undefined}>
+    {[...result.items, ...(result.excludedItems ?? [])].map(item => <View key={item.product.id} style={onToggleProduct ? { paddingTop: 16, paddingRight: 16 } : undefined}>
       <SectionCard>
+      {result.excludedItems?.some(i => i.product.id === item.product.id) && <Text style={ui.small}>Not selected · excluded from your basket total</Text>}
       {item.isExtra && <Text style={ui.eyebrow}>Extra · outside the meal plan</Text>}
       <BasketProductHeading name={item.product.name} subtitle={<Text style={ui.small}><Text style={{ fontWeight: '700' }}>{item.product.brand ?? 'Brand unavailable'}</Text>{item.estimatedPrice !== null ? ` · €${(item.estimatedPrice/item.packageCount).toFixed(2)} per package` : ''} · {item.packageCount} × {!item.quantityAssumed && item.product.quantityLabel ? item.product.quantityLabel : `${Number(item.packageAmount.toFixed(2))} ${item.quantityUnit}`}{item.quantityAssumed ? ' (assumed package)' : ''}</Text>} notes={productDietaryNotes(result.warnings, item)} report={item.reasonSelected.filter(reason => reason.code !== 'package_fit')} />
       <View style={{ flexDirection: 'row', alignItems: 'stretch', minHeight: 160, gap: spacing.lg }}>
@@ -88,15 +89,16 @@ export function BasketResult({ result, catalog = [], preferences, onRemoveProduc
         </View>
       </View>
       <TextButton label="View product" onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.product.id } })} />
-      {preferences && onReplaceProduct && replacementButton(`product:${item.product.id}`, 'Replace product')}
-      {preferences && onReplaceProduct && replacementOptions(`product:${item.product.id}`, replacementCandidatesForItem(item, catalog, preferences), product => onReplaceProduct(item.product.id, product))}
+      {!result.excludedItems?.some(i => i.product.id === item.product.id) && preferences && onReplaceProduct && replacementButton(`product:${item.product.id}`, 'Replace product')}
+      {!result.excludedItems?.some(i => i.product.id === item.product.id) && preferences && onReplaceProduct && replacementOptions(`product:${item.product.id}`, replacementCandidatesForItem(item, catalog, preferences), product => onReplaceProduct(item.product.id, product))}
       <ProductEstimateNotice product={item.product} />
       </SectionCard>
-      {onRemoveProduct && <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${item.product.name}`}
-        onPress={() => onRemoveProduct(item.product.id)}
+      {onToggleProduct && <Pressable accessibilityRole="checkbox" accessibilityLabel={`Include ${item.product.name}`}
+        accessibilityState={{ checked: result.items.some(i => i.product.id === item.product.id) }}
+        onPress={() => onToggleProduct(item.product.id)}
         style={{ position: 'absolute', top: 0, right: 0, zIndex: 1, width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: colors.surface, backgroundColor: colors.errorBackground, alignItems: 'center', justifyContent: 'center' }}>
-          <Feather name="minus" size={20} color={colors.errorText} />
+        <View style={{ width: 28, height: 28, borderRadius: 4, borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+          {result.items.some(i => i.product.id === item.product.id) && <Feather name="check" size={20} color={colors.primary} />}
         </View>
       </Pressable>}
     </View>)}
