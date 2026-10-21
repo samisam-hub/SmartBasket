@@ -1,9 +1,10 @@
 import type { BasketGenerationResult } from '../../types/basket';
 import type { Product } from '../../types/product';
 import { packagePrice } from './quantityPlanner';
-import { recalculateBasket } from './edit';
+import { recalculateBasket, toggleBasketProduct } from './edit';
 
 export function addBasketProduct(original: BasketGenerationResult, product: Product): BasketGenerationResult {
+  if (original.excludedItems?.some(i => i.product.id === product.id)) return toggleBasketProduct(original, product.id);
   if (product.source === 'demo') throw Error('Demo fallback products cannot be added to saved baskets.');
   if (!product.packageSize || !['g', 'ml'].includes(product.packageUnit ?? '')) throw Error('This product needs a package size in g or ml before it can be added.');
   const result = structuredClone(original), size = product.packageSize, unit = product.packageUnit as 'g' | 'ml';

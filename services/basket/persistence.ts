@@ -9,6 +9,13 @@ export interface RemoteBaskets { save(basket: SavedBasket): Promise<string>; lis
 export function isBasketResult(v: unknown): v is BasketGenerationResult {
   if (!v || typeof v !== 'object') return false;
   const r = v as BasketGenerationResult;
+  if (!Array.isArray(r.items)) return false;
+  if (r.excludedItems !== undefined) {
+    if (!Array.isArray(r.excludedItems)) return false;
+    if (r.excludedItems.length && !isBasketResult({ ...r, excludedItems: undefined, items: r.excludedItems })) return false;
+    if (r.excludedItems.some(i => r.items.some(selected => selected?.product?.id === i.product.id))) return false;
+    if (new Set(r.excludedItems.map(i => i.product.id)).size !== r.excludedItems.length) return false;
+  }
   return ['1','2'].includes(r.engineVersion) && (r.engineVersion==='2'?['generated','partial','empty']:['generated','partial']).includes(r.status) &&
     (r.engineVersion!=='2'||(isAnyMealPlan(r.mealPlan)&&r.mealPlan.status==='confirmed'&&Array.isArray(r.ingredientRequirements)&&r.ingredientRequirements.every(x=>x&&typeof x.ingredientKey==='string'&&Number.isFinite(x.requiredQuantity)&&x.requiredQuantity>0))) &&
     [r.totalCalories, r.totalProtein, r.totalCarbohydrates, r.totalFat, r.calorieTarget, r.proteinTarget, r.score, r.calorieCoveragePercent, r.proteinCoveragePercent, r.knownPriceSubtotal, r.dailyProteinTarget].every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0) &&

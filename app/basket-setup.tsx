@@ -47,14 +47,14 @@ import {participantPreferences} from '@/services/profile-domain';
 
 import {isSaved} from '@/services/preference-domain';
 
-import { removeBasketProduct } from '@/services/basket/edit';
+import { removeBasketProduct, toggleBasketProduct } from '@/services/basket/edit';
 
 import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 
 import { addBasketProduct } from '@/services/basket/add-product';
 import { BasketExtras } from '@/components/BasketExtras';
-import { ShoppingList } from '@/components/ShoppingList';
+import { ShareBasket } from '@/components/ShareBasket';
 import { addBasketReplacement, replaceBasketProduct } from '@/services/basket/replacements';
 
 export default function BasketSetupScreen() {
@@ -264,6 +264,7 @@ export default function BasketSetupScreen() {
       result.removedProductIds = [...new Set([...removedIds, ...(result.removedProductIds ?? [])])];
 
       result.removedIngredientKeys = removedKeys;
+      result.excludedItems = basket.result.excludedItems;
 
       for (const extra of basket.result.items.filter(i => i.isExtra || i.extraPackageCount)) {
 
@@ -335,8 +336,6 @@ export default function BasketSetupScreen() {
 
       <SecondaryButton label="Pantry & purchase history" onPress={()=>router.push('/pantry')} />
 
-      <ShoppingList key={`${basket.ownerId}:${basket.id}`} basket={basket} />
-
       <BasketResult result={basket.result} catalog={catalog.current} preferences={basket.preferences}
         onReplaceProduct={!saving && !basket.result.purchasedAt ? (currentId, product) => {
           try { setBasket({ ...basket, result: replaceBasketProduct(basket.result, currentId, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Product replaced. Save the basket to keep this choice.'); }
@@ -346,11 +345,11 @@ export default function BasketSetupScreen() {
           try { setBasket({ ...basket, result: addBasketReplacement(basket.result, requirement, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Category replacement added. Save the basket to keep this choice.'); }
           catch (e) { setError(e instanceof Error ? e.message : 'Could not add replacement.'); }
         } : undefined}
-        onRemoveProduct={editingBasket && !saving ? id => {
+        onToggleProduct={!basket.result.purchasedAt && !saving ? id => {
 
-        try { setBasket({ ...basket, result: removeBasketProduct(basket.result, id), syncStatus: 'local' }); setSavedOnce(false); setNotice(null); }
+        try { setBasket({ ...basket, result: toggleBasketProduct(basket.result, id), syncStatus: 'local' }); setSavedOnce(false); setNotice(null); }
 
-        catch (e) { setError(e instanceof Error ? e.message : 'Could not remove product.'); }
+        catch (e) { setError(e instanceof Error ? e.message : 'Could not update product selection.'); }
 
       } : undefined} />
 
@@ -404,6 +403,8 @@ export default function BasketSetupScreen() {
           <SecondaryButton label="Keep basket" disabled={saving} onPress={() => setDeleteReview(false)} />
         </>}
       </>}
+
+      <ShareBasket key={basket.id} basket={basket} />
 
       <SecondaryButton label="View saved baskets" disabled={saving} onPress={() => router.dismissTo('/basket')} />
 

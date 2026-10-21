@@ -25,8 +25,8 @@ export function recalculateBasket(original: BasketGenerationResult, productId?: 
     result.adjustedMealNutrition = result.mealPlan.items.map(i => ({ itemId: i.id, nutrition: mealNutrition(i, ratios) }));
     result.exclusions.unmatchedIngredients = Object.values(ratios).filter(n => n === 0).length;
     result.matchingDiagnostics = result.matchingDiagnostics?.map(d => ({ ...d,
-      selectedProductIds: d.selectedProductIds.filter(id => id !== productId),
-      unresolvedReason: ratios[d.ingredientKey] === 0 ? 'removed_or_unmatched' : d.unresolvedReason }));
+      selectedProductIds: items.filter(i => i.ingredientKey === d.ingredientKey).map(i => i.product.id),
+      unresolvedReason: ratios[d.ingredientKey] === 0 ? 'removed_or_unmatched' : null }));
   } else {
     result.totalCalories = sum('totalCalories'); result.totalProtein = sum('totalProtein');
     result.totalCarbohydrates = sum('totalCarbohydrates'); result.totalFat = sum('totalFat');
@@ -49,4 +49,26 @@ export function recalculateBasket(original: BasketGenerationResult, productId?: 
   result.warnings = result.warnings.filter(w => !['budget_exceeded', 'unknown_total', 'nutrition_gap', 'manual_edit'].includes(w.code) && !(productId && w.productIds?.includes(productId)));
   if (productId) result.warnings.push({ code: 'manual_edit', message: 'Products were removed. Totals cover the remaining products; planned meals may need missing ingredients.' });
   return result;
+}
+
+/** Unchecked rows stay available to restore, but never enter totals or checkout. */
+export function toggleBasketProduct(original: BasketGenerationResult, productId: string): BasketGenerationResult {
+  if (original.purchasedAt) throw Error('Purchased baskets cannot be edited.');
+  const selected = original.items.find(i => i.product.id === productId);
+  if (selected) {
+    const result = removeBasketProduct(original, productId);
+    result.excludedItems = [...(original.excludedItems ?? []), structuredClone(selected)];
+    return result;
+  }
+  const excluded = original.excludedItems?.find(i => i.product.id === productId);
+  if (!excluded) return original;
+  if (excluded.ingredientKey && original.items.some(i => i.ingredientKey === excluded.ingredientKey))
+    throw Error('Uncheck the replacement for this ingredient before selecting this product again.');
+  if (original.items.length >= (original.engineVersion === '2' ? 64 : 24)) throw Error('This basket has reached its product limit.');
+  const result = structuredClone(original);
+  result.items.push(structuredClone(excluded));
+  result.excludedItems = result.excludedItems?.filter(i => i.product.id !== productId);
+  result.removedProductIds = result.removedProductIds?.filter(id => id !== productId);
+  result.removedIngredientKeys = result.removedIngredientKeys?.filter(key => key !== excluded.ingredientKey);
+  return recalculateBasket(result);
 }
