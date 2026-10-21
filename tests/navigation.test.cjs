@@ -43,3 +43,16 @@ test("saving resets the actual routers to the correct tab with no onboarding Bac
     }
   }
 });
+
+test('successful first setup enters planning and Back cannot return to onboarding', async () => {
+  const { StackRouter, CommonActions } = await import('@react-navigation/routers');
+  const { planningEntryState } = require('../services/preference-navigation.ts');
+  const stack = StackRouter({});
+  const options = { routeNames: ['(tabs)', 'onboarding/[step]', 'plan/week'], routeParamList: {}, routeGetIdList: {} };
+  const before = stack.getRehydratedState({ stale: true, index: 0, routes: [{ name: 'onboarding/[step]' }] }, options);
+  const reset = stack.getStateForAction(before, CommonActions.reset(planningEntryState()), options);
+  const after = stack.getRehydratedState(reset, options);
+  assert.equal(after.routes[after.index].name, 'plan/week');
+  const back = stack.getStateForAction(after, CommonActions.goBack(), options);
+  assert.deepEqual(back.routes.map(route => route.name), ['(tabs)']);
+});

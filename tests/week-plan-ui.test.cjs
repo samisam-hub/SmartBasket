@@ -145,3 +145,18 @@ test('an empty calendar offers copying the previous week when one exists', async
   assert.equal(copied, 1);
   await act(() => renderer.unmount());
 });
+
+test('the last taste card can still be rejected by button or swipe and never offers shuffle', async () => {
+  let liked = 0, disliked = 0, screen;
+  const plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  await act(() => { screen = create(React.createElement(MealSwipeCards, { mode: 'taste', suggestions: [suggestion(plan, monday, 'breakfast')],
+    exhausted: false, onTake: () => liked++, onNext: () => disliked++, onMore: () => assert.fail('taste cannot shuffle') })); });
+  const no = screen.root.findAllByType('SecondaryButton').find(n => n.props.label === 'Mögen wir nicht');
+  assert.equal(no.props.disabled, false);
+  await act(() => no.props.onPress());
+  await act(() => screen.root.findByType('Animated.View').props.onPanResponderRelease({}, { dx: -120, dy: 0 }));
+  await act(() => screen.root.findByType('PrimaryButton').props.onPress());
+  assert.equal(disliked, 2); assert.equal(liked, 1);
+  assert.equal(screen.root.findAllByType('TextButton').length, 0);
+  await act(() => screen.unmount());
+});

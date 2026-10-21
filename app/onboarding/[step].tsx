@@ -47,6 +47,7 @@ import {
 import { ui } from "@/lib/theme";
 import {
   preferenceExitState,
+  planningEntryState,
   type PreferenceIntent,
   type RootStackParams,
 } from "@/services/preference-navigation";
@@ -223,12 +224,15 @@ export default function OnboardingScreen() {
     if (returning) go("review", intent);
     else go(steps[index + 1], intent);
   };
-  const finish = async (persist: () => Promise<boolean>) => {
+  const finish = async (persist: () => Promise<boolean>, startPlanning = false) => {
     if (busy || pending.current) return;
     pending.current = true;
     setExiting(true);
     try {
-      if ((await persist()) && active.current) exit();
+      if ((await persist()) && active.current) {
+        if (startPlanning) navigation.reset(planningEntryState());
+        else exit();
+      }
     } finally {
       pending.current = false;
       if (active.current) setExiting(false);
@@ -237,7 +241,7 @@ export default function OnboardingScreen() {
   const save = async () => {
     setAttempted(true);
     if (Object.keys(errors).length) return;
-    await finish(store.save);
+    await finish(store.save, intent === 'onboarding');
   };
   return (
     <Screen bottom>
