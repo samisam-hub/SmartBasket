@@ -49,6 +49,8 @@ function AuthenticatedLayout(){
             options={{ title: "Create my basket" }}
           />
           <Stack.Screen name="product/[id]" options={{ title: "Product details" }} />
+          {/* Brings its own large heading, back control and add action, as the design asks. */}
+          <Stack.Screen name="household" options={{ headerShown: false }} />
           <Stack.Screen name="pantry" options={{ title: "Pantry & purchases" }} />
           <Stack.Screen name="account" options={{ title: "Account" }} />
           <Stack.Screen name="auth/callback" options={{ title: "Verify account" }} />

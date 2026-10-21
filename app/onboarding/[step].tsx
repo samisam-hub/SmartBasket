@@ -60,7 +60,7 @@ const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
   household: {
     title: "Who are we fueling?",
     subtitle:
-      "One tap per person: adult or child. Add details whenever you like — the daily amount is a suggestion you can correct.",
+      "Add everyone you cook for. Tap a person for adult or child and any details you like — the daily amount is a suggestion you can correct.",
   },
   meals: {
     title: "Which meals do you plan?",

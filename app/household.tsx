@@ -40,9 +40,9 @@ export default function HouseholdScreen() {
     </SectionCard>
   </Screen>;
   return <Screen bottom>
-    <HouseholdFields title="Household" people={people} goal={draft.primaryGoal} onChange={setPeople} />
+    <HouseholdFields title="Household" onBack={() => router.back()} people={people}
+      goal={draft.primaryGoal} onChange={setPeople} />
     <ErrorMessage message={store.getSnapshot().localError} />
-    <PersistenceStatus />
     <Text style={ui.eyebrow}>NUTRITION GOALS</Text>
     <DetailRow icon="target" title="What the plan aims for" value={labels[draft.primaryGoal]}
       onPress={() => flow.edit('goals')} />
@@ -51,6 +51,6 @@ export default function HouseholdScreen() {
         ? `about €${draft.weeklyBudgetEur}`
         : 'No budget limit'}
       onPress={() => flow.edit('budget')} />
-    <SecondaryButton label="Back" onPress={() => router.back()} />
+    <PersistenceStatus />
   </Screen>;
 }

@@ -47,6 +47,7 @@ export function HouseholdFields({
   goal,
   onChange,
   title,
+  onBack,
 }: {
   people: PlanParticipant[];
   goal: Goal;
@@ -54,6 +55,7 @@ export function HouseholdFields({
   /** Given on a screen of its own, where this is the heading and adding belongs next to it.
    *  Left out inside onboarding, which brings its own header. */
   title?: string;
+  onBack?: () => void;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const open = people.find((person) => person.id === openId) ?? null;
@@ -74,6 +76,9 @@ export function HouseholdFields({
     <View style={ui.stack}>
       {title && (
         <View style={ui.row}>
+          {onBack && (
+            <IconButton icon="chevron-left" label="Back" onPress={onBack} />
+          )}
           <Text accessibilityRole="header" style={[ui.title, { flex: 1 }]}>
             {title}
           </Text>

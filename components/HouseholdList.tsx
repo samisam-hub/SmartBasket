@@ -17,8 +17,9 @@ export function initials(name: string): string {
   const letters = parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0];
   return letters.toUpperCase();
 }
-/** A stable tint per person, so a face in the list keeps its colour between visits. */
-const tints = [colors.secondary, colors.pale, colors.accent, colors.primaryLight];
+/** A stable tint per person, so a face in the list keeps its colour between visits. Three tones
+ *  the brand already owns; primaryLight is left out because it holds the same value as secondary. */
+const tints = [colors.secondary, colors.pale, colors.accent];
 export function avatarTint(id: string): string {
   const sum = [...id].reduce((total, letter) => total + letter.charCodeAt(0), 0);
   return tints[sum % tints.length];

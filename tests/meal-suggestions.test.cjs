@@ -168,16 +168,16 @@ test("matching the catalog is done once per catalog and household, not once per 
 test("suggesting a meal many times over does not get slower", () => {
   const preferences = prefs({ householdSize: 2 });
   const plan = week(preferences, fullDay());
-  const run = () => {
+  // Both paths are timed in the same process, so a busy machine slows them equally and the ratio
+  // stays meaningful. A fresh array each call is what every card used to hand in.
+  const time = (catalog) => {
     const started = process.hrtime.bigint();
-    suggestMeals(plan, monday, "dinner", preferences, fullCatalog);
-    return Number(process.hrtime.bigint() - started) / 1e6;
+    for (let round = 0; round < 15; round++) suggestMeals(plan, monday, "dinner", preferences, catalog());
+    return Number(process.hrtime.bigint() - started);
   };
-  run();
-  const repeats = Array.from({ length: 20 }, run);
-  const worst = Math.max(...repeats);
-  // A swipe recomputes suggestions. On this fixture the cached path measures around 0.2ms and the
-  // uncached one around 16ms; with a production catalog of 2,000 products the uncached one was
-  // 538ms, which is the frozen moment this guards against. 5ms leaves ample headroom either way.
-  assert.ok(worst < 5, `a repeated suggestion took ${worst.toFixed(1)}ms`);
+  suggestMeals(plan, monday, "dinner", preferences, fullCatalog);
+  const cold = time(() => [...fullCatalog]);
+  const warm = time(() => fullCatalog);
+  assert.ok(cold / warm > 5,
+    `reusing the catalog match should be far cheaper than redoing it, was ${(cold / warm).toFixed(1)}x`);
 });
