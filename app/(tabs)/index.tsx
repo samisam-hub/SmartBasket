@@ -7,6 +7,7 @@ import { LatestBasket } from '@/components/LatestBasket';
 import { WastePrevention } from '@/components/WastePrevention';
 import { FloatingButton, PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
+import { quickStart } from '@/services/quick-start';
 import { useProfile } from '@/context/ProfileContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
 import { primeBasketCatalog } from '@/hooks/useBasketCatalog';
@@ -17,7 +18,8 @@ import { preferenceChips } from '@/services/preference-domain';
 import { colors, ui } from '@/lib/theme';
 
 export default function HomeScreen() {
-  const { saved, editing } = usePreferences();
+  const preferences = usePreferences();
+  const { saved, editing } = preferences;
   // Fetch the product catalog while the week is still being picked, so the first meal card does not
   // have to wait for it. It is cached for the rest of the app run.
   useEffect(() => { primeBasketCatalog(); }, []);
@@ -52,7 +54,15 @@ export default function HomeScreen() {
       onSelect={setPicked}
       onWeek={start => { setPicked(null); week.store.open(start, saved); }}
       onBasket={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />
-      : <PrimaryButton label="Set up your preferences" disabled={flow.disabled} onPress={flow.create} />}
+      : <SectionCard title="Start planning">
+        <PrimaryButton label="Set up your preferences" disabled={flow.disabled} onPress={flow.create} />
+        <SecondaryButton label="Start with a sample household" disabled={flow.disabled}
+          onPress={() => { void quickStart(preferences.store); }} />
+        <Text style={ui.small}>
+          The sample is two people, a full week and the standard meals. Nothing is asked and nothing
+          is final: the household screen and your preferences change all of it.
+        </Text>
+      </SectionCard>}
     <SecondaryButton label="View recent shops" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
     <Pressable accessibilityRole="button" accessibilityLabel="Plan by voice" onPress={() => router.push('/voice-plan')}
       style={({pressed}) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: colors.pale, opacity: pressed ? .75 : 1 })}>
