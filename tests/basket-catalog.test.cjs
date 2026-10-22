@@ -14,7 +14,7 @@ test('basket catalog reads bounded real pages, handles exact limit, refuses trun
   assert.equal((await loadBasketCatalog(client(501))).length,501);
   assert.equal(calls[0].searchParams.get('limit'),'250');assert.equal(calls[0].searchParams.get('source'),'neq.demo');
   assert.equal((await loadBasketCatalog(client(2000))).length,2000);
-  await assert.rejects(loadBasketCatalog(client(2001)),/exceeds/);
-  await assert.rejects(loadBasketCatalog(null),/Connect/);
+  await assert.rejects(loadBasketCatalog(client(2001)),/überschreitet/);
+  await assert.rejects(loadBasketCatalog(null),/Verbinde/);
   const controller=new AbortController();controller.abort();await assert.rejects(loadBasketCatalog(client(10),controller.signal),/Cancelled/);
 });

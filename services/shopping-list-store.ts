@@ -25,11 +25,11 @@ export class ShoppingListStore {
       if (raw) {
         const value = JSON.parse(raw);
         if (value?.version !== 1 || !value.checked || typeof value.checked !== 'object' || Array.isArray(value.checked) ||
-            !Object.values(value.checked).every(signature => typeof signature === 'string')) throw Error('Invalid checklist');
+            !Object.values(value.checked).every(signature => typeof signature === 'string')) throw Error("Ungültige Checkliste");
         this.publish({ checked: value.checked });
       }
     } catch {
-      this.publish({ blocked: true, error: 'Saved checkmarks could not be read. They have not been overwritten. Reopen the list to retry.' });
+      this.publish({ blocked: true, error: "Gespeicherte Häkchen konnten nicht gelesen werden und wurden nicht überschrieben. Öffne die Liste erneut." });
     }
     this.publish({ ready: true });
   }
@@ -41,7 +41,7 @@ export class ShoppingListStore {
     void this.writes.then(() => {
       if (revision === this.revision) this.publish({ error: null });
     }).catch(() => {
-      if (revision === this.revision) this.publish({ error: 'Checkmarks could not be saved on this device. Retry before closing.' });
+      if (revision === this.revision) this.publish({ error: "Häkchen konnten nicht auf diesem Gerät gespeichert werden. Versuche es vor dem Schließen erneut." });
     });
   }
   toggle = (row: ShoppingRow) => {

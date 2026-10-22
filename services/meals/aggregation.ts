@@ -7,9 +7,9 @@ export function aggregateIngredients(plan: AnyMealPlan): IngredientRequirement[]
   const map=new Map<string,IngredientRequirement>();
   for(const item of planChoices(plan).filter(isCook)) for(const line of item.meal.ingredients){
     const quantity=line.quantity*item.servings/item.meal.servings;
-    if(!Number.isFinite(quantity)||quantity<=0)throw Error('Invalid meal quantity');
+    if(!Number.isFinite(quantity)||quantity<=0)throw Error("Ungültige Mahlzeitenmenge");
     const key=canonicalIngredientKey(line.ingredientKey), previous=map.get(key);
-    if(previous && previous.unit!==line.unit)throw Error('Cannot aggregate incompatible ingredient units');
+    if(previous && previous.unit!==line.unit)throw Error("Unvereinbare Zutateneinheiten können nicht zusammengerechnet werden");
     const row=previous??{ingredientKey:key,ingredientName:line.ingredientName,requiredQuantity:0,unit:line.unit,flexible:true,minimumAcceptableQuantity:0,maximumAcceptableQuantity:0,sourceMealIds:[]};
     row.requiredQuantity+=quantity;
     row.minimumAcceptableQuantity+=quantity*(1+(line.flexible?line.minAdjustmentPercent:0)/100);

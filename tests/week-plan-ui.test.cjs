@@ -13,7 +13,7 @@ const animatedView = stub("Animated.View");
 const original = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === "react-native")
-    return { Text: "Text", View: "View", Pressable: "Pressable",
+    return { Text: "Text", View: "Ansehen", Pressable: "Pressable",
       Animated: { View: animatedView, Value: class { constructor(v) { this.value = v; } setValue(v) { this.value = v; } } },
       PanResponder: { create: (config) => ({ panHandlers: config }) } };
   if (request === "expo-router") return { router: { push: (to) => pushed.push(to), replace: (to) => pushed.push(to) } };
@@ -63,11 +63,11 @@ test("one card at a time: right takes it, left moves on, and tapping does the sa
   assert.ok(JSON.stringify(texts).includes("Meal A"));
   assert.ok(!JSON.stringify(texts).includes("Meal B"));
   const button = (label) => renderer.root.findAll((node) => node.props.label === label)[0];
-  await act(() => button("Take this one").props.onPress());
+  await act(() => button("Dieses Gericht wählen").props.onPress());
   assert.deepEqual(taken, ["a"]);
-  await act(() => button("Show the next one").props.onPress());
+  await act(() => button("Nächsten Vorschlag zeigen").props.onPress());
   assert.deepEqual(nexts, [1]);
-  await act(() => button("Show two others").props.onPress());
+  await act(() => button("Zwei andere zeigen").props.onPress());
   assert.deepEqual(mores, [1]);
   // The same decisions through the gesture handlers.
   const handlers = renderer.root.findByType(animatedView).props;
@@ -86,22 +86,22 @@ test("an exhausted slot says so instead of offering a repeat", async () => {
   await act(() => { renderer = create(React.createElement(MealSwipeCards,
     { suggestions: [], exhausted: true, onTake: () => {}, onNext: () => {}, onMore: () => {} })); });
   const text = JSON.stringify(renderer.root.findAllByType("Text").map((node) => node.props.children));
-  assert.match(text, /Every compatible meal for this slot has been shown/);
-  assert.deepEqual(renderer.root.findAll((node) => node.props.label === "Take this one"), []);
+  assert.match(text, /Alle passenden Gerichte für diese Mahlzeit wurden angezeigt/);
+  assert.deepEqual(renderer.root.findAll((node) => node.props.label === "Dieses Gericht wählen"), []);
   await act(() => renderer.unmount());
 });
 
 test("the calendar shows each day's state and only offers a basket once something is planned", async () => {
   let plan = startWeek(monday, preferences);
   assert.equal(dayState(plan, monday), "unplanned");
-  assert.match(weekSummary(plan), /No meals planned yet/);
+  assert.match(weekSummary(plan), /Noch keine Mahlzeiten geplant/);
   plan = toggleDay(plan, monday, preferences);
   assert.equal(dayState(plan, monday), "open");
-  assert.match(weekSummary(plan), /1 day planned · 0 meals chosen · 3 still open/);
+  assert.match(weekSummary(plan), /1 Tag geplant · 0 Mahlzeiten ausgewählt · 3 noch offen/);
   for (const slot of ["breakfast", "lunch", "dinner"])
     plan = chooseMeal(plan, monday, slot, suggestion(plan, monday, slot), preferences);
   assert.equal(dayState(plan, monday), "done");
-  assert.match(weekSummary(plan), /ready for a basket/);
+  assert.match(weekSummary(plan), /bereit für den Warenkorb/);
   assert.equal(dayState(plan, "2026-10-06"), "unplanned");
   let renderer, baskets = 0, weeks = [];
   const render = (current) => React.createElement(WeekCalendar, { plan: current, weekStart: monday,
@@ -110,24 +110,24 @@ test("the calendar shows each day's state and only offers a basket once somethin
   await act(() => { renderer = create(render(startWeek(monday, preferences))); });
   // findAll matches the stub component and the host element it renders, so count unique labels.
   const labelled = (label) => renderer.root.findAll((node) => node.props.label === label);
-  assert.deepEqual(labelled("Create my basket"), []);
-  assert.ok(labelled("Plan your meal").length > 0);
+  assert.deepEqual(labelled("Warenkorb erstellen"), []);
+  assert.ok(labelled("Mahlzeiten planen").length > 0);
   await act(() => { renderer.update(render(plan)); });
-  const basket = labelled("Create my basket")[0];
+  const basket = labelled("Warenkorb erstellen")[0];
   assert.ok(basket);
   await act(() => basket.props.onPress());
   assert.equal(baskets, 1);
   // The arrows move whole weeks.
-  await act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === "Next week")[0].props.onPress());
-  await act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === "Previous week")[0].props.onPress());
+  await act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === "Nächste Woche")[0].props.onPress());
+  await act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === "Vorherige Woche")[0].props.onPress());
   assert.deepEqual(weeks, ["2026-10-12", "2026-09-28"]);
   // A planned day opens that day; an unplanned one goes to the day picker.
   pushed.length = 0;
-  const days = renderer.root.findAll((node) => typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith("Mon 5 Oct"));
+  const days = renderer.root.findAll((node) => typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith("Mo., 5. Okt."));
   await act(() => days[0].props.onPress());
   assert.deepEqual(pushed, [{ pathname: "/plan/[date]", params: { date: monday } }]);
   pushed.length = 0;
-  const wednesday = renderer.root.findAll((node) => typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith("Wed 7 Oct"));
+  const wednesday = renderer.root.findAll((node) => typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith("Mi., 7. Okt."));
   await act(() => wednesday[0].props.onPress());
   assert.deepEqual(pushed, ["/plan/week"]);
   await act(() => renderer.unmount());
@@ -139,12 +139,12 @@ test('an empty calendar offers copying the previous week when one exists', async
     plan: startWeek('2026-10-12', preferences), weekStart: '2026-10-12',
     onWeek: () => {}, onBasket: () => {}, onCopyPrevious: () => { copied++; },
   })); });
-  const copy = renderer.root.findAll(node => node.props.label === "Copy last week's plan")[0];
+  const copy = renderer.root.findAll(node => node.props.label === "Plan der Vorwoche übernehmen")[0];
   assert.ok(copy);
   const labels = renderer.root.findAll(node => typeof node.type === 'string' && node.props.label).map(node => node.props.label);
-  assert.ok(labels.indexOf('Plan your meal') < labels.indexOf("Copy last week's plan"));
+  assert.ok(labels.indexOf("Mahlzeiten planen") < labels.indexOf("Plan der Vorwoche übernehmen"));
   pushed.length = 0;
-  await act(() => renderer.root.findAll(node => node.props.label === 'Plan your meal')[0].props.onPress());
+  await act(() => renderer.root.findAll(node => node.props.label === "Mahlzeiten planen")[0].props.onPress());
   assert.deepEqual(pushed, ['/plan/week']);
   await act(() => copy.props.onPress());
   assert.equal(copied, 1);

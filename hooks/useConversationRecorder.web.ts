@@ -11,7 +11,7 @@ export function useConversationRecorder(): ConversationRecorder {
     };
     return {
       async start(signal: AbortSignal) {
-        if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw Error('Voice is unavailable in this browser. Please use a supported browser over HTTPS or localhost.');
+        if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw Error("Die Sprachfunktion ist in diesem Browser nicht verfügbar. Nutze einen unterstützten Browser über eine sichere Verbindung.");
         try {
           stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
           if (signal.aborted) { await release(); return; }
@@ -19,7 +19,7 @@ export function useConversationRecorder(): ConversationRecorder {
           analyser = context.createAnalyser(); analyser.fftSize = 2048;
           context.createMediaStreamSource(stream).connect(analyser);
           const mime = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find(type => MediaRecorder.isTypeSupported(type));
-          if (!mime) throw Error('This browser cannot record a supported audio format.');
+          if (!mime) throw Error("Dieser Browser kann kein unterstütztes Audioformat aufnehmen.");
           recorder = new MediaRecorder(stream, { mimeType: mime, audioBitsPerSecond: 128000 });
           const chunks: Blob[] = [];
           recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };

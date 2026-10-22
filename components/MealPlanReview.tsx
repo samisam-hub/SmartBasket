@@ -1,3 +1,5 @@
+import { germanSavedName } from '../lib/legacy-display';
+import { formatNumber, germanLabel } from '../lib/german';
 import { useState } from 'react';
 import { MealImage } from './MealImage';
 import { ParticipantNutrition } from './ParticipantNutrition';
@@ -14,21 +16,21 @@ export function MealPlanReview({plan,preferences,onChange,onConfirm}: {plan:Meal
   const [mode, setMode] = useState<MealMode | null>(null);
   const close = () => { setReplacing(null); setMode(null); };
   return <>
-    <SectionCard title="Review your meals">
+    <SectionCard title="Mahlzeiten prüfen">
       <ParticipantNutrition plan={plan} nutrition={n} daily />
-      {plan.items.some(i=>!mealNutritionKnown(i)) && <Text style={ui.small}>Recorded nutrition only. Eating out and unmatched ready meals have unknown nutrition; their calories are not redistributed.</Text>}
-      <Text style={ui.small}>Cooking replacements adjust portions on cooking-only days. Snacks count towards the daily target.</Text>
-      <Text style={ui.small}>Review and replace meals before matching grocery packages. Nutrition is a curated development estimate; catalog availability is checked after confirmation.</Text>
+      {plan.items.some(i=>!mealNutritionKnown(i)) && <Text style={ui.small}>Nur erfasste Nährwerte. Bei auswärtigem Essen und Fertiggerichten ohne Produktzuordnung sind die Nährwerte unbekannt; ihre Kalorien werden nicht umverteilt.</Text>}
+      <Text style={ui.small}>Beim Austauschen selbst gekochter Gerichte werden die Portionen an reinen Kochtagen angepasst. Snacks zählen zum Tagesziel.</Text>
+      <Text style={ui.small}>Prüfe und tausche Mahlzeiten, bevor passende Produktpackungen gesucht werden. Nährwerte sind zusammengestellte Schätzwerte; die Verfügbarkeit im Katalog wird nach deiner Bestätigung geprüft.</Text>
     </SectionCard>
-    {plan.items.map(item=>{const nutrition=mealNutrition(item),options=replacementMeals(plan,item.id,preferences);return <SectionCard key={item.id} title={`Day ${item.dayIndex+1} · ${item.mealSlot}`}>
-      <Text style={ui.heading}>{item.meal.name}</Text>
+    {plan.items.map(item=>{const nutrition=mealNutrition(item),options=replacementMeals(plan,item.id,preferences);return <SectionCard key={item.id} title={`Tag ${item.dayIndex+1} · ${germanLabel(item.mealSlot)}`}>
+      <Text style={ui.heading}>{germanSavedName(item.meal.name)}</Text>
       <MealImage meal={item.meal} />
-      {mealNutritionKnown(item) ? <ParticipantNutrition plan={plan} nutrition={nutrition} /> : <Text style={ui.small}>Nutrition unknown · {item.mealMode === 'eat_out' ? 'No shopping items needed' : 'A catalog product will be matched after confirmation'}</Text>}
+      {mealNutritionKnown(item) ? <ParticipantNutrition plan={plan} nutrition={nutrition} /> : <Text style={ui.small}>Nährwerte unbekannt · {item.mealMode === 'eat_out' ? "Keine Einkaufsartikel erforderlich" : "Nach der Bestätigung wird ein passendes Katalogprodukt gesucht"}</Text>}
       {isCook(item) && <>
-        <Text style={ui.small}>Ingredients for everyone · {Number(item.servings.toFixed(2))} recipe servings</Text>
-        <Text style={ui.small}>{item.meal.ingredients.map(i=>`${Number((i.quantity*item.servings/item.meal.servings).toFixed(1))} ${i.unit} ${i.ingredientName}`).join(' · ')}</Text>
+        <Text style={ui.small}>Zutaten für alle · {formatNumber(item.servings, 2)}  Rezeptportionen</Text>
+        <Text style={ui.small}>{item.meal.ingredients.map(i=>`${formatNumber((i.quantity*item.servings/item.meal.servings), 1)} ${i.unit} ${germanSavedName(i.ingredientName)}`).join(' · ')}</Text>
       </>}
-      <SecondaryButton label={replacing===item.id?'Close replacements':'Replace meal'} onPress={()=>{setMode(null);setReplacing(replacing===item.id?null:item.id);}} />
+      <SecondaryButton label={replacing===item.id?"Alternativen schließen":"Gericht austauschen"} onPress={()=>{setMode(null);setReplacing(replacing===item.id?null:item.id);}} />
       {replacing===item.id&&<View style={ui.stack}>
         {mode === null ? (Object.keys(modeLabels) as MealMode[]).map(choice => <View key={choice} style={[ui.card, {padding:12,gap:8}]}>
           {mealOptionImages[choice] && <Image source={mealOptionImages[choice]} accessibilityLabel={modeLabels[choice]} resizeMode="cover" style={{width:120,height:100,borderRadius:12,alignSelf:'center'}} />}
@@ -36,21 +38,21 @@ export function MealPlanReview({plan,preferences,onChange,onConfirm}: {plan:Meal
             if(choice==='eat_out'){onChange(replaceMealChoice(plan,item.id,choice));close();}else setMode(choice);
           }} />
         </View>) : <>
-          <SecondaryButton label="Back to meal options" onPress={()=>setMode(null)} />
+          <SecondaryButton label="Zurück zur Mahlzeitenauswahl" onPress={()=>setMode(null)} />
           <Text style={ui.subheading}>{modeLabels[mode]}</Text>
           {mode === 'cook' ? <>
-            {options.length === 0 && <Text style={ui.small}>No other compatible cooking meals are available for this slot.</Text>}
-            {options.map(meal=><SecondaryButton key={meal.id} label={`${meal.name} · ${Math.round(meal.caloriesPerServing)} kcal / serving`} onPress={()=>{onChange(replaceMeal(plan,item.id,meal.id,preferences));close();}} />)}
+            {options.length === 0 && <Text style={ui.small}>Für diese Mahlzeit sind keine weiteren passenden Kochgerichte verfügbar.</Text>}
+            {options.map(meal=><SecondaryButton key={meal.id} label={`${germanSavedName(meal.name)} · ${Math.round(meal.caloriesPerServing)} kcal / Portion`} onPress={()=>{onChange(replaceMeal(plan,item.id,meal.id,preferences));close();}} />)}
           </> : <>
-            <Text style={ui.small}>Choose a meal category, not a product. We’ll check suitable catalog products after you confirm the plan.</Text>
-            {!readyCategories(mode,item.mealSlot).length && <Text style={ui.small}>These ready-meal categories are for lunch and dinner. For {item.mealSlot}, choose a cooking alternative or eating out.</Text>}
+            <Text style={ui.small}>Wähle eine Gerichtskategorie. Nach der Bestätigung deines Plans suchen wir passende Katalogprodukte.</Text>
+            {!readyCategories(mode,item.mealSlot).length && <Text style={ui.small}>Diese Fertiggerichtkategorien sind für Mittag- und Abendessen vorgesehen. Für {germanLabel(item.mealSlot)} wähle ein Kochgericht oder auswärts essen.</Text>}
             {readyCategories(mode,item.mealSlot).map(category=><SecondaryButton key={category} label={readyCategoryLabels[category]} onPress={()=>{onChange(replaceMealChoice(plan,item.id,mode as 'ready_to_eat'|'heat_and_eat',category));close();}} />)}
           </>}
         </>}
       </View>}
     </SectionCard>;})}
     {plan.warnings.map(w=><Text key={w.code} style={ui.small}>{w.message}</Text>)}
-    {!plan.items.length&&<Text style={ui.body}>No compatible meals are available. Edit preferences or try again when more curated meals are available.</Text>}
-    <PrimaryButton label="Confirm meal plan & match packages" disabled={!plan.items.length} onPress={onConfirm} />
+    {!plan.items.length&&<Text style={ui.body}>Keine passenden Gerichte verfügbar. Ändere deine Einstellungen oder versuche es später mit weiteren Gerichten erneut.</Text>}
+    <PrimaryButton label="Speiseplan bestätigen und Produkte zuordnen" disabled={!plan.items.length} onPress={onConfirm} />
   </>;
 }

@@ -3,10 +3,10 @@ export const categories = ["fruit", "vegetables", "meat", "fish", "eggs", "dairy
   "breakfast", "snacks", "beverages", "other"] as const;
 export type ProductCategory = (typeof categories)[number];
 export const categoryLabels: Record<ProductCategory, string> = {
-  fruit: "Fruit", vegetables: "Vegetables", meat: "Meat", fish: "Fish", eggs: "Eggs",
-  dairy: "Dairy", "dairy-alternatives": "Dairy alternatives", bread: "Bread",
-  grains: "Grains", pasta: "Pasta", potatoes: "Potatoes", legumes: "Legumes",
-  breakfast: "Breakfast", snacks: "Snacks", beverages: "Beverages", other: "Other",
+  fruit: "Obst", vegetables: "Gemüse", meat: "Fleisch", fish: "Fisch", eggs: "Eier",
+  dairy: "Milchprodukte", "dairy-alternatives": "Milchalternativen", bread: "Brot",
+  grains: "Getreide", pasta: "Pasta", potatoes: "Kartoffeln", legumes: "Hülsenfrüchte",
+  breakfast: "Frühstück", snacks: "Snacks", beverages: "Getränke", other: "Sonstiges",
 };
 /** Provider-neutral product. Null means unknown, never zero/false by default. */
 export interface Product {

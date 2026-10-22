@@ -26,12 +26,12 @@ export default function HomeScreen() {
   const { active } = useActiveBasket();
   const openCart = () => active ? router.push({ pathname: '/basket-setup', params: { savedId: active.id } }) : router.navigate('/basket');
   const name = profile?.displayName.trim();
-  const details = saved ? preferenceChips(saved).slice(2).filter(label => !label.includes('budget')) : [];
+  const details = saved ? preferenceChips(saved).slice(2).filter(label => !label.includes("Budget")) : [];
   return <Screen compact>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 }}>
       <Text accessibilityRole="header" style={[ui.heading, { flex: 1, fontWeight: '800', fontSize: 22 }]}>Smart<Text style={{ color: colors.primary }}>Basket</Text></Text>
-      <Text style={[ui.small, { color: colors.ink, flexShrink: 1 }]} numberOfLines={1}>{name ? `Hi ${name}` : 'Welcome'}</Text>
-      <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Open your basket" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
+      <Text style={[ui.small, { color: colors.ink, flexShrink: 1 }]} numberOfLines={1}>{name ? `Hallo ${name}` : "Willkommen"}</Text>
+      <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Deinen Warenkorb öffnen" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
     </View>
     <WastePrevention />
     <ErrorMessage message={week.error} />
@@ -41,21 +41,21 @@ export default function HomeScreen() {
       onWeek={weekStart => week.store.open(weekStart, saved)}
       onCopyPrevious={week.store.canCopyPreviousWeek(week.plan?.weekStart ?? currentWeekStart(), saved)
         ? () => { try { week.store.copyPreviousWeek(week.plan?.weekStart ?? currentWeekStart(), saved); setCopyError(null); }
-          catch (e) { setCopyError(e instanceof Error ? e.message : 'Could not copy last week.'); } } : undefined}
+          catch (e) { setCopyError(e instanceof Error ? e.message : "Die Vorwoche konnte nicht übernommen werden."); } } : undefined}
       onBasket={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />
-      : <PrimaryButton label="Set up your preferences" disabled={flow.disabled} onPress={flow.create} />}
-    <SecondaryButton label="View recent shops" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
-    <Pressable accessibilityRole="button" accessibilityLabel="Plan by voice" onPress={() => router.push('/voice-plan')}
+      : <PrimaryButton label="Deine Einstellungen festlegen" disabled={flow.disabled} onPress={flow.create} />}
+    <SecondaryButton label="Letzte Einkäufe ansehen" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
+    <Pressable accessibilityRole="button" accessibilityLabel="Per Sprache planen" onPress={() => router.push('/voice-plan')}
       style={({pressed}) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: colors.pale, opacity: pressed ? .75 : 1 })}>
       <Feather name="mic" size={24} color={colors.primary} />
-      <View style={{flex: 1}}><Text style={[ui.small, {fontWeight: '700', color: colors.ink}]}>Plan by voice</Text><Text style={ui.caption}>Tell us what you fancy</Text></View>
+      <View style={{flex: 1}}><Text style={[ui.small, {fontWeight: '700', color: colors.ink}]}>Per Sprache planen</Text><Text style={ui.caption}>Sag uns, worauf du Lust hast</Text></View>
       <Feather name="chevron-right" size={20} color={colors.primary} />
     </Pressable>
     <LatestBasket />
     <View style={{ flexDirection: 'row', gap: 12 }}>
       {[
-        { title: 'Your pantry', subtitle: 'Use what you already have', route: '/pantry' as const, photo: 8 },
-        { title: 'Browse products', subtitle: 'Find what you need', route: '/products' as const, photo: 1 },
+        { title: "Deine Vorräte", subtitle: "Nutze, was du schon hast", route: '/pantry' as const, photo: 8 },
+        { title: "Produkte entdecken", subtitle: "Finde, was du brauchst", route: '/products' as const, photo: 1 },
       ].map(tile => <Pressable key={tile.title} onPress={()=>router.push(tile.route)} accessibilityRole="button" accessibilityLabel={tile.title}
         style={({pressed})=>[ui.card,{ flex: 1, minWidth: 0, padding: 12, gap: 6, borderRadius: 14, opacity: pressed ? .75 : 1 }]}>
         <Text style={[ui.small,{fontWeight:'700',color:colors.ink}]}>{tile.title}</Text>
@@ -68,10 +68,10 @@ export default function HomeScreen() {
     {saved && <SectionCard compact>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ flex: 1 }}>
-          <Text style={ui.subheading}>Your preferences</Text>
+          <Text style={ui.subheading}>Deine Einstellungen</Text>
           <Text style={ui.small}>{details.join(' · ')}</Text>
         </View>
-        <TextButton label={editing ? 'Resume edits' : 'Edit'} disabled={flow.disabled} onPress={() => flow.edit()} />
+        <TextButton label={editing ? "Bearbeitung fortsetzen" : "Bearbeiten"} disabled={flow.disabled} onPress={() => flow.edit()} />
       </View>
     </SectionCard>}
   </Screen>;

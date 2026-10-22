@@ -15,10 +15,10 @@ test('sourdough breakfast includes cooking oil and greens, with egg and wheat re
  assert.equal(compatibleMeal(meal,prefs({dietaryPreferences:['vegan']})),false);
 });
 test('fresh cherry tomatoes and sourdough do not match canned tomatoes or ordinary toast',()=>{
- const tomato=product(401,{name:'Fresh cherry tomatoes',category:'vegetables',packageSize:250,quantityLabel:'250 g',caloriesPer100g:18,proteinPer100g:.9,carbohydratesPer100g:3.9,fatPer100g:.2});
+ const tomato=product(401,{name:"Frische Kirschtomaten",category:'vegetables',packageSize:250,quantityLabel:'250 g',caloriesPer100g:18,proteinPer100g:.9,carbohydratesPer100g:3.9,fatPer100g:.2});
  assert.equal(matchProducts('cherry_tomatoes',[tomato],prefs()).length,1);
  assert.equal(matchProducts('cherry_tomatoes',[{...tomato,name:'Canned cherry tomatoes'}],prefs()).length,0);
- const bread=product(402,{name:'Sourdough bread',category:'bread',packageSize:500,quantityLabel:'500 g',caloriesPer100g:250,proteinPer100g:9,carbohydratesPer100g:48,fatPer100g:1.5});
+ const bread=product(402,{name:"Sauerteigbrot",category:'bread',packageSize:500,quantityLabel:'500 g',caloriesPer100g:250,proteinPer100g:9,carbohydratesPer100g:48,fatPer100g:1.5});
  assert.equal(matchProducts('sourdough_bread',[bread],prefs()).length,1);
  assert.equal(matchProducts('sourdough_bread',[{...bread,name:'Wholemeal toast'}],prefs()).length,0);
 });

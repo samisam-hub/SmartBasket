@@ -13,14 +13,14 @@ export function PersistenceStatus() {
     ready,
     store,
   } = usePreferences();
-  if (!ready) return <Text style={ui.small}>Loading your preferences…</Text>;
+  if (!ready) return <Text style={ui.small}>Deine Einstellungen werden geladen …</Text>;
   return (
     <View style={ui.stack}>
       {localError && (
         <>
           <ErrorMessage message={localError} />
           <TextButton
-            label="Retry device save"
+            label="Erneut auf dem Gerät speichern"
             onPress={() => {
               void store.retryLocal();
             }}
@@ -28,21 +28,22 @@ export function PersistenceStatus() {
         </>
       )}
       {!configured ? (
-        <InfoCard title={saved ? "Saved on this device" : "Local mode"}>
-          Cloud sync is not configured. You can complete and resume onboarding
-          on this device.
+        <InfoCard title={saved ? "Auf diesem Gerät gespeichert" : "Lokaler Modus"}>
+
+          Die Cloud-Synchronisierung ist nicht eingerichtet. Du kannst die Einrichtung auf diesem Gerät abschließen und fortsetzen.
         </InfoCard>
       ) : saved && pendingSync ? (
-        <InfoCard title="Saved on this device only">
-          Your latest preferences have not been uploaded yet.
+        <InfoCard title="Nur auf diesem Gerät gespeichert">
+
+          Deine neuesten Einstellungen wurden noch nicht hochgeladen.
         </InfoCard>
       ) : saved ? (
-        <SuccessMessage message="Preferences synced to Supabase." />
+        <SuccessMessage message="Einstellungen mit deinem Konto synchronisiert." />
       ) : null}
       <ErrorMessage message={remoteError} />
       {configured && (pendingSync || remoteError) && (
         <TextButton
-          label="Retry cloud sync"
+          label="Cloud-Synchronisierung wiederholen"
           loading={saving}
           onPress={() => {
             void store.retryRemote();

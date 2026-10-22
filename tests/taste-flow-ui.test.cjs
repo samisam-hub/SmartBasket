@@ -11,7 +11,7 @@ let store, failWrites = false, routeParams = {};
 const stub = name => { function Stub(props) { return React.createElement(name, props, props.children); } return Stub; };
 const original = Module._load;
 Module._load = function(request, parent, isMain) {
-  if (request === 'react-native') return { Text: 'Text', View: 'View' };
+  if (request === 'react-native') return { Text: 'Text', View: "Ansehen" };
   if (request === 'expo-router') return { router: { push: to => routes.push(to), replace: to => routes.push(to) }, useLocalSearchParams: () => routeParams };
   if (request === '@/components/ui') return Object.fromEntries(['ErrorMessage','PrimaryButton','Screen','ScreenHeader','SecondaryButton','SectionCard','SelectionChip','TextButton'].map(n => [n, stub(n)]));
   if (request === '@/context/PreferencesContext') return { usePreferences: () => ({ saved: preferences }) };
@@ -95,13 +95,13 @@ test('opening a swap keeps the existing meal; confirming changes it and returns 
   const before = structuredClone(store.getSnapshot().plan);
   routeParams = { date: '2026-10-19', returnTo: 'week' };
   let screen; await act(() => { screen = create(React.createElement(Day)); });
-  await act(() => screen.root.findAllByType('TextButton').find(node => node.props.label === 'Choose another').props.onPress());
+  await act(() => screen.root.findAllByType('TextButton').find(node => node.props.label === "Anderes Gericht wählen").props.onPress());
   const destination = routes.pop();
   assert.ok(destination.params.replaceItem);
   assert.deepEqual(store.getSnapshot().plan, before);
   routeParams = destination.params;
   await act(() => screen.update(React.createElement(Slot)));
-  await act(() => button(screen, 'SecondaryButton', 'Back to the day').props.onPress());
+  await act(() => button(screen, 'SecondaryButton', "Zurück zum Tag").props.onPress());
   assert.deepEqual(store.getSnapshot().plan, before);
   const card = screen.root.findByType('MealSwipeCards');
   const chosen = card.props.suggestions[0];

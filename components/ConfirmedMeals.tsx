@@ -1,3 +1,5 @@
+import { germanSavedName } from '../lib/legacy-display';
+import { germanLabel } from '../lib/german';
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { AnyMealPlan, AnyMealPlanItem } from '../types/meal';
@@ -30,17 +32,17 @@ function DayMeals({ plan, label, items, ratios }: { plan: AnyMealPlan; label: st
         {items.map((item, index) => <View key={item.id} accessibilityElementsHidden={active !== index}
           importantForAccessibility={active === index ? 'auto' : 'no-hide-descendants'}
           style={{ width, gap: spacing.sm, paddingHorizontal: spacing.xs }}>
-          <Text style={ui.eyebrow}>{item.mealSlot.toUpperCase()}</Text>
-          <Text style={ui.subheading}>{item.meal.name}</Text>
+          <Text style={ui.eyebrow}>{germanLabel(item.mealSlot).toUpperCase()}</Text>
+          <Text style={ui.subheading}>{germanSavedName(item.meal.name)}</Text>
           <MealImage meal={item.meal} compact />
-          {mealNutritionKnown(item, ratios) ? <ParticipantNutrition plan={plan} participantIds={item.participantIds} nutrition={mealNutrition(item, ratios)} /> : <Text style={ui.small}>Nutrition unknown{item.mealMode==='eat_out'?' · Eating out · No shopping items':' · No matched product'}</Text>}
+          {mealNutritionKnown(item, ratios) ? <ParticipantNutrition plan={plan} participantIds={item.participantIds} nutrition={mealNutrition(item, ratios)} /> : <Text style={ui.small}>Nährwerte unbekannt{item.mealMode==='eat_out'?" · Auswärts essen · Keine Einkaufsartikel":" · Kein passendes Produkt zugeordnet"}</Text>}
           {item.readyMealMatch && (ratios?.[`ready:${item.readyMealMatch.productId}`]??1)>0 && <Text style={ui.small}>{item.readyMealMatch.productName}</Text>}
         </View>)}
       </ScrollView>}
     </View>
     <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
       {items.map((item, index) => <Pressable key={item.id} accessibilityRole="button"
-        accessibilityLabel={`${label}: ${item.mealSlot}`}
+        accessibilityLabel={`${label}: ${germanLabel(item.mealSlot)}`}
         accessibilityState={{ selected: active === index }}
         onPress={() => scroll.current?.scrollTo({ x: index * width, animated: true })}
         style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
@@ -52,7 +54,7 @@ function DayMeals({ plan, label, items, ratios }: { plan: AnyMealPlan; label: st
 
 export function ConfirmedMeals({ plan, ratios }: { plan: AnyMealPlan; ratios?: Record<string, number> }) {
   // Days nobody planned are left out instead of shown as an empty row.
-  return <SectionCard title="Confirmed meals">
+  return <SectionCard title="Bestätigte Mahlzeiten">
     {planDays(plan).filter(day => day.items.length).map(day => <DayMeals key={day.key} plan={plan} ratios={ratios}
       label={day.label} items={[...day.items].sort((a, b) => slots.indexOf(a.mealSlot) - slots.indexOf(b.mealSlot))} />)}
   </SectionCard>;

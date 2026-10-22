@@ -183,8 +183,8 @@ export function SearchInput({
         style={styles.searchText}
         value={value}
         onChangeText={onChangeText}
-        accessibilityLabel="Search products"
-        placeholder="Search foods or brands"
+        accessibilityLabel="Produkte suchen"
+        placeholder="Lebensmittel oder Marken suchen"
         maxLength={120}
         placeholderTextColor={colors.muted}
         autoCorrect={false}
@@ -193,7 +193,7 @@ export function SearchInput({
       />
       {value ? (
         <IconButton
-          label="Clear search"
+          label="Suche löschen"
           icon="x"
           onPress={() => onChangeText("")}
         />
@@ -219,7 +219,7 @@ export function NumberStepper({
       <Text style={styles.label}>{label}</Text>
       <View style={ui.row}>
         <IconButton
-          label={`Decrease ${label}`}
+          label={`Verringern ${label}`}
           icon="minus"
           disabled={value <= min}
           onPress={() => onChange(Math.max(min, value - 1))}
@@ -228,7 +228,7 @@ export function NumberStepper({
           {value}
         </Text>
         <IconButton
-          label={`Increase ${label}`}
+          label={`Erhöhen ${label}`}
           icon="plus"
           disabled={value >= max}
           onPress={() => onChange(Math.min(max, value + 1))}
@@ -340,7 +340,7 @@ export function PreferenceRow({
         <Text style={styles.label}>{value}</Text>
       </View>
       {onEdit && (
-        <IconButton icon="edit-2" label={`Edit ${label}`} onPress={onEdit} />
+        <IconButton icon="edit-2" label={`Bearbeiten ${label}`} onPress={onEdit} />
       )}
     </View>
   );
@@ -359,7 +359,8 @@ export function ProgressIndicator({
       accessibilityValue={{ min: 1, max: total, now: current }}
     >
       <Text style={ui.caption}>
-        Step {current} of {total}
+
+        Schritt {current}  von {total}
       </Text>
       <View style={styles.track}>
         <View

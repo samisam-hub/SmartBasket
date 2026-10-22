@@ -8,9 +8,9 @@ test('lifetime reuse counts completed purchases once, excludes drafts and keeps 
  const b=purchase('b',[{quantity:500,unit:'g'},{quantity:1000,unit:'ml'},{quantity:-100,unit:'g'},{quantity:NaN,unit:'g'}]);
  const result=wastePrevention([a,a,b,purchase('draft',[{quantity:9000,unit:'g'}],false),purchase('legacy',undefined)]);
  assert.deepEqual(result,{grams:1250,millilitres:1250});
- assert.equal(formatPreventedWaste(result),'1.25 kg · 1.25 L');
+ assert.equal(formatPreventedWaste(result),'1,25 kg · 1,25 L');
  assert.equal(formatPreventedWaste(wastePrevention([])),'0 g');
- assert.equal(formatPreventedWaste({grams:20.5,millilitres:0}),'20.5 g');
+ assert.equal(formatPreventedWaste({grams:20.5,millilitres:0}),'20,5 g');
 });
 test('impact values reused quantities at their original estimated price, counts shops once and uses calendar days',()=>{
  const original=purchase('original',[]);original.purchasedAt='2026-09-01T10:00:00Z';

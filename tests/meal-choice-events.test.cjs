@@ -64,9 +64,9 @@ test("heating something up or eating out fills the slot without inventing nutrit
   assert.equal(heatedItem.servings, preferences.householdSize);
   assert.ok(isWeekPlan({ ...heated, status: "confirmed" }));
   // A category that does not fit the slot, or a slot nobody planned, is refused.
-  assert.throws(() => chooseMode(plan, monday, "breakfast", "heat_and_eat", "lasagne", preferences), /does not fit/);
-  assert.throws(() => chooseMode(plan, monday, "snack", "eat_out", undefined, preferences), /not planned/);
-  assert.throws(() => chooseMode(plan, "2026-10-07", "dinner", "eat_out", undefined, preferences), /not planned/);
+  assert.throws(() => chooseMode(plan, monday, "breakfast", "heat_and_eat", "lasagne", preferences), /passt nicht/);
+  assert.throws(() => chooseMode(plan, monday, "snack", "eat_out", undefined, preferences), /nicht eingeplant/);
+  assert.throws(() => chooseMode(plan, "2026-10-07", "dinner", "eat_out", undefined, preferences), /nicht eingeplant/);
   // The first yes still wins: a decided slot keeps what it has.
   const [suggestion] = suggestMeals(plan, monday, "dinner", preferences, fullCatalog);
   plan = chooseMeal(plan, monday, "dinner", suggestion, preferences);

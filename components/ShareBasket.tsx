@@ -14,15 +14,15 @@ export function ShareBasket({ basket }: { basket: SavedBasket }) {
     setSharing(true); setCopy(false);
     try {
       if (Platform.OS === 'web') {
-        if (typeof navigator !== 'undefined' && navigator.share) await navigator.share({ title: 'Basket', text });
+        if (typeof navigator !== 'undefined' && navigator.share) await navigator.share({ title: "Warenkorb", text });
         else setCopy(true);
-      } else await Share.share({ title: 'Basket', message: text });
+      } else await Share.share({ title: "Warenkorb", message: text });
     } catch (e) {
       if (!(e instanceof Error && e.name === 'AbortError')) setCopy(true);
     } finally { setSharing(false); }
   };
   return <>
-    <SecondaryButton label="Share basket" disabled={sharing || !basket.result.items.length} onPress={() => { void share(); }} />
-    {copy && <><Text style={ui.small}>Select and copy your selected products:</Text><Text selectable style={ui.body}>{text}</Text></>}
+    <SecondaryButton label="Warenkorb teilen" disabled={sharing || !basket.result.items.length} onPress={() => { void share(); }} />
+    {copy && <><Text style={ui.small}>Markiere und kopiere deine ausgewählten Produkte:</Text><Text selectable style={ui.body}>{text}</Text></>}
   </>;
 }

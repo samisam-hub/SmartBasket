@@ -23,15 +23,15 @@ export function LatestBasket() {
           setLatest([...response.baskets].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))[0] ?? null);
           setWarning(response.warning);
         }
-      } catch { if (active) setWarning('Your latest basket could not be loaded. You can try again in the Basket tab.'); }
+      } catch { if (active) setWarning("Dein letzter Warenkorb konnte nicht geladen werden. Versuche es im Bereich Warenkorb erneut."); }
     })();
     return () => { active = false; };
   }, [ready, saved?.userId]));
   if (!latest) return warning ? <Text style={ui.small}>{warning}</Text> : null;
   const open = () => router.push({ pathname: '/basket-setup', params: { savedId: latest.id } });
-  return <SectionCard title="Your recent basket" compact>
+  return <SectionCard title="Dein letzter Warenkorb" compact>
     <SavedBasketPreview basket={latest} onOpen={open} minimal />
-    <SecondaryButton label="Use this basket again" onPress={open} />
+    <SecondaryButton label="Diesen Warenkorb wiederverwenden" onPress={open} />
     {warning && <Text style={ui.small}>{warning}</Text>}
   </SectionCard>;
 }

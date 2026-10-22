@@ -1,3 +1,4 @@
+import { basketDisplayName } from '../services/basket/naming';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { SavedBasket } from '../types/basket';
@@ -36,8 +37,8 @@ export function ActiveBasketProvider({ children }: PropsWithChildren) {
     return () => { alive = false; };
   }, [key, owner]);
   const discard = async (b: SavedBasket) => {
-    if (lock.current) throw Error('Please wait for the current product to finish saving.');
-    if (b.ownerId !== owner) throw Error('This basket belongs to another account.');
+    if (lock.current) throw Error("Warte bitte, bis das aktuelle Produkt gespeichert ist.");
+    if (b.ownerId !== owner) throw Error("Dieser Warenkorb gehört zu einem anderen Konto.");
     lock.current = true; setBusy(true);
     try {
       await basketPersistence().discard(b);
@@ -49,16 +50,16 @@ export function ActiveBasketProvider({ children }: PropsWithChildren) {
     } finally { lock.current = false; setBusy(false); }
   };
   const add = async (p: Product) => {
-    if (lock.current) throw Error('Please wait for the current product to finish saving.');
+    if (lock.current) throw Error("Warte bitte, bis das aktuelle Produkt gespeichert ist.");
     const b = current.current;
-    if (!b || b.ownerId !== owner || b.result.purchasedAt) throw Error('Open or create a basket first.');
+    if (!b || b.ownerId !== owner || b.result.purchasedAt) throw Error("Öffne oder erstelle zuerst einen Warenkorb.");
     lock.current = true; setBusy(true);
     const version = revision.current;
     try {
       const next = { ...b, result: addBasketProduct(b.result, p), syncStatus: 'local' as const };
       const response = await basketPersistence().save(next);
       if (revision.current === version) remember(response.basket);
-      return response.warning ?? `Added to ${b.name}`;
+      return response.warning ?? `Hinzugefügt zu ${basketDisplayName(b)}`;
     } finally { lock.current = false; setBusy(false); }
   };
   return <Context.Provider value={{ active, remember, clear, discard, add, busy }}>{children}</Context.Provider>;

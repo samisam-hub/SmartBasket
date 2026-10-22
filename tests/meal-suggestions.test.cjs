@@ -144,9 +144,9 @@ test("suggestions need valid, completed preferences", () => {
   const preferences = prefs();
   const plan = week(preferences, fullDay());
   assert.throws(() => suggestMeals(plan, monday, "dinner", { ...preferences, onboardingCompleted: false }),
-    /preferences/);
+    /Einstellungen/);
   assert.throws(() => suggestMeals(plan, monday, "dinner", { ...preferences, dailyCalories: 10 }),
-    /preferences/);
+    /Einstellungen/);
   // The catalog is optional: without it the suggestions still come, availability just scores 0.
   assert.equal(suggestMeals(plan, monday, "dinner", preferences).length, 2);
 });

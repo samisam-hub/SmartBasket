@@ -54,43 +54,43 @@ import {
 
 const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
   welcome: {
-    title: "Let's build a basket around you.",
+    title: "Dein Einkauf, passend zu dir.",
     subtitle:
-      "A few preferences about your nutrition, lifestyle and budget. Your progress is saved on this device as you go.",
+      "Ein paar Angaben zu Ernährung, Alltag und Budget. Dein Fortschritt wird auf diesem Gerät gespeichert.",
   },
   household: {
-    title: "Who are we fueling?",
+    title: "Für wen planen wir?",
     subtitle:
-      "One tap per person: adult or child. Add details whenever you like — the daily amount is a suggestion you can correct.",
+      "Füge Erwachsene und Kinder hinzu. Details kannst du jederzeit ergänzen. Die Tagesmenge ist ein Vorschlag, den du anpassen kannst.",
   },
   meals: {
-    title: "Which meals do you plan?",
+    title: "Welche Mahlzeiten möchtest du planen?",
     subtitle:
-      "Your usual pattern. The calendar prefills every day you pick with these meals, and you can drop single ones per day.",
+      "Dein üblicher Tagesablauf. Der Kalender übernimmt diese Mahlzeiten für ausgewählte Tage. Einzelne Mahlzeiten kannst du pro Tag abwählen.",
   },
   goals: {
-    title: "Fuel your goals.",
+    title: "Essen, das zu deinen Zielen passt.",
     subtitle:
-      "Your goal shapes the protein share of the suggested amounts. These are your preferences, not a personalized nutrition prescription.",
+      "Dein Ziel beeinflusst den Eiweißanteil der vorgeschlagenen Mengen. Dies sind deine Einstellungen, keine individuelle Ernährungsvorgabe.",
   },
   diet: {
-    title: "Food that fits your life.",
+    title: "Essen, das zu deinem Alltag passt.",
     subtitle:
-      "Choose a dietary pattern and any extra restrictions, such as diabetes-friendly. You can change these later.",
+      "Wähle eine Ernährungsweise und zusätzliche Anforderungen, etwa diabetesbewusst. Du kannst sie später ändern.",
   },
   allergies: {
-    title: "What should we know?",
-    subtitle: "Select allergies and intolerances you want us to remember.",
+    title: "Was sollen wir berücksichtigen?",
+    subtitle: "Wähle die Allergien und Unverträglichkeiten aus, die wir berücksichtigen sollen.",
   },
   budget: {
-    title: "What's your grocery budget?",
+    title: "Wie hoch ist dein Einkaufsbudget?",
     subtitle:
-      "Set a total for the whole household and your selected planning period.",
+      "Lege ein Gesamtbudget für den Haushalt und den gewählten Planungszeitraum fest.",
   },
   review: {
-    title: "Your goals, at a glance.",
+    title: "Deine Einstellungen auf einen Blick.",
     subtitle:
-      "Check your preferences before saving. Tap an edit icon to change any section.",
+      "Prüfe deine Einstellungen vor dem Speichern. Über das Bearbeiten-Symbol kannst du jeden Bereich ändern.",
   },
 };
 const fields: Record<OnboardingStep, (keyof PreferenceErrors)[]> = {
@@ -147,7 +147,7 @@ export default function OnboardingScreen() {
   useEffect(() => {
     if (!ready || draft.participants?.length || !profile.ready) return;
     const you: PlanParticipant = {
-      ...newParticipant("adult", "current-user", "You", draft.primaryGoal),
+      ...newParticipant("adult", "current-user", "Du", draft.primaryGoal),
       isCurrentUser: true,
     };
     const saved = profile.saved;
@@ -156,7 +156,7 @@ export default function OnboardingScreen() {
         ? patchParticipant(
             you,
             {
-              name: saved.displayName.trim() || "You",
+              name: saved.displayName.trim() || "Du",
               age: saved.age,
               sex: saved.sex,
               activityLevel: saved.activityLevel,
@@ -209,8 +209,8 @@ export default function OnboardingScreen() {
     return (
       <Screen bottom>
         <EmptyState
-          title="Getting things ready"
-          description="Loading your saved progress…"
+          title="Alles wird vorbereitet"
+          description="Dein gespeicherter Fortschritt wird geladen …"
           icon="loader"
         />
       </Screen>
@@ -246,9 +246,9 @@ export default function OnboardingScreen() {
   return (
     <Screen bottom>
       <View style={[ui.row, { justifyContent: "space-between" }]}>
-        <TextButton label="Back" disabled={busy} onPress={back} />
+        <TextButton label="Zurück" disabled={busy} onPress={back} />
         <TextButton
-          label="Save & exit"
+          label="Speichern und schließen"
           disabled={busy}
           onPress={() => {
             void finish(store.flushDraft);
@@ -261,14 +261,14 @@ export default function OnboardingScreen() {
       <View pointerEvents={busy ? "none" : "auto"} style={ui.stack}>
         {step === "welcome" && (
           <>
-            <InfoCard title="A few choices. A stronger start.">
-              Your calorie goal, food preferences, household and budget will
-              guide future baskets. No email or password needed.
+            <InfoCard title="Ein paar Angaben für einen guten Start.">
+
+              Dein Kalorienziel, deine Essensvorlieben, dein Haushalt und dein Budget bestimmen künftige Warenkörbe. Ohne E-Mail oder Passwort.
             </InfoCard>
             {!configured && (
-              <InfoCard title="Try it locally">
-                Supabase is not configured. Your answers and completed
-                preferences will stay on this device.
+              <InfoCard title="Auf diesem Gerät ausprobieren">
+
+                Die Cloud ist nicht eingerichtet. Deine Angaben und Einstellungen bleiben auf diesem Gerät.
               </InfoCard>
             )}
           </>
@@ -309,9 +309,8 @@ export default function OnboardingScreen() {
               ))}
             </View>
             <Text style={ui.small}>
-              Breakfast, lunch and dinner are on by default, a snack is off.
-              Nothing here is fixed: every day in the calendar starts from this
-              pattern and single meals can be dropped there.
+
+              Frühstück, Mittagessen und Abendessen sind vorausgewählt, ein Snack nicht. Jeder Kalendertag beginnt mit diesem Muster. Einzelne Mahlzeiten kannst du dort abwählen.
             </Text>
             <ErrorMessage message={visible.slotDefaults} />
           </SectionCard>
@@ -321,10 +320,10 @@ export default function OnboardingScreen() {
             <SectionCard>
               <Text style={ui.small}>
                 {draft.participants?.length
-                  ? `Suggested for your household: about ${draft.dailyCalories ?? "—"} kcal per person a day. Change it per person in the household step.`
-                  : "Add the people in your household to get a suggested daily amount."}
+                  ? `Vorschlag für deinen Haushalt: etwa ${draft.dailyCalories ?? "—"} kcal pro Person und Tag. Im Bereich Haushalt kannst du den Wert pro Person ändern.`
+                  : "Füge die Personen deines Haushalts hinzu, um eine vorgeschlagene Tagesmenge zu erhalten."}
               </Text>
-              <Text style={ui.subheading}>Main nutrition goal</Text>
+              <Text style={ui.subheading}>Wichtigstes Ernährungsziel</Text>
               <View style={ui.wrap}>
                 {goals.map((primaryGoal) => (
                   <SelectionChip
@@ -336,15 +335,15 @@ export default function OnboardingScreen() {
                 ))}
               </View>
             </SectionCard>
-            <SectionCard title="Protein target">
+            <SectionCard title="Eiweißziel">
               <View style={ui.wrap}>
                 {(["automatic", "manual"] as const).map((proteinMode) => (
                   <SelectionChip
                     key={proteinMode}
                     label={
                       proteinMode === "automatic"
-                        ? "Automatic"
-                        : "Manual grams/day"
+                        ? "Automatisch"
+                        : "Gramm pro Tag selbst festlegen"
                     }
                     selected={draft.proteinMode === proteinMode}
                     onPress={() =>
@@ -361,7 +360,7 @@ export default function OnboardingScreen() {
               </View>
               {draft.proteinMode === "manual" ? (
                 <NumberInput
-                  label="Protein target (g/day)"
+                  label="Eiweißziel (g/Tag)"
                   value={draft.proteinTargetGrams}
                   onChange={(proteinTargetGrams) =>
                     store.update({ proteinTargetGrams })
@@ -370,8 +369,8 @@ export default function OnboardingScreen() {
                 />
               ) : (
                 <Text style={ui.small}>
-                  No manual target. Automatic calculations will arrive with
-                  basket generation.
+
+                  Kein eigener Zielwert. Das Eiweißziel wird bei der Warenkorberstellung automatisch berechnet.
                 </Text>
               )}
             </SectionCard>
@@ -397,21 +396,16 @@ export default function OnboardingScreen() {
               ))}
             </View>
             <Text style={ui.small}>
-              Vegetarian, vegan and pescatarian are alternative patterns.
-              Lactose-free, gluten-free and diabetes-friendly can be added to
-              any pattern.
+
+              Vegetarisch, vegan und pescetarisch sind unterschiedliche Ernährungsweisen. Laktosefrei, glutenfrei und diabetesbewusst lassen sich jeweils ergänzen.
             </Text>
             <ErrorMessage message={visible.dietaryPreferences} />
           </SectionCard>
         )}
         {step === "diet" && draft.dietaryPreferences.includes("diabetes") && (
-          <InfoCard title="How diabetes-friendly filters your basket">
-            We keep products whose declared sugars stay under the front-of-pack
-            high-sugar level (22.5 g per 100 g, 11.25 g per 100 ml) and meals
-            within common carbohydrate portions. Products without a declared
-            sugar value are left out rather than assumed low. This is a
-            shopping preference, not medical advice or a treatment plan — check
-            labels and follow the guidance of your care team.
+          <InfoCard title="So filtert diabetesbewusst deinen Warenkorb">
+
+            Wir berücksichtigen Produkte mit angegebenem Zucker unter der Schwelle für hohen Zuckergehalt (22,5 g je 100 g bzw. 11,25 g je 100 ml) und Mahlzeiten mit üblichen Kohlenhydratportionen. Produkte ohne Zuckerangabe werden ausgeschlossen. Dies ist eine Einkaufspräferenz, keine medizinische Beratung oder Behandlung. Prüfe Verpackungen und beachte die Empfehlungen deines Behandlungsteams.
           </InfoCard>
         )}
         {step === "allergies" && (
@@ -419,7 +413,7 @@ export default function OnboardingScreen() {
             <SectionCard>
               <View style={ui.wrap}>
                 <SelectionChip
-                  label="None"
+                  label="Keine"
                   selected={!draft.allergens.length}
                   onPress={() => store.update({ allergens: [] })}
                 />
@@ -440,10 +434,9 @@ export default function OnboardingScreen() {
               </View>
               <ErrorMessage message={visible.allergens} />
             </SectionCard>
-            <InfoCard title="Always check the product label">
-              These preferences do not guarantee a product is suitable for an
-              allergy. Check ingredients and cross-contact information.
-              Lactose-free does not mean milk-free.
+            <InfoCard title="Prüfe immer die Verpackungsangaben">
+
+              Diese Einstellungen garantieren nicht, dass ein Produkt bei einer Allergie geeignet ist. Prüfe Zutaten und Hinweise auf mögliche Spuren. Laktosefrei bedeutet nicht milchfrei.
             </InfoCard>
           </>
         )}
@@ -451,14 +444,14 @@ export default function OnboardingScreen() {
           <SectionCard>
             <View style={ui.wrap}>
               <SelectionChip
-                label="No budget limit"
+                label="Kein Budgetlimit"
                 selected={!draft.budgetEnabled}
                 onPress={() =>
                   store.update({ budgetEnabled: false, weeklyBudgetEur: null })
                 }
               />
               <SelectionChip
-                label="Maximum budget in EUR"
+                label="Maximales Budget in EUR"
                 selected={draft.budgetEnabled}
                 onPress={() =>
                   store.update({
@@ -471,7 +464,7 @@ export default function OnboardingScreen() {
             {draft.budgetEnabled && (
               <NumberInput
                 decimal
-                label={`Total budget for ${draft.planningDays} days (€)`}
+                label={`Gesamtbudget für ${draft.planningDays} Tage (€)`}
                 value={draft.weeklyBudgetEur}
                 onChange={(weeklyBudgetEur) =>
                   store.update({ weeklyBudgetEur })
@@ -480,7 +473,8 @@ export default function OnboardingScreen() {
               />
             )}
             <Text style={ui.small}>
-              Prices in SmartBasket may be estimates.
+
+              Preise in SmartBasket können Schätzwerte sein.
             </Text>
           </SectionCard>
         )}
@@ -498,16 +492,16 @@ export default function OnboardingScreen() {
               ))}
             <Text style={ui.small}>
               {configured
-                ? "We’ll save on this device first, then sync to your private Supabase profile. If sync fails, you’ll see a local-only status and can retry."
-                : "Supabase is not configured. Saving will complete onboarding on this device only."}
+                ? "Wir speichern zuerst auf diesem Gerät und synchronisieren anschließend mit deinem privaten Konto. Falls dies fehlschlägt, siehst du den lokalen Speicherstatus und kannst es erneut versuchen."
+                : "Die Cloud ist nicht eingerichtet. Deine Einrichtung wird nur auf diesem Gerät gespeichert."}
             </Text>
           </>
         )}
       </View>
       {step === "review" ? (
         <PrimaryButton
-          label={busy ? "Saving preferences…" : intent === "edit"
-            ? "Save changes" : "Save preferences"}
+          label={busy ? "Einstellungen werden gespeichert …" : intent === "edit"
+            ? "Änderungen speichern" : "Einstellungen speichern"}
           loading={busy}
           onPress={() => {
             void save();
@@ -517,10 +511,10 @@ export default function OnboardingScreen() {
         <PrimaryButton
           label={
             step === "welcome"
-              ? "Get started"
+              ? "Loslegen"
               : returning
-                ? "Back to review"
-                : "Continue"
+                ? "Zurück zur Übersicht"
+                : "Weiter"
           }
           onPress={next}
           disabled={busy}

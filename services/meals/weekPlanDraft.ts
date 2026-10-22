@@ -20,16 +20,16 @@ function freeItemId(plan: WeekPlan, date: string, slot: MealSlot): string {
     const id = `${base}-${count}`;
     if (!plan.items.some(item => item.id === id)) return id;
   }
-  throw Error('That meal already has as many separate dishes as people.');
+  throw Error("Für diese Mahlzeit gibt es bereits so viele getrennte Gerichte wie Personen.");
 }
 /** The people a new meal is for: a named group has to exist in this plan, no list means everybody. */
 function group(plan: WeekPlan, participantIds?: string[]): string[] | null {
   if (!participantIds) return null;
   const people = plan.participants?.map(person => person.id);
-  if (!people) throw Error('Add the people of your household before splitting a meal.');
-  if (participantIds.some(id => !people.includes(id))) throw Error('That person is not in this plan.');
+  if (!people) throw Error("Füge zuerst die Personen deines Haushalts hinzu, bevor du eine Mahlzeit aufteilst.");
+  if (participantIds.some(id => !people.includes(id))) throw Error("Diese Person ist nicht in diesem Plan.");
   const named = people.filter(id => participantIds.includes(id));
-  if (!named.length) throw Error('Choose at least one person for this meal.');
+  if (!named.length) throw Error("Wähle mindestens eine Person für diese Mahlzeit.");
   return named.length === people.length ? null : named;
 }
 /** Somebody eating their own dish leaves the other meals of that slot; an abandoned one goes. */
@@ -56,17 +56,17 @@ export function startWeek(weekStart: string, preferences: UserPreferences): Week
  * cached ready-meal matches must be found again for the new basket. */
 export function copyPreviousWeek(source: WeekPlan, weekStart: string, preferences: UserPreferences): WeekPlan {
   if (!isWeekStart(weekStart) || addDays(source.weekStart, 7) !== weekStart || !source.days.length)
-    throw Error('There is no planned previous week to copy.');
+    throw Error("Es gibt keinen Plan aus der Vorwoche zum Übernehmen.");
   const currentPeople = preferences.participants?.map(person => person.id) ?? [];
   const previousPeople = source.participants?.map(person => person.id) ?? [];
   if (source.householdSize !== preferences.householdSize ||
       currentPeople.length !== previousPeople.length || currentPeople.some(id => !previousPeople.includes(id)))
-    throw Error('The household has changed. Plan this week with the current people.');
+    throw Error("Der Haushalt hat sich geändert. Plane diese Woche mit den aktuellen Personen.");
   if (preferences.participants?.some(person => person.dailyCalories !==
       source.participants?.find(previous => previous.id === person.id)?.dailyCalories))
-    throw Error('Portion needs have changed. Plan this week with the current amounts.');
+    throw Error("Der Portionsbedarf hat sich geändert. Plane diese Woche mit den aktuellen Mengen.");
   if (source.items.some(item => (!item.mealMode || item.mealMode === 'cook') && !compatibleMeal(item.meal, preferences)))
-    throw Error('A previous meal no longer fits your diet or allergies. Plan this week afresh.');
+    throw Error("Eine frühere Mahlzeit passt nicht mehr zu deiner Ernährung oder deinen Allergien. Plane diese Woche neu.");
   const next = startWeek(weekStart, preferences);
   return withTargets({ ...next,
     days: source.days.map(day => ({ date: addDays(day.date, 7), slots: [...day.slots] })),
@@ -86,7 +86,7 @@ export const moveWeek = (plan: WeekPlan, weekStart: string, preferences: UserPre
   plan.weekStart === weekStart ? plan : startWeek(weekStart, preferences);
 /** Picking a day prefills it from the meal standard; unpicking it drops what was planned there. */
 export function toggleDay(plan: WeekPlan, date: string, preferences: UserPreferences): WeekPlan {
-  if (!isWeekStart(plan.weekStart) || !inWeek(plan.weekStart, date)) throw Error('That day is not in this week.');
+  if (!isWeekStart(plan.weekStart) || !inWeek(plan.weekStart, date)) throw Error("Dieser Tag gehört nicht zu dieser Woche.");
   const planned = dayOf(plan, date);
   const next: WeekPlan = planned
     ? { ...plan, days: plan.days.filter(day => day.date !== date), items: plan.items.filter(item => item.date !== date) }
@@ -96,9 +96,9 @@ export function toggleDay(plan: WeekPlan, date: string, preferences: UserPrefere
 /** Dropping a slot also drops the meal chosen for it: the household is not eating that one at home. */
 export function toggleSlot(plan: WeekPlan, date: string, slot: MealSlot, preferences: UserPreferences): WeekPlan {
   const day = dayOf(plan, date);
-  if (!day) throw Error('Pick that day first.');
+  if (!day) throw Error("Wähle zuerst diesen Tag.");
   const chosen = day.slots.includes(slot);
-  if (chosen && day.slots.length === 1) throw Error('A planned day needs at least one meal. Unpick the day instead.');
+  if (chosen && day.slots.length === 1) throw Error("Ein geplanter Tag benötigt mindestens eine Mahlzeit. Wähle stattdessen den Tag ab.");
   const slots = chosen ? day.slots.filter(other => other !== slot) : sortSlots([...day.slots, slot]);
   return withTargets({ ...plan,
     days: plan.days.map(other => other.date === date ? { ...other, slots } : other),
@@ -116,7 +116,7 @@ function addChoice(plan: WeekPlan, date: string, slot: MealSlot, participantIds:
   preferences: UserPreferences, build: (id: string, servings: number) => WeekPlanItem,
   householdServings: number): WeekPlan {
   const day = dayOf(plan, date);
-  if (!day || !day.slots.includes(slot)) throw Error('That meal is not planned for this day.');
+  if (!day || !day.slots.includes(slot)) throw Error("Diese Mahlzeit ist für diesen Tag nicht eingeplant.");
   const eating = group(plan, participantIds);
   // Without a named group this is the household's meal, and a decided slot keeps the one it has.
   if (!eating) return itemsInSlot(plan, date, slot).length ? plan
@@ -145,14 +145,14 @@ export function chooseMode(plan: WeekPlan, date: string, slot: MealSlot, mode: E
 export function setPresence(plan: WeekPlan, itemId: string, participantIds: string[],
   preferences: UserPreferences): WeekPlan {
   const item = plan.items.find(candidate => candidate.id === itemId);
-  if (!item) throw Error('Choose a meal for this slot first.');
+  if (!item) throw Error("Wähle zuerst ein Gericht für diese Mahlzeit.");
   const people = plan.participants?.map(person => person.id);
-  if (people && participantIds.some(id => !people.includes(id))) throw Error('That person is not in this plan.');
+  if (people && participantIds.some(id => !people.includes(id))) throw Error("Diese Person ist nicht in diesem Plan.");
   const present = people ? people.filter(id => participantIds.includes(id)) : [...new Set(participantIds)];
   const others = itemsInSlot(plan, item.date, item.mealSlot).filter(other => other.id !== item.id);
   // Nobody eats two meals in the same slot, so seating somebody here means freeing them there.
   if (present.length && others.some(other => groupsOverlap(itemGroup(plan, other), present)))
-    throw Error('That person is already eating something else at this meal.');
+    throw Error("Diese Person isst bei dieser Mahlzeit bereits etwas anderes.");
   if (!present.length) {
     const without = { ...plan, items: plan.items.filter(other => other.id !== item.id) };
     // A slot nobody eats at home at all is skipped; one with other dishes simply loses this one.
@@ -181,8 +181,8 @@ export function skipSlot(plan: WeekPlan, date: string, slot: MealSlot, preferenc
 }
 export function confirmWeek(plan: WeekPlan, preferences: UserPreferences): WeekPlan {
   const confirmed = withTargets({ ...plan, status: 'confirmed' }, preferences);
-  if (!plan.items.length) throw Error('Plan at least one meal before creating a basket.');
-  if (!isWeekPlan(confirmed)) throw Error('This week cannot be saved. Check the planned days and meals.');
+  if (!plan.items.length) throw Error("Plane mindestens eine Mahlzeit, bevor du einen Warenkorb erstellst.");
+  if (!isWeekPlan(confirmed)) throw Error("Diese Woche kann nicht gespeichert werden. Prüfe die geplanten Tage und Mahlzeiten.");
   return confirmed;
 }
 const sortDays = (plan: WeekPlan): WeekPlan =>

@@ -9,7 +9,7 @@ export function useConversationRecorder(): ConversationRecorder {
     return {
       async start(signal: AbortSignal) {
         const permission = await AudioModule.requestRecordingPermissionsAsync();
-        if (!permission.granted) throw Error('Allow microphone access in settings to start a voice conversation.');
+        if (!permission.granted) throw Error("Erlaube den Mikrofonzugriff in den Einstellungen, um ein Gespräch zu starten.");
         if (signal.aborted) return;
         await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
         try { await recorder.prepareToRecordAsync(); prepared = true; if (!signal.aborted) recorder.record(); }

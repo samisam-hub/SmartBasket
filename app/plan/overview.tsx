@@ -1,3 +1,4 @@
+import { germanSavedName } from '../../lib/legacy-display';
 import { Text } from 'react-native';
 import { router } from 'expo-router';
 import { useWeekPlan } from '@/context/WeekPlanContext';
@@ -22,7 +23,7 @@ export default function WeekOverviewScreen() {
     {plan.days.map(day => <SectionCard key={day.date} title={planDateLabel(day.date)}>
       {day.slots.map(slot => {
         const dishes = itemsInSlot(plan, day.date, slot);
-        return <Text key={slot} style={ui.body}>{slotLabels[slot]}: {dishes.length ? dishes.map(item => item.meal.name).join(' / ') : 'Noch offen'}</Text>;
+        return <Text key={slot} style={ui.body}>{slotLabels[slot]}: {dishes.length ? dishes.map(item => germanSavedName(item.meal.name)).join(' / ') : 'Noch offen'}</Text>;
       })}
       <SecondaryButton label={`${planDateLabel(day.date)} bearbeiten`} onPress={() => router.push({ pathname: '/plan/[date]', params: { date: day.date, returnTo: 'week' } })} />
     </SectionCard>)}

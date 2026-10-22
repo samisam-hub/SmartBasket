@@ -21,21 +21,21 @@ export function ShoppingList({ basket }: { basket: SavedBasket }) {
     setSharing(true);
     try {
       if (Platform.OS === 'web') {
-        if (typeof navigator !== 'undefined' && navigator.share) await navigator.share({ title: 'Shopping list', text });
+        if (typeof navigator !== 'undefined' && navigator.share) await navigator.share({ title: "Einkaufsliste", text });
         else setCopy(true);
-      } else await Share.share({ title: 'Shopping list', message: text });
+      } else await Share.share({ title: "Einkaufsliste", message: text });
     } catch (e) {
       if (!(e instanceof Error && e.name === 'AbortError')) setCopy(true);
     } finally { setSharing(false); }
   };
-  return <SectionCard title="Shopping list">
-    <Text style={ui.small}>{completed} of {rows.length} picked up</Text>
+  return <SectionCard title="Einkaufsliste">
+    <Text style={ui.small}>{completed}  von {rows.length}  eingepackt</Text>
     <ErrorMessage message={error} />
-    {error && !blocked && <TextButton label="Retry saving checkmarks" onPress={store.retry} />}
-    {!ready && <Text style={ui.small}>Loading checkmarks…</Text>}
-    {!rows.length && <Text style={ui.small}>No shopping items in this basket.</Text>}
+    {error && !blocked && <TextButton label="Häkchen erneut speichern" onPress={store.retry} />}
+    {!ready && <Text style={ui.small}>Häkchen werden geladen …</Text>}
+    {!rows.length && <Text style={ui.small}>Dieser Warenkorb enthält keine Einkaufsartikel.</Text>}
     {rows.map(row => <Pressable key={row.id} accessibilityRole="checkbox"
-      accessibilityLabel={`${row.name}, ${row.quantity}${row.missing ? ', product still to choose' : ''}`}
+      accessibilityLabel={`${row.name}, ${row.quantity}${row.missing ? ", Produkt noch auswählen" : ''}`}
       accessibilityState={{ checked: rowChecked(row, checked), disabled: !ready || blocked }}
       disabled={!ready || blocked} onPress={() => store.toggle(row)} style={{ paddingVertical: 10 }}>
       <View style={[ui.row, { gap: 10 }]}>
@@ -43,15 +43,15 @@ export function ShoppingList({ basket }: { basket: SavedBasket }) {
         <View style={{ flex: 1 }}>
           <Text style={[ui.body, rowChecked(row, checked) && { textDecorationLine: 'line-through' }]}>{row.name}</Text>
           <Text style={ui.small}>{row.quantity}</Text>
-          {row.missing && <Text style={ui.caption}>Choose a suitable product; not included in the basket price.</Text>}
+          {row.missing && <Text style={ui.caption}>Wähle ein passendes Produkt. Es ist noch nicht im Warenkorbpreis enthalten.</Text>}
         </View>
       </View>
     </Pressable>)}
-    {!!rows.length && <SecondaryButton label="Share shopping list" disabled={!ready || sharing} onPress={() => { void share(); }} />}
+    {!!rows.length && <SecondaryButton label="Einkaufsliste teilen" disabled={!ready || sharing} onPress={() => { void share(); }} />}
     {copy && <>
-      <Text style={ui.small}>Select and copy this list into a message:</Text>
+      <Text style={ui.small}>Markiere und kopiere diese Liste in eine Nachricht:</Text>
       <Text selectable style={ui.body}>{text}</Text>
     </>}
-    <Text style={ui.caption}>Checkmarks stay on this device. Sharing sends a copy; changes are not synced. Checking an item does not record a purchase.</Text>
+    <Text style={ui.caption}>Häkchen bleiben auf diesem Gerät. Beim Teilen wird eine Kopie versendet; Änderungen werden nicht synchronisiert. Ein Häkchen erfasst keinen Einkauf.</Text>
   </SectionCard>;
 }

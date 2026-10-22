@@ -21,7 +21,7 @@ const person = (id, name, dailyCalories, patch = {}) => ({
   dietaryPreferences: ["none"], allergens: [], intolerances: [], isCurrentUser: id === "current-user",
   kind: "adult", activityLevel: null, ...patch,
 });
-const household = [person("current-user", "You", 2200), person("partner", "Partner", 2000),
+const household = [person("current-user", "Du", 2200), person("partner", "Partner", 2000),
   person("kid", "Kid", 1400, { kind: "child" })];
 const preferences = prefs({ householdSize: 3, dailyCalories: 1870, participants: household });
 const familyDinner = () => {
@@ -99,7 +99,7 @@ test("nobody eats twice in one slot, however the dishes are added", () => {
   assert.deepEqual(itemsInSlot(three, monday, "dinner")[0].participantIds, ["current-user"]);
   // Seating somebody at a dish they are not eating is refused rather than silently moved.
   assert.throws(() => setPresence(split, familyDish.id, ["current-user", "partner", "kid"], preferences),
-    /already eating something else/);
+    /isst.*bereits etwas anderes/);
   // A plan that feeds one person twice in a slot is invalid, whoever built it.
   assert.equal(isWeekPlan({ ...split, status: "confirmed",
     items: split.items.map(item => item.id === kidDish.id ? { ...item, participantIds: ["kid", "partner"] } : item) }),
@@ -124,8 +124,8 @@ test("an own dish can also be eating out or heating something up", () => {
   let noPeople = toggleDay(startWeek(monday, plain), monday, plain);
   const [suggestion] = suggestMeals(noPeople, monday, "dinner", plain, fullCatalog);
   noPeople = chooseMeal(noPeople, monday, "dinner", suggestion, plain);
-  assert.throws(() => chooseMeal(noPeople, monday, "dinner", suggestion, plain, ["someone"]), /people of your household/);
-  assert.throws(() => chooseMeal(familyDinner(), monday, "dinner", suggestion, preferences, ["ghost"]), /not in this plan/);
+  assert.throws(() => chooseMeal(noPeople, monday, "dinner", suggestion, plain, ["someone"]), /Personen deines Haushalts/);
+  assert.throws(() => chooseMeal(familyDinner(), monday, "dinner", suggestion, preferences, ["ghost"]), /nicht in diesem Plan/);
 });
 
 test("removing dishes leaves the slot in an honest state", () => {

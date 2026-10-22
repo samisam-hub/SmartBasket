@@ -57,7 +57,7 @@ test('Anna plans school lunch, a separate lunchbox, and a shareable shopping tri
   await reopened.initialize();
   assert.ok(rowChecked(rows[0], reopened.getSnapshot().checked));
   const sharedText = shoppingListText('Family week', rows, reopened.getSnapshot().checked);
-  assert.match(sharedText, /Already picked up:/);
+  assert.match(sharedText, /Bereits eingepackt:/);
   assert.match(sharedText, /\[ \]/);
   assert.ok(sharedText.includes(`[x] ${rows[0].name}`));
   assert.equal(/Mia|allergen|kcal/.test(sharedText), false, 'private planning details stay out of the text');

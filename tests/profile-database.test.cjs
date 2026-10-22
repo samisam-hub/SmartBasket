@@ -12,7 +12,7 @@ test('profile ownership, optional constraints, immutable parent-owned participan
  const asUser=async id=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated');};
  await asUser(a);await db.query('insert into profiles(id,display_name) values($1,$2)',[a,'A']);await db.exec("update profiles set default_daily_calories=1700,height_cm=null,weight_kg=null");
  await assert.rejects(db.exec('update profiles set age=0'),e=>e.code==='23514');await assert.rejects(db.query('insert into profiles(id) values($1)',[b]),e=>e.code==='42501');
- const me=profileParticipant({...emptyProfile,displayName:'You',defaultDailyCalories:1700},prefs()),partner={...me,id:'partner',name:'Partner',dailyCalories:2201,proteinTarget:80,allergens:['peanuts'],isCurrentUser:false};
+ const me=profileParticipant({...emptyProfile,displayName:"Du",defaultDailyCalories:1700},prefs()),partner={...me,id:'partner',name:'Partner',dailyCalories:2201,proteinTarget:80,allergens:['peanuts'],isCurrentUser:false};
  const input=participantPreferences(prefs({planningDays:3}),[me,partner]),result=basketFromMealPlan({...generateMealPlan(input),status:'confirmed'},input,[]);
  const save=key=>db.query('select save_generated_basket($1,$2,$3::jsonb,$4::jsonb) id',[key,'Plan',JSON.stringify(input),JSON.stringify(result)]);
  const first=(await save('participants')).rows[0].id;assert.equal((await save('participants')).rows[0].id,first);
