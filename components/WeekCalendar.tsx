@@ -8,19 +8,19 @@ import { colors, spacing, ui } from '../lib/theme';
 
 export const todayPlanDate = (now: Date = new Date()) => planDate(now);
 export const currentWeekStart = (now: Date = new Date()) => weekStartOf(todayPlanDate(now));
-const weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const weekdayNames = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 /** What one day of the calendar shows: nothing planned, meals still open, or all decided. */
 export function dayState(plan: WeekPlan | null, date: string): 'unplanned' | 'open' | 'done' {
   if (!plan || !dayOf(plan, date)) return 'unplanned';
   return openPlanSlots(plan).some(day => day.date === date) ? 'open' : 'done';
 }
 export function weekSummary(plan: WeekPlan | null): string {
-  if (!plan || !plan.days.length) return 'No meals planned yet. Plan your meals for the days you need.';
+  if (!plan || !plan.days.length) return "Noch keine Mahlzeiten geplant. Plane für die Tage, an denen du Essen brauchst.";
   const open = openPlanSlots(plan).reduce((count, day) => count + day.slots.length, 0);
   const meals = plan.items.length;
-  const days = `${plan.days.length} ${plan.days.length === 1 ? 'day' : 'days'}`;
-  if (open) return `${days} planned · ${meals} ${meals === 1 ? 'meal' : 'meals'} chosen · ${open} still open`;
-  return `${days} planned · ${meals} ${meals === 1 ? 'meal' : 'meals'} chosen · ready for a basket`;
+  const days = `${plan.days.length} ${plan.days.length === 1 ? 'Tag' : 'Tage'}`;
+  if (open) return `${days} geplant · ${meals} ${meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'} ausgewählt · ${open} noch offen`;
+  return `${days} geplant · ${meals} ${meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'} ausgewählt · bereit für den Warenkorb`;
 }
 
 /** Screen 6: the week as the first thing the household sees, with every day reachable in one tap. */
@@ -36,15 +36,15 @@ export function WeekCalendar({ plan, weekStart, onWeek, onBasket, onCopyPrevious
   const dates = weekDates(weekStart);
   const ready = !!plan?.items.length;
   return <SectionCard>
-    <Text style={ui.subheading}>{weekStart === currentWeekStart() ? "Your current week" : "Your selected week"}</Text>
-    <Text style={ui.body}>{weekStart === currentWeekStart() ? "Would you like to shop for this week?" : "Would you like to shop for this week’s meals?"}</Text>
+    <Text style={ui.subheading}>{weekStart === currentWeekStart() ? "Deine aktuelle Woche" : "Deine ausgewählte Woche"}</Text>
+    <Text style={ui.body}>{weekStart === currentWeekStart() ? "Möchtest du für diese Woche einkaufen?" : "Möchtest du für die Mahlzeiten dieser Woche einkaufen?"}</Text>
     <View style={[ui.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Previous week" disabled={busy}
+      <Pressable accessibilityRole="button" accessibilityLabel="Vorherige Woche" disabled={busy}
         onPress={() => onWeek(addDays(weekStart, -7))} style={{ padding: spacing.xs }}>
         <Text style={[ui.body, { color: colors.primary }]}>‹</Text>
       </Pressable>
       <Text style={ui.subheading}>{planDateLabel(weekStart)} – {planDateLabel(addDays(weekStart, 6))}</Text>
-      <Pressable accessibilityRole="button" accessibilityLabel="Next week" disabled={busy}
+      <Pressable accessibilityRole="button" accessibilityLabel="Nächste Woche" disabled={busy}
         onPress={() => onWeek(addDays(weekStart, 7))} style={{ padding: spacing.xs }}>
         <Text style={[ui.body, { color: colors.primary }]}>›</Text>
       </Pressable>
@@ -54,7 +54,7 @@ export function WeekCalendar({ plan, weekStart, onWeek, onBasket, onCopyPrevious
         const state = dayState(plan, date);
         const meals = plan ? itemsOn(plan, date).length : 0;
         return <Pressable key={date} accessibilityRole="button" disabled={busy}
-          accessibilityLabel={`${planDateLabel(date)}: ${state === 'unplanned' ? 'nothing planned' : `${meals} ${meals === 1 ? 'meal' : 'meals'}, ${state === 'open' ? 'still open' : 'all decided'}`}`}
+          accessibilityLabel={`${planDateLabel(date)}: ${state === 'unplanned' ? "nichts geplant" : `${meals} ${meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'}, ${state === 'open' ? "noch offen" : "alles ausgewählt"}`}`}
           onPress={() => router.push(state === 'unplanned' ? '/plan/week' : { pathname: '/plan/[date]', params: { date } })}
           style={({ pressed }) => ({ flex: 1, minWidth: 0, alignItems: 'center', gap: 4, paddingVertical: spacing.sm,
             borderRadius: 12, opacity: pressed ? 0.7 : 1, borderWidth: date === today ? 2 : 1,
@@ -71,12 +71,12 @@ export function WeekCalendar({ plan, weekStart, onWeek, onBasket, onCopyPrevious
       })}
     </View>
     <Text style={ui.small}>{weekSummary(plan)}</Text>
-    <PrimaryButton label="Plan your meal" disabled={busy}
+    <PrimaryButton label="Mahlzeiten planen" disabled={busy}
       onPress={() => router.push(!plan?.days.length ? '/plan/week' : openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} />
-    {onCopyPrevious && <SecondaryButton label="Copy last week's plan" disabled={busy} onPress={onCopyPrevious} />}
-    {!!plan?.days.length && <SecondaryButton label="Change the days" disabled={busy} onPress={() => router.push('/plan/week')} />}
+    {onCopyPrevious && <SecondaryButton label="Plan der Vorwoche übernehmen" disabled={busy} onPress={onCopyPrevious} />}
+    {!!plan?.days.length && <SecondaryButton label="Tage ändern" disabled={busy} onPress={() => router.push('/plan/week')} />}
     {plan?.days.length ? <SecondaryButton label={openPlanSlots(plan).length ? 'Vorlieben & Wochenplan' : 'Wochenplan ansehen'} disabled={busy}
       onPress={() => router.push(openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} /> : null}
-    {ready && <PrimaryButton label="Create my basket" disabled={busy} onPress={onBasket} />}
+    {ready && <PrimaryButton label="Warenkorb erstellen" disabled={busy} onPress={onBasket} />}
   </SectionCard>;
 }

@@ -39,8 +39,8 @@ test('checkbox deselection persists, reduces totals and restores the exact quant
  assert.ok(Math.abs(restored.totalCalories-original.totalCalories)<.01);assert.ok(isBasketResult(restored));
  assert.equal(isBasketResult({...unchecked,excludedItems:[null]}),false);
  assert.equal(isBasketResult({...original,excludedItems:[item]}),false);
- assert.throws(()=>toggleBasketProduct({...unchecked,items:[...unchecked.items,{...item,product:{...item.product,id:'replacement'}}]},item.product.id),/replacement/);
- assert.throws(()=>toggleBasketProduct({...original,purchasedAt:'2026-10-21'},item.product.id),/Purchased/);
+ assert.throws(()=>toggleBasketProduct({...unchecked,items:[...unchecked.items,{...item,product:{...item.product,id:'replacement'}}]},item.product.id),/Alternative/);
+ assert.throws(()=>toggleBasketProduct({...original,purchasedAt:'2026-10-21'},item.product.id),/Bereits eingekaufte/);
  let empty=original;for(const row of original.items)empty=toggleBasketProduct(empty,row.product.id);
  assert.equal(empty.items.length,0);assert.equal(empty.knownPriceSubtotal,0);assert.ok(isBasketResult(empty));
 });
@@ -55,5 +55,5 @@ test('choosing an unchecked product as a replacement reconciles checkbox state',
  const selected=addBasketReplacement(unchecked,requirement,item.product);
  assert.equal(selected.excludedItems.length,0);assert.ok(isBasketResult(selected));
  assert.ok(!selected.removedIngredientKeys.includes(item.ingredientKey));
- assert.throws(()=>addBasketReplacement(selected,requirement,item.product),/already selected/);
+ assert.throws(()=>addBasketReplacement(selected,requirement,item.product),/bereits ausgewählt/);
 });

@@ -1,3 +1,5 @@
+import { germanSavedName } from '../lib/legacy-display';
+import { germanLabel } from '../lib/german';
 import { useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Text, View } from 'react-native';
 import type { Meal } from '../types/meal';
@@ -42,29 +44,29 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
     onPanResponderTerminate: () => offset.setValue(0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [width, current?.meal.id, busy, mode]);
-  if (!current) return <SectionCard title={exhausted ? 'No more meals fit this slot' : 'Nothing to show'}>
+  if (!current) return <SectionCard title={exhausted ? "Keine weiteren passenden Gerichte" : "Keine Vorschläge verfügbar"}>
     <Text style={ui.body}>{exhausted
-      ? 'Every compatible meal for this slot has been shown. Rather than repeating one, pick one of these:'
-      : 'No suggestion is available right now.'}</Text>
+      ? "Alle passenden Gerichte für diese Mahlzeit wurden angezeigt. Wähle eine dieser Möglichkeiten:"
+      : "Momentan ist kein Vorschlag verfügbar."}</Text>
   </SectionCard>;
   return <View style={{ gap: spacing.md }} onLayout={event => {
     const next = event.nativeEvent.layout.width;
     if (next > 0 && next !== width) setWidth(next);
   }}>
     <Animated.View accessible accessibilityRole="button"
-      accessibilityLabel={`${current.meal.name}. ${mode === 'taste' ? 'Rechts: mögen. Links: nicht mögen.' : 'Swipe right to take it, left for the next one.'}`}
+      accessibilityLabel={`${germanSavedName(current.meal.name)}. ${mode === 'taste' ? 'Rechts: mögen. Links: nicht mögen.' : "Wische nach rechts zum Auswählen, nach links für den nächsten Vorschlag."}`}
       {...(busy ? {} : responder.panHandlers)}
       style={[ui.card, { gap: spacing.sm, transform: [{ translateX: offset }] }]}>
-      <Text style={ui.eyebrow}>{mode === 'taste' ? 'GESCHMACK' : suggestions.length > 1 ? `1 of ${suggestions.length}` : 'Last one for now'}</Text>
-      <Text style={ui.subheading}>{current.meal.name}</Text>
+      <Text style={ui.eyebrow}>{mode === 'taste' ? 'GESCHMACK' : suggestions.length > 1 ? `1 von ${suggestions.length}` : "Vorerst letzter Vorschlag"}</Text>
+      <Text style={ui.subheading}>{germanSavedName(current.meal.name)}</Text>
       <MealImage meal={current.meal} />
       <MealPreparation meal={current.meal} />
       <Text style={ui.small}>{mealLine(current.meal)}</Text>
     </Animated.View>
-    <PrimaryButton label={mode === 'taste' ? 'Mögen wir' : 'Take this one'} disabled={busy} onPress={() => decide('take')} />
-    <SecondaryButton label={mode === 'taste' ? 'Mögen wir nicht' : 'Show the next one'} disabled={busy || (mode !== 'taste' && suggestions.length < 2)} onPress={() => decide('next')} />
-    {mode !== 'taste' && <TextButton label="Show two others" disabled={busy} onPress={onMore} />}
+    <PrimaryButton label={mode === 'taste' ? 'Mögen wir' : "Dieses Gericht wählen"} disabled={busy} onPress={() => decide('take')} />
+    <SecondaryButton label={mode === 'taste' ? 'Mögen wir nicht' : "Nächsten Vorschlag zeigen"} disabled={busy || (mode !== 'taste' && suggestions.length < 2)} onPress={() => decide('next')} />
+    {mode !== 'taste' && <TextButton label="Zwei andere zeigen" disabled={busy} onPress={onMore} />}
   </View>;
 }
 const mealLine = (meal: Meal) =>
-  `${meal.ingredients.length} ingredients · ${meal.dietaryTags.length ? meal.dietaryTags.join(', ') : 'no dietary tags'}`;
+  `${meal.ingredients.length} Zutaten · ${meal.dietaryTags.length ? meal.dietaryTags.map(germanLabel).join(', ') : "keine Ernährungsangaben"}`;

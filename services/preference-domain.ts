@@ -57,29 +57,29 @@ const integerIn = (value: unknown, min: number, max: number) =>
 export function validatePreferences(value: PreferenceDraft): PreferenceErrors {
   const errors: PreferenceErrors = {};
   if (!integerIn(value.householdSize, 1, 10))
-    errors.householdSize = "Choose between 1 and 10 people.";
+    errors.householdSize = "Wähle zwischen 1 und 10 Personen.";
   if (value.participants !== undefined) {
     if (!validParticipantList(value.participants))
       errors.participants =
-        "Every person needs a name and a calorie suggestion from 1,000 to 5,000 kcal.";
+        "Jede Person benötigt einen Namen und einen Kalorienwert von 1.000 bis 5.000 kcal.";
     else if (value.participants.length !== value.householdSize)
-      errors.householdSize = "The household size must match the people you added.";
+      errors.householdSize = "Die Haushaltsgröße muss zu den hinzugefügten Personen passen.";
   }
   if (value.slotDefaults !== undefined && !validSlotDefaults(value.slotDefaults))
-    errors.slotDefaults = "Choose at least one meal you plan for.";
+    errors.slotDefaults = "Wähle mindestens eine Mahlzeit zum Planen.";
   if (![3, 5, 7, 14].includes(value.planningDays))
-    errors.planningDays = "Choose 3, 5, 7, or 14 days.";
+    errors.planningDays = "Wähle 3, 5, 7 oder 14 Tage.";
   if (!integerIn(value.dailyCalories, 1000, 5000))
-    errors.dailyCalories = "Enter a whole number from 1,000 to 5,000 kcal.";
+    errors.dailyCalories = "Gib eine ganze Zahl von 1.000 bis 5.000 kcal ein.";
   if (!goals.includes(value.primaryGoal))
-    errors.primaryGoal = "Choose one nutrition goal.";
+    errors.primaryGoal = "Wähle ein Ernährungsziel.";
   if (!["automatic", "manual"].includes(value.proteinMode))
-    errors.proteinMode = "Choose automatic or manual protein.";
+    errors.proteinMode = "Wähle ein automatisches oder selbst festgelegtes Eiweißziel.";
   if (
     value.proteinMode === "manual" &&
     !integerIn(value.proteinTargetGrams, 1, 500)
   )
-    errors.proteinTargetGrams = "Enter a whole number from 1 to 500 g per day.";
+    errors.proteinTargetGrams = "Gib eine ganze Zahl von 1 bis 500 g pro Tag ein.";
   if (
     !Array.isArray(value.dietaryPreferences) ||
     !value.dietaryPreferences.length ||
@@ -92,15 +92,15 @@ export function validatePreferences(value: PreferenceDraft): PreferenceErrors {
       ["vegan", "vegetarian", "pescatarian"].includes(d),
     ).length > 1
   )
-    errors.dietaryPreferences = "Choose compatible dietary preferences.";
+    errors.dietaryPreferences = "Wähle miteinander vereinbare Ernährungseinstellungen.";
   if (
     !Array.isArray(value.allergens) ||
     value.allergens.some((a) => !allergens.includes(a)) ||
     new Set(value.allergens).size !== value.allergens.length
   )
-    errors.allergens = "Choose allergens from the list, or None.";
+    errors.allergens = "Wähle Allergene aus der Liste oder Keine.";
   if (typeof value.budgetEnabled !== "boolean")
-    errors.budgetEnabled = "Choose a budget option.";
+    errors.budgetEnabled = "Wähle eine Budgetoption.";
   if (
     value.budgetEnabled &&
     (typeof value.weeklyBudgetEur !== "number" ||
@@ -112,12 +112,12 @@ export function validatePreferences(value: PreferenceDraft): PreferenceErrors {
       ) > 0.00001)
   )
     errors.weeklyBudgetEur =
-      "Enter €0.01–€10,000, with at most two decimal places.";
+      "Gib 0,01–10.000 € mit höchstens zwei Nachkommastellen ein.";
   return errors;
 }
 export function normalizedValues(draft: PreferenceDraft): PreferenceValues {
   if (Object.keys(validatePreferences(draft)).length)
-    throw new Error("Please check the highlighted preferences.");
+    throw new Error("Prüfe die markierten Einstellungen.");
   return {
     ...draft,
     dailyCalories: draft.dailyCalories as number,
@@ -127,22 +127,22 @@ export function normalizedValues(draft: PreferenceDraft): PreferenceValues {
   };
 }
 export const slotLabels: Record<(typeof mealSlots)[number], string> = {
-  breakfast: "Breakfast",
-  lunch: "Lunch",
-  dinner: "Dinner",
+  breakfast: "Frühstück",
+  lunch: "Mittagessen",
+  dinner: "Abendessen",
   snack: "Snack",
 };
 export const activeSlotLabels = (p: { slotDefaults?: SlotDefaults }): string[] =>
   mealSlots.filter((slot) => slotDefaultsOf(p)[slot]).map((slot) => slotLabels[slot]);
 export function preferenceChips(p: UserPreferences): string[] {
   return [
-    `${p.planningDays} days`,
-    `${p.householdSize} ${p.householdSize === 1 ? "person" : "people"}`,
+    `${p.planningDays} Tage`,
+    `${p.householdSize} ${p.householdSize === 1 ? "Person" : "Personen"}`,
     `${activeSlotLabels(p).join(", ")}`,
-    `${p.dailyCalories.toLocaleString("en-GB")} kcal`,
+    `${p.dailyCalories.toLocaleString("de-DE")} kcal`,
     labels[p.primaryGoal],
     ...p.dietaryPreferences.filter((d) => d !== "none").map((d) => labels[d]),
-    p.budgetEnabled ? `€${p.weeklyBudgetEur} budget` : "No budget limit",
+    p.budgetEnabled ? `€${p.weeklyBudgetEur} Budget` : "Kein Budgetlimit",
   ];
 }
 /** Check persisted input without coercing malformed data into valid preferences. */

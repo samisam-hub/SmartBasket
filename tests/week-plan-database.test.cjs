@@ -83,7 +83,7 @@ const asJsonRow = (row) => ({
   updated_at: row.updated_at.toISOString(),
 });
 const person = (patch = {}) => ({
-  id: "current-user", name: "You", age: null, sex: null, dailyCalories: 2000, proteinTarget: 100,
+  id: "current-user", name: "Du", age: null, sex: null, dailyCalories: 2000, proteinTarget: 100,
   dietaryPreferences: ["none"], allergens: [], intolerances: [], isCurrentUser: true,
   kind: "adult", activityLevel: null, ...patch,
 });

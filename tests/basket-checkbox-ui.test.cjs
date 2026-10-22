@@ -11,7 +11,7 @@ const stub=name=>function Stub(props){return React.createElement(name,props,prop
 const shared=[];
 const originalLoad=Module._load;
 Module._load=function(request,parent,isMain){
- if(request==='react-native')return {Pressable:'Pressable',Text:'Text',View:'View',Platform:{OS:'android'},Share:{share:async value=>{shared.push(value);}}};
+ if(request==='react-native')return {Pressable:'Pressable',Text:'Text',View:"Ansehen",Platform:{OS:'android'},Share:{share:async value=>{shared.push(value);}}};
  if(request==='expo-router')return {router:{push:()=>{}}};
  if(request==='@expo/vector-icons/Feather')return {default:stub('Icon')};
  if(parent?.filename.endsWith('/components/BasketResult.tsx') || parent?.filename.endsWith('/components/ShareBasket.tsx')){

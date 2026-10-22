@@ -18,9 +18,9 @@ export default function PlanWeekScreen() {
   const { saved } = usePreferences();
   const { plan, ready, error, attendanceRules, store } = useWeekPlan();
   const weekStart = plan?.weekStart ?? currentWeekStart();
-  if (!saved) return <Screen><Text style={ui.body}>Set your preferences first, then pick your days.</Text>
-    <SecondaryButton label="Set preferences" onPress={() => router.push('/onboarding/welcome')} /></Screen>;
-  if (!ready) return <Screen><Text style={ui.body}>Loading your week…</Text></Screen>;
+  if (!saved) return <Screen><Text style={ui.body}>Lege zuerst deine Einstellungen fest und wähle danach deine Tage.</Text>
+    <SecondaryButton label="Einstellungen festlegen" onPress={() => router.push('/onboarding/welcome')} /></Screen>;
+  if (!ready) return <Screen><Text style={ui.body}>Deine Woche wird geladen …</Text></Screen>;
   const planned = plan ? plannedDates(plan) : [];
   const selectedPerson = saved.participants?.some(person => person.id === personId)
     ? personId : saved.participants?.[0]?.id;
@@ -29,46 +29,46 @@ export default function PlanWeekScreen() {
       if (!plan) store.open(weekStart, saved);
       store.toggleDay(date, saved);
       setCopyError(null);
-    } catch (e) { setCopyError(e instanceof Error ? e.message : 'Could not change this day.'); }
+    } catch (e) { setCopyError(e instanceof Error ? e.message : "Dieser Tag konnte nicht geändert werden."); }
   };
   return <Screen bottom>
-    <ScreenHeader title="Which days are you cooking?" subtitle={`${planDateLabel(weekStart)} – ${planDateLabel(addDays(weekStart, 6))}. Pick as many or as few as you like; days in between can stay empty.`} />
+    <ScreenHeader title="An welchen Tagen möchtest du kochen?" subtitle={`${planDateLabel(weekStart)} – ${planDateLabel(addDays(weekStart, 6))}. Wähle beliebig viele Tage; dazwischen können Tage frei bleiben.`} />
     <ErrorMessage message={copyError ?? error} />
     {store.canCopyPreviousWeek(weekStart, saved) && <SectionCard>
-      <SecondaryButton label="Copy last week's plan" onPress={() => {
+      <SecondaryButton label="Plan der Vorwoche übernehmen" onPress={() => {
         try { store.copyPreviousWeek(weekStart, saved); setCopyError(null); }
-        catch (e) { setCopyError(e instanceof Error ? e.message : 'Could not copy last week.'); }
+        catch (e) { setCopyError(e instanceof Error ? e.message : "Die Vorwoche konnte nicht übernommen werden."); }
       }} />
-      <Text style={ui.small}>Days, meals and attendance become an editable draft for this week.</Text>
+      <Text style={ui.small}>Tage, Mahlzeiten und Anwesenheit werden als bearbeitbarer Entwurf für diese Woche übernommen.</Text>
     </SectionCard>}
     <SectionCard>
       <View style={ui.wrap}>
         {weekDates(weekStart).map(date => <SelectionChip key={date} label={planDateLabel(date)}
           selected={!!plan && !!dayOf(plan, date)} onPress={() => open(date)} />)}
       </View>
-      <Text style={ui.small}>Each day you pick starts with {activeSlotLabels(saved).join(', ').toLowerCase()}. You can drop single meals on the day itself.</Text>
+      <Text style={ui.small}>Jeder ausgewählte Tag beginnt mit {activeSlotLabels(saved).join(', ').toLowerCase()}. Einzelne Mahlzeiten kannst du am jeweiligen Tag abwählen.</Text>
     </SectionCard>
-    {!!saved.participants?.length && <SectionCard title="Usually away for a meal">
-      <Text style={ui.small}>Set regular school or work meals away from home. New days and meal choices use this as a starting point; you can still change one day.</Text>
-      <Text style={ui.subheading}>Who?</Text>
+    {!!saved.participants?.length && <SectionCard title="Regelmäßig auswärts essen">
+      <Text style={ui.small}>Lege regelmäßige Mahlzeiten in Schule oder Arbeit fest. Neue Tage und Mahlzeiten übernehmen diese Vorgabe; einzelne Tage bleiben anpassbar.</Text>
+      <Text style={ui.subheading}>Wer?</Text>
       <View style={ui.wrap}>{saved.participants.map(person => <SelectionChip key={person.id}
         label={person.name || 'Person'} selected={selectedPerson === person.id}
         onPress={() => setPersonId(person.id)} />)}</View>
-      <Text style={ui.subheading}>Which meal?</Text>
+      <Text style={ui.subheading}>Welche Mahlzeit?</Text>
       <View style={ui.wrap}>{mealSlots.map(slot => <SelectionChip key={slot} label={slotLabels[slot]}
         selected={routineSlot === slot} onPress={() => setRoutineSlot(slot)} />)}</View>
-      <Text style={ui.subheading}>On which days?</Text>
-      <View style={ui.wrap}>{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label, weekday) =>
+      <Text style={ui.subheading}>An welchen Tagen?</Text>
+      <View style={ui.wrap}>{["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((label, weekday) =>
         <SelectionChip key={label} label={label}
           selected={attendanceRules.some(rule => rule.personId === selectedPerson && rule.slot === routineSlot && rule.weekday === weekday)}
           onPress={() => { try { store.toggleAttendanceRule({ personId: selectedPerson!, slot: routineSlot, weekday }, saved);
-            setCopyError(null); } catch (e) { setCopyError(e instanceof Error ? e.message : 'Could not save the routine.'); } }} />)}</View>
-      <Text style={ui.small}>Selected days mean this person is usually away for this meal. Existing meals stay as you chose them.</Text>
+            setCopyError(null); } catch (e) { setCopyError(e instanceof Error ? e.message : "Die regelmäßige Abwesenheit konnte nicht gespeichert werden."); } }} />)}</View>
+      <Text style={ui.small}>An ausgewählten Tagen isst diese Person diese Mahlzeit üblicherweise auswärts. Bereits gewählte Mahlzeiten bleiben unverändert.</Text>
     </SectionCard>}
-    {planned.length > 0 && <SectionCard title="Your week">
+    {planned.length > 0 && <SectionCard title="Deine Woche">
       {planned.map(date => <Text key={date} style={ui.small}>{planDateLabel(date)}: {dayOf(plan!, date)!.slots.join(', ')}</Text>)}
     </SectionCard>}
-    <PrimaryButton label={planned.length ? 'Weiter: Was mögt ihr?' : 'Pick at least one day'} disabled={!planned.length}
+    <PrimaryButton label={planned.length ? 'Weiter: Was mögt ihr?' : "Mindestens einen Tag auswählen"} disabled={!planned.length}
       onPress={() => router.push('/plan/taste')} />
   </Screen>;
 }

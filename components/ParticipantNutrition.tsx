@@ -11,10 +11,10 @@ export function ParticipantNutrition({ plan, nutrition, daily = false, participa
 }) {
   const days = Math.max(1, plannedDayCount(plan));
   return <View style={{ gap: 8 }}>
-    {daily && <Text style={ui.subheading}>Daily averages · {days} {days === 1 ? 'day' : 'days'}</Text>}
+    {daily && <Text style={ui.subheading}>Tagesdurchschnitt · {days} {days === 1 ? 'Tag' : 'Tage'}</Text>}
     {splitNutrition(plan, nutrition, daily ? days : 1, participantIds).map(p => <View key={p.id}>
-      <Text style={ui.body}><Text style={{ fontWeight: '700' }}>{p.name}</Text>{`: ${Math.round(p.calories)} kcal · ${Math.round(p.protein)} g protein${daily ? ' / day' : ''}`}</Text>
-      {daily && <Text style={ui.small}>Daily targets: {p.calorieTarget === null ? '—' : Math.round(p.calorieTarget)} kcal · {p.proteinTarget === null ? '—' : Math.round(p.proteinTarget)} g protein</Text>}
+      <Text style={ui.body}><Text style={{ fontWeight: '700' }}>{p.name}</Text>{`: ${Math.round(p.calories)} kcal · ${Math.round(p.protein)}  g Eiweiß${daily ? " / Tag" : ''}`}</Text>
+      {daily && <Text style={ui.small}>Tagesziele: {p.calorieTarget === null ? '—' : Math.round(p.calorieTarget)} kcal · {p.proteinTarget === null ? '—' : Math.round(p.proteinTarget)}   g Eiweiß</Text>}
     </View>)}
   </View>;
 }

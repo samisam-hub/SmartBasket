@@ -39,7 +39,7 @@ test('rename and delete survive offline restart, synchronize by owner and cannot
  const reopened=new BasketPersistence(storage,remote);assert.equal((await reopened.list(b.ownerId)).baskets[0].name,'Weekend groceries');
  offline=false;assert.equal((await reopened.list(b.ownerId)).baskets[0].name,'Weekend groceries');assert.equal(cloud.get(b.id).name,'Weekend groceries');
  offline=true;assert.ok((await reopened.remove(b.ownerId,b.id)).warning);assert.equal((await reopened.list(b.ownerId)).baskets.length,0);
- await assert.rejects(reopened.save(b),/deleted/);offline=false;assert.equal((await new BasketPersistence(storage,remote).list(b.ownerId)).baskets.length,0);assert.equal(cloud.size,0);
+ await assert.rejects(reopened.save(b),/gelöscht/);offline=false;assert.equal((await new BasketPersistence(storage,remote).list(b.ownerId)).baskets.length,0);assert.equal(cloud.size,0);
  assert.equal(storage.data.get(`smartbasket.baskets.v1:${b.ownerId}:${b.id}`),'');
 });
 test('another device deletion clears cached synced baskets; failed action writes do not alter cloud',async()=>{
@@ -56,7 +56,7 @@ test('discarding an unsaved draft persists deletion across restarts and prevents
  const restarted=new BasketPersistence(storage,null);
  assert.equal(await restarted.isDeleted(b.ownerId,b.id),true);
  assert.equal(await restarted.isDeleted('another-owner',b.id),false);
- await assert.rejects(restarted.save(b),/deleted/);
+ await assert.rejects(restarted.save(b),/gelöscht/);
  assert.deepEqual((await restarted.list(b.ownerId)).baskets,[]);
- await assert.rejects(restarted.discard({...b,result:{...b.result,purchasedAt:new Date().toISOString()}}),/unfinished/);
+ await assert.rejects(restarted.discard({...b,result:{...b.result,purchasedAt:new Date().toISOString()}}),/noch nicht abgeschlossen/);
 });

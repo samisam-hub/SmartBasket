@@ -17,7 +17,7 @@ const person = (id, name, dailyCalories, patch = {}) => ({
   dietaryPreferences: ["none"], allergens: [], intolerances: [], isCurrentUser: id === "current-user",
   kind: "adult", activityLevel: null, ...patch,
 });
-const household = [person("current-user", "You", 2200), person("partner", "Partner", 2000),
+const household = [person("current-user", "Du", 2200), person("partner", "Partner", 2000),
   person("kid", "Kid", 1400, { kind: "child" })];
 const preferences = prefs({ householdSize: 3, dailyCalories: 1870, participants: household });
 const plannedDay = () => {
@@ -68,9 +68,9 @@ test("nobody at the table means the meal is not planned at all", () => {
   assert.ok(!dayOf(empty, monday).slots.includes("dinner"), "a meal nobody eats at home is skipped");
   assert.ok(isWeekPlan({ ...empty, status: "confirmed" }) || !empty.days.length);
   // A person who is not in this plan cannot be seated at it.
-  assert.throws(() => setPresence(plan, dinner(plan).id, ["stranger"], preferences), /not in this plan/);
+  assert.throws(() => setPresence(plan, dinner(plan).id, ["stranger"], preferences), /nicht in diesem Plan/);
   // And an undecided slot has no presence to set.
-  assert.throws(() => setPresence(plan, "2026-10-05-lunch", ["kid"], preferences), /Choose a meal/);
+  assert.throws(() => setPresence(plan, "2026-10-05-lunch", ["kid"], preferences), /Wähle zuerst ein Gericht/);
 });
 
 test("only the people eating a meal share its nutrition", () => {

@@ -44,5 +44,5 @@ test('spoken meal wish enters the ordinary review and cannot bypass allergies',(
  const input=confirmedVoicePlan(p,base,[person]);
  const plan=generateMealPlan(input,fullCatalog);
  assert.equal(plan.status,'review');assert.ok(plan.items.some(i=>i.meal.id===meal.id));
- assert.throws(()=>confirmedVoicePlan(p,base,[{...person,allergens:['eggs']}]),/dietary/);
+ assert.throws(()=>confirmedVoicePlan(p,base,[{...person,allergens:['eggs']}]),/Ernährungseinstellungen/);
 });

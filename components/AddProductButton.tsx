@@ -8,10 +8,10 @@ export function AddProductButton({ product }: { product: Product }) {
   const { active, add, busy } = useActiveBasket();
   const [message, setMessage] = useState<string | null>(null);
   return <View style={{ gap: 4 }}>
-    <SecondaryButton label="+ Add to basket" disabled={!active || busy} onPress={() => {
+    <SecondaryButton label="+ Zum Warenkorb" disabled={!active || busy} onPress={() => {
       setMessage(null); void add(product).then(setMessage).catch(e => setMessage(e.message));
     }} />
-    {!active && <Text style={ui.caption}>Open a basket first to add products.</Text>}
+    {!active && <Text style={ui.caption}>Öffne zuerst einen Warenkorb, um Produkte hinzuzufügen.</Text>}
     {message && <Text accessibilityLiveRegion="polite" style={ui.caption}>{message}</Text>}
   </View>;
 }

@@ -44,7 +44,7 @@ test("a week starts empty and picking a day prefills it from the meal standard",
   let plan3 = toggleDay(toggleDay(toggleDay(plan, "2026-10-08", preferences), monday, preferences), "2026-10-06", preferences);
   assert.deepEqual(plannedDates(plan3), ["2026-10-05", "2026-10-06", "2026-10-08"]);
   assert.deepEqual(plan3.days.map((day) => day.date), ["2026-10-05", "2026-10-06", "2026-10-08"]);
-  assert.throws(() => toggleDay(plan, "2026-10-12", preferences), /not in this week/);
+  assert.throws(() => toggleDay(plan, "2026-10-12", preferences), /nicht zu dieser Woche/);
   // Targets grow with what is planned.
   assert.ok(plan3.targetCalories > withMonday.targetCalories);
   assert.ok(Math.abs(plannedSlotShare(plan3) - 3 * 0.89) < 1e-9);
@@ -69,7 +69,7 @@ test("unpicking a day drops what was planned on it, and a dropped slot drops its
   assert.ok(openPlanSlots(again)[0].slots.includes("lunch"));
   // The last meal of a day cannot be dropped on its own; the day itself is unpicked instead.
   const onlyDinner = toggleSlot(toggleSlot(plan, monday, "breakfast", preferences), monday, "lunch", preferences);
-  assert.throws(() => toggleSlot(onlyDinner, monday, "dinner", preferences), /at least one meal/);
+  assert.throws(() => toggleSlot(onlyDinner, monday, "dinner", preferences), /mindestens eine Mahlzeit/);
   assert.deepEqual(skipSlot(onlyDinner, monday, "dinner", preferences).days, [], "skipping the last meal unpicks the day");
 });
 
@@ -83,8 +83,8 @@ test("the first yes wins, clearing reopens the slot and skipping answers it", ()
   const other = { meal: { ...first.meal, id: "other-meal" }, servings: 2 };
   assert.equal(chooseMeal(plan, monday, "dinner", other, preferences).items[0].meal.id, first.meal.id);
   // Only a planned day and a chosen slot can be decided at all.
-  assert.throws(() => chooseMeal(plan, "2026-10-07", "dinner", first, preferences), /not planned/);
-  assert.throws(() => chooseMeal(plan, monday, "snack", first, preferences), /not planned/);
+  assert.throws(() => chooseMeal(plan, "2026-10-07", "dinner", first, preferences), /nicht eingeplant/);
+  assert.throws(() => chooseMeal(plan, monday, "snack", first, preferences), /nicht eingeplant/);
   const cleared = clearChoice(plan, plan.items[0].id, preferences);
   assert.deepEqual(cleared.items, []);
   assert.ok(openPlanSlots(cleared)[0].slots.includes("dinner"), "clearing reopens the slot");
@@ -96,7 +96,7 @@ test("the first yes wins, clearing reopens the slot and skipping answers it", ()
 
 test("a confirmed week is valid, and an empty one is refused with a reason", () => {
   let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
-  assert.throws(() => confirmWeek(plan, preferences), /at least one meal/);
+  assert.throws(() => confirmWeek(plan, preferences), /mindestens eine Mahlzeit/);
   for (const slot of ["breakfast", "lunch", "dinner"])
     plan = chooseMeal(plan, monday, slot, suggest(plan, monday, slot), preferences);
   const confirmed = confirmWeek(plan, preferences);
@@ -140,14 +140,14 @@ test("the planned week survives a restart and reports a storage failure instead 
   third.toggleDay(monday, preferences);
   await third.flush().catch(() => {});
   await new Promise((resolve) => setImmediate(resolve));
-  assert.match(third.getSnapshot().error, /could not be saved/);
+  assert.match(third.getSnapshot().error, /konnte nicht.*gespeichert/);
   assert.ok(third.getSnapshot().plan, "the plan stays in memory so nothing is lost mid-week");
   // Stored content that is not a valid week is reported and left untouched.
   const broken = new MemoryStorage();
   await broken.setItem("week", JSON.stringify({ version: 1, plan: { version: "2", weekStart: "nope" } }));
   const fourth = new WeekPlanStore(broken, "week");
   await fourth.initialize();
-  assert.match(fourth.getSnapshot().error, /could not be read/);
+  assert.match(fourth.getSnapshot().error, /konnte nicht gelesen/);
   assert.equal(fourth.getSnapshot().plan, null);
   assert.equal(JSON.parse(await broken.getItem("week")).plan.weekStart, "nope", "not overwritten");
 });
@@ -215,7 +215,7 @@ test('copying last week keeps decisions and attendance on the matching weekdays 
   assert.equal(copied.status, 'review');
   assert.ok(isWeekPlan(copied));
   assert.equal(store.canCopyPreviousWeek(nextMonday, household), false);
-  assert.throws(() => store.copyPreviousWeek(nextMonday, household), /already has a plan/);
+  assert.throws(() => store.copyPreviousWeek(nextMonday, household), /bereits einen Plan/);
   store.toggleSlot(nextMonday, 'dinner', household);
   store.open(monday, household); assert.deepEqual(store.getSnapshot().plan, old);
   await store.flush();
@@ -228,17 +228,17 @@ test('copying last week keeps decisions and attendance on the matching weekdays 
 test('copying refuses changed households or incompatible meals without touching either week', () => {
   const source = toggleDay(startWeek(monday, preferences), monday, preferences);
   const withDinner = chooseMeal(source, monday, 'dinner', suggest(source, monday, 'dinner'), preferences);
-  assert.throws(() => copyPreviousWeek(withDinner, '2026-10-19', preferences), /previous week/);
-  assert.throws(() => copyPreviousWeek(withDinner, '2026-10-12', prefs({ householdSize: 3 })), /household has changed/);
+  assert.throws(() => copyPreviousWeek(withDinner, '2026-10-19', preferences), /Vorwoche/);
+  assert.throws(() => copyPreviousWeek(withDinner, '2026-10-12', prefs({ householdSize: 3 })), /Haushalt hat sich geändert/);
   const person = (dailyCalories) => ({ id: 'anna', name: 'Anna', age: null, sex: null, dailyCalories,
     proteinTarget: 80, dietaryPreferences: ['none'], allergens: [], intolerances: [], isCurrentUser: true });
   const withPerson = toggleDay(startWeek(monday, prefs({ householdSize: 1, participants: [person(2000)] })), monday,
     prefs({ householdSize: 1, participants: [person(2000)] }));
   assert.throws(() => copyPreviousWeek(withPerson, '2026-10-12',
-    prefs({ householdSize: 1, participants: [person(1800)] })), /Portion needs have changed/);
+    prefs({ householdSize: 1, participants: [person(1800)] })), /Portionsbedarf hat sich geändert/);
   const newlyRestricted = { ...withDinner, items: withDinner.items.map(item =>
     ({ ...item, meal: { ...item.meal, allergens: ['milk'] } })) };
-  assert.throws(() => copyPreviousWeek(newlyRestricted, '2026-10-12', prefs({ householdSize: 2, allergens: ['milk'] })), /no longer fits/);
+  assert.throws(() => copyPreviousWeek(newlyRestricted, '2026-10-12', prefs({ householdSize: 2, allergens: ['milk'] })), /passt nicht mehr/);
   assert.equal(withDinner.items[0].date, monday);
 });
 
@@ -286,6 +286,6 @@ test('when everybody is regularly away, a new day drops that slot rather than op
   store.toggleAttendanceRule({ personId: 'anna', weekday: 1, slot: 'breakfast' }, solo);
   store.toggleAttendanceRule({ personId: 'anna', weekday: 1, slot: 'lunch' }, solo);
   store.toggleAttendanceRule({ personId: 'anna', weekday: 1, slot: 'dinner' }, solo);
-  assert.throws(() => store.toggleDay('2026-10-06', solo), /Nobody is at home/);
+  assert.throws(() => store.toggleDay('2026-10-06', solo), /niemand zu Hause/);
   assert.deepEqual(plannedDates(store.getSnapshot().plan), [monday]);
 });

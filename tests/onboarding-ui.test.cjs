@@ -10,7 +10,7 @@ const stub = (name) => {
 };
 const original = Module._load;
 Module._load = function (request, parent, isMain) {
-  if (request === "react-native") return { Text: "Text", View: "View" };
+  if (request === "react-native") return { Text: "Text", View: "Ansehen" };
   if (request === "./ui" && parent.filename.endsWith("HouseholdFields.tsx"))
     return Object.fromEntries(["PreferenceRow", "SecondaryButton", "SectionCard", "SelectionChip", "TextInput"]
       .map((name) => [name, stub(name)]));
@@ -29,7 +29,7 @@ const { HouseholdFields } = require("../components/HouseholdFields.tsx");
 const { estimateCalories, newParticipant } = require("../services/profile-domain.ts");
 
 const you = {
-  ...newParticipant("adult", "current-user", "You", "maintain"),
+  ...newParticipant("adult", "current-user", "Du", "maintain"),
   isCurrentUser: true,
 };
 async function render(initial) {
@@ -51,8 +51,8 @@ async function render(initial) {
 test("one tap adds a person with a calorie suggestion, and removing them is possible", async () => {
   const view = await render([you]);
   assert.equal(view.rows().length, 1);
-  assert.match(view.rows()[0].props.label, /You \(you\)/);
-  assert.match(view.rows()[0].props.value, /Adult · about \d+ kcal a day/);
+  assert.match(view.rows()[0].props.label, /Du \(du\)/);
+  assert.match(view.rows()[0].props.value, /Erwachsene Person · etwa \d+ kcal pro Tag/);
   // "Add a child" is the second of the two add buttons.
   await view.press("SecondaryButton", 1);
   assert.equal(view.people.length, 2);
@@ -63,7 +63,7 @@ test("one tap adds a person with a calorie suggestion, and removing them is poss
   assert.ok(child.dailyCalories < view.people[0].dailyCalories);
   // The editor opens on the new person, and only they can be removed.
   const remove = view.renderer.root.findAllByType("SecondaryButton")
-    .find((b) => b.props.label === "Remove this person");
+    .find((b) => b.props.label === "Diese Person entfernen");
   assert.ok(remove);
   await act(() => remove.props.onPress());
   assert.equal(view.people.length, 1);
@@ -74,26 +74,26 @@ test("activity and sex refine the suggestion; a typed amount survives further ta
   const view = await render([you]);
   await act(() => view.rows()[0].props.onEdit());
   const before = view.people[0].dailyCalories;
-  await act(() => view.chip("Active").props.onPress());
+  await act(() => view.chip("Aktiv").props.onPress());
   assert.ok(view.people[0].dailyCalories > before);
-  await act(() => view.chip("Female").props.onPress());
+  await act(() => view.chip("Weiblich").props.onPress());
   assert.equal(view.people[0].sex, "female");
   assert.equal(view.people[0].dailyCalories, estimateCalories(view.people[0]));
   const input = () => view.renderer.root.findByType("NumberInput");
   await act(() => input().props.onChange(2345));
   assert.equal(view.people[0].dailyCalories, 2345);
-  await act(() => view.chip("Mostly sitting").props.onPress());
+  await act(() => view.chip("Überwiegend sitzend").props.onPress());
   assert.equal(view.people[0].dailyCalories, 2345, "a typed amount is not overwritten");
-  assert.match(input().props.hint, /Your own number/);
+  assert.match(input().props.hint, /Dein eigener Wert/);
   // Clearing the field hands the suggestion back.
   await act(() => input().props.onChange(null));
   assert.equal(view.people[0].dailyCalories, estimateCalories(view.people[0]));
-  assert.match(input().props.hint, /Our suggestion/);
+  assert.match(input().props.hint, /Unser Vorschlag/);
 });
 
 test("a person saved without a kind is shown as an adult", async () => {
   const legacy = { id: "p1", name: "Alex", age: 30, sex: null, dailyCalories: 2000,
     proteinTarget: 100, dietaryPreferences: ["none"], allergens: [], intolerances: [], isCurrentUser: false };
   const view = await render([legacy]);
-  assert.match(view.rows()[0].props.value, /^Adult · about 2000 kcal a day$/);
+  assert.match(view.rows()[0].props.value, /^Erwachsene Person · etwa 2000 kcal pro Tag$/);
 });

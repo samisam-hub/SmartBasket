@@ -1,3 +1,4 @@
+import { germanSavedName } from '../../lib/legacy-display';
 import { Text } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { PrimaryButton, Screen, ScreenHeader, SecondaryButton, SectionCard } from '@/components/ui';
@@ -15,15 +16,15 @@ export default function DayDoneScreen() {
   const openDays = plan ? openPlanSlots(plan).filter(day => day.date !== date) : [];
   const nextDay = plan ? plannedDates(plan).find(other => openDays.some(day => day.date === other)) : undefined;
   return <Screen bottom>
-    <ScreenHeader title={`${planDateLabel(date)} is planned`}
-      subtitle={meals.length ? `${meals.length} ${meals.length === 1 ? 'meal' : 'meals'} for this day.` : 'Nothing is cooked at home on this day.'} />
+    <ScreenHeader title={`${planDateLabel(date)} ist geplant`}
+      subtitle={meals.length ? `${meals.length} ${meals.length === 1 ? 'Mahlzeit' : 'Mahlzeiten'} für diesen Tag.` : "An diesem Tag wird zu Hause nicht gekocht."} />
     <SectionCard>
-      {meals.map(item => <Text key={item.id} style={ui.small}>{slotLabels[item.mealSlot]}: {item.meal.name}</Text>)}
-      {!meals.length && <Text style={ui.small}>You are eating elsewhere on this day.</Text>}
+      {meals.map(item => <Text key={item.id} style={ui.small}>{slotLabels[item.mealSlot]}: {germanSavedName(item.meal.name)}</Text>)}
+      {!meals.length && <Text style={ui.small}>An diesem Tag esst ihr auswärts.</Text>}
     </SectionCard>
     {nextDay
-      ? <PrimaryButton label={`Plan ${planDateLabel(nextDay)}`} onPress={() => router.replace({ pathname: '/plan/[date]', params: { date: nextDay } })} />
-      : <PrimaryButton label="Back to the week" onPress={() => router.replace('/')} />}
-    <SecondaryButton label="Back to the week" onPress={() => router.replace('/')} />
+      ? <PrimaryButton label={`${planDateLabel(nextDay)} planen`} onPress={() => router.replace({ pathname: '/plan/[date]', params: { date: nextDay } })} />
+      : <PrimaryButton label="Zurück zur Woche" onPress={() => router.replace('/')} />}
+    <SecondaryButton label="Zurück zur Woche" onPress={() => router.replace('/')} />
   </Screen>;
 }

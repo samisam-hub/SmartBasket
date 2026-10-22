@@ -14,10 +14,10 @@ test('shopping rows distinguish packages, pantry coverage, extras and missing in
   assert.equal(rows.length, 3);
   assert.equal(rows[0].quantity, '2 × 500 g');
   assert.equal(rows[2].id, 'ingredient:beans');
-  assert.equal(rows[2].quantity, '200 g still needed');
+  assert.equal(rows[2].quantity, '200 g noch benötigt');
   assert.equal(rows.some(r => r.id === 'ingredient:rice'), false, 'pantry stock is not bought twice');
   input.pantryUsed = [];
-  assert.equal(shoppingRows(input).find(r => r.id === 'ingredient:rice').quantity, '200 g still needed');
+  assert.equal(shoppingRows(input).find(r => r.id === 'ingredient:rice').quantity, '200 g noch benötigt');
   input.items[0].plannedConsumptionQuantity = 950;
   assert.equal(shoppingRows(input).some(r => r.id === 'ingredient:rice'), false, 'allowed flexible portions are not missing food');
 });
@@ -59,8 +59,8 @@ test('shared text separates picked-up items from remaining purchases and include
   const rows = shoppingRows(result()), checked = { [rows[0].id]: rows[0].signature };
   const text = shoppingListText('Family week', rows, checked);
   assert.match(text, /SmartBasket · Family week/);
-  assert.match(text, /\[ \] beans — 200 g still needed \(choose a suitable product\)/);
-  assert.match(text, /Already picked up:/);
+  assert.match(text, /\[ \] beans — 200 g noch benötigt \(passendes Produkt auswählen\)/);
+  assert.match(text, /Bereits eingepackt:/);
   assert.ok(text.includes(`[x] ${rows[0].name} — 2 × 500 g`));
   assert.equal(/kcal|allerg|userId|calorie/.test(text), false);
 });

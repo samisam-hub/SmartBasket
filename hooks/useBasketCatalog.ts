@@ -16,7 +16,7 @@ export function useBasketCatalog() {
         if (!controller.signal.aborted) setState({ products, loading: false, error: null });
       } catch (e) {
         if (!controller.signal.aborted) setState({ products: [], loading: false,
-          error: e instanceof Error ? e.message : 'The product catalog could not be loaded.' });
+          error: e instanceof Error ? e.message : "Der Produktkatalog konnte nicht geladen werden." });
       }
     })();
     return () => controller.abort();
