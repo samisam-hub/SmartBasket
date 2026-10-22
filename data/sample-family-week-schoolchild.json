@@ -1,0 +1,292 @@
+{
+  "version": 1,
+  "household": {
+    "adults": 2,
+    "schoolChildren": 1,
+    "notes": "Schulkind ca. 8 Jahre; werktags Pausenbox nur für Kind, gemeinsames Abendessen für drei. Erwachsene essen werktags mittags individuell."
+  },
+  "imageStyleSpec": "docs/recipe-image-definition-of-done.md",
+  "days": [
+    {
+      "day": "Montag",
+      "dayIndex": 1,
+      "meals": [
+        {
+          "slot": "breakfast",
+          "recipeId": "de-musli-mit-milch-und-apfel",
+          "name": "Müsli mit Milch und Apfel",
+          "servings": 3
+        },
+        {
+          "slot": "schoolLunchbox",
+          "recipeId": "de-kasebrot-lunchbox-mit-apfel-und-mohre",
+          "name": "Käsebrot-Lunchbox mit Apfel und Möhre",
+          "servings": 1
+        },
+        {
+          "slot": "familyDinner",
+          "recipeId": "de-spaghetti-bolognese",
+          "name": "Spaghetti Bolognese",
+          "servings": 3
+        }
+      ]
+    },
+    {
+      "day": "Dienstag",
+      "dayIndex": 2,
+      "meals": [
+        {
+          "slot": "breakfast",
+          "recipeId": "de-kasebrot-mit-gurke",
+          "name": "Käsebrot mit Gurke",
+          "servings": 3
+        },
+        {
+          "slot": "schoolLunchbox",
+          "recipeId": "de-wurstbrot-lunchbox-mit-gurke-und-apfel",
+          "name": "Wurstbrot-Lunchbox mit Gurke und Apfel",
+          "servings": 1
+        },
+        {
+          "slot": "familyDinner",
+          "recipeId": "de-fischstabchen-mit-kartoffelpuree-und-erbsen",
+          "name": "Fischstäbchen mit Kartoffelpüree und Erbsen",
+          "servings": 3
+        }
+      ]
+    },
+    {
+      "day": "Mittwoch",
+      "dayIndex": 3,
+      "meals": [
+        {
+          "slot": "breakfast",
+          "recipeId": "de-naturjoghurt-mit-banane-und-haferflocken",
+          "name": "Naturjoghurt mit Banane und Haferflocken",
+          "servings": 3
+        },
+        {
+          "slot": "schoolLunchbox",
+          "recipeId": "de-kasebrot-lunchbox-mit-apfel-und-mohre",
+          "name": "Käsebrot-Lunchbox mit Apfel und Möhre",
+          "servings": 1
+        },
+        {
+          "slot": "familyDinner",
+          "recipeId": "de-hahnchengeschnetzeltes-mit-reis",
+          "name": "Hähnchengeschnetzeltes mit Reis",
+          "servings": 3
+        }
+      ]
+    },
+    {
+      "day": "Donnerstag",
+      "dayIndex": 4,
+      "meals": [
+        {
+          "slot": "breakfast",
+          "recipeId": "de-marmeladenbrot",
+          "name": "Marmeladenbrot",
+          "servings": 3
+        },
+        {
+          "slot": "schoolLunchbox",
+          "recipeId": "de-wurstbrot-lunchbox-mit-gurke-und-apfel",
+          "name": "Wurstbrot-Lunchbox mit Gurke und Apfel",
+          "servings": 1
+        },
+        {
+          "slot": "familyDinner",
+          "recipeId": "de-kartoffeln-mit-spinat-und-ei",
+          "name": "Kartoffeln mit Spinat und Ei",
+          "servings": 3
+        }
+      ]
+    },
+    {
+      "day": "Freitag",
+      "dayIndex": 5,
+      "meals": [
+        {
+          "slot": "breakfast",
+          "recipeId": "de-gekochtes-ei-mit-brot",
+          "name": "Gekochtes Ei mit Brot",
+          "servings": 3
+        },
+        {
+          "slot": "schoolLunchbox",
+          "recipeId": "de-kasebrot-lunchbox-mit-apfel-und-mohre",
+          "name": "Käsebrot-Lunchbox mit Apfel und Möhre",
+          "servings": 1
+        },
+        {
+          "slot": "familyDinner",
+          "recipeId": "de-pizza-mit-gemuse-vom-blech",
+          "name": "Pizza mit Gemüse vom Blech",
+          "servings": 3
+        }
+      ]
+    },
+    {
+      "day": "Samstag",
+      "dayIndex": 6,
+      "meals": [
+        {
+          "slot": "breakfast",
+          "recipeId": "de-pfannkuchen-mit-apfelmus",
+          "name": "Pfannkuchen mit Apfelmus",
+          "servings": 3
+        },
+        {
+          "slot": "familyLunch",
+          "recipeId": "de-kartoffelsuppe-mit-brot",
+          "name": "Kartoffelsuppe mit Brot",
+          "servings": 3
+        },
+        {
+          "slot": "familyDinner",
+          "recipeId": "de-brotzeit-mit-kase-und-rohkost",
+          "name": "Brotzeit mit Käse und Rohkost",
+          "servings": 3
+        }
+      ]
+    },
+    {
+      "day": "Sonntag",
+      "dayIndex": 7,
+      "meals": [
+        {
+          "slot": "breakfast",
+          "recipeId": "de-aufbackbrotchen-mit-belag",
+          "name": "Aufbackbrötchen mit Belag",
+          "servings": 3
+        },
+        {
+          "slot": "familyLunch",
+          "recipeId": "de-ofenhahnchen-mit-kartoffeln-und-mohren",
+          "name": "Ofenhähnchen mit Kartoffeln und Möhren",
+          "servings": 3
+        },
+        {
+          "slot": "familyDinner",
+          "recipeId": "de-tomate-mozzarella-mit-brot",
+          "name": "Tomate-Mozzarella mit Brot",
+          "servings": 3
+        }
+      ]
+    }
+  ],
+  "imageProduction": {
+    "recipeIdsInOrder": [
+      {
+        "recipeId": "de-musli-mit-milch-und-apfel",
+        "name": "Müsli mit Milch und Apfel",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-kasebrot-lunchbox-mit-apfel-und-mohre",
+        "name": "Käsebrot-Lunchbox mit Apfel und Möhre",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-spaghetti-bolognese",
+        "name": "Spaghetti Bolognese",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-kasebrot-mit-gurke",
+        "name": "Käsebrot mit Gurke",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-wurstbrot-lunchbox-mit-gurke-und-apfel",
+        "name": "Wurstbrot-Lunchbox mit Gurke und Apfel",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-fischstabchen-mit-kartoffelpuree-und-erbsen",
+        "name": "Fischstäbchen mit Kartoffelpüree und Erbsen",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-naturjoghurt-mit-banane-und-haferflocken",
+        "name": "Naturjoghurt mit Banane und Haferflocken",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-hahnchengeschnetzeltes-mit-reis",
+        "name": "Hähnchengeschnetzeltes mit Reis",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-marmeladenbrot",
+        "name": "Marmeladenbrot",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-kartoffeln-mit-spinat-und-ei",
+        "name": "Kartoffeln mit Spinat und Ei",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-gekochtes-ei-mit-brot",
+        "name": "Gekochtes Ei mit Brot",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-pizza-mit-gemuse-vom-blech",
+        "name": "Pizza mit Gemüse vom Blech",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-pfannkuchen-mit-apfelmus",
+        "name": "Pfannkuchen mit Apfelmus",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-kartoffelsuppe-mit-brot",
+        "name": "Kartoffelsuppe mit Brot",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-brotzeit-mit-kase-und-rohkost",
+        "name": "Brotzeit mit Käse und Rohkost",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-aufbackbrotchen-mit-belag",
+        "name": "Aufbackbrötchen mit Belag",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-ofenhahnchen-mit-kartoffeln-und-mohren",
+        "name": "Ofenhähnchen mit Kartoffeln und Möhren",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      },
+      {
+        "recipeId": "de-tomate-mozzarella-mit-brot",
+        "name": "Tomate-Mozzarella mit Brot",
+        "status": "pending_visual_review",
+        "assetStatus": "not_generated_in_this_workflow"
+      }
+    ],
+    "notes": "Do not regenerate an existing satisfactory app photo. Verify image mappings first. Each generated photo requires explicit visual and technical approval."
+  }
+}
