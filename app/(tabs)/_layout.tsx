@@ -2,8 +2,11 @@ import Feather from "@expo/vector-icons/Feather";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, spacing, typography } from "@/lib/theme";
+import { useMerchantDemo } from "@/services/merchant-demo";
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  // The fictional product catalog is a merchant demo, not something a real user should stumble on.
+  const { demo } = useMerchantDemo();
   return (
     <Tabs
       safeAreaInsets={insets}
@@ -26,16 +29,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Plan",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="home" color={color} size={size} />
+            <Feather name="calendar" color={color} size={size} />
           ),
         }}
       />
       <Tabs.Screen
         name="basket"
         options={{
-          title: "Basket",
+          title: "Shopping list",
           tabBarIcon: ({ color, size }) => (
             <Feather name="shopping-bag" color={color} size={size} />
           ),
@@ -44,6 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="products"
         options={{
+          href: demo ? undefined : null,
           title: "Products",
           tabBarIcon: ({ color, size }) => (
             <Feather name="grid" color={color} size={size} />
