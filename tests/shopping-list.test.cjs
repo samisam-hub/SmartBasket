@@ -95,3 +95,71 @@ test("groups follow the order a shop is walked, and the unknown comes last", () 
   assert.equal(new Set(labels).size, labels.length, "no category appears twice");
   assert.equal(groups.reduce((n, g) => n + g.lines.length, 0), 3, "every line lands in exactly one group");
 });
+
+const { shoppingListText } = require("../services/shopping-list.ts");
+const { addCustomItem, customItemError, loadCustomItems, removeCustomItem,
+  saveCustomItems } = require("../services/basket/custom-items.ts");
+const device = (initial = {}) => {
+  const kept = { ...initial };
+  return { kept, getItem: async (k) => kept[k] ?? null, setItem: async (k, v) => { kept[k] = v; } };
+};
+
+test("own entries are added where they were typed and can be taken off again", () => {
+  let items = addCustomItem([], "  Kitchen roll  ", " 2 packs ");
+  assert.equal(items[0].name, "Kitchen roll");
+  assert.equal(items[0].note, "2 packs");
+  items = addCustomItem(items, "Coffee");
+  assert.deepEqual(items.map((i) => i.name), ["Kitchen roll", "Coffee"], "the order the list was built in");
+  assert.equal(items[1].note, null, "no amount is not an empty amount");
+  assert.deepEqual(removeCustomItem(items, items[0].id).map((i) => i.name), ["Coffee"]);
+});
+
+test("an entry has to say something", () => {
+  assert.match(customItemError("   "), /Type what you want/);
+  assert.match(customItemError("x".repeat(81)), /80 characters/);
+  assert.equal(customItemError("Coffee"), null);
+  assert.throws(() => addCustomItem([], " "), /Type what you want/);
+});
+
+test("own entries survive leaving the screen, per list, and a broken file is dropped", async () => {
+  const storage = device();
+  await saveCustomItems(storage, "list-a", addCustomItem([], "Coffee"));
+  assert.deepEqual((await loadCustomItems(storage, "list-a")).map((i) => i.name), ["Coffee"]);
+  assert.deepEqual(await loadCustomItems(storage, "list-b"), [], "another list has its own additions");
+  const broken = device({ "smartbasket.list-extras.v1:list-a": "{not json" });
+  assert.deepEqual(await loadCustomItems(broken, "list-a"), []);
+  const wrong = device({ "smartbasket.list-extras.v1:list-a": JSON.stringify([{ id: "x" }]) });
+  assert.deepEqual(await loadCustomItems(wrong, "list-a"), [], "a half-written entry is not restored");
+});
+
+test("sharing sends one list: generated lines and own entries together", () => {
+  const groups = groupedLines(shoppingLines(result({ ingredientRequirements: [
+    { ingredientKey: "cherry_tomatoes", ingredientName: "Cherry tomatoes", requiredQuantity: 500, unit: "g" },
+    { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 40, unit: "ml" },
+  ] })));
+  const extras = addCustomItem([], "Kitchen roll", "2 packs");
+  const text = shoppingListText({ name: "7-day basket", groups, extras,
+    ticked: ["cherry_tomatoes"], system: "metric" });
+  assert.match(text, /^7-day basket/);
+  assert.match(text, /\[x\] Cherry tomatoes — 500 g/, "what is in the trolley is marked, not dropped");
+  assert.match(text, /\[ \] Olive oil — 40 ml/);
+  assert.match(text, /ADDED BY YOU/);
+  assert.match(text, /\[ \] Kitchen roll — 2 packs/, "own entries travel with the list, not separately");
+});
+
+test("sharing writes the units the household chose", () => {
+  const groups = groupedLines(shoppingLines(result({ ingredientRequirements: [
+    { ingredientKey: "cherry_tomatoes", ingredientName: "Cherry tomatoes", requiredQuantity: 500, unit: "g" },
+  ] })));
+  const us = shoppingListText({ name: "List", groups, extras: [], ticked: [], system: "us" });
+  assert.match(us, /1\.1 lb/);
+  assert.doesNotMatch(us, / 500 g/);
+});
+
+test("a list with nothing added has no empty section", () => {
+  const groups = groupedLines(shoppingLines(result({ ingredientRequirements: [
+    { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 40, unit: "ml" },
+  ] })));
+  const text = shoppingListText({ name: "List", groups, extras: [], ticked: [], system: "metric" });
+  assert.doesNotMatch(text, /ADDED BY YOU/);
+});

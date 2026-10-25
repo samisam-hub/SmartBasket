@@ -7,6 +7,7 @@ import {
   PreferenceRow,
   PrimaryButton,
   Screen,
+  SecondaryButton,
   ScreenHeader,
   SectionCard,
   TextButton,
@@ -20,10 +21,12 @@ import { ui } from "@/lib/theme";
 import {useAuth} from '@/context/AuthContext';
 import {useProfile} from '@/context/ProfileContext';
 import {useState} from 'react';
+import {useMerchantDemo} from '@/services/merchant-demo';
 export default function ProfileScreen() {
   const { saved, editing } = usePreferences();
   const flow = useBasketFlow();
   const auth=useAuth(),personal=useProfile(),p=personal.saved;
+  const demo=useMerchantDemo();
   const [accountError,setAccountError]=useState<string|null>(null),[signingOut,setSigningOut]=useState(false),[deleting,setDeleting]=useState(false);
   const deleteAccount=()=>Alert.alert(
     'Delete account permanently?',
@@ -106,6 +109,18 @@ export default function ProfileScreen() {
         <Text style={ui.small}>
           Always check product labels. Saved selections do not guarantee allergy
           suitability.
+        </Text>
+      </SectionCard>
+      <SectionCard title="Merchant demo">
+        <Text style={ui.body}>
+          {demo.demo
+            ? 'The Products tab is visible. Its brands and prices are invented demo data.'
+            : 'Off. The product catalogue is fictional demo data for showing merchants what matching looks like.'}
+        </Text>
+        <SecondaryButton label={demo.demo ? 'Hide the product catalogue' : 'Show the product catalogue'}
+          onPress={() => demo.set(!demo.demo)} />
+        <Text style={ui.small}>
+          Leave this off for anyone testing the app for real: invented prices read as real ones.
         </Text>
       </SectionCard>
       <SectionCard title="Saved baskets">

@@ -40,7 +40,7 @@ export default function TabLayout() {
         options={{
           title: "Shopping list",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="shopping-bag" color={color} size={size} />
+            <Feather name="shopping-cart" color={color} size={size} />
           ),
         }}
       />

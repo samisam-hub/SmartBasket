@@ -1,6 +1,8 @@
 import { canonicalIngredientKey, ingredientMappings } from '../data/ingredient-mappings';
 import { categories, categoryLabels, type ProductCategory } from '../types/product';
 import type { BasketGenerationResult, SavedBasket } from '../types/basket';
+import type { CustomItem } from './basket/custom-items';
+import { formatQuantity, type UnitSystem } from './units';
 
 /** Which list the shopping tab opens on.
  *
@@ -61,4 +63,28 @@ export function groupedLines(lines: ShoppingLine[]): { key: ProductCategory; lab
   }
   return categories.filter(key => groups.has(key))
     .map(key => ({ key, label: categoryLabels[key], lines: groups.get(key)! }));
+}
+
+/** The whole list as one piece of text, for the share sheet.
+ *
+ *  Generated lines and the household's own additions go out together, in the order they are shown,
+ *  because that is the list somebody is holding. What is already in the trolley is marked rather
+ *  than dropped, so a shared list stays comparable with the one it came from. */
+export function shoppingListText({ name, groups, extras, ticked, system }: {
+  name: string;
+  groups: { label: string; lines: ShoppingLine[] }[];
+  extras: CustomItem[];
+  ticked: string[];
+  system: UnitSystem;
+}): string {
+  const done = new Set(ticked);
+  const mark = (key: string, text: string) => `${done.has(key) ? '[x]' : '[ ]'} ${text}`;
+  const blocks = groups
+    .filter(group => group.lines.length)
+    .map(group => [group.label.toUpperCase(),
+      ...group.lines.map(line => mark(line.key, `${line.name} — ${formatQuantity(line, system)}`))].join('\n'));
+  if (extras.length)
+    blocks.push(['ADDED BY YOU',
+      ...extras.map(item => mark(item.id, item.note ? `${item.name} — ${item.note}` : item.name))].join('\n'));
+  return [name, '', ...blocks].join('\n\n').trimEnd();
 }
