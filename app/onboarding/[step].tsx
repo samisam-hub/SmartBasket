@@ -22,6 +22,7 @@ import {
 } from "@/components/ui";
 import { NumberInput } from "@/components/NumberInput";
 import { HouseholdFields } from "@/components/HouseholdFields";
+import { unitSystemLabels, unitSystemOf, unitSystems } from "@/services/units";
 import { PreferenceSummary } from "@/components/PreferenceSummary";
 import { usePreferences } from "@/context/PreferencesContext";
 import { useProfile } from "@/context/ProfileContext";
@@ -257,6 +258,22 @@ export default function OnboardingScreen() {
       <View pointerEvents={busy ? "none" : "auto"} style={ui.stack}>
         {step === "welcome" && (
           <>
+            <SectionCard title="Which units do you shop in?">
+              <View style={ui.wrap}>
+                {unitSystems.map((system) => (
+                  <SelectionChip
+                    key={system}
+                    label={unitSystemLabels[system]}
+                    selected={unitSystemOf(draft) === system}
+                    onPress={() => store.update({ unitSystem: system })}
+                  />
+                ))}
+              </View>
+              <Text style={ui.small}>
+                This changes how your shopping list is written. Amounts are converted exactly;
+                nothing about the plan itself changes. You can switch at any time.
+              </Text>
+            </SectionCard>
             <InfoCard title="A few choices. A stronger start.">
               Your calorie goal, food preferences, household and budget will
               guide future baskets. No email or password needed.

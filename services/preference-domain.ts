@@ -14,6 +14,7 @@ import {
 import { mealSlots } from "../types/meal";
 import type { PlanParticipant } from "../types/profile";
 import { isParticipant } from "./profile-domain";
+import { isUnitSystem } from "./units";
 
 export function toggleDiet(current: Diet[], selected: Diet): Diet[] {
   if (selected === "none") return ["none"];
@@ -164,7 +165,9 @@ export function isDraft(value: unknown): value is PreferenceDraft {
     typeof p.budgetEnabled === "boolean" &&
     (p.weeklyBudgetEur === null || typeof p.weeklyBudgetEur === "number") &&
     (p.participants === undefined || validParticipantList(p.participants)) &&
-    (p.slotDefaults === undefined || validSlotDefaults(p.slotDefaults))
+    (p.slotDefaults === undefined || validSlotDefaults(p.slotDefaults)) &&
+    // Absent means metric; anything else stored there is not a preference we can honour.
+    (p.unitSystem === undefined || isUnitSystem(p.unitSystem))
   );
 }
 export function isSaved(value: unknown): value is UserPreferences {

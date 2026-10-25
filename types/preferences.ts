@@ -1,4 +1,5 @@
 import { mealSlots, type MealSlot } from "./meal";
+import type { UnitSystem } from "../services/units";
 export const goals = [
   "maintain",
   "lose_weight",
@@ -70,6 +71,9 @@ export interface PreferenceValues {
   budgetEnabled: boolean;
   /** Total EUR for the selected planning period; legacy column name retained. */
   weeklyBudgetEur: number | null;
+  /** Which units the shopping list is written in. Absent in everything saved before the question
+   *  existed, which reads as metric, so no stored preference changes meaning. */
+  unitSystem?: UnitSystem;
 }
 export type PreferenceDraft = Omit<PreferenceValues, "dailyCalories"> & {
   dailyCalories: number | null;
@@ -116,5 +120,6 @@ export const defaultDraft: PreferenceDraft = {
   allergens: [],
   budgetEnabled: true,
   weeklyBudgetEur: 70,
+  unitSystem: "metric",
 };
 export type PreferenceErrors = Partial<Record<keyof PreferenceValues, string>>;
