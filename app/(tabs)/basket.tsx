@@ -8,6 +8,7 @@ import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
 import { useBasketTicks } from '@/hooks/useBasketTicks';
 import { usePreferences } from '@/context/PreferencesContext';
+import { hasSavedWork } from '@/services/saved-work';
 import { basketOwner, basketPersistence } from '@/services/baskets';
 import { addCustomItem, customItemError, loadCustomItems, removeCustomItem, saveCustomItems, type CustomItem } from '@/services/basket/custom-items';
 import { groupedLines, listName, openingList, shoppingLines, shoppingListText } from '@/services/shopping-list';
@@ -26,6 +27,9 @@ export default function ShoppingListScreen() {
   const [note, setNote] = useState(''), [addError, setAddError] = useState<string | null>(null);
   useFocusEffect(useCallback(() => {
     if (!ready) return;
+    // A guest who has not finished setting up cannot have a saved list; the empty state is the
+    // honest answer, without a round trip and without a notice about data nobody has yet.
+    if (!hasSavedWork(saved)) { setBaskets([]); setWarning(null); setLoading(false); return; }
     void retry;
     let alive = true; setLoading(true);
     void (async () => {
@@ -37,7 +41,7 @@ export default function ShoppingListScreen() {
       finally { if (alive) setLoading(false); }
     })();
     return () => { alive = false; };
-  }, [ready, saved?.userId, retry]));
+  }, [ready, saved, retry]));
 
   const basket = openingList(baskets, active);
   const lines = basket ? shoppingLines(basket.result) : [];

@@ -7,6 +7,7 @@ import { EmptyState, PrimaryButton, Screen, ScreenHeader, SecondaryButton, Secti
 import { useBasketFlow } from '@/hooks/useBasketFlow';
 import { usePreferences } from '@/context/PreferencesContext';
 import { basketOwner, basketPersistence } from '@/services/baskets';
+import { hasSavedWork } from '@/services/saved-work';
 import { colors, ui } from '@/lib/theme';
 import type { SavedBasket } from '@/types/basket';
 export default function SavedListsScreen() {
@@ -25,6 +26,7 @@ export default function SavedListsScreen() {
   };
   useFocusEffect(useCallback(() => {
     if (!ready) return;
+    if (!hasSavedWork(saved)) { setBaskets([]); setWarning(null); setLoading(false); return; }
     void retry; // Explicit reload token in addition to focus/session changes.
     let active = true; setLoading(true); setBaskets([]);
     void (async () => {
@@ -36,7 +38,7 @@ export default function SavedListsScreen() {
       finally { if (active) setLoading(false); }
     })();
     return () => { active = false; };
-  }, [ready, saved?.userId, retry]));
+  }, [ready, saved, retry]));
   return <Screen>
     <ScreenHeader eyebrow="EVERY LIST YOU KEPT" title="All my lists" />
     <PrimaryButton label="Create a new list" onPress={flow.create} disabled={flow.disabled} />

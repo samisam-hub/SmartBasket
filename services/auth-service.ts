@@ -20,6 +20,17 @@ export function authService(client:SupabaseClient){
    // Memory only: never serialize credentials into drafts, URLs or browser storage.
    pending={owner,email:email.trim().toLowerCase(),password};
   },
+  /** The confirmation mail again, for the one that never arrived. Only while a registration is
+   *  actually waiting: without one there is no address to send to, and a button that silently
+   *  does nothing is worse than one that says why. */
+  async resendConfirmation(redirectTo:string){
+   if(!pending)throw Error('Start registering first, then we can send the email again.');
+   const {data,error}=await client.auth.getSession();if(error)throw error;
+   if(data.session?.user.id!==pending.owner)throw Error('Account changed. Start registration again.');
+   const r=await client.auth.updateUser({email:pending.email},{emailRedirectTo:redirectTo});if(r.error)throw r.error;
+   return pending.email;
+  },
+  pendingEmail(){return pending?.email??null;},
   async completeRegistration(){
    if(!pending)return false;
    const attempt=pending;

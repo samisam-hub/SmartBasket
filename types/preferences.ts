@@ -74,12 +74,14 @@ export interface PreferenceValues {
   /** Which units the shopping list is written in. Absent in everything saved before the question
    *  existed, which reads as metric, so no stored preference changes meaning. */
   unitSystem?: UnitSystem;
+  /** Meals somebody said they like while setting up. It nudges suggestions and nothing else;
+   *  absent and empty both mean "no preference", never "eats nothing". */
+  preferredMealIds?: string[];
 }
 export type PreferenceDraft = Omit<PreferenceValues, "dailyCalories"> & {
   dailyCalories: number | null;
 };
 export interface UserPreferences extends PreferenceValues {
-  preferredMealIds?: string[];
   id: string | null;
   userId: string | null;
   onboardingCompleted: boolean;

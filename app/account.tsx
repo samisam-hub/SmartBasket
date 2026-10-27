@@ -43,10 +43,16 @@ export default function AccountScreen(){
   {(mode==='create'||mode==='signin'||mode==='password')&&<TextInput label="Password" editable={!busy} secureTextEntry autoComplete={mode==='signin'?'current-password':'new-password'} value={password} onChangeText={setPassword} error={mode!=='signin'&&password?passwordError(password)??undefined:undefined} />}
   {waiting&&showCode&&<TextInput label="Email verification code" editable={!busy} value={token} keyboardType="number-pad" onChangeText={setToken} />}
   {(mode!=='recovery-code'||showCode)&&<PrimaryButton label={mode==='create'?'Create account':mode==='signin'?'Sign in':mode==='forgot'?'Send reset email':mode==='password'?'Save password':showCode?'Confirm email':'I’ve confirmed my email'} loading={busy} disabled={!service} onPress={()=>{void run();}} />}
+  {mode==='verify'&&<SecondaryButton label="Send the email again" disabled={busy||!service} onPress={()=>{void (async()=>{
+    setBusy(true);setError(null);
+    try{const to=await service!.resendConfirmation(accountRedirect('register'));setMessage(`Sent again to ${to}. It can take a minute, and it may land in spam.`);}
+    catch(e){setError(e instanceof Error?e.message:'The email could not be sent again.');}
+    finally{setBusy(false);}
+  })();}} />}
   {waiting&&!showCode&&<SecondaryButton label="My email contains a code" disabled={busy} onPress={()=>setShowCode(true)} />}
   {session?.user.email&&!session.user.is_anonymous&&mode==='create'&&<SecondaryButton label="Finish setting my password" disabled={busy} onPress={()=>changeMode('password')} />}
   {mode!=='signin'&&<SecondaryButton label="Already have an account? Sign in" disabled={busy} onPress={()=>changeMode('signin')} />}
   {mode==='signin'&&<><SecondaryButton label="Create account" disabled={busy} onPress={()=>changeMode('create')} /><SecondaryButton label="Forgot password?" disabled={busy} onPress={()=>changeMode('forgot')} /></>}
-  <SecondaryButton label="Continue as guest" disabled={busy} onPress={()=>{service?.clearRegistration();setPassword('');router.dismissTo('/profile');}} />
+  <SecondaryButton label="Continue as guest" disabled={busy} onPress={()=>{service?.clearRegistration();setPassword('');router.replace('/intro');}} />
  </Screen>;
 }

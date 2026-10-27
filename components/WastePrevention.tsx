@@ -5,6 +5,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Text, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { usePreferences } from '../context/PreferencesContext';
+import { hasSavedWork } from '../services/saved-work';
 import { loadPantry } from '../services/pantry';
 import { shoppingImpact } from '../services/waste-prevention';
 import { SectionCard } from './ui';
@@ -12,17 +14,19 @@ import { colors, ui } from '../lib/theme';
 
 export function WastePrevention() {
   const { session, ready } = useAuth();
+  const { saved } = usePreferences();
   const owner = session?.user.id ?? null;
   const [result, setResult] = useState<{ owner: string | null; value: ReturnType<typeof shoppingImpact> } | null>(null);
   const [error, setError] = useState(false);
   useFocusEffect(useCallback(() => {
+    if (!hasSavedWork(saved)) { setResult(null); setError(false); return; }
     let active = true;
     setResult(null); setError(false);
     if (ready) void loadPantry(owner).then(({ purchases }) => {
       if (active) setResult({ owner, value: shoppingImpact(purchases) });
     }).catch(() => { if (active) setError(true); });
     return () => { active = false; };
-  }, [owner, ready]));
+  }, [owner, ready, saved]));
   const impact = result?.owner === owner ? result.value : null;
   return <SectionCard title="Your journey" compact pale>
     {error ? <Text style={ui.small}>Your summary could not be loaded.</Text> : !impact ? <Text style={ui.small}>Loading your summary…</Text> : !impact.shops ? <Text style={ui.body}>Your first shop starts here. Complete checkout to start tracking your impact.</Text> : <>

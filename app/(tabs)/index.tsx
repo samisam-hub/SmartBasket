@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { LatestBasket } from '@/components/LatestBasket';
@@ -19,10 +19,13 @@ import { colors, ui } from '@/lib/theme';
 
 export default function HomeScreen() {
   const preferences = usePreferences();
-  const { saved, editing } = preferences;
+  const { saved, editing, ready: preferencesReady } = preferences;
   // Fetch the product catalog while the week is still being picked, so the first meal card does not
   // have to wait for it. It is cached for the rest of the app run.
   useEffect(() => { primeBasketCatalog(); }, []);
+  // Somebody opening the app for the first time is met by the welcome, not by an empty plan.
+  // Once setting up has started, the flow carries on where it was instead of beginning again.
+  const firstVisit = preferencesReady && !saved && !editing;
   const week = useWeekPlan();
   const { saved: profile } = useProfile();
   const flow = useBasketFlow();
@@ -38,6 +41,7 @@ export default function HomeScreen() {
     : '/plan/week');
   const name = profile?.displayName.trim();
   const details = saved ? preferenceChips(saved).slice(2).filter(label => !label.includes('budget')) : [];
+  if (firstVisit) return <Redirect href="/welcome" />;
   return <Screen compact floating={saved
     ? <FloatingButton icon="plus" label="Add a meal to this day" disabled={flow.disabled || !week.ready}
       onPress={addMeal} />

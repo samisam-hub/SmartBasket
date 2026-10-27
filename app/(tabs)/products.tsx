@@ -1,6 +1,6 @@
 import {StateIllustration,failureIllustration} from '@/components/BrandAssets';
 import { useState } from "react";
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { ActivityIndicator, FlatList, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ProductCard } from "@/components/ProductCard";
@@ -9,14 +9,21 @@ import { CategoryButton } from '@/components/CategoryButton';
 import { CatalogAttribution } from "@/components/CatalogAttribution";
 import { EmptyState, ErrorMessage, ScreenHeader, SearchInput, SelectionChip, TextButton } from "@/components/ui";
 import { useProducts } from "@/hooks/useProducts";
+import { useMerchantDemo } from "@/services/merchant-demo";
 import { categories, emptyFilters } from "@/types/product";
 import { dietaryFields, dietaryNames, hasDiscoveryPreferences } from "@/services/catalog/discovery";
 import { colors, spacing, ui } from "@/lib/theme";
 export default function ProductsScreen() {
+  // Taking the tab out of the bar does not close the route: a link, a back stack or the bar that
+  // other screens render underneath can still reach it. The fictional catalogue is only ever shown
+  // when the merchant demo is deliberately on.
+  const { demo, ready: demoReady } = useMerchantDemo();
   const catalog = useProducts();
   const [showFilters, setShowFilters] = useState(false);
   const { filters, setFilters } = catalog;
   const clear = () => { catalog.setQuery(""); setFilters(emptyFilters); };
+  // After every hook, so the order never changes between renders.
+  if (demoReady && !demo) return <Redirect href="/" />;
   return <SafeAreaView style={ui.page} edges={["top", "left", "right"]}>
     <FlatList
       data={catalog.products} keyExtractor={item => item.id}

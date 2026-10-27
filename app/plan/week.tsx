@@ -34,6 +34,8 @@ export default function PlanWeekScreen() {
     {planned.length > 0 && <SectionCard title="Your week">
       {planned.map(date => <Text key={date} style={ui.small}>{planDateLabel(date)}: {dayOf(plan!, date)!.slots.join(', ')}</Text>)}
     </SectionCard>}
+    {!!planned.length && <PrimaryButton label="Create my shopping list"
+      onPress={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />}
     <PrimaryButton label={planned.length ? 'Plan the first day' : 'Pick at least one day'} disabled={!planned.length}
       onPress={() => router.replace({ pathname: '/plan/[date]', params: { date: planned[0] } })} />
   </Screen>;

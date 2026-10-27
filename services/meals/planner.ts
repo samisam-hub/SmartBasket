@@ -10,7 +10,7 @@ import { mealWeights as w, slotCalorieShare } from './config';
 import { matchProducts, uniqueCatalog } from './matching';
 import { dayOf, itemsInSlot, itemsOn, planChoices } from './weekPlan';
 import { isCook } from './choices';
-export function compatibleMeal(meal: Meal, p: UserPreferences): boolean {
+export function compatibleMeal(meal: Meal, p: Pick<UserPreferences, 'dietaryPreferences' | 'allergens'>): boolean {
   if (!meal.ingredients.length || !Array.isArray(meal.allergens) || !Array.isArray(meal.dietaryTags)) return false;
   if (p.dietaryPreferences.some(d=>d!=='none'&&!meal.dietaryTags.includes(d)) || p.allergens.some(a=>meal.allergens.includes(a))) return false;
   return meal.ingredients.every(line=>{const def=ingredients[line.ingredientKey];

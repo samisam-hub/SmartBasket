@@ -53,6 +53,12 @@ function AuthenticatedLayout(){
           <Stack.Screen name="household" options={{ headerShown: false }} />
           {/* A link straight into a usable plan; it only passes through. */}
           <Stack.Screen name="try" options={{ headerShown: false, gestureEnabled: false }} />
+          {/* The way in, and the explanation that follows it: both bring their own layout. */}
+          <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false }} />
+          <Stack.Screen name="intro" options={{ headerShown: false, gestureEnabled: false }} />
+          <Stack.Screen name="household-setup" options={{ headerShown: false }} />
+          <Stack.Screen name="household-setup/person" options={{ headerShown: false }} />
+          <Stack.Screen name="meal-preferences" options={{ headerShown: false }} />
           <Stack.Screen name="saved-lists" options={{ title: "All my lists" }} />
           <Stack.Screen name="pantry" options={{ title: "Pantry & purchases" }} />
           <Stack.Screen name="account" options={{ title: "Account" }} />

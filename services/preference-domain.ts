@@ -167,7 +167,9 @@ export function isDraft(value: unknown): value is PreferenceDraft {
     (p.participants === undefined || validParticipantList(p.participants)) &&
     (p.slotDefaults === undefined || validSlotDefaults(p.slotDefaults)) &&
     // Absent means metric; anything else stored there is not a preference we can honour.
-    (p.unitSystem === undefined || isUnitSystem(p.unitSystem))
+    (p.unitSystem === undefined || isUnitSystem(p.unitSystem)) &&
+    (p.preferredMealIds === undefined ||
+      (Array.isArray(p.preferredMealIds) && p.preferredMealIds.every(id => typeof id === 'string')))
   );
 }
 export function isSaved(value: unknown): value is UserPreferences {
