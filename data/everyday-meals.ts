@@ -1,14 +1,17 @@
 import * as catalog from './german-everyday-meals.json';
+import * as internationalCatalog from './international-meals.json';
+import * as internationalIngredients from './international-ingredients.json';
 import * as referenceIngredients from './everyday-ingredients.json';
 import type { IngredientDefinition, Meal, MealSlot, Nutrition } from '../types/meal';
 import type { Allergen, Diet } from '../types/preferences';
 import { quantityTolerances } from '../services/meals/config';
 
 /** Editorial reference estimates, not manufacturer nutrition or verified allergen-free products. */
-export const everydayIngredients = referenceIngredients.ingredients as IngredientDefinition[];
+export const everydayIngredients = [...referenceIngredients.ingredients, ...internationalIngredients.ingredients] as IngredientDefinition[];
 
 export function buildEverydayMeals(definitions: Record<string, IngredientDefinition>): Meal[] {
-  return catalog.meals.map(entry => {
+  return [...catalog.meals, ...internationalCatalog.meals].map(entry => {
+    const date = internationalCatalog.meals.some(meal => meal.id === entry.id) ? '2026-10-30T00:00:00Z' : '2026-10-21T00:00:00Z';
     const amounts = entry.amounts.map(line => {
       const ingredient = definitions[line.ingredientKey];
       if (!ingredient) throw new Error(`Unknown everyday ingredient: ${line.ingredientKey}`);
@@ -35,6 +38,6 @@ export function buildEverydayMeals(definitions: Record<string, IngredientDefinit
       preparation: { activeMinutes: entry.activeMinutes, totalMinutes: entry.totalMinutes,
         referenceServings: entry.recipeServings, method: entry.method as NonNullable<Meal['preparation']>['method'],
         note: entry.preparationNote },
-      createdAt: '2026-10-21T00:00:00Z', updatedAt: '2026-10-21T00:00:00Z' };
+      createdAt: date, updatedAt: date };
   });
 }
