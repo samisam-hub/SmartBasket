@@ -71,7 +71,7 @@ const styles = {
   number: { ...typography.body, color: colors.ink },
   numberOn: { color: colors.onPrimary, fontWeight: '700' as const },
   outside: { color: colors.border },
-  past: { color: colors.muted },
+  past: { color: colors.muted, opacity: 0.45 },
   dot: { width: 5, height: 5, borderRadius: radii.pill, backgroundColor: 'transparent' as const },
   dotOn: { backgroundColor: colors.primary },
   dotOnPicked: { backgroundColor: colors.onPrimary },

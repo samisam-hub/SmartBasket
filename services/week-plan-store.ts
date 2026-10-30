@@ -99,6 +99,10 @@ export class WeekPlanStore {
     if (!this.state.plan) throw Error(t('store.week.pickWeekFirst'));
     return this.state.plan;
   }
+  /** Every day planned in any week, for a calendar that shows more than the week being edited. */
+  plannedDays = (): { date: string; slots: MealSlot[] }[] =>
+    Object.values(this.plans).flatMap(plan => plan.days.map(day => ({ date: day.date, slots: [...day.slots] })))
+      .sort((a, b) => a.date.localeCompare(b.date));
   /** Opens the given week, keeping what is already planned in it. */
   open = (weekStart: string, preferences: UserPreferences) =>
     this.apply(this.plans[weekStart] ?? startWeek(weekStart, preferences));

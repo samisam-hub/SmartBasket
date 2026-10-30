@@ -1,5 +1,5 @@
 import { slotLabel, t } from '@/services/i18n';
-import { weekdayShort, addDays, dayOf, monthStartOf, planDateLabel, plannedDates } from '@/services/meals/weekPlan';
+import { weekdayShort, inWeek, monthStartOf, planDateLabel, weekStartOf } from '@/services/meals/weekPlan';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
@@ -25,18 +25,20 @@ export default function PlanWeekScreen() {
   if (!saved) return <Screen><Text style={ui.body}>{t('week.needsPreferences')}</Text>
     <SecondaryButton label={t('week.setPreferences')} onPress={() => router.push('/onboarding/welcome')} /></Screen>;
   if (!ready) return <Screen><Text style={ui.body}>{t('week.loading')}</Text></Screen>;
-  const planned = plan ? plannedDates(plan) : [];
   const selectedPerson = saved.participants?.some(person => person.id === personId)
     ? personId : saved.participants?.[0]?.id;
   const open = (date: string) => {
     try {
-      if (!plan) store.open(weekStart, saved);
+      // A day in another week is planned in that week; the calendar simply moves there.
+      if (!plan || !inWeek(weekStart, date)) store.open(weekStartOf(date), saved);
       store.toggleDay(date, saved);
       setCopyError(null);
     } catch (e) { setCopyError(e instanceof Error ? e.message : t('week.dayFailed')); }
   };
+  const chosen = store.plannedDays();
+  const chosenDates = chosen.map(day => day.date);
   return <Screen bottom>
-    <ScreenHeader title={t('week.title')} subtitle={t('week.subtitle', { from: planDateLabel(weekStart), to: planDateLabel(addDays(weekStart, 6)) })} />
+    <ScreenHeader title={t('week.title')} subtitle={t('week.pickOnCalendar')} />
     <ErrorMessage message={copyError ?? error} />
     {store.canCopyPreviousWeek(weekStart, saved) && <SectionCard>
       <SecondaryButton label={t('week.copyPrevious')} onPress={() => {
@@ -47,9 +49,8 @@ export default function PlanWeekScreen() {
     </SectionCard>}
     <SectionCard>
       <MonthCalendar month={month ?? monthStartOf(weekStart)} onMonth={setMonth}
-        selected={planned} onSelect={open} />
-      <Text style={ui.small}>{t('week.pickOnCalendar')}</Text>
-      <Text style={ui.small}>{t('week.chosen', { count: planned.length })}</Text>
+        selected={chosenDates} onSelect={open} />
+      <Text style={ui.small}>{t('week.chosen', { count: chosen.length })}</Text>
       <Text style={ui.small}>{t('week.slotsNote', { slots: activeSlotLabels(saved).join(', ').toLowerCase() })}</Text>
     </SectionCard>
     {!!saved.participants?.length && <SectionCard title={t('week.routine')}>
@@ -69,12 +70,12 @@ export default function PlanWeekScreen() {
             setCopyError(null); } catch (e) { setCopyError(e instanceof Error ? e.message : t('week.routineFailed')); } }} />)}</View>
       <Text style={ui.small}>{t('week.routineExplain')}</Text>
     </SectionCard>}
-    {planned.length > 0 && <SectionCard title={t('week.yourWeek')}>
-      {planned.map(date => <Text key={date} style={ui.small}>{planDateLabel(date)}: {dayOf(plan!, date)!.slots.join(', ')}</Text>)}
+    {chosen.length > 0 && <SectionCard title={t('week.yourWeek')}>
+      {chosen.map(day => <Text key={day.date} style={ui.small}>{planDateLabel(day.date)}: {day.slots.join(', ')}</Text>)}
     </SectionCard>}
-    {!!planned.length && <PrimaryButton label={t('week.createList')}
+    {!!chosen.length && <PrimaryButton label={t('week.createList')}
       onPress={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />}
-    <SecondaryButton label={t(planned.length ? 'week.toTaste' : 'week.pickOne')} disabled={!planned.length}
+    <SecondaryButton label={t(chosen.length ? 'week.toTaste' : 'week.pickOne')} disabled={!chosen.length}
       onPress={() => router.push('/plan/taste')} />
   </Screen>;
 }

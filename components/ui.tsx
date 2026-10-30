@@ -728,7 +728,7 @@ export function Dropdown({ label, options, value, onChange, multiple = false, pl
   };
   return (
     <View style={{ gap: 6 }}>
-      <Text style={ui.caption}>{label}</Text>
+      <Text style={styles.label}>{label}</Text>
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: open, disabled }}
