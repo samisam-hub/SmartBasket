@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { meals } from '../data/meals';
 import type { Product } from '../types/product';
 import { validMealRatings, type MealRatings } from './meals/taste';
@@ -51,7 +52,7 @@ export class WeekPlanStore {
         const stored = JSON.parse(raw);
         if (stored.version === 1) {
           // Read the original single-week cache without changing its plan or discarding it.
-          if (stored.plan !== null && !isWeekPlan(stored.plan)) throw Error("Ungültige gespeicherte Woche");
+          if (stored.plan !== null && !isWeekPlan(stored.plan)) throw Error(t('store.week.invalidWeek'));
           this.plans = stored.plan ? { [stored.plan.weekStart]: stored.plan } : {};
           this.publish({ plan: stored.plan });
         } else if (stored.version === 2) {
@@ -60,15 +61,15 @@ export class WeekPlanStore {
               (stored.attendanceRules !== undefined && !validAttendanceRules(stored.attendanceRules)) ||
               (stored.mealRatings !== undefined && !validMealRatings(stored.mealRatings)) ||
               (stored.activeWeek !== null && (typeof stored.activeWeek !== 'string' || !Object.hasOwn(stored.plans, stored.activeWeek))))
-            throw Error("Ungültige gespeicherte Wochen");
+            throw Error(t('store.week.invalidWeeks'));
           this.plans = stored.plans;
           this.publish({ plan: stored.activeWeek === null ? null : this.plans[stored.activeWeek],
             attendanceRules: stored.attendanceRules ?? [], mealRatings: stored.mealRatings ?? {} });
-        } else throw Error("Unbekanntes Format der gespeicherten Woche");
+        } else throw Error(t('store.week.unknownFormat'));
       }
     } catch {
       this.readable = false;
-      this.publish({ error: "Die geplante Woche konnte nicht gelesen werden und wurde nicht überschrieben. Starte die App neu, um es erneut zu versuchen." });
+      this.publish({ error: t('store.week.unreadable') });
     }
     this.publish({ ready: true });
   }
@@ -78,13 +79,13 @@ export class WeekPlanStore {
       attendanceRules: this.state.attendanceRules, mealRatings: this.state.mealRatings });
     this.writes = this.writes.catch(() => {}).then(() => this.storage.setItem(this.key, json));
     void this.writes.then(() => this.publish({ error: null }))
-      .catch(() => this.publish({ error: "Die geplante Woche konnte nicht auf diesem Gerät gespeichert werden. Gib Speicherplatz frei und versuche es erneut." }));
+      .catch(() => this.publish({ error: t('store.week.writeFailed') }));
   }
   /** Every change keeps the plan valid and writes it through, so nothing is lost on the way. */
   private apply(next: WeekPlan | null) {
     if (!this.state.ready || !this.readable) return this.state.plan;
     if (next) {
-      if (!isWeekPlan(next)) throw Error("Ungültiger Wochenplan");
+      if (!isWeekPlan(next)) throw Error(t('store.week.invalidPlan'));
       this.plans = { ...this.plans, [next.weekStart]: next };
     } else if (this.state.plan) {
       this.plans = { ...this.plans };
@@ -95,16 +96,16 @@ export class WeekPlanStore {
     return next;
   }
   private require(): WeekPlan {
-    if (!this.state.plan) throw Error("Wähle zuerst eine Woche.");
+    if (!this.state.plan) throw Error(t('store.week.pickWeekFirst'));
     return this.state.plan;
   }
   /** Opens the given week, keeping what is already planned in it. */
   open = (weekStart: string, preferences: UserPreferences) =>
     this.apply(this.plans[weekStart] ?? startWeek(weekStart, preferences));
   rateMeal = (mealId: string, rating: boolean | null) => {
-    if (!this.state.ready || !this.readable) throw Error("Die Essensvorlieben sind noch nicht geladen.");
+    if (!this.state.ready || !this.readable) throw Error(t('store.week.tastesNotReady'));
     if (!meals.some(meal => meal.id === mealId) || (rating !== null && typeof rating !== 'boolean'))
-      throw Error("Wähle eine gültige Essensvorliebe.");
+      throw Error(t('store.week.invalidTaste'));
     const mealRatings = { ...this.state.mealRatings };
     if (rating === null) delete mealRatings[mealId];
     else mealRatings[mealId] = rating;
@@ -112,13 +113,13 @@ export class WeekPlanStore {
     this.persist(this.state.plan);
   };
   generate = (preferences: UserPreferences, catalog: Product[]) => {
-    if (!this.state.ready || !this.readable) throw Error("Die Woche ist noch nicht bereit.");
+    if (!this.state.ready || !this.readable) throw Error(t('store.week.notReady'));
     return this.apply(fillWeek(this.require(), preferences, catalog, this.state.mealRatings, this.state.attendanceRules));
   };
   toggleAttendanceRule = (rule: AttendanceRule, preferences: UserPreferences) => {
     if (!this.state.ready || !this.readable) return;
     if (!validAttendanceRules([rule]) || !preferences.participants?.some(person => person.id === rule.personId))
-      throw Error("Wähle eine Person, einen gültigen Wochentag und eine Mahlzeit.");
+      throw Error(t('store.week.invalidRule'));
     const key = (candidate: AttendanceRule) => candidate.personId === rule.personId &&
       candidate.weekday === rule.weekday && candidate.slot === rule.slot;
     const rules = this.state.attendanceRules.some(key)
@@ -135,9 +136,9 @@ export class WeekPlanStore {
   };
   copyPreviousWeek = (weekStart: string, preferences: UserPreferences) => {
     if (!this.state.ready || !this.readable) return this.state.plan;
-    if (this.plans[weekStart]?.days.length) throw Error("Diese Woche hat bereits einen Plan. Leere ihn, bevor du einen anderen übernimmst.");
+    if (this.plans[weekStart]?.days.length) throw Error(t('store.week.alreadyPlanned'));
     const previous = this.plans[addDays(weekStart, -7)];
-    if (!previous) throw Error("Es gibt keinen Plan aus der Vorwoche zum Übernehmen.");
+    if (!previous) throw Error(t('store.week.noPrevious'));
     return this.apply(copyPreviousWeek(previous, weekStart, preferences));
   };
   toggleDay = (date: string, preferences: UserPreferences) => {
@@ -149,7 +150,7 @@ export class WeekPlanStore {
       if (!attendingPeople(next, date, slot, this.state.attendanceRules).length)
         next = skipSlot(next, date, slot, preferences);
     }
-    if (!next.days.some(day => day.date === date)) throw Error("An diesem Tag isst bei den ausgewählten Mahlzeiten niemand zu Hause.");
+    if (!next.days.some(day => day.date === date)) throw Error(t('store.week.nobodyHomeDay'));
     return this.apply(next);
   };
   toggleSlot = (date: string, slot: MealSlot, preferences: UserPreferences) =>
@@ -160,7 +161,7 @@ export class WeekPlanStore {
     let next = chooseMeal(plan, date, slot, suggestion, preferences, participantIds);
     if (!participantIds && plan.participants?.length && next !== plan) {
       const attending = attendingPeople(plan, date, slot, this.state.attendanceRules);
-      if (!attending.length) throw Error("Bei dieser Mahlzeit isst niemand zu Hause. Ändere die regelmäßige Abwesenheit oder den Tag.");
+      if (!attending.length) throw Error(t('store.week.nobodyHomeSlot'));
       if (attending.length < plan.participants.length)
         next = setPresence(next, next.items[next.items.length - 1].id, attending, preferences);
     }
@@ -173,7 +174,7 @@ export class WeekPlanStore {
       let next = chooseMode(plan, date, slot, mode, category, preferences, participantIds);
       if (!participantIds && plan.participants?.length && next !== plan) {
         const attending = attendingPeople(plan, date, slot, this.state.attendanceRules);
-        if (!attending.length) throw Error("Bei dieser Mahlzeit isst niemand zu Hause. Ändere die regelmäßige Abwesenheit oder den Tag.");
+        if (!attending.length) throw Error(t('store.week.nobodyHomeSlot'));
         if (attending.length < plan.participants.length)
           next = setPresence(next, next.items[next.items.length - 1].id, attending, preferences);
       }
@@ -181,14 +182,14 @@ export class WeekPlanStore {
     };
   replaceMeal = (itemId: string, suggestion: MealSuggestion, preferences: UserPreferences) => {
     const plan = this.require(), item = plan.items.find(choice => choice.id === itemId);
-    if (!item) throw Error("Die zu ersetzende Mahlzeit ist nicht mehr vorhanden.");
+    if (!item) throw Error(t('store.week.mealGone'));
     return this.apply(chooseMeal(clearChoice(plan, itemId, preferences), item.date, item.mealSlot,
       suggestion, preferences, item.participantIds));
   };
   replaceMode = (itemId: string, mode: Exclude<MealMode, 'cook'>, category: ReadyMealCategory | undefined,
     preferences: UserPreferences) => {
     const plan = this.require(), item = plan.items.find(choice => choice.id === itemId);
-    if (!item) throw Error("Die zu ersetzende Mahlzeit ist nicht mehr vorhanden.");
+    if (!item) throw Error(t('store.week.mealGone'));
     return this.apply(chooseMode(clearChoice(plan, itemId, preferences), item.date, item.mealSlot,
       mode, category, preferences, item.participantIds));
   };
@@ -205,7 +206,7 @@ export class WeekPlanStore {
   reset = () => this.apply(null);
   /** Retry the current snapshot after a device storage failure before leaving a screen. */
   saveDraft = async () => {
-    if (!this.state.ready || !this.readable) throw Error("Die Woche konnte nicht gelesen werden und wurde nicht überschrieben.");
+    if (!this.state.ready || !this.readable) throw Error(t('store.week.notOverwritten'));
     this.persist(this.state.plan);
     await this.flush();
   };

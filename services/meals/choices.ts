@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { readyCategoryLabel } from '../../services/i18n';
 import { readyMealCategories, type AnyMealPlan, type Meal, type MealChoice, type MealMode, type MealSlot, type ReadyMealCategory, type ReadyMealMetadata } from '../../types/meal';
 
@@ -20,9 +21,9 @@ export function isReadyMealMetadata(value: unknown): value is ReadyMealMetadata 
 /** A meal nobody cooks carries no recorded nutrition: never a guess, never a borrowed recipe. */
 export function choicePlaceholder(mode: Exclude<MealMode, 'cook'>, slot: MealSlot, category: ReadyMealCategory | undefined,
   timestamps: { createdAt: string; updatedAt: string }): Meal {
-  if (!['ready_to_eat', 'heat_and_eat', 'eat_out'].includes(mode)) throw Error("Ungültige Mahlzeitenauswahl.");
-  if (mode !== 'eat_out' && (!category || !readyCategories(mode, slot).includes(category))) throw Error("Diese Kategorie passt nicht zu dieser Mahlzeit.");
-  const name = mode === 'eat_out' ? "Auswärts essen" : `${readyCategoryLabel(category!)} · ${mode === 'heat_and_eat' ? "Aufwärmen" : "Verzehrfertig"}`;
+  if (!['ready_to_eat', 'heat_and_eat', 'eat_out'].includes(mode)) throw Error(t('choices.invalid'));
+  if (mode !== 'eat_out' && (!category || !readyCategories(mode, slot).includes(category))) throw Error(t('choices.categoryMismatch'));
+  const name = mode === 'eat_out' ? t('choices.eatOut') : `${readyCategoryLabel(category!)} · ${mode === 'heat_and_eat' ? t('choices.heatAndEat') : "Verzehrfertig"}`;
   return { id: `choice:${mode}:${category ?? 'outside'}`, name, mealType: slot, servings: 1,
     ingredients: [], allergens: [], dietaryTags: [], caloriesPerServing: 0, proteinPerServing: 0,
     carbohydratesPerServing: 0, fatPerServing: 0, nutritionSource: 'unrecorded', ...timestamps };
@@ -30,7 +31,7 @@ export function choicePlaceholder(mode: Exclude<MealMode, 'cook'>, slot: MealSlo
 /** Keeps the item's own day, whether that is a day number or a calendar date. */
 export function replaceMealChoice<P extends AnyMealPlan>(plan: P, itemId: string, mode: Exclude<MealMode, 'cook'>, category?: ReadyMealCategory): P {
   const item = plan.items.find(i => i.id === itemId);
-  if (!item) throw Error("Ungültige Mahlzeitenauswahl.");
+  if (!item) throw Error(t('choices.invalid'));
   const replacement = { ...item, mealMode: mode, servings: plan.householdSize,
     readyMealCategory: mode === 'eat_out' ? undefined : category,
     meal: choicePlaceholder(mode, item.mealSlot, category, { createdAt: item.meal.createdAt, updatedAt: item.meal.updatedAt }) };

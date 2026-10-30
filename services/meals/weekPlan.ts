@@ -46,7 +46,7 @@ export const inWeek = (weekStart: string, date: string): boolean =>
 
 /** A fresh week nobody has filled in yet: the days are chosen on the calendar screen. */
 export function emptyWeekPlan(weekStart: string, preferences: UserPreferences): WeekPlan {
-  if (!isWeekStart(weekStart)) throw Error("Eine Woche beginnt am Montag.");
+  if (!isWeekStart(weekStart)) throw Error(t('plan.weekStartsMonday'));
   return {
     version: '2', weekStart, days: [], status: 'review', items: [], warnings: [],
     householdSize: preferences.householdSize, targetCalories: 0, targetProtein: 0,

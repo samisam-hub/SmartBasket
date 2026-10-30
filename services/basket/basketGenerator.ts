@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { groupLabel , term } from '../../services/i18n';
 import type { Product } from '../../types/product';
 import type { UserPreferences } from '../../types/preferences';
@@ -16,13 +17,13 @@ export function generateBasket(input: UserPreferences, products: readonly Produc
   const warnings: BasketWarning[] = [], exclusions: Record<string, number> = {};
   const exclude = (code: string) => { exclusions[code] = (exclusions[code] ?? 0) + 1; };
   const invalid = !isDraft(input) || input.onboardingCompleted !== true || Object.keys(validatePreferences(input)).length > 0;
-  const targets = invalid ? { calorieTarget: 0, proteinTarget: 0, dailyProteinTarget: 0, proteinRule: "Ungültige Eingabe", budgetTarget: null } : nutritionTargets(input);
+  const targets = invalid ? { calorieTarget: 0, proteinTarget: 0, dailyProteinTarget: 0, proteinRule: t('generator.invalidInput'), budgetTarget: null } : nutritionTargets(input);
   const base: BasketGenerationResult = { engineVersion: '1', optimizationWeights: { ...objectiveWeights }, status: invalid ? 'invalid' : 'empty', items: [],
     totalCalories: 0, totalProtein: 0, totalCarbohydrates: 0, totalFat: 0, totalFiber: null,
     estimatedTotalPrice: null, knownPriceSubtotal: 0, ...targets, budgetDifference: null,
     budgetStatus: !invalid && input.budgetEnabled ? 'unknown' : 'disabled', calorieCoveragePercent: 0, proteinCoveragePercent: 0,
     categoryCoverage: [], warnings, constraintsApplied: [], exclusions, score: 0, objective: 0, iterations: 0 };
-  if (invalid) { warnings.push({ code: 'invalid_preferences', message: "Vervollständige und speichere gültige Einstellungen, bevor du einen Warenkorb erstellst." }); return base; }
+  if (invalid) { warnings.push({ code: 'invalid_preferences', message: t('generator.needsSettings') }); return base; }
   base.constraintsApplied = ['complete_calories_and_macros', 'whole_packages', 'no_mass_volume_conversion',
     ...input.dietaryPreferences.filter(d => d !== 'none').map(d => `positive_diet_evidence:${d}`),
     ...input.allergens.map(a => `contains_traces_and_unknown_excluded:${a}`)];
@@ -47,7 +48,7 @@ export function generateBasket(input: UserPreferences, products: readonly Produc
   const priced = eligible.filter(c => c.price !== null);
   const pool = input.budgetEnabled && requiredGroups.every(g => priced.some(c => c.group === g)) ? priced : eligible;
   if (pool !== eligible && priced.length < eligible.length) {
-    warnings.push({ code: 'unpriced_candidates_excluded', message: "Produkte ohne Preis wurden ausgelassen, da Produkte mit Preisen die Grundkategorien abdecken. Alle Preise bleiben Schätzwerte." });
+    warnings.push({ code: 'unpriced_candidates_excluded', message: t('generator.skippedUnpriced') });
     base.constraintsApplied.push('prefer_complete_estimated_prices');
   }
   const candidates = groups.flatMap(group => pool.filter(c => c.group === group)
@@ -122,8 +123,8 @@ export function generateBasket(input: UserPreferences, products: readonly Produc
     const amount = n * c.pack.amount, factor = amount / 100;
     const reasons = [{ code: 'category_coverage', detail: `Ergänzt die Auswahl: ${groupLabel(c.group)}` },
       ...input.dietaryPreferences.filter(d => d !== 'none').map(d => ({ code: `diet:${d}`, detail: `Passt zur Einstellung ${term(d)}` }))];
-    if (c.product.proteinPer100g! * 4 >= c.product.caloriesPer100g! * 0.2) reasons.push({ code: 'high_protein', detail: "Mindestens 20 % der angegebenen Energie aus Eiweiß" });
-    if (c.price !== null && c.calories / c.price >= 500) reasons.push({ code: 'price_efficiency', detail: "Mindestens 500 kcal pro geschätztem Euro" });
+    if (c.product.proteinPer100g! * 4 >= c.product.caloriesPer100g! * 0.2) reasons.push({ code: 'high_protein', detail: t('generator.proteinShare') });
+    if (c.price !== null && c.calories / c.price >= 500) reasons.push({ code: 'price_efficiency', detail: t('generator.caloriesPerEuro') });
     if (c.pack.assumed) reasons.push({ code: 'assumed_package', detail: `Angenommen: ${c.pack.amount} ${c.pack.unit} Packung; tatsächliche Größe prüfen` });
     return [{ product: c.product, group: c.group, packageCount: n, packageAmount: c.pack.amount, quantityUnit: c.pack.unit,
       quantityAssumed: c.pack.assumed, totalWeight: c.pack.unit === 'g' ? round(amount) : null, totalVolume: c.pack.unit === 'ml' ? round(amount) : null,
@@ -143,15 +144,15 @@ export function generateBasket(input: UserPreferences, products: readonly Produc
   const budgetDifference = price !== null && targets.budgetTarget !== null ? round(price - targets.budgetTarget) : null;
   const budgetStatus: BasketGenerationResult['budgetStatus'] = !input.budgetEnabled ? 'disabled' : price === null ? 'unknown' :
     !nutritionMet || !coverageMet || price > targets.budgetTarget! * 1.1 ? 'unachievable' : price > targets.budgetTarget! ? 'slightly_over' : 'within_budget';
-  if (!items.length) warnings.push({ code: 'no_eligible_products', message: "Keine Produkte erfüllen die Nährwert-, Packungs- und Eignungsanforderungen. Es wurden keine ungeeigneten Alternativen ausgewählt." });
+  if (!items.length) warnings.push({ code: 'no_eligible_products', message: t('generator.noneFit') });
   if (current.unknown) warnings.push({ code: 'missing_prices', message: `Preise fehlen für ${current.unknown} ausgewählte Produkte. Gesamtpreis und Budgeteinhaltung können nicht bestätigt werden.` });
-  if (items.some(i => i.quantityAssumed)) warnings.push({ code: 'assumed_packages', message: "Einige Packungsgrößen sind geschätzt. Mengen und Nährwerte hängen von diesen Annahmen ab.", productIds: items.filter(i => i.quantityAssumed).map(i => i.product.id) });
-  if (!nutritionMet && items.length) warnings.push({ code: 'nutrition_conflict', message: "Dieser bestmögliche Warenkorb liegt außerhalb des Spielraums für Kalorien- oder Eiweißziele." });
+  if (items.some(i => i.quantityAssumed)) warnings.push({ code: 'assumed_packages', message: t('generator.estimatedPackages'), productIds: items.filter(i => i.quantityAssumed).map(i => i.product.id) });
+  if (!nutritionMet && items.length) warnings.push({ code: 'nutrition_conflict', message: t('generator.outsideTargets') });
   for (const c of categoryCoverage.filter(c => c.required && (!c.represented || c.amount < c.targetAmount * 0.75))) warnings.push({ code: `coverage:${c.group}`, message: c.available ? `Kategorie ${groupLabel(c.group)} ist in diesem Warenkorb nur teilweise abgedeckt.` : `Keine passenden Produkte der Kategorie ${groupLabel(c.group)} für diese Anforderungen verfügbar.` });
-  if (budgetStatus === 'unachievable' || budgetStatus === 'slightly_over') warnings.push({ code: 'budget_conflict', message: "Die Berechnung konnte Ernährungs-, Abwechslungs- und Budgetziele nicht gleichzeitig erfüllen. Dies ist die beste gefundene Lösung, kein Nachweis, dass es keinen günstigeren Warenkorb gibt." });
-  if (exclusions.allergen_safety_unknown) warnings.push({ code: 'allergen_evidence', message: "Produkte ohne ausdrücklichen Nachweis der Freiheit von ausgewählten Allergenen und ohne Zutatenangaben wurden ausgeschlossen. Leere Allergenlisten gelten nicht als Sicherheitsnachweis." });
-  if (input.allergens.length) warnings.push({ code: 'verify_labels', message: "Quellenangaben können unvollständig oder veraltet sein. Prüfe die aktuelle Verpackung; dies ist keine Garantie für Allergiesicherheit." });
-  if (iterations === limits.iterations) warnings.push({ code: 'search_limit', message: "Die Berechnung hat ihre maximale Anzahl an Durchläufen erreicht." });
+  if (budgetStatus === 'unachievable' || budgetStatus === 'slightly_over') warnings.push({ code: 'budget_conflict', message: t('generator.bestFound') });
+  if (exclusions.allergen_safety_unknown) warnings.push({ code: 'allergen_evidence', message: t('generator.allergenEvidence') });
+  if (input.allergens.length) warnings.push({ code: 'verify_labels', message: t('generator.sourceData') });
+  if (iterations === limits.iterations) warnings.push({ code: 'search_limit', message: t('generator.maxPasses') });
   return { ...base, items, status: !items.length ? 'empty' : nutritionMet && coverageMet ? 'generated' : 'partial',
     totalCalories: sum('totalCalories'), totalProtein: sum('totalProtein'), totalCarbohydrates: sum('totalCarbohydrates'), totalFat: sum('totalFat'),
     totalFiber: items.length && items.every(i => i.totalFiber !== null) ? round(items.reduce((s, i) => s + i.totalFiber!, 0)) : null,

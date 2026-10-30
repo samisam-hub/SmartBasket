@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { categoryLabel } from '../../services/i18n';
 import { ingredientMappings, canonicalIngredientKey } from '../../data/ingredient-mappings';
 import { ingredients } from '../../data/meals';
@@ -35,13 +36,13 @@ function packageFor(planned: number, product: Product) {
 
 export function replaceBasketProduct(original: BasketGenerationResult, currentId: string, product: Product) {
   const result = structuredClone(original);
-  if (result.items.some(i => i.product.id === product.id && i.product.id !== currentId)) throw Error("Dieses Produkt ist bereits ausgewählt.");
+  if (result.items.some(i => i.product.id === product.id && i.product.id !== currentId)) throw Error(t('basket.alreadySelected'));
   const item = result.items.find(candidate => candidate.product.id === currentId);
-  if (!item || !item.ingredientKey) throw Error("Dieses Produkt kann im aktuellen Warenkorb nicht ausgetauscht werden.");
+  if (!item || !item.ingredientKey) throw Error(t('basket.cannotReplace'));
   const packed = packageFor(item.plannedConsumptionQuantity ?? item.packageAmount, product);
-  if (!packed) throw Error("Die Alternative hat keine passende Packungsgröße.");
+  if (!packed) throw Error(t('basket.noPackageSize'));
   const nutrition = ingredients[item.ingredientKey]?.nutritionPer100;
-  if (!nutrition) throw Error("Für diese Zutat sind keine Nährwerte verfügbar.");
+  if (!nutrition) throw Error(t('basket.noNutrition'));
   const factor = (item.plannedConsumptionQuantity ?? item.packageAmount) / 100;
   const replacement: BasketItem = { ...item, product, group: groupOf(product), packageCount: packed.packageCount, packageAmount: packed.amount,
     quantityUnit: packed.unit, quantityAssumed: packed.assumed, purchasedQuantity: packed.purchased, leftoverQuantity: packed.leftover,
@@ -59,7 +60,7 @@ export function replaceBasketProduct(original: BasketGenerationResult, currentId
 export function addBasketReplacement(original: BasketGenerationResult, requirement: IngredientRequirement, product: Product) {
   const packed = packageFor(requirement.requiredQuantity, product);
   const nutrition = ingredients[requirement.ingredientKey]?.nutritionPer100;
-  if (!packed || !nutrition) throw Error("Die Alternative kann nicht hinzugefügt werden, weil Packungs- oder Nährwertangaben unvollständig sind.");
+  if (!packed || !nutrition) throw Error(t('basket.incompleteAlternative'));
   const factor = requirement.requiredQuantity / 100;
   const item: BasketItem = { product, ingredientKey: requirement.ingredientKey, sourceMealIds: requirement.sourceMealIds, group: groupOf(product),
     packageCount: packed.packageCount, packageAmount: packed.amount, quantityUnit: packed.unit, quantityAssumed: packed.assumed,
@@ -69,7 +70,7 @@ export function addBasketReplacement(original: BasketGenerationResult, requireme
     totalFat: nutrition.fat * factor, totalFiber: null, estimatedPrice: packagePrice(product) === null ? null : packagePrice(product)! * packed.packageCount,
     reasonSelected: [{ code: 'manual_replacement', detail: `Hinzugefügt aus der Kategorie ${categoryLabel(product.category)} als Ersatz für ${requirement.ingredientName}.` }] };
   const result = structuredClone(original);
-  if (result.items.some(i => i.product.id === product.id || i.ingredientKey === requirement.ingredientKey)) throw Error("Dieses Produkt oder diese Zutat ist bereits ausgewählt.");
+  if (result.items.some(i => i.product.id === product.id || i.ingredientKey === requirement.ingredientKey)) throw Error(t('basket.productOrIngredientSelected'));
   result.excludedItems = result.excludedItems?.filter(i => i.product.id !== product.id);
   result.removedProductIds = result.removedProductIds?.filter(id => id !== product.id);
   result.removedIngredientKeys = result.removedIngredientKeys?.filter(key => key !== requirement.ingredientKey);

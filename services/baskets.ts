@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getSupabaseClient } from '../lib/supabase';
 import { BasketPersistence } from './basket/persistence';
@@ -13,6 +14,6 @@ export async function basketOwner(preferred: string | null): Promise<string | nu
   const { data, error } = await client.auth.getSession();
   if (error) return preferred;
   const owner = data.session?.user.id ?? preferred;
-  if (preferred && owner !== preferred) throw Error("Deine gespeicherten Einstellungen gehören zu einer anderen Sitzung. Öffne die App erneut, bevor du fortfährst.");
+  if (preferred && owner !== preferred) throw Error(t('baskets.otherSession'));
   return owner;
 }

@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { AnyMealPlan, MealChoice, Nutrition, IngredientRequirement } from '../../types/meal';
 import type { Product } from '../../types/product';
 import type { UserPreferences } from '../../types/preferences';
@@ -66,7 +67,7 @@ export function matchReadyMeals<P extends AnyMealPlan>(plan: P, preferences: Use
       totalWeight: purchased, totalVolume: null, totalCalories: product.caloriesPer100g! * factor, totalProtein: product.proteinPer100g! * factor,
       totalCarbohydrates: product.carbohydratesPer100g! * factor, totalFat: product.fatPer100g! * factor, totalFiber: product.fiberPer100g === null ? null : product.fiberPer100g * factor,
       estimatedPrice: Math.round(packageCount * packagePrice(product)! * 100) / 100,
-      reasonSelected: [{ code: 'ready_meal_match', detail: 'Kataloggericht nach Bestätigung anhand von Kategorie, Zubereitung, Mahlzeit, Ernährungsnachweisen, Haushaltsportionen und verbleibendem Budget zugeordnet.' }] });
+      reasonSelected: [{ code: 'ready_meal_match', detail: t('readyMeals.evidence') }] });
   }
   return { plan: next, items, requirements, warnings, unmatched };
 }

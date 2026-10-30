@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { MealSlot, WeekPlan } from '../../types/meal';
 import { mealSlots } from '../../types/meal';
 import { parsePlanDate } from './weekPlan';
@@ -13,7 +14,7 @@ export function validAttendanceRules(value: unknown): value is AttendanceRule[] 
 }
 export function attendingPeople(plan: WeekPlan, date: string, slot: MealSlot, rules: AttendanceRule[]): string[] {
   const parsed = parsePlanDate(date);
-  if (!parsed) throw Error("Ungültiges Plandatum");
+  if (!parsed) throw Error(t('plan.invalidDate'));
   const weekday = (parsed.getUTCDay() + 6) % 7;
   return (plan.participants ?? []).map(person => person.id).filter(personId =>
     !rules.some(rule => rule.personId === personId && rule.weekday === weekday && rule.slot === slot));

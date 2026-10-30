@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import type { LocalStorage } from './preference-store';
 import { rowChecked, type ShoppingRow } from './basket/shopping-list';
 
@@ -25,11 +26,11 @@ export class ShoppingListStore {
       if (raw) {
         const value = JSON.parse(raw);
         if (value?.version !== 1 || !value.checked || typeof value.checked !== 'object' || Array.isArray(value.checked) ||
-            !Object.values(value.checked).every(signature => typeof signature === 'string')) throw Error("Ungültige Checkliste");
+            !Object.values(value.checked).every(signature => typeof signature === 'string')) throw Error(t('store.ticks.invalid'));
         this.publish({ checked: value.checked });
       }
     } catch {
-      this.publish({ blocked: true, error: "Gespeicherte Häkchen konnten nicht gelesen werden und wurden nicht überschrieben. Öffne die Liste erneut." });
+      this.publish({ blocked: true, error: t('store.ticks.unreadable') });
     }
     this.publish({ ready: true });
   }
@@ -41,7 +42,7 @@ export class ShoppingListStore {
     void this.writes.then(() => {
       if (revision === this.revision) this.publish({ error: null });
     }).catch(() => {
-      if (revision === this.revision) this.publish({ error: "Häkchen konnten nicht auf diesem Gerät gespeichert werden. Versuche es vor dem Schließen erneut." });
+      if (revision === this.revision) this.publish({ error: t('store.ticks.writeFailed') });
     });
   }
   toggle = (row: ShoppingRow) => {
