@@ -1,5 +1,4 @@
-import { t } from '../i18n';
-import { term } from '../../services/i18n';
+import { t , term } from '../i18n';
 import { ingredients } from '../../data/meals';
 import { canonicalIngredientKey,ingredientMappings,preparedFoodKeywords } from '../../data/ingredient-mappings';
 import type { Product } from '../../types/product';

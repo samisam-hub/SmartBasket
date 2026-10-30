@@ -1,5 +1,4 @@
-import { t } from '../i18n';
-import { groupLabel , term } from '../../services/i18n';
+import { t , groupLabel , term } from '../i18n';
 import type { Product } from '../../types/product';
 import type { UserPreferences } from '../../types/preferences';
 import type { BasketGenerationResult, BasketGroup, BasketItem, BasketWarning } from '../../types/basket';

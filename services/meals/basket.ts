@@ -1,5 +1,4 @@
-import { t } from '../i18n';
-import { term } from '../../services/i18n';
+import { t , term } from '../i18n';
 import type { AnyMealPlan } from '../../types/meal';
 import type { BasketGenerationResult, BasketItem } from '../../types/basket';
 import type { Product } from '../../types/product';

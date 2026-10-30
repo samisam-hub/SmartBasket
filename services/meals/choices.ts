@@ -1,5 +1,4 @@
-import { t } from '../i18n';
-import { readyCategoryLabel } from '../../services/i18n';
+import { t , readyCategoryLabel } from '../i18n';
 import { readyMealCategories, type AnyMealPlan, type Meal, type MealChoice, type MealMode, type MealSlot, type ReadyMealCategory, type ReadyMealMetadata } from '../../types/meal';
 
 export const isCook = (item: Pick<MealChoice, 'mealMode'>) => !item.mealMode || item.mealMode === 'cook';

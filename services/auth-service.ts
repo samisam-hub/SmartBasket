@@ -1,5 +1,4 @@
-import { t } from './i18n';
-import { authError } from '../services/i18n';
+import { t , authError } from './i18n';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 export const emailError=(email:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())&&email.length<=254?null:t('auth.invalidEmail');

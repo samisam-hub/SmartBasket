@@ -1,5 +1,4 @@
-import { t } from '../i18n';
-import { categoryLabel } from '../../services/i18n';
+import { t , categoryLabel } from '../i18n';
 import { ingredientMappings, canonicalIngredientKey } from '../../data/ingredient-mappings';
 import { ingredients } from '../../data/meals';
 import type { BasketGenerationResult, BasketItem } from '../../types/basket';
