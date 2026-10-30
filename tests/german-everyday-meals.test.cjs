@@ -51,7 +51,7 @@ const { ingredientMappings } = require('../data/ingredient-mappings.ts');
 const { diagnoseMatches } = require('../services/meals/matching.ts');
 const { prefs, product } = require('./basket-fixtures.cjs');
 
-test('all 64 everyday recipes resolve quantities, units, macros, restrictions and all declared slots', () => {
+test('all German catalog recipes resolve quantities, units, macros, restrictions and all declared slots', () => {
   for (const entry of catalog.meals) {
     const meal = meals.find(item => item.id === entry.id);
     assert.ok(meal, entry.id);
@@ -132,5 +132,40 @@ test('milk is purchased in ml and new allergen labels remain strict at product m
   for (const allergen of ['mustard', 'celery']) {
     const contaminated = { ...milk, allergens: [allergen] };
     assert.equal(diagnoseMatches('milk', [contaminated], prefs({ allergens: [allergen] })).candidates.length, 0);
+  }
+});
+
+test('festive duck includes both sides and venison remains a separate red-wine stew', () => {
+  const duck = meals.find(meal => meal.id === 'de-weihnachtsente-blaukraut-kartoffelknoedel');
+  const venison = meals.find(meal => meal.id === 'de-herbstliches-hirschgulasch');
+  for (const key of ['duck_breast', 'red_cabbage', 'potatoes', 'potato_starch', 'eggs']) {
+    assert.ok(duck.ingredients.some(line => line.ingredientKey === key), key);
+  }
+  assert.match(ingredients.duck_breast.name, /ohne Knochen/);
+  assert.match(duck.preparation.note, /keine ganze Ente/);
+  for (const key of ['venison_stew', 'mushrooms', 'juniper', 'lingonberry_preserve', 'red_wine']) {
+    assert.ok(venison.ingredients.some(line => line.ingredientKey === key), key);
+  }
+  assert.ok(!venison.ingredients.some(line => /pork|beef/.test(line.ingredientKey)));
+  assert.match(venison.preparation.note, /ohne Beilage/);
+  assert.equal(venison.ingredients.find(line => line.ingredientKey === 'red_wine').quantity, 75);
+  assert.equal(venison.ingredients.find(line => line.ingredientKey === 'red_wine').unit, 'ml');
+  assert.ok(venison.allergens.includes('sulfites'));
+  assert.ok(!compatibleMeal(venison, prefs({ allergens: ['sulfites'] })));
+  for (const meal of [duck, venison]) {
+    assert.equal(meal.createdAt, '2026-10-30T00:00:00Z');
+    assert.ok(!compatibleMeal(meal, prefs({ dietaryPreferences: ['vegetarian'] })));
+    const p = prefs({ householdSize: 4 });
+    const date = '2026-11-02';
+    const week = chooseMeal(toggleDay(startWeek(date, p), date, p), date, 'dinner', { meal, servings: 4 }, p);
+    const requirements = aggregateIngredients(week);
+    const entry = catalog.meals.find(item => item.id === meal.id);
+    for (const line of entry.amounts) {
+      assert.equal(requirements.find(item => item.ingredientKey === line.ingredientKey).requiredQuantity, line.quantity);
+    }
+    assert.ok(isAnyMealPlan(JSON.parse(JSON.stringify(week))));
+    const oversized = structuredClone(week);
+    oversized.items[0].meal.ingredients = Array.from({ length: 21 }, () => meal.ingredients[0]);
+    assert.equal(isAnyMealPlan(oversized), false);
   }
 });

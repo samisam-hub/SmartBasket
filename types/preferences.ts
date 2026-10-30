@@ -27,6 +27,7 @@ export const allergens = [
   "sesame",
   "mustard",
   "celery",
+  "sulfites",
 ] as const;
 export const steps = [
   "welcome",
@@ -108,6 +109,7 @@ export const labels: Record<Goal | Diet | Allergen, string> = {
   sesame: "Sesam",
   mustard: "Senf",
   celery: "Sellerie",
+  sulfites: "Schwefeldioxid und Sulfite",
 };
 export const defaultDraft: PreferenceDraft = {
   householdSize: 1,

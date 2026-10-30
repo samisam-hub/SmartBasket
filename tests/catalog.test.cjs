@@ -111,3 +111,19 @@ test("repeated brand spellings and OCR ingredient separators are cleaned on impo
   assert.equal(productFromRow(row).ingredientsText, "Water, Salt");
   assert.equal(productFromRow({ ...row, brand: null, ingredients_text: null }).brand, null);
 });
+
+test('wine sulfites remain visible in imported allergens, traces and ingredient text', () => {
+  const { skuSafety } = require('../services/meals/skuSafety.ts');
+  const p = prefs({ allergens: ['sulfites'] });
+  for (const tag of ['en:sulphur-dioxide-and-sulphites', 'en:sulfites']) {
+    const declared = normalizeOpenFoodFacts(raw({ allergens_tags: [tag] }));
+    assert.deepEqual(declared.allergens, ['sulfites']);
+    assert.equal(matchesPreferences(declared, p), false);
+    const traces = normalizeOpenFoodFacts(raw({ traces_tags: [tag] }));
+    assert.deepEqual(traces.mayContainAllergens, ['sulfites']);
+    assert.equal(matchesPreferences(traces, p), false);
+  }
+  for (const text of ['Rotwein, Sulfite', 'Schwefeldioxid', 'sulphur dioxide', 'E220']) {
+    assert.equal(skuSafety(product({ allergens: [], mayContainAllergens: [], ingredientsText: text }), p).rejection, 'allergen_conflict');
+  }
+});

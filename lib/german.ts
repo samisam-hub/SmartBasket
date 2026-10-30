@@ -8,7 +8,7 @@ const displayLabels: Record<string, string> = {
   maintain: 'Gewicht halten', lose_weight: 'Abnehmen', build_muscle: 'Muskeln aufbauen', high_protein: 'Eiweißreich', balanced: 'Ausgewogene Ernährung', improve_habits: 'Essgewohnheiten verbessern', lactose: 'Laktose', gluten: 'Gluten',
   vegetarian: 'Vegetarisch', vegan: 'Vegan', pescatarian: 'Pescetarisch', lactose_free: 'Laktosefrei', gluten_free: 'Glutenfrei', diabetes: 'Diabetesbewusst',
   breakfast: 'Frühstück', lunch: 'Mittagessen', dinner: 'Abendessen', snack: 'Snack',
-  milk: 'Milch', eggs: 'Eier', fish: 'Fisch', shellfish: 'Krebstiere und Weichtiere', peanuts: 'Erdnüsse', tree_nuts: 'Schalenfrüchte', soy: 'Soja', wheat: 'Weizen', sesame: 'Sesam', mustard: 'Senf', celery: 'Sellerie',
+  milk: 'Milch', eggs: 'Eier', fish: 'Fisch', shellfish: 'Krebstiere und Weichtiere', peanuts: 'Erdnüsse', tree_nuts: 'Schalenfrüchte', soy: 'Soja', wheat: 'Weizen', sesame: 'Sesam', mustard: 'Senf', celery: 'Sellerie', sulfites: 'Schwefeldioxid und Sulfite',
 };
 export const germanLabel = (value: string) => displayLabels[value] ?? value;
 export const formatNumber = (value: number, digits = 0) => value.toLocaleString('de-DE', { maximumFractionDigits: digits });
