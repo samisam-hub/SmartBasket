@@ -1,6 +1,5 @@
 import { contentName } from '../services/i18n/content';
-import { t } from '../services/i18n';
-import { term } from '../services/i18n';
+import { t , term } from '../services/i18n';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, PanResponder, Text, View } from 'react-native';
 import type { Meal } from '../types/meal';

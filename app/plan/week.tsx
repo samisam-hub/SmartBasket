@@ -1,5 +1,5 @@
 import { slotLabel, t } from '@/services/i18n';
-import { weekdayShort } from '@/services/meals/weekPlan';
+import { weekdayShort , addDays, dayOf, planDateLabel, plannedDates, weekDates } from '@/services/meals/weekPlan';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
@@ -8,7 +8,6 @@ import { usePreferences } from '@/context/PreferencesContext';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 import { currentWeekStart } from '@/components/WeekCalendar';
 import { activeSlotLabels } from '@/services/preference-domain';
-import { addDays, dayOf, planDateLabel, plannedDates, weekDates } from '@/services/meals/weekPlan';
 import { mealSlots, type MealSlot } from '@/types/meal';
 import { ui } from '@/lib/theme';
 
