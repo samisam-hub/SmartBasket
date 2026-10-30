@@ -2,6 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { Pressable, Text, View } from 'react-native';
 import { formatQuantity, type Quantity, type UnitSystem } from '../services/units';
 import { colors, radii, spacing, typography, ui } from '../lib/theme';
+import { t } from '../services/i18n';
 
 /** One line of the shopping list. The tick is the whole point of the row, so it gets the biggest
  *  target; a line the household added itself can also be taken off again. */
@@ -18,7 +19,8 @@ export function ShoppingLineRow({ name, quantity, note, system, ticked, onTick, 
   const amount = quantity ? formatQuantity(quantity, system) : note?.trim() || null;
   return <View style={[styles.row, ticked && styles.done]}>
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: ticked }}
-      accessibilityLabel={`${name}${amount ? `, ${amount}` : ''}, ${ticked ? 'in the trolley' : 'still to buy'}`}
+      accessibilityLabel={t('row.state', { name, amount: amount ? `, ${amount}` : '',
+        state: t(ticked ? 'row.inTrolley' : 'row.toBuy') })}
       onPress={onTick} style={({ pressed }) => [styles.target, pressed && { opacity: 0.6 }]}>
       <View style={[styles.box, ticked && styles.boxOn]}>
         {ticked && <Feather name="check" size={18} color={colors.onPrimary} />}
@@ -28,7 +30,7 @@ export function ShoppingLineRow({ name, quantity, note, system, ticked, onTick, 
         {amount && <Text numberOfLines={1} style={ui.small}>{amount}</Text>}
       </View>
     </Pressable>
-    {onRemove && <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${name}`}
+    {onRemove && <Pressable accessibilityRole="button" accessibilityLabel={t('row.remove', { name })}
       onPress={onRemove} style={({ pressed }) => [styles.remove, pressed && { opacity: 0.6 }]}>
       <Feather name="x" size={18} color={colors.muted} />
     </Pressable>}

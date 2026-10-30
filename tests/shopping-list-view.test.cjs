@@ -38,8 +38,8 @@ test("nothing saved means nothing to open", () => {
 
 test("a list carries the name of its basket, never a second one", () => {
   assert.equal(listName(basket("a", "2026-10-01T00:00:00Z", { name: "7-day basket" })), "7-day basket");
-  assert.equal(listName(basket("a", "2026-10-01T00:00:00Z", { name: "   " })), "Shopping list");
-  assert.equal(listName(null), "Shopping list");
+  assert.equal(listName(basket("a", "2026-10-01T00:00:00Z", { name: "   " })), "Einkaufsliste");
+  assert.equal(listName(null), "Einkaufsliste");
 });
 
 const { groupedLines, shoppingLines } = require("../services/shopping-list.ts");
@@ -115,10 +115,10 @@ test("own entries are added where they were typed and can be taken off again", (
 });
 
 test("an entry has to say something", () => {
-  assert.match(customItemError("   "), /Type what you want/);
-  assert.match(customItemError("x".repeat(81)), /80 characters/);
+  assert.match(customItemError("   "), /Schreib, was du hinzufügen willst/);
+  assert.match(customItemError("x".repeat(81)), /80 Zeichen/);
   assert.equal(customItemError("Coffee"), null);
-  assert.throws(() => addCustomItem([], " "), /Type what you want/);
+  assert.throws(() => addCustomItem([], " "), /Schreib, was du hinzufügen willst/);
 });
 
 test("own entries survive leaving the screen, per list, and a broken file is dropped", async () => {
@@ -143,7 +143,7 @@ test("sharing sends one list: generated lines and own entries together", () => {
   assert.match(text, /^7-day basket/);
   assert.match(text, /\[x\] Cherry tomatoes — 500 g/, "what is in the trolley is marked, not dropped");
   assert.match(text, /\[ \] Olive oil — 40 ml/);
-  assert.match(text, /ADDED BY YOU/);
+  assert.match(text, /VON DIR ERGÄNZT/);
   assert.match(text, /\[ \] Kitchen roll — 2 packs/, "own entries travel with the list, not separately");
 });
 
@@ -161,5 +161,5 @@ test("a list with nothing added has no empty section", () => {
     { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 40, unit: "ml" },
   ] })));
   const text = shoppingListText({ name: "List", groups, extras: [], ticked: [], system: "metric" });
-  assert.doesNotMatch(text, /ADDED BY YOU/);
+  assert.doesNotMatch(text, /VON DIR ERGÄNZT/);
 });

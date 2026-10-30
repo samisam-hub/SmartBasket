@@ -1,4 +1,4 @@
-import { formatDate } from '@/services/i18n';
+import { formatDate, t } from '@/services/i18n';
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, Text, View } from 'react-native';
@@ -19,11 +19,11 @@ export default function SavedListsScreen() {
   const [action,setAction]=useState<{id:string;kind:'rename'|'delete'}|null>(null),[name,setName]=useState(''),[busy,setBusy]=useState(false),[actionError,setActionError]=useState<string|null>(null);
   const manage=async(b:SavedBasket)=>{
     if(!action||busy)return;setBusy(true);setActionError(null);
-    try{const owner=await basketOwner(saved?.userId??null);if(owner!==b.ownerId)throw Error('Account changed. Reload your baskets.');
+    try{const owner=await basketOwner(saved?.userId??null);if(owner!==b.ownerId)throw Error(t('lists.accountChanged'));
       const response=action.kind==='rename'?await basketPersistence().rename(owner,b.id,name):await basketPersistence().remove(owner,b.id);
       clear(b.id);
       setWarning(response.warning);setAction(null);setRetry(n=>n+1);
-    }catch(e){setActionError(e instanceof Error?e.message:'Change could not be saved.');}finally{setBusy(false);}
+    }catch(e){setActionError(e instanceof Error?e.message:t('lists.changeFailed'));}finally{setBusy(false);}
   };
   useFocusEffect(useCallback(() => {
     if (!ready) return;
@@ -35,31 +35,31 @@ export default function SavedListsScreen() {
         const owner = await basketOwner(saved?.userId ?? null);
         const response = await basketPersistence().list(owner);
         if (active) { setBaskets(response.baskets); setWarning(response.warning); }
-      } catch (e) { if (active) setWarning(e instanceof Error ? e.message : 'Saved baskets could not be loaded.'); }
+      } catch (e) { if (active) setWarning(e instanceof Error ? e.message : t('lists.loadFailed')); }
       finally { if (active) setLoading(false); }
     })();
     return () => { active = false; };
   }, [ready, saved, retry]));
   return <Screen>
-    <ScreenHeader eyebrow="EVERY LIST YOU KEPT" title="All my lists" />
-    <PrimaryButton label="Create a new list" onPress={flow.create} disabled={flow.disabled} />
-    <SecondaryButton label="Pantry & purchase history" onPress={()=>router.push('/pantry')} />
+    <ScreenHeader eyebrow={t('lists.eyebrow')} title={t('lists.title')} />
+    <PrimaryButton label={t('lists.create')} onPress={flow.create} disabled={flow.disabled} />
+    <SecondaryButton label={t('lists.pantry')} onPress={()=>router.push('/pantry')} />
     {loading && <ActivityIndicator color={colors.primary} />}
-    {warning && <><Text style={ui.small}>{warning}</Text><SecondaryButton label="Reload" onPress={() => setRetry(n => n + 1)} /></>}
-    {!loading && !baskets.length && <EmptyState illustration="emptyBasket" title="No saved lists yet." description="Plan a few meals, then create a list from them." />}
+    {warning && <><Text style={ui.small}>{warning}</Text><SecondaryButton label={t('lists.reload')} onPress={() => setRetry(n => n + 1)} /></>}
+    {!loading && !baskets.length && <EmptyState illustration="emptyBasket" title={t('lists.emptyTitle')} description={t('lists.emptyBody')} />}
     {baskets.map(b => {
       const open = () => router.push({ pathname: '/basket-setup', params: { savedId: b.id } });
       return <SectionCard key={b.id}>
       <SavedBasketPreview basket={b} onOpen={open} />
-      {b.result.purchasedAt ? <Text style={ui.small}>Purchased · {formatDate(b.result.purchasedAt)}</Text> : <SecondaryButton label="Edit list" disabled={busy} onPress={() => router.push({ pathname: '/basket-setup', params: { savedId: b.id, edit: '1' } })} />}
+      {b.result.purchasedAt ? <Text style={ui.small}>{t('lists.purchased', { date: formatDate(b.result.purchasedAt) })}</Text> : <SecondaryButton label={t('lists.edit')} disabled={busy} onPress={() => router.push({ pathname: '/basket-setup', params: { savedId: b.id, edit: '1' } })} />}
       {action?.id===b.id?<>
-        {action.kind==='rename'?<TextInput label="List name" value={name} onChangeText={setName} maxLength={120} editable={!busy} />:<Text style={ui.body}>Delete “{b.name}”? Its saved meal plan will also be removed. This cannot be undone.</Text>}
+        {action.kind==='rename'?<TextInput label={t('lists.nameField')} value={name} onChangeText={setName} maxLength={120} editable={!busy} />:<Text style={ui.body}>{t('lists.deleteBody', { name: b.name })}</Text>}
         <ErrorMessage message={actionError} />
-        <PrimaryButton label={action.kind==='rename'?'Save name':'Delete permanently'} loading={busy} onPress={()=>{void manage(b);}} />
-        <SecondaryButton label="Cancel" disabled={busy} onPress={()=>{setAction(null);setActionError(null);}} />
+        <PrimaryButton label={t(action.kind==='rename'?'lists.saveName':'lists.deleteForGood')} loading={busy} onPress={()=>{void manage(b);}} />
+        <SecondaryButton label={t('lists.cancel')} disabled={busy} onPress={()=>{setAction(null);setActionError(null);}} />
       </>:<View style={{ flexDirection: 'row', gap: 12 }}>
-        <View style={{ flex: 1 }}><SecondaryButton label="Rename" disabled={busy} onPress={()=>{setName(b.name);setActionError(null);setAction({id:b.id,kind:'rename'});}} /></View>
-        <View style={{ flex: 1 }}><SecondaryButton label="Delete" disabled={busy} onPress={()=>{setActionError(null);setAction({id:b.id,kind:'delete'});}} /></View>
+        <View style={{ flex: 1 }}><SecondaryButton label={t('lists.rename')} disabled={busy} onPress={()=>{setName(b.name);setActionError(null);setAction({id:b.id,kind:'rename'});}} /></View>
+        <View style={{ flex: 1 }}><SecondaryButton label={t('lists.delete')} disabled={busy} onPress={()=>{setActionError(null);setAction({id:b.id,kind:'delete'});}} /></View>
       </View>}
     </SectionCard>;})}
   </Screen>;

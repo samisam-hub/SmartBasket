@@ -1,4 +1,5 @@
 import type { BasketStorage } from './persistence';
+import { t } from '../i18n';
 
 /** Something the household wants that no meal asked for: kitchen roll, coffee, a birthday cake.
  *
@@ -9,8 +10,8 @@ export interface CustomItem { id: string; name: string; note: string | null }
 const key = (list: string) => `smartbasket.list-extras.v1:${list}`;
 export const customItemError = (name: string): string | null => {
   const trimmed = name.trim();
-  if (!trimmed) return 'Type what you want to add.';
-  return trimmed.length <= 80 ? null : 'Keep it to 80 characters.';
+  if (!trimmed) return t('extras.typeSomething');
+  return trimmed.length <= 80 ? null : t('extras.tooLong');
 };
 const valid = (value: unknown): value is CustomItem => {
   const item = value as CustomItem;

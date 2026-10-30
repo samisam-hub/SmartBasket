@@ -1,4 +1,5 @@
 import { contentName } from '../services/i18n/content';
+import { t } from '../services/i18n';
 import { term } from '../services/i18n';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, PanResponder, Text, View } from 'react-native';
@@ -76,10 +77,8 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
     onPanResponderTerminate: () => decide('none'),
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [width, current?.meal.id, busy, mode]);
-  if (!current) return <SectionCard title={exhausted ? 'Keine weiteren passenden Gerichte' : 'Nichts anzuzeigen'}>
-    <Text style={ui.body}>{exhausted
-      ? 'Alle passenden Gerichte für diese Mahlzeit wurden gezeigt. Statt eines zu wiederholen, wähle einen dieser Wege:'
-      : 'Gerade ist kein Vorschlag verfügbar.'}</Text>
+  if (!current) return <SectionCard title={t(exhausted ? 'swipe.exhaustedTitle' : 'swipe.nothingTitle')}>
+    <Text style={ui.body}>{t(exhausted ? 'swipe.exhaustedBody' : 'swipe.nothingBody')}</Text>
   </SectionCard>;
   return <View style={{ gap: spacing.md }} onLayout={event => {
     const next = event.nativeEvent.layout.width;
@@ -90,14 +89,13 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
           already loaded when it comes to the front. It is not animated and takes no touches. */}
       {upcoming && <View pointerEvents="none" accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants" style={[ui.card, styles.behind]}>
-        <Text style={ui.eyebrow}>Als Nächstes</Text>
+        <Text style={ui.eyebrow}>{t('swipe.next')}</Text>
         <Text style={ui.subheading}>{contentName(upcoming.meal.name)}</Text>
         <MealImage meal={upcoming.meal} />
       </View>}
       <Animated.View testID="meal-card" accessible accessibilityRole="button"
-        accessibilityLabel={`${contentName(current.meal.name)}. ${mode === 'taste'
-          ? 'Rechts: mögen. Links: nicht mögen.'
-          : 'Wische nach rechts zum Auswählen, nach links für den nächsten Vorschlag.'}`}
+        accessibilityLabel={t(mode === 'taste' ? 'swipe.cardTaste' : 'swipe.cardChoice',
+          { meal: contentName(current.meal.name) })}
         {...(busy ? {} : responder.panHandlers)}
         style={[ui.card, { gap: spacing.sm, transform: [
           { translateX: offset },
@@ -107,29 +105,30 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
         {/* The decision is named while the card is still in hand, in its own colour. */}
         <Animated.View pointerEvents="none" style={[styles.stamp, styles.stampTake,
           { opacity: offset.interpolate({ inputRange: [0, threshold], outputRange: [0, 1], extrapolate: 'clamp' }) }]}>
-          <Text style={styles.stampTakeText}>{mode === 'taste' ? 'MAG ICH' : 'NEHMEN'}</Text>
+          <Text style={styles.stampTakeText}>{t(mode === 'taste' ? 'swipe.stampLike' : 'swipe.stampTake')}</Text>
         </Animated.View>
         <Animated.View pointerEvents="none" style={[styles.stamp, styles.stampNext,
           { opacity: offset.interpolate({ inputRange: [-threshold, 0], outputRange: [1, 0], extrapolate: 'clamp' }) }]}>
-          <Text style={styles.stampNextText}>{mode === 'taste' ? 'NEIN' : 'WEITER'}</Text>
+          <Text style={styles.stampNextText}>{t(mode === 'taste' ? 'swipe.stampNo' : 'swipe.stampSkip')}</Text>
         </Animated.View>
-        <Text style={ui.eyebrow}>{mode === 'taste' ? 'GESCHMACK'
-          : suggestions.length > 1 ? `1 von ${suggestions.length}` : 'Vorerst letzter Vorschlag'}</Text>
+        <Text style={ui.eyebrow}>{mode === 'taste' ? t('swipe.eyebrowTaste')
+          : suggestions.length > 1 ? t('swipe.eyebrowCount', { position: 1, total: suggestions.length })
+          : t('swipe.eyebrowLast')}</Text>
         <Text style={ui.subheading}>{contentName(current.meal.name)}</Text>
         <MealImage meal={current.meal} />
         <Text style={ui.small}>{mealLine(current.meal)}</Text>
       </Animated.View>
     </View>
     <View style={styles.buttons}>
-      <ChoiceButton icon="x" tone="next" caption={mode === 'taste' ? 'Nein' : 'Weiter'}
-        label={mode === 'taste' ? 'Mögen wir nicht' : 'Nächsten Vorschlag zeigen'}
+      <ChoiceButton icon="x" tone="next" caption={t(mode === 'taste' ? 'swipe.captionNo' : 'swipe.captionNext')}
+        label={t(mode === 'taste' ? 'swipe.labelDislike' : 'swipe.labelNext')}
         disabled={busy || (mode !== 'taste' && suggestions.length < 2)} onPress={() => decide('next')} />
       <ChoiceButton icon={mode === 'taste' ? 'heart' : 'check'} tone="take"
-        caption={mode === 'taste' ? 'Mag ich' : 'Nehmen'}
-        label={mode === 'taste' ? 'Mögen wir' : 'Dieses Gericht wählen'}
+        caption={t(mode === 'taste' ? 'swipe.captionLike' : 'swipe.captionTake')}
+        label={t(mode === 'taste' ? 'swipe.labelLike' : 'swipe.labelTake')}
         disabled={busy} onPress={() => decide('take')} />
     </View>
-    {mode !== 'taste' && <TextButton label="Zwei andere zeigen" disabled={busy} onPress={onMore} />}
+    {mode !== 'taste' && <TextButton label={t('swipe.more')} disabled={busy} onPress={onMore} />}
   </View>;
 }
 const styles = {
@@ -143,5 +142,5 @@ const styles = {
   stampTakeText: { color: colors.successText, fontWeight: '800' as const, fontSize: 16, letterSpacing: 1 },
   stampNextText: { color: colors.muted, fontWeight: '800' as const, fontSize: 16, letterSpacing: 1 },
 };
-const mealLine = (meal: Meal) =>
-  `${meal.ingredients.length} Zutaten · ${meal.dietaryTags.length ? meal.dietaryTags.map(term).join(', ') : 'keine Ernährungsangaben'}`;
+const mealLine = (meal: Meal) => t('swipe.mealLine', { count: meal.ingredients.length,
+  tags: meal.dietaryTags.length ? meal.dietaryTags.map(term).join(', ') : t('swipe.noTags') });

@@ -114,3 +114,37 @@ test('account errors say what to do, in the right language, without the provider
     assert.match(i18n.authError({ message: 'network down' }).message, /Network error/);
   });
 });
+
+test("every key a screen asks for exists, and every key in the dictionary is asked for", () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const roots = ['app', 'components', 'services', 'hooks', 'context'];
+  const files = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (/\.tsx?$/.test(entry.name) && !full.startsWith('services/i18n')) files.push(full);
+    }
+  };
+  for (const root of roots) walk(root);
+  const asked = new Map();
+  for (const file of files) {
+    const source = fs.readFileSync(file, 'utf8');
+    // Keys written out in full. A key built from a value (`term.${slot}`) is checked by the
+    // type-checker instead, which is why the helpers in the layer are typed.
+    for (const match of source.matchAll(/\bt\(\s*'([a-zA-Z][\w.-]*)'/g)) asked.set(match[1], file);
+    for (const match of source.matchAll(/\bt\(\s*"([a-zA-Z][\w.-]*)"/g)) asked.set(match[1], file);
+  }
+  assert.ok(asked.size > 100, `only ${asked.size} keys found; the scan is probably broken`);
+  for (const [key, file] of asked) assert.ok(key in de, `${file} asks for ${key}, which no locale has`);
+  // The other direction: a key nobody asks for any more is dead weight a translator still pays for.
+  // Here any mention counts, since a key can reach `t` through a condition or a variable.
+  const mentioned = new Set();
+  for (const file of files) {
+    const source = fs.readFileSync(file, 'utf8');
+    for (const match of source.matchAll(/['"]([a-z][\w-]*(?:\.[\w-]+)+)['"]/g)) mentioned.add(match[1]);
+  }
+  const dynamic = /^(term|category|group|kind|mode|ready|units|filter|auth|intro\.\d|language)\./;
+  const unused = Object.keys(de).filter(key => !mentioned.has(key) && !dynamic.test(key));
+  assert.deepEqual(unused, [], 'these keys are no longer used by any screen');
+});

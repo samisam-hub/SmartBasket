@@ -16,6 +16,7 @@ import { dayOf } from '@/services/meals/weekPlan';
 import { WeekCalendar, currentWeekStart, openingDate } from '@/components/WeekCalendar';
 import { preferenceChips } from '@/services/preference-domain';
 import { colors, ui } from '@/lib/theme';
+import { t } from '@/services/i18n';
 
 export default function HomeScreen() {
   const preferences = usePreferences();
@@ -46,13 +47,13 @@ export default function HomeScreen() {
   const details = saved ? preferenceChips(saved).slice(2).filter(label => !label.includes("Budget")) : [];
   if (firstVisit) return <Redirect href="/welcome" />;
   return <Screen compact floating={saved
-    ? <FloatingButton icon="plus" label="Mahlzeit zu diesem Tag hinzufügen" disabled={flow.disabled || !week.ready}
+    ? <FloatingButton icon="plus" label={t('home.addMeal')} disabled={flow.disabled || !week.ready}
       onPress={addMeal} />
     : undefined}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 }}>
       <Text accessibilityRole="header" style={[ui.heading, { flex: 1, fontWeight: '800', fontSize: 22 }]}>Smart<Text style={{ color: colors.primary }}>Basket</Text></Text>
-      <Text style={[ui.small, { color: colors.ink, flexShrink: 1 }]} numberOfLines={1}>{name ? `Hallo ${name}` : "Willkommen"}</Text>
-      <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Deinen Warenkorb öffnen" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
+      <Text style={[ui.small, { color: colors.ink, flexShrink: 1 }]} numberOfLines={1}>{name ? t('home.greeting', { name }) : t('home.welcome')}</Text>
+      <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel={t('home.openBasket')} style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
     </View>
     <WastePrevention />
     <ErrorMessage message={week.error} />
@@ -64,29 +65,26 @@ export default function HomeScreen() {
       onWeek={start => { setPicked(null); week.store.open(start, saved); }}
       onCopyPrevious={week.store.canCopyPreviousWeek(weekStart, saved)
         ? () => { try { week.store.copyPreviousWeek(weekStart, saved); setCopyError(null); }
-          catch (e) { setCopyError(e instanceof Error ? e.message : "Die Vorwoche konnte nicht übernommen werden."); } } : undefined}
+          catch (e) { setCopyError(e instanceof Error ? e.message : t('home.copyFailed')); } } : undefined}
       onBasket={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />
-      : <SectionCard title="Planung starten">
-        <PrimaryButton label="Deine Einstellungen festlegen" disabled={flow.disabled} onPress={flow.create} />
-        <SecondaryButton label="Mit einem Beispielhaushalt starten" disabled={flow.disabled}
+      : <SectionCard title={t('home.startTitle')}>
+        <PrimaryButton label={t('home.setPreferences')} disabled={flow.disabled} onPress={flow.create} />
+        <SecondaryButton label={t('home.sampleStart')} disabled={flow.disabled}
           onPress={() => { void quickStart(preferences.store); }} />
-        <Text style={ui.small}>
-          Das Beispiel sind zwei Personen, eine ganze Woche und die Standardmahlzeiten. Es wird
-          nichts gefragt und nichts ist endgültig: Haushalt und Einstellungen ändern alles davon.
-        </Text>
+        <Text style={ui.small}>{t('home.sampleNote')}</Text>
       </SectionCard>}
-    <SecondaryButton label="Letzte Einkäufe ansehen" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
-    <Pressable accessibilityRole="button" accessibilityLabel="Per Sprache planen" onPress={() => router.push('/voice-plan')}
+    <SecondaryButton label={t('home.recentPurchases')} onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
+    <Pressable accessibilityRole="button" accessibilityLabel={t('home.voice')} onPress={() => router.push('/voice-plan')}
       style={({pressed}) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: colors.pale, opacity: pressed ? .75 : 1 })}>
       <Feather name="mic" size={24} color={colors.primary} />
-      <View style={{flex: 1}}><Text style={[ui.small, {fontWeight: '700', color: colors.ink}]}>Per Sprache planen</Text><Text style={ui.caption}>Sag uns, worauf du Lust hast</Text></View>
+      <View style={{flex: 1}}><Text style={[ui.small, {fontWeight: '700', color: colors.ink}]}>{t('home.voice')}</Text><Text style={ui.caption}>{t('home.voiceHint')}</Text></View>
       <Feather name="chevron-right" size={20} color={colors.primary} />
     </Pressable>
     <LatestBasket />
     <View style={{ flexDirection: 'row', gap: 12 }}>
       {[
-        { title: "Deine Vorräte", subtitle: "Nutze, was du schon hast", route: '/pantry' as const, photo: 8 },
-        { title: "Produkte entdecken", subtitle: "Finde, was du brauchst", route: '/products' as const, photo: 1 },
+        { title: t('home.pantry'), subtitle: t('home.pantryHint'), route: '/pantry' as const, photo: 8 },
+        { title: t('home.discover'), subtitle: t('home.discoverHint'), route: '/products' as const, photo: 1 },
       ].map(tile => <Pressable key={tile.title} onPress={()=>router.push(tile.route)} accessibilityRole="button" accessibilityLabel={tile.title}
         style={({pressed})=>[ui.card,{ flex: 1, minWidth: 0, padding: 12, gap: 6, borderRadius: 14, opacity: pressed ? .75 : 1 }]}>
         <Text style={[ui.small,{fontWeight:'700',color:colors.ink}]}>{tile.title}</Text>
@@ -99,10 +97,10 @@ export default function HomeScreen() {
     {saved && <SectionCard compact>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ flex: 1 }}>
-          <Text style={ui.subheading}>Deine Einstellungen</Text>
+          <Text style={ui.subheading}>{t('home.yourSettings')}</Text>
           <Text style={ui.small}>{details.join(' · ')}</Text>
         </View>
-        <TextButton label={editing ? "Bearbeitung fortsetzen" : "Bearbeiten"} disabled={flow.disabled} onPress={() => flow.edit()} />
+        <TextButton label={t(editing ? 'home.resumeEdit' : 'home.edit')} disabled={flow.disabled} onPress={() => flow.edit()} />
       </View>
     </SectionCard>}
   </Screen>;

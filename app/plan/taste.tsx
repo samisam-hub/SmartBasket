@@ -1,4 +1,4 @@
-import { slotLabel } from '@/services/i18n';
+import { slotLabel, t } from '@/services/i18n';
 import { useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { Text } from 'react-native';
@@ -22,11 +22,11 @@ export default function MealTasteScreen() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const pending = useRef(false);
-  if (!ready) return <Screen><Text>Vorlieben werden geladen…</Text></Screen>;
+  if (!ready) return <Screen><Text>{t('taste.loading')}</Text></Screen>;
   if (!saved) return <Screen>
     <ErrorMessage message={error} />
-    <ScreenHeader title="Zuerst den Haushalt anlegen" subtitle="Wer mitisst, bestimmt die Portionen und welche Gerichte passen." />
-    <SecondaryButton label="Haushalt anlegen" onPress={() => router.replace('/household-setup')} />
+    <ScreenHeader title={t('taste.needsHousehold')} subtitle={t('taste.needsHouseholdHint')} />
+    <SecondaryButton label={t('taste.toHousehold')} onPress={() => router.replace('/household-setup')} />
   </Screen>;
   // Vor der ersten Woche gelten die Mahlzeiten des Haushalts; danach die der geplanten Tage.
   const planned = !!plan?.days.length;
@@ -46,7 +46,7 @@ export default function MealTasteScreen() {
       store.rateMeal(current.id, rating);
       setHistory(previous => [...previous, { position, id: current.id, previous: mealRatings[current.id] ?? null }]);
       setPosition(position + 1); setMessage(null);
-    } catch (e) { setMessage(e instanceof Error ? e.message : 'Vorliebe konnte nicht gespeichert werden.'); }
+    } catch (e) { setMessage(e instanceof Error ? e.message : t('taste.rateFailed')); }
   };
   const generate = async () => {
     if (pending.current) return;
@@ -56,45 +56,46 @@ export default function MealTasteScreen() {
       store.generate(saved, catalog.products);
       await store.flush();
       router.replace('/plan/overview');
-    } catch (e) { setMessage(e instanceof Error ? e.message : 'Der Plan konnte nicht erstellt werden.'); }
+    } catch (e) { setMessage(e instanceof Error ? e.message : t('taste.planFailed')); }
     finally { pending.current = false; setBusy(false); }
   };
   return <Screen bottom>
-    <ScreenHeader eyebrow="1 · VORLIEBEN" title={slot ? `${slotLabel(slot)}: Was mögt ihr?` : 'Was mögt ihr gerne?'}
-      subtitle={`Rechts: mögen. Links: nicht mögen. Das merkt eure Vorlieben und legt noch keine Mahlzeit auf einen Tag. ${planned ? 'Danach entsteht euer Wochenplan.' : 'Danach wählt ihr die Tage, für die geplant wird.'}`} />
+    <ScreenHeader eyebrow={t('taste.eyebrow')}
+      title={slot ? t('taste.titleSlot', { slot: slotLabel(slot) }) : t('taste.title')}
+      subtitle={t('taste.subtitle', { next: t(planned ? 'taste.nextPlan' : 'taste.nextDays') })} />
     <ErrorMessage message={message ?? error ?? catalog.error} />
-    <Text style={ui.small}>Vorlieben bleiben für diesen Haushalt auf diesem Gerät gespeichert. Allergien und Ernährungsregeln gelten immer. Gerichte ohne Bewertung bleiben möglich; abgelehnte Gerichte werden nicht automatisch eingeplant.</Text>
+    <Text style={ui.small}>{t('taste.note')}</Text>
     {!slot ? slots.map(candidate => {
       const dishes = tasteMeals(candidate, saved);
       const rated = dishes.filter(meal => mealRatings[meal.id] !== undefined).length;
       const liked = dishes.filter(meal => mealRatings[meal.id] === true).length;
       return <SectionCard key={candidate} title={slotLabel(candidate)}>
-        <Text style={ui.small}>{rated} von {dishes.length} bewertet · {liked} gemerkt</Text>
-        {dishes.length ? <SecondaryButton label={rated === dishes.length ? `${slotLabel(candidate)} erneut bewerten` : `${slotLabel(candidate)} wischen`}
+        <Text style={ui.small}>{t('taste.rated', { rated, total: dishes.length, liked })}</Text>
+        {dishes.length ? <SecondaryButton label={t(rated === dishes.length ? 'taste.rateAgainSlot' : 'taste.swipeSlot', { slot: slotLabel(candidate) })}
           disabled={busy} onPress={() => open(candidate, rated === dishes.length)} />
-          : <Text style={ui.small}>Keine passenden Gerichte für eure Ernährungsregeln. Diese Mahlzeiten bleiben im Plan offen.</Text>}
+          : <Text style={ui.small}>{t('taste.noMeals')}</Text>}
       </SectionCard>;
     }) : <>
-      <Text style={ui.small}>{Math.min(position + 1, queue.length)} von {queue.length}</Text>
+      <Text style={ui.small}>{t('taste.position', { position: Math.min(position + 1, queue.length), total: queue.length })}</Text>
       {current ? <MealSwipeCards mode="taste" busy={busy}
         suggestions={queue.slice(position, position + 2).map(meal => ({ meal, servings: 1 }))} exhausted={false}
         onTake={() => rate(true)} onNext={() => rate(false)} onMore={() => {}} />
-        : <SectionCard title="Bewertung abgeschlossen">
-          <Text style={ui.small}>{queue.filter(meal => mealRatings[meal.id] === true).length} Gerichte gemerkt.</Text>
-          <SecondaryButton label="Erneut bewerten" disabled={busy} onPress={() => open(slot, true)} />
+        : <SectionCard title={t('taste.doneTitle')}>
+          <Text style={ui.small}>{t('taste.keptCount', { count: queue.filter(meal => mealRatings[meal.id] === true).length })}</Text>
+          <SecondaryButton label={t('taste.rateAgain')} disabled={busy} onPress={() => open(slot, true)} />
         </SectionCard>}
-      {!!history.length && <TextButton label="Letzte Bewertung zurücknehmen" disabled={busy} onPress={() => {
+      {!!history.length && <TextButton label={t('taste.undo')} disabled={busy} onPress={() => {
         const last = history[history.length - 1];
         try { store.rateMeal(last.id, last.previous); setPosition(last.position); setHistory(history.slice(0, -1)); }
-        catch (e) { setMessage(e instanceof Error ? e.message : 'Bewertung konnte nicht geändert werden.'); }
+        catch (e) { setMessage(e instanceof Error ? e.message : t('taste.undoFailed')); }
       }} />}
-      <SecondaryButton label="Zur Mahlzeitenübersicht" disabled={busy} onPress={() => setSlot(null)} />
+      <SecondaryButton label={t('taste.backToSlots')} disabled={busy} onPress={() => setSlot(null)} />
     </>}
-    <Text style={ui.small}>Ihr könnt jederzeit planen und später weiterwischen. Bestehende Entscheidungen bleiben erhalten; offene Mahlzeiten werden ergänzt.</Text>
+    <Text style={ui.small}>{t('taste.anytime')}</Text>
     {planned
-      ? <PrimaryButton label={busy ? 'Wochenplan wird erstellt…' : 'Wochenplan erstellen'} disabled={busy || catalog.loading}
+      ? <PrimaryButton label={t(busy ? 'taste.creating' : 'taste.create')} disabled={busy || catalog.loading}
           onPress={() => { void generate(); }} />
-      : <PrimaryButton label="Weiter: Tage auswählen" disabled={busy} onPress={() => router.replace('/plan/week')} />}
-    {planned && <SecondaryButton label="Tage und Anwesenheit ändern" disabled={busy} onPress={() => router.push('/plan/week')} />}
+      : <PrimaryButton label={t('taste.toDays')} disabled={busy} onPress={() => router.replace('/plan/week')} />}
+    {planned && <SecondaryButton label={t('taste.changeDays')} disabled={busy} onPress={() => router.push('/plan/week')} />}
   </Screen>;
 }

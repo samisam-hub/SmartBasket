@@ -1,4 +1,4 @@
-import { categoryLabel } from '../services/i18n';
+import { categoryLabel, t } from '../services/i18n';
 import { canonicalIngredientKey, ingredientMappings } from '../data/ingredient-mappings';
 import { categories, type ProductCategory } from '../types/product';
 import type { BasketGenerationResult, SavedBasket } from '../types/basket';
@@ -20,7 +20,7 @@ export function openingList(baskets: SavedBasket[], active: SavedBasket | null):
 }
 /** What the tab calls the list. A shopping list and its basket are the same thing, so it carries
  *  the same name rather than inventing a second one that can drift from it. */
-export const listName = (basket: SavedBasket | null): string => basket?.name.trim() || 'Shopping list';
+export const listName = (basket: SavedBasket | null): string => basket?.name.trim() || t('list.name');
 
 /** One line of the shopping list: a thing to buy and how much of it. */
 export interface ShoppingLine {
@@ -85,7 +85,7 @@ export function shoppingListText({ name, groups, extras, ticked, system }: {
     .map(group => [group.label.toUpperCase(),
       ...group.lines.map(line => mark(line.key, `${line.name} — ${formatQuantity(line, system)}`))].join('\n'));
   if (extras.length)
-    blocks.push(['ADDED BY YOU',
+    blocks.push([t('list.addedByYou').toUpperCase(),
       ...extras.map(item => mark(item.id, item.note ? `${item.name} — ${item.note}` : item.name))].join('\n'));
   return [name, '', ...blocks].join('\n\n').trimEnd();
 }

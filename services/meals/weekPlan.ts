@@ -1,4 +1,4 @@
-import { intlLocale } from '../i18n';
+import { intlLocale, t } from '../i18n';
 import type {
   AnyMealPlan,
   AnyMealPlanItem,
@@ -98,6 +98,10 @@ const dayFormat = () => {
   return format;
 };
 export const planDateLabel = (date: string): string => dayFormat().format(parsePlanDate(date) ?? new Date(NaN));
+/** Monday first, the way a week is shown. */
+export const weekdayShort = (): string[] =>
+  ['weekday.mon', 'weekday.tue', 'weekday.wed', 'weekday.thu', 'weekday.fri', 'weekday.sat', 'weekday.sun']
+    .map(key => t(key as Parameters<typeof t>[0]));
 export interface PlanDay { key: string; label: string; date: string | null; items: AnyMealPlanItem[] }
 /** Every day a plan covers, in order, including days with nothing planned on them. */
 export function planDays(plan: AnyMealPlan): PlanDay[] {
