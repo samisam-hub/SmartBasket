@@ -191,3 +191,21 @@ test('no screen keeps a German sentence of its own any more', () => {
   }
   assert.deepEqual(german, [], 'these German strings belong in the dictionaries');
 });
+
+test('a dish keeps its name in both languages, whichever one the data carries', async () => {
+  const { meals } = require('../data/meals.ts');
+  const oats = meals.find(meal => meal.id === 'oat-berries');
+  assert.ok(oats, 'the curated breakfast is still there');
+  // The recipe data is German; the English reader must not be shown it.
+  assert.equal(contentName(oats.name), 'Haferbrei mit Beeren');
+  await inLocale('en', () => {
+    assert.equal(contentName(oats.name), 'Oatmeal with berries');
+    // A snapshot saved in English stays English rather than being mapped twice.
+    assert.equal(contentName('Oatmeal with berries'), 'Oatmeal with berries');
+    assert.equal(contentName('Omas Lieblingsgericht'), 'Omas Lieblingsgericht');
+  });
+  for (const meal of meals) {
+    const shown = await (async () => { await i18n.setLocale('en'); const name = contentName(meal.name); i18n.resetLocale(); return name; })();
+    assert.ok(!/[äöüßÄÖÜ]/.test(shown), `${meal.name} has no English name: ${shown}`);
+  }
+});

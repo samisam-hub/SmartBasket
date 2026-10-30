@@ -63,7 +63,7 @@ export default function MealTasteScreen() {
     <ScreenHeader eyebrow={t('taste.eyebrow')}
       title={slot ? t('taste.titleSlot', { slot: slotLabel(slot) }) : t('taste.title')}
       subtitle={t('taste.subtitle', { next: t(planned ? 'taste.nextPlan' : 'taste.nextDays') })} />
-    <ErrorMessage message={message ?? error ?? catalog.error} />
+    <ErrorMessage message={message ?? error ?? (planned ? catalog.error : null)} />
     <Text style={ui.small}>{t('taste.note')}</Text>
     {!slot ? slots.map(candidate => {
       const dishes = tasteMeals(candidate, saved);

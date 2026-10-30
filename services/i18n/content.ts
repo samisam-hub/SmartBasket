@@ -1,6 +1,7 @@
-/** Display names for content the data holds in English: the curated meals, their ingredients and
- *  the snapshots older baskets saved. The stored content stays untouched — only what a screen
- *  shows follows the locale, and an unknown name is shown as it is rather than hidden. */
+/** Display names for the curated meals, their ingredients and the snapshots older baskets saved.
+ *  The pairs are read both ways: the recipe data carries the German name, older snapshots carry the
+ *  English one, and either is shown in the locale being read. The stored content stays untouched,
+ *  and a name we do not know is shown as it is rather than hidden. */
 import { locale } from './index';
 
 const german: Record<string, string> = {
@@ -81,9 +82,66 @@ const german: Record<string, string> = {
   "Ready to eat": "Verzehrfertig",
   "Salad": "Salat",
   "Asian meal": "Asiatisches Gericht",
+  // The everyday German recipes added later: their data carries the German name, so the pair is
+  // written the other way round and read both ways like the rest.
+  "Cheese sandwich with cucumber": "Käsebrot mit Gurke",
+  "Cream cheese sandwich with pepper": "Frischkäsebrot mit Paprika",
+  "Bread roll with cheese and jam": "Brötchen mit Käse und Marmelade",
+  "Part-baked roll with toppings": "Aufbackbrötchen mit Belag",
+  "Muesli with milk and apple": "Müsli mit Milch und Apfel",
+  "Overnight oats with banana": "Übernacht-Haferflocken mit Banane",
+  "Scrambled eggs with bread": "Rührei mit Brot",
+  "Spaghetti with tomato sauce": "Spaghetti mit Tomatensoße",
+  "Cheese spaetzle with onions": "Käsespätzle mit Zwiebeln",
+  "Vegetable rice pan": "Gemüsereispfanne",
+  "Chicken with rice and vegetables": "Hähnchen mit Reis und Gemüse",
+  "Sliced chicken with rice": "Hähnchengeschnetzeltes mit Reis",
+  "Mild vegetable and chickpea curry": "Mildes Gemüse-Kichererbsen-Curry",
+  "Potatoes with herb quark": "Kartoffeln mit Kräuterquark",
+  "Fish fingers with mash and peas": "Fischstäbchen mit Kartoffelpüree und Erbsen",
+  "Meat patties with potatoes and carrots": "Frikadellen mit Kartoffeln und Möhren",
+  "Bratwurst with mashed potatoes": "Bratwurst mit Kartoffelpüree",
+  "Lentil stew with sausages": "Linseneintopf mit Würstchen",
+  "Vegetable soup with small pasta": "Gemüsesuppe mit kleinen Nudeln",
+  "Tortellini in tomato sauce": "Tortellini in Tomatensoße",
+  "Vegetable omelette with bread": "Gemüseomelett mit Brot",
+  "Wraps with chicken and vegetables": "Wraps mit Hähnchen und Gemüse",
+  "Wraps with beans and vegetables": "Wraps mit Bohnen und Gemüse",
+  "Tray-baked pizza with vegetables": "Pizza mit Gemüse vom Blech",
+  "Semolina pudding with cherries": "Grießbrei mit Kirschen",
+  "Roast chicken with potatoes and carrots": "Ofenhähnchen mit Kartoffeln und Möhren",
+  "Bread plate with cheese and raw vegetables": "Brotzeit mit Käse und Rohkost",
+  "Bread plate with cold cuts and gherkins": "Brotzeit mit Aufschnitt und Gewürzgurken",
+  "Cheese sandwich lunchbox with apple and carrot": "Käsebrot-Lunchbox mit Apfel und Möhre",
+  "Pasta salad with peas and cheese": "Nudelsalat mit Erbsen und Käse",
+  "Potato salad with sausages": "Kartoffelsalat mit Würstchen",
+  "Grilled cheese toast with tomato": "Überbackener Käsetoast mit Tomate",
+  "Swabian dumplings in vegetable broth": "Maultaschen in Gemüsebrühe",
+  // Their ingredients.
+  "Plain cream cheese": "Frischkäse natur",
+  "Strawberry jam": "Erdbeerkonfitüre",
+  "Fresh wheat roll": "Weizenbrötchen frisch",
+  "Part-baked roll": "Aufbackbrötchen",
+  "Basic muesli without nuts": "Basismüsli ohne Nüsse",
+  "Dried Italian herbs": "Italienische Kräuter getrocknet",
+  "Fresh egg spaetzle": "Eierspätzle frisch",
+  "Frozen peas": "Erbsen tiefgekühlt",
+  "Sweet paprika powder": "Paprikapulver edelsüß",
+  "Frozen fish fingers": "Fischstäbchen tiefgekühlt",
+  "Vegetable stock powder": "Gemüsebrühe Pulver",
+  "Frankfurter sausages": "Wiener Würstchen",
+  "Fresh cheese tortellini with microbial rennet": "Käsetortellini frisch mit mikrobiellem Lab",
+  "Chilled pizza dough": "Pizzateig gekühlt",
+  "Soft wheat semolina": "Weichweizengrieß",
+  "Chicken leg meat with skin, boneless, raw": "Hähnchenschenkelfleisch mit Haut ohne Knochen roh",
+  "Gherkins (drained)": "Gewürzgurken abgetropft",
+  "Chilled flatbread dough": "Flammkuchenteig gekühlt",
+  "Diced bacon": "Speck gewürfelt",
 };
+const english: Record<string, string> = Object.fromEntries(
+  Object.entries(german).map(([source, translated]) => [translated, source]));
 /** Names are also saved joined by " · ", so each part is looked up on its own. */
 export function contentName(name: string): string {
-  if (locale() !== 'de') return name;
-  return german[name] ?? name.split(" · ").map(part => german[part] ?? part).join(" · ");
+  const table = locale() === 'de' ? german : english;
+  return table[name] ?? name.split(" · ").map(part => table[part] ?? part).join(" · ");
 }
