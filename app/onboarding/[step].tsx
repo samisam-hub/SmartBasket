@@ -1,4 +1,4 @@
-import { slotLabel, term, unitSystemLabel } from '@/services/i18n';
+import { slotLabel, t, term, unitSystemLabel } from '@/services/i18n';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackHandler, Text, View } from "react-native";
 import type { NavigationProp } from "@react-navigation/native";
@@ -56,41 +56,41 @@ const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
   welcome: {
     title: "Dein Einkauf, passend zu dir.",
     subtitle:
-      "Ein paar Angaben zu Ernährung, Alltag und Budget. Dein Fortschritt wird auf diesem Gerät gespeichert.",
+      t('step.welcome.subtitle'),
   },
   household: {
-    title: "Für wen planen wir?",
+    title: t('step.household.title'),
     subtitle:
-      "Füge Erwachsene und Kinder hinzu. Details kannst du jederzeit ergänzen. Die Tagesmenge ist ein Vorschlag, den du anpassen kannst.",
+      t('step.household.subtitle'),
   },
   meals: {
-    title: "Welche Mahlzeiten möchtest du planen?",
+    title: t('step.meals.title'),
     subtitle:
-      "Dein üblicher Tagesablauf. Der Kalender übernimmt diese Mahlzeiten für ausgewählte Tage. Einzelne Mahlzeiten kannst du pro Tag abwählen.",
+      t('step.meals.subtitle'),
   },
   goals: {
-    title: "Essen, das zu deinen Zielen passt.",
+    title: t('step.goals.title'),
     subtitle:
-      "Dein Ziel beeinflusst den Eiweißanteil der vorgeschlagenen Mengen. Dies sind deine Einstellungen, keine individuelle Ernährungsvorgabe.",
+      t('step.goals.subtitle'),
   },
   diet: {
-    title: "Essen, das zu deinem Alltag passt.",
+    title: t('step.diet.title'),
     subtitle:
-      "Wähle eine Ernährungsweise und zusätzliche Anforderungen, etwa diabetesbewusst. Du kannst sie später ändern.",
+      t('step.diet.subtitle'),
   },
   allergies: {
-    title: "Was sollen wir berücksichtigen?",
-    subtitle: "Wähle die Allergien und Unverträglichkeiten aus, die wir berücksichtigen sollen.",
+    title: t('step.allergies.title'),
+    subtitle: t('step.allergies.subtitle'),
   },
   budget: {
-    title: "Wie hoch ist dein Einkaufsbudget?",
+    title: t('step.budget.title'),
     subtitle:
-      "Lege ein Gesamtbudget für den Haushalt und den gewählten Planungszeitraum fest.",
+      t('step.budget.subtitle'),
   },
   review: {
-    title: "Deine Einstellungen auf einen Blick.",
+    title: t('step.review.title'),
     subtitle:
-      "Prüfe deine Einstellungen vor dem Speichern. Über das Bearbeiten-Symbol kannst du jeden Bereich ändern.",
+      t('step.review.subtitle'),
   },
 };
 const fields: Record<OnboardingStep, (keyof PreferenceErrors)[]> = {
@@ -209,8 +209,8 @@ export default function OnboardingScreen() {
     return (
       <Screen bottom>
         <EmptyState
-          title="Alles wird vorbereitet"
-          description="Dein gespeicherter Fortschritt wird geladen …"
+          title={t('step.preparing')}
+          description={t('step.loadingProgress')}
           icon="loader"
         />
       </Screen>
@@ -246,9 +246,9 @@ export default function OnboardingScreen() {
   return (
     <Screen bottom>
       <View style={[ui.row, { justifyContent: "space-between" }]}>
-        <TextButton label="Zurück" disabled={busy} onPress={back} />
+        <TextButton label={t('step.back')} disabled={busy} onPress={back} />
         <TextButton
-          label="Speichern und schließen"
+          label={t('step.saveAndClose')}
           disabled={busy}
           onPress={() => {
             void finish(store.flushDraft);
@@ -261,7 +261,7 @@ export default function OnboardingScreen() {
       <View pointerEvents={busy ? "none" : "auto"} style={ui.stack}>
         {step === "welcome" && (
           <>
-            <SectionCard title="In welchen Einheiten kaufst du ein?">
+            <SectionCard title={t('step.units')}>
               <View style={ui.wrap}>
                 {unitSystems.map((system) => (
                   <SelectionChip
@@ -273,18 +273,17 @@ export default function OnboardingScreen() {
                 ))}
               </View>
               <Text style={ui.small}>
-                Das ändert nur, wie deine Einkaufsliste geschrieben ist. Die Mengen werden exakt
-                umgerechnet; am Plan selbst ändert sich nichts. Du kannst jederzeit wechseln.
+                {t('step.unitsNote')}
               </Text>
             </SectionCard>
-            <InfoCard title="Ein paar Angaben für einen guten Start.">
+            <InfoCard title={t('step.goodStart')}>
 
-              Dein Kalorienziel, deine Essensvorlieben, dein Haushalt und dein Budget bestimmen künftige Warenkörbe. Ohne E-Mail oder Passwort.
+              {t('step.goodStartBody')}
             </InfoCard>
             {!configured && (
-              <InfoCard title="Auf diesem Gerät ausprobieren">
+              <InfoCard title={t('step.tryOnDevice')}>
 
-                Die Cloud ist nicht eingerichtet. Deine Angaben und Einstellungen bleiben auf diesem Gerät.
+                {t('step.tryOnDeviceBody')}
               </InfoCard>
             )}
           </>
@@ -324,10 +323,7 @@ export default function OnboardingScreen() {
                 />
               ))}
             </View>
-            <Text style={ui.small}>
-
-              Frühstück, Mittagessen und Abendessen sind vorausgewählt, ein Snack nicht. Jeder Kalendertag beginnt mit diesem Muster. Einzelne Mahlzeiten kannst du dort abwählen.
-            </Text>
+            <Text style={ui.small}>{t('step.mealsNote')}</Text>
             <ErrorMessage message={visible.slotDefaults} />
           </SectionCard>
         )}
@@ -337,9 +333,9 @@ export default function OnboardingScreen() {
               <Text style={ui.small}>
                 {draft.participants?.length
                   ? `Vorschlag für deinen Haushalt: etwa ${draft.dailyCalories ?? "—"} kcal pro Person und Tag. Im Bereich Haushalt kannst du den Wert pro Person ändern.`
-                  : "Füge die Personen deines Haushalts hinzu, um eine vorgeschlagene Tagesmenge zu erhalten."}
+                  : t('step.householdNeeded')}
               </Text>
-              <Text style={ui.subheading}>Wichtigstes Ernährungsziel</Text>
+              <Text style={ui.subheading}>{t('step.mainGoal')}</Text>
               <View style={ui.wrap}>
                 {goals.map((primaryGoal) => (
                   <SelectionChip
@@ -351,7 +347,7 @@ export default function OnboardingScreen() {
                 ))}
               </View>
             </SectionCard>
-            <SectionCard title="Eiweißziel">
+            <SectionCard title={t('step.proteinTarget')}>
               <View style={ui.wrap}>
                 {(["automatic", "manual"] as const).map((proteinMode) => (
                   <SelectionChip
@@ -359,7 +355,7 @@ export default function OnboardingScreen() {
                     label={
                       proteinMode === "automatic"
                         ? "Automatisch"
-                        : "Gramm pro Tag selbst festlegen"
+                        : t('step.ownGrams')
                     }
                     selected={draft.proteinMode === proteinMode}
                     onPress={() =>
@@ -376,7 +372,7 @@ export default function OnboardingScreen() {
               </View>
               {draft.proteinMode === "manual" ? (
                 <NumberInput
-                  label="Eiweißziel (g/Tag)"
+                  label={t('step.proteinField')}
                   value={draft.proteinTargetGrams}
                   onChange={(proteinTargetGrams) =>
                     store.update({ proteinTargetGrams })
@@ -384,10 +380,7 @@ export default function OnboardingScreen() {
                   error={visible.proteinTargetGrams}
                 />
               ) : (
-                <Text style={ui.small}>
-
-                  Kein eigener Zielwert. Das Eiweißziel wird bei der Warenkorberstellung automatisch berechnet.
-                </Text>
+                <Text style={ui.small}>{t('step.autoProtein')}</Text>
               )}
             </SectionCard>
           </>
@@ -411,25 +404,19 @@ export default function OnboardingScreen() {
                 />
               ))}
             </View>
-            <Text style={ui.small}>
-
-              Vegetarisch, vegan und pescetarisch sind unterschiedliche Ernährungsweisen. Laktosefrei, glutenfrei und diabetesbewusst lassen sich jeweils ergänzen.
-            </Text>
+            <Text style={ui.small}>{t('step.dietNote')}</Text>
             <ErrorMessage message={visible.dietaryPreferences} />
           </SectionCard>
         )}
         {step === "diet" && draft.dietaryPreferences.includes("diabetes") && (
-          <InfoCard title="So filtert diabetesbewusst deinen Warenkorb">
-
-            Wir berücksichtigen Produkte mit angegebenem Zucker unter der Schwelle für hohen Zuckergehalt (22,5 g je 100 g bzw. 11,25 g je 100 ml) und Mahlzeiten mit üblichen Kohlenhydratportionen. Produkte ohne Zuckerangabe werden ausgeschlossen. Dies ist eine Einkaufspräferenz, keine medizinische Beratung oder Behandlung. Prüfe Verpackungen und beachte die Empfehlungen deines Behandlungsteams.
-          </InfoCard>
+          <InfoCard title={t('step.diabetesTitle')}>{t('step.diabetesBody')}</InfoCard>
         )}
         {step === "allergies" && (
           <>
             <SectionCard>
               <View style={ui.wrap}>
                 <SelectionChip
-                  label="Keine"
+                  label={t('step.none')}
                   selected={!draft.allergens.length}
                   onPress={() => store.update({ allergens: [] })}
                 />
@@ -450,10 +437,7 @@ export default function OnboardingScreen() {
               </View>
               <ErrorMessage message={visible.allergens} />
             </SectionCard>
-            <InfoCard title="Prüfe immer die Verpackungsangaben">
-
-              Diese Einstellungen garantieren nicht, dass ein Produkt bei einer Allergie geeignet ist. Prüfe Zutaten und Hinweise auf mögliche Spuren. Laktosefrei bedeutet nicht milchfrei.
-            </InfoCard>
+            <InfoCard title={t('step.packagingTitle')}>{t('step.packagingBody')}</InfoCard>
           </>
         )}
         {step === "budget" && (
@@ -467,7 +451,7 @@ export default function OnboardingScreen() {
                 }
               />
               <SelectionChip
-                label="Maximales Budget in EUR"
+                label={t('step.budgetField')}
                 selected={draft.budgetEnabled}
                 onPress={() =>
                   store.update({
@@ -488,10 +472,7 @@ export default function OnboardingScreen() {
                 error={visible.weeklyBudgetEur}
               />
             )}
-            <Text style={ui.small}>
-
-              Preise in SmartBasket können Schätzwerte sein.
-            </Text>
+            <Text style={ui.small}>{t('step.pricesEstimates')}</Text>
           </SectionCard>
         )}
         {step === "review" && (
@@ -508,16 +489,16 @@ export default function OnboardingScreen() {
               ))}
             <Text style={ui.small}>
               {configured
-                ? "Wir speichern zuerst auf diesem Gerät und synchronisieren anschließend mit deinem privaten Konto. Falls dies fehlschlägt, siehst du den lokalen Speicherstatus und kannst es erneut versuchen."
-                : "Die Cloud ist nicht eingerichtet. Deine Einrichtung wird nur auf diesem Gerät gespeichert."}
+                ? t('step.cloudNote')
+                : t('step.noCloud')}
             </Text>
           </>
         )}
       </View>
       {step === "review" ? (
         <PrimaryButton
-          label={busy ? "Einstellungen werden gespeichert …" : intent === "edit"
-            ? "Änderungen speichern" : "Einstellungen speichern"}
+          label={busy ? t('step.saving') : intent === "edit"
+            ? t('step.saveChanges') : t('step.saveSettings')}
           loading={busy}
           onPress={() => {
             void save();
@@ -529,7 +510,7 @@ export default function OnboardingScreen() {
             step === "welcome"
               ? "Loslegen"
               : returning
-                ? "Zurück zur Übersicht"
+                ? t('step.backToOverview')
                 : "Weiter"
           }
           onPress={next}
