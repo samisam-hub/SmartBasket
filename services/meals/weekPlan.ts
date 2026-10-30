@@ -108,12 +108,12 @@ export function planDays(plan: AnyMealPlan): PlanDay[] {
   if (isWeekPlanShape(plan)) return plannedDates(plan).map(date =>
     ({ key: date, label: planDateLabel(date), date, items: itemsOn(plan, date) }));
   return Array.from({ length: plan.planningDays }, (_, index) =>
-    ({ key: `day-${index}`, label: `Tag ${index + 1}`, date: null,
+    ({ key: `day-${index}`, label: t('plan.dayNumber', { number: index + 1 }), date: null,
       items: plan.items.filter(item => item.dayIndex === index) }));
 }
 export const itemDayLabel = (plan: AnyMealPlan, item: AnyMealPlanItem): string =>
   isWeekPlanShape(plan) && 'date' in item ? planDateLabel(item.date)
-    : `Tag ${('dayIndex' in item ? item.dayIndex : 0) + 1}`;
+    : t('plan.dayNumber', { number: ('dayIndex' in item ? item.dayIndex : 0) + 1 });
 /** How much of a person's day a week actually covers: the shares of the slots the household
  *  chose to eat at home. A day nobody planned, and a slot they dropped, are not counted as a gap. */
 export const plannedSlotShare = (plan: WeekPlan): number =>

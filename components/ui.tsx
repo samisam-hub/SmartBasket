@@ -429,7 +429,7 @@ export function PreferenceRow({
         <Text style={styles.label}>{value}</Text>
       </View>
       {onEdit && (
-        <IconButton icon="edit-2" label={`Bearbeiten ${label}`} onPress={onEdit} />
+        <IconButton icon="edit-2" label={t('ui.edit', { label })} onPress={onEdit} />
       )}
     </View>
   );
@@ -482,7 +482,7 @@ export function ProgressIndicator({
     >
       <Text style={ui.caption}>
 
-        Schritt {current}  von {total}
+        {t('ui.step', { current, total })}
       </Text>
       <View style={styles.track}>
         <View

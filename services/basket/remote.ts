@@ -11,7 +11,7 @@ export function remoteBaskets(client: SupabaseClient): RemoteBaskets {
     async rename(owner,id,name){await verifyOwner(owner);const {error}=await client.rpc('rename_saved_basket',{p_request_key:id,p_name:name});if(error)throw Error(t('remote.basket.renameFailed'));},
     async remove(owner,id){await verifyOwner(owner);const {error}=await client.rpc('delete_saved_basket',{p_request_key:id});if(error)throw Error(t('remote.basket.deleteFailed'));},
     async save(basket) {
-      if (!basket.ownerId) throw Error("Keine Cloud-Sitzung");
+      if (!basket.ownerId) throw Error(t('remote.basket.noSession'));
       await verifyOwner(basket.ownerId);
       const { data, error } = basket.cloudId ? await client.rpc('update_saved_basket', { p_request_key: basket.id, p_result: basket.result }) : await client.rpc('save_generated_basket', { p_request_key: basket.id,
         p_name: basket.name, p_preferences: basket.preferences, p_result: basket.result });

@@ -5,7 +5,7 @@ export function nutritionTargets(p: PreferenceValues & {participants?:import('..
   const dailyProteinTarget = p.participants?.length ? p.participants.reduce((s,x)=>s+x.proteinTarget!,0)/p.participants.length : p.proteinMode === 'manual' ? p.proteinTargetGrams! : p.dailyCalories * proteinPercent[p.primaryGoal] / 4;
   const scale = p.householdSize * p.planningDays;
   return { calorieTarget: p.participants?.length ? p.planningDays*p.participants.reduce((s,x)=>s+x.dailyCalories!,0):scale * p.dailyCalories, proteinTarget: scale * dailyProteinTarget, dailyProteinTarget,
-    proteinRule: p.participants?.length?t('targets.sumOfPeople'):p.proteinMode === 'manual' ? t('targets.ownGrams') : `${Number((proteinPercent[p.primaryGoal] * 100).toFixed(1))}% der Kalorien ÷ 4 kcal/g; pro Person und Tag`,
+    proteinRule: p.participants?.length?t('targets.sumOfPeople'):p.proteinMode === 'manual' ? t('targets.ownGrams') : t('targets.proteinShare', { percent: Number((proteinPercent[p.primaryGoal] * 100).toFixed(1)) }),
     // This existing field is explicitly a total for the selected period, not a weekly rate.
     budgetTarget: p.budgetEnabled ? p.weeklyBudgetEur : null };
 }

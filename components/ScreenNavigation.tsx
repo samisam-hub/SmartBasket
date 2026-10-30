@@ -5,11 +5,13 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography } from '../lib/theme';
 
-const destinations = [
+/** Read per render, not once at import: a label fixed at startup would keep the locale the app
+ *  began with and ignore a switch. */
+const destinations = () => [
   { label: t('nav.home'), path: '/', icon: 'home' },
   { label: t('nav.basket'), path: '/basket', icon: 'shopping-bag' },
   { label: t('nav.products'), path: '/products', icon: 'grid' },
-  { label: "Profil", path: '/profile', icon: 'user' },
+  { label: t('tab.profile'), path: '/profile', icon: 'user' },
 ] as const;
 
 /** Stack screens share the same destinations as the existing tab navigator. */
@@ -25,7 +27,7 @@ export function ScreenNavigation() {
   return <View style={{ flexDirection: 'row', backgroundColor: colors.surface,
     borderTopWidth: 1, borderTopColor: colors.border, paddingBottom: insets.bottom,
     paddingLeft: insets.left, paddingRight: insets.right }}>
-    {destinations.map(destination => {
+    {destinations().map(destination => {
       const color = selected === destination.path ? colors.primary : colors.muted;
       return <Pressable key={destination.path} accessibilityRole="tab"
         accessibilityLabel={destination.label} accessibilityState={{ selected: selected === destination.path }}

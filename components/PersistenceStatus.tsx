@@ -14,7 +14,7 @@ export function PersistenceStatus() {
     ready,
     store,
   } = usePreferences();
-  if (!ready) return <Text style={ui.small}>Deine Einstellungen werden geladen …</Text>;
+  if (!ready) return <Text style={ui.small}>{t('persist.loading')}</Text>;
   return (
     <View style={ui.stack}>
       {localError && (

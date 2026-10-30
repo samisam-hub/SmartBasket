@@ -1,4 +1,4 @@
-import { t, term } from '@/services/i18n';
+import { formatMoney, t, term } from '@/services/i18n';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, Pressable, Text, View } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
@@ -112,7 +112,7 @@ export default function VoicePlanScreen() {
           <Feather name={phase === 'speaking' ? 'volume-2' : active ? 'pause' : 'mic'} size={44} color="white" />
         </Pressable>
         <Text accessibilityLiveRegion="polite" style={[ui.subheading, { textAlign: 'center' }]}>{status}</Text>
-        {phase === 'speaking' && <Text style={[ui.small, { textAlign: 'center' }]}>Tippe auf den Kreis, um zu unterbrechen und zu sprechen.</Text>}
+        {phase === 'speaking' && <Text style={[ui.small, { textAlign: 'center' }]}>{t('voice.tapToInterrupt')}</Text>}
         {phase === 'listening' && <SecondaryButton label={t('voice.done')} onPress={() => conversation.sendNow()} />}
         {active && <SecondaryButton label={t('voice.pause')} onPress={() => { void conversation.pause(); }} />}
         {!active && !messages.length && <Text style={ui.small}>{t('voice.example')}</Text>}
@@ -122,7 +122,9 @@ export default function VoicePlanScreen() {
       {!!messages.length && <SecondaryButton label={showTranscript ? t('voice.hide') : t('voice.show')} onPress={() => setShowTranscript(!showTranscript)} />}
       {showTranscript && messages.map((m, i) => <View key={i} style={[ui.card, { padding: 14, backgroundColor: m.role === 'assistant' ? colors.pale : colors.surface }]}><Text style={ui.eyebrow}>{m.role === 'assistant' ? 'SMARTBASKET' : "DU"}</Text><Text selectable style={ui.body}>{m.content}</Text></View>)}
       {plan && <SectionCard title={t('voice.planSoFar')}>
-        <Text style={ui.body}>{plan.days ?? '—'}  Tage · {plan.people.length} {plan.people.length === 1 ? 'Person' : "Personen"} · {plan.budgetEnabled ? `€${plan.budget ?? '—'} Gesamtbudget` : "Kein Budgetlimit"}</Text>
+        <Text style={ui.body}>{t('voice.planSummary', { days: plan.days ?? '—',
+          people: t('voice.people', { count: plan.people.length }),
+          budget: plan.budgetEnabled ? t('voice.totalBudget', { amount: plan.budget === null || plan.budget === undefined ? '—' : formatMoney(plan.budget) }) : t('voice.noBudget') })}</Text>
         {plan.people.map((p, i) => <View key={i}><Text style={[ui.body, { fontWeight: '700' }]}>{p.name || t('voice.person', { number: i + 1 })}</Text><Text style={ui.small}>{t('voice.proteinPerDay', { calories: p.calories ?? '—', protein: p.protein ?? '—' })}</Text><Text style={ui.small}>{p.diets.filter(d => d !== 'none').map(d => term(d)).join(' · ')}{p.allergens.length ? t('voice.avoid', { allergens: p.allergens.map(a => term(a)).join(', ') }) : ''}</Text></View>)}
         {!!plan.preferredMealIds.length && <Text style={ui.small}>Essenswünsche: {plan.preferredMealIds.map(id => meals.find(m => m.id === id)?.name).filter(Boolean).join(', ')}</Text>}
         {unresolved && <Text style={ui.small}>{unresolved}</Text>}

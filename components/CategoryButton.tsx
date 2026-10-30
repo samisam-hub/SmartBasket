@@ -20,6 +20,6 @@ export function CategoryButton({ category, selected, onPress, label }: { categor
         { position: 'absolute', width: photoSize * 4, height: photoSize * 4, left: -(index % 4) * photoSize, top: -Math.floor(index / 4) * photoSize }} />
       }
     </View>
-    <Text style={[ui.caption, { color: selected && category !== 'all' ? colors.onPrimary : colors.primary, textAlign: 'center', fontWeight: '600' }]}>{label ?? (category === 'all' ? "Alle" : categoryLabel(category))}</Text>
+    <Text style={[ui.caption, { color: selected && category !== 'all' ? colors.onPrimary : colors.primary, textAlign: 'center', fontWeight: '600' }]}>{label ?? (category === 'all' ? t('category.allShort') : categoryLabel(category))}</Text>
   </Pressable>;
 }

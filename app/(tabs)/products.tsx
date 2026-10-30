@@ -35,7 +35,7 @@ export default function ProductsScreen() {
       ItemSeparatorComponent={() => <View style={{ height: spacing.lg }} />}
       keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
       ListHeaderComponent={<View style={{ gap: spacing.lg, paddingVertical: spacing.xl }}>
-        <ScreenHeader eyebrow={t('products.eyebrow')} title="Produkte" subtitle="Entdecke Lebensmittel, die zu dir passen." />
+        <ScreenHeader eyebrow={t('products.eyebrow')} title={t('products.title')} subtitle={t('products.subtitle')} />
         <SearchInput value={catalog.query} onChangeText={catalog.setQuery} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityLabel="Produktkategorien" contentContainerStyle={{ gap: spacing.sm, paddingVertical: spacing.xs }} keyboardShouldPersistTaps="handled">
             <CategoryButton category="all" selected={!filters.category} onPress={() => setFilters(f => ({ ...f, category: null }))} />

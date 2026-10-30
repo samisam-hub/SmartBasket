@@ -10,14 +10,14 @@ import { ui } from '@/lib/theme';
 
 export default function WeekOverviewScreen() {
   const { plan, ready, error } = useWeekPlan();
-  if (!ready) return <Screen><Text>Wochenplan wird geladen…</Text></Screen>;
-  if (!plan?.days.length) return <Screen><Text>Noch keine Woche geplant.</Text>
+  if (!ready) return <Screen><Text>{t('overview.loading')}</Text></Screen>;
+  if (!plan?.days.length) return <Screen><Text>{t('overview.noWeek')}</Text>
     <SecondaryButton label={t('overview.planWeek')} onPress={() => router.replace('/plan/week')} /></Screen>;
   const open = openPlanSlots(plan).reduce((sum, day) => sum + day.slots.length, 0);
   return <Screen bottom>
-    <ScreenHeader eyebrow="2 · WOCHENPLAN" title="Deine Woche" subtitle={t('overview.subtitle')} />
+    <ScreenHeader eyebrow={t('overview.eyebrow')} title={t('overview.title')} subtitle={t('overview.subtitle')} />
     <ErrorMessage message={error} />
-    {open > 0 && <SectionCard title={`${open} Mahlzeiten noch offen`}>
+    {open > 0 && <SectionCard title={t('overview.openMeals', { count: open })}>
       <Text style={ui.small}>{t('overview.exhaustedNote')}</Text>
     </SectionCard>}
     {plan.days.map(day => <SectionCard key={day.date} title={planDateLabel(day.date)}>
@@ -25,7 +25,7 @@ export default function WeekOverviewScreen() {
         const dishes = itemsInSlot(plan, day.date, slot);
         return <Text key={slot} style={ui.body}>{slotLabel(slot)}: {dishes.length ? dishes.map(item => contentName(item.meal.name)).join(' / ') : 'Noch offen'}</Text>;
       })}
-      <SecondaryButton label={`${planDateLabel(day.date)} bearbeiten`} onPress={() => router.push({ pathname: '/plan/[date]', params: { date: day.date, returnTo: 'week' } })} />
+      <SecondaryButton label={t('overview.editDay', { date: planDateLabel(day.date) })} onPress={() => router.push({ pathname: '/plan/[date]', params: { date: day.date, returnTo: 'week' } })} />
     </SectionCard>)}
     <PrimaryButton label={t('overview.toList')} disabled={!plan.items.length || open > 0}
       onPress={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />

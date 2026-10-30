@@ -16,7 +16,7 @@ export default function DayDoneScreen() {
   const openDays = plan ? openPlanSlots(plan).filter(day => day.date !== date) : [];
   const nextDay = plan ? plannedDates(plan).find(other => openDays.some(day => day.date === other)) : undefined;
   return <Screen bottom>
-    <ScreenHeader title={`${planDateLabel(date)} ist geplant`}
+    <ScreenHeader title={t('dayDone.title', { date: planDateLabel(date) })}
       subtitle={meals.length ? t('dayDone.mealsForDay', { count: meals.length }) : t('dayDone.noCooking')} />
     <SectionCard>
       {meals.map(item => <Text key={item.id} style={ui.small}>{slotLabel(item.mealSlot)}: {contentName(item.meal.name)}</Text>)}

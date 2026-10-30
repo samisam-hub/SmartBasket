@@ -1,4 +1,4 @@
-import { t, term } from '../services/i18n';
+import { kindLabel, t, term } from '../services/i18n';
 import { View } from "react-native";
 import { PreferenceRow } from "./ui";
 import {
@@ -20,16 +20,16 @@ export function PreferenceSummary({
   return (
     <View style={ui.stack}>
       <PreferenceRow
-        label="Haushalt"
+        label={t('summary.household')}
         value={
           p.participants?.length
             ? p.participants
                 .map(
                   (person) =>
-                    `${person.name || "Person"} (${participantKind(person) === "child" ? "Kind" : "Erwachsene Person"}, ${person.dailyCalories ?? "—"} kcal)`,
+                    t('summary.personLine', { name: person.name || t('household.person'), kind: kindLabel(participantKind(person)), calories: person.dailyCalories ?? '—' }),
                 )
                 .join(", ")
-            : `${p.householdSize} ${p.householdSize === 1 ? "Person" : "Personen"}`
+            : t('summary.people', { count: p.householdSize })
         }
         onEdit={edit("household")}
       />
@@ -40,7 +40,7 @@ export function PreferenceSummary({
       />
       <PreferenceRow
         label={t('summary.caloriesPerPerson')}
-        value={`${p.dailyCalories ?? t('summary.notSet')} kcal/Tag`}
+        value={t('summary.caloriesPerDay', { calories: p.dailyCalories ?? t('summary.notSet') })}
         onEdit={edit("household")}
       />
       <PreferenceRow
@@ -53,7 +53,7 @@ export function PreferenceSummary({
         value={
           p.proteinMode === "automatic"
             ? "Automatisch"
-            : `${p.proteinTargetGrams ?? t('summary.notSet')} g/Tag`
+            : t('summary.gramsPerDay', { grams: p.proteinTargetGrams ?? t('summary.notSet') })
         }
         onEdit={edit("goals")}
       />

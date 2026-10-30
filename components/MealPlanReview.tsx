@@ -22,7 +22,7 @@ export function MealPlanReview({plan,preferences,onChange,onConfirm}: {plan:Meal
       <Text style={ui.small}>{t('review.swapNote')}</Text>
       <Text style={ui.small}>{t('review.intro')}</Text>
     </SectionCard>
-    {plan.items.map(item=>{const nutrition=mealNutrition(item),options=replacementMeals(plan,item.id,preferences);return <SectionCard key={item.id} title={`Tag ${item.dayIndex+1} · ${term(item.mealSlot)}`}>
+    {plan.items.map(item=>{const nutrition=mealNutrition(item),options=replacementMeals(plan,item.id,preferences);return <SectionCard key={item.id} title={t('review.dayAndSlot', { day: item.dayIndex+1, slot: term(item.mealSlot) })}>
       <Text style={ui.heading}>{contentName(item.meal.name)}</Text>
       <MealImage meal={item.meal} />
       {mealNutritionKnown(item) ? <ParticipantNutrition plan={plan} nutrition={nutrition} /> : <Text style={ui.small}>Nährwerte unbekannt · {item.mealMode === 'eat_out' ? t('review.noItems') : t('review.afterConfirm')}</Text>}

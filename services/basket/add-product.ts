@@ -20,7 +20,7 @@ export function addBasketProduct(original: BasketGenerationResult, product: Prod
     else existing.totalVolume = existing.purchasedQuantity;
     existing.estimatedPrice = existing.estimatedPrice === null ? null : existing.estimatedPrice / (existing.packageCount - 1) * existing.packageCount;
   } else {
-    if (result.items.length >= (result.engineVersion === '2' ? 64 : 24)) throw Error("Dieser Warenkorb hat seine maximale Produktanzahl erreicht.");
+    if (result.items.length >= (result.engineVersion === '2' ? 64 : 24)) throw Error(t('basket.maxProducts'));
     result.items.push({ product, isExtra: true, ingredientKey: `extra:${product.id}`, sourceMealIds: [], group: 'extras',
       packageCount: 1, packageAmount: size, quantityUnit: unit, quantityAssumed: product.packageSizeSource === 'smartbasket-synthetic-demo-v1',
       purchasedQuantity: size, plannedConsumptionQuantity: 0, leftoverQuantity: size,

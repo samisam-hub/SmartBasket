@@ -15,9 +15,9 @@ export function ShareBasket({ basket }: { basket: SavedBasket }) {
     setSharing(true); setCopy(false);
     try {
       if (Platform.OS === 'web') {
-        if (typeof navigator !== 'undefined' && navigator.share) await navigator.share({ title: "Warenkorb", text });
+        if (typeof navigator !== 'undefined' && navigator.share) await navigator.share({ title: t('share.basket'), text });
         else setCopy(true);
-      } else await Share.share({ title: "Warenkorb", message: text });
+      } else await Share.share({ title: t('share.basket'), message: text });
     } catch (e) {
       if (!(e instanceof Error && e.name === 'AbortError')) setCopy(true);
     } finally { setSharing(false); }

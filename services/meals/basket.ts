@@ -111,6 +111,6 @@ export function basketFromMealPlan(plan: AnyMealPlan, preferences: UserPreferenc
     optimizationWeights:{...packageWeights},status:!items.length&&!pantryUsed.length?'empty':incomplete||outside||openSlots>0||calorieCoveragePercent<90||calorieCoveragePercent>110||proteinCoveragePercent<90?'partial':'generated',
     items,totalCalories:round(n.calories),totalProtein:round(n.protein),totalCarbohydrates:round(n.carbohydrates),totalFat:round(n.fat),totalFiber:null,
     ...targets,estimatedTotalPrice,knownPriceSubtotal:round(knownPriceSubtotal),budgetDifference,budgetStatus,calorieCoveragePercent,proteinCoveragePercent,
-    categoryCoverage:[],warnings,constraintsApplied:[t('mealBasket.fitsMeal'),"Gleichwertige Zutaten",t('mealBasket.knownPackage'),"Allergen- und Spurennachweise","Zutatenspezifischer Spielraum"],
+    categoryCoverage:[],warnings,constraintsApplied:[t('mealBasket.fitsMeal'),t('mealBasket.equivalentIngredients'),t('mealBasket.knownPackage'),t('mealBasket.allergenEvidence'),t('mealBasket.ingredientRoom')],
     exclusions:{unmatchedIngredients:requirements.filter(r=>ratios[r.ingredientKey]===0).length,unmatchedReadyMeals:ready.unmatched},objective,score:round(100/(1+objective)),iterations:requirements.length};
 }

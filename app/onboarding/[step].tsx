@@ -54,7 +54,7 @@ import {
 
 const copy: Record<OnboardingStep, { title: string; subtitle: string }> = {
   welcome: {
-    title: "Dein Einkauf, passend zu dir.",
+    title: t('step.welcome.title'),
     subtitle:
       t('step.welcome.subtitle'),
   },
@@ -444,7 +444,7 @@ export default function OnboardingScreen() {
           <SectionCard>
             <View style={ui.wrap}>
               <SelectionChip
-                label="Kein Budgetlimit"
+                label={t('step.noBudget')}
                 selected={!draft.budgetEnabled}
                 onPress={() =>
                   store.update({ budgetEnabled: false, weeklyBudgetEur: null })
@@ -511,7 +511,7 @@ export default function OnboardingScreen() {
               ? "Loslegen"
               : returning
                 ? t('step.backToOverview')
-                : "Weiter"
+                : t('step.next')
           }
           onPress={next}
           disabled={busy}

@@ -121,7 +121,7 @@ export function generateBasket(input: UserPreferences, products: readonly Produc
     const n = quantities[i]; if (!n) return [];
     const amount = n * c.pack.amount, factor = amount / 100;
     const reasons = [{ code: 'category_coverage', detail: t('generator.coverageReason', { group: groupLabel(c.group) }) },
-      ...input.dietaryPreferences.filter(d => d !== 'none').map(d => ({ code: `diet:${d}`, detail: `Passt zur Einstellung ${term(d)}` }))];
+      ...input.dietaryPreferences.filter(d => d !== 'none').map(d => ({ code: `diet:${d}`, detail: t('generator.dietReason', { diet: term(d) }) }))];
     if (c.product.proteinPer100g! * 4 >= c.product.caloriesPer100g! * 0.2) reasons.push({ code: 'high_protein', detail: t('generator.proteinShare') });
     if (c.price !== null && c.calories / c.price >= 500) reasons.push({ code: 'price_efficiency', detail: t('generator.caloriesPerEuro') });
     if (c.pack.assumed) reasons.push({ code: 'assumed_package', detail: t('generator.assumedPackage', { amount: c.pack.amount, unit: c.pack.unit }) });

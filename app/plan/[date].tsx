@@ -18,7 +18,7 @@ export default function PlanDayScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const { saved } = usePreferences();
   const { plan, ready, error, store } = useWeekPlan();
-  if (!ready) return <Screen><Text style={ui.body}>Deine Woche wird geladen …</Text></Screen>;
+  if (!ready) return <Screen><Text style={ui.body}>{t('day.loadingWeek')}</Text></Screen>;
   const day = plan && isPlanDate(date) ? dayOf(plan, date) : null;
   if (!saved || !plan || !day) return <Screen bottom>
     <ScreenHeader title={t('day.notPlanned')} subtitle={t('day.pickFirst')} />
@@ -40,18 +40,18 @@ export default function PlanDayScreen() {
           <Text style={ui.subheading}>{contentName(item.meal.name)}</Text>
           {item.participantIds && <Text style={ui.caption}>
 
-            Für {item.participantIds.map(id => people.find(person => person.id === id)?.name || 'Person').join(', ')}
+            {t('day.forPeople', { people: item.participantIds.map(id => people.find(person => person.id === id)?.name || t('household.person')).join(', ') })}
           </Text>}
           <MealImage meal={item.meal} compact />
           {people.length > 1 && <>
-            <Text style={ui.caption}>Wer isst mit?</Text>
+            <Text style={ui.caption}>{t('day.whoEats')}</Text>
             <View style={ui.wrap}>
               {people.map(person => {
                 const present = itemGroup(plan, item);
                 const eating = present.includes(person.id);
                 const atOtherDish = dishes.some(other => other.id !== item.id && itemGroup(plan, other).includes(person.id));
                 return <SelectionChip key={person.id} selected={eating} disabled={atOtherDish}
-                  label={`${person.name || 'Person'}${participantKind(person) === 'child' ? ' (Kind)' : ''}`}
+                  label={t('day.personKind', { name: person.name || t('household.person'), kind: participantKind(person) === 'child' ? t('day.child') : '' })}
                   onPress={() => run(() => store.setPresence(item.id,
                     eating ? present.filter(id => id !== person.id) : [...present, person.id], saved))} />;
               })}
@@ -71,7 +71,7 @@ export default function PlanDayScreen() {
             onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo } })} />
         </>}
         {!!dishes.length && people.length > 1 && people.filter(person => !eatingSomethingElse.includes(person.id)).map(person =>
-          <TextButton key={`own-${person.id}`} label={`${person.name || 'Person'} isst etwas anderes`}
+          <TextButton key={`own-${person.id}`} label={t('day.eatsOther', { name: person.name || t('household.person') })}
             onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo, for: person.id } })} />)}
       </SectionCard>;
     })}

@@ -33,9 +33,8 @@ export function WastePrevention() {
     {error ? <Text style={ui.small}>{t('waste.overviewFailed')}</Text> : !impact ? <Text style={ui.small}>{t('waste.overviewLoading')}</Text> : !impact.shops ? <Text style={ui.body}>{t('waste.firstShop')}</Text> : <>
       <View style={{ flexDirection: 'row', gap: 4, alignItems: 'stretch' }}>
         {[
-          { amount: String(impact.days), label: `${impact.days === 1 ? "Tag" : "Tage"} mit SmartBasket`, icon: 'sun' as const, display: `${impact.days === 1 ? "Tag" : "Tage"}
-App-Nutzung` },
-          { amount: String(impact.shops), label: `${impact.shops === 1 ? "Einkauf" : t('waste.purchases')} abgeschlossen`, icon: 'shopping-bag' as const, display: `${impact.shops === 1 ? "Einkauf" : t('waste.purchases')}\nabgeschlossen` },
+          { amount: String(impact.days), label: t('waste.daysWith', { count: impact.days }), icon: 'sun' as const, display: t('waste.daysShortUse', { count: impact.days }) },
+          { amount: String(impact.shops), label: t('waste.shopsDone', { count: impact.shops }), icon: 'shopping-bag' as const, display: t('waste.shopsShort', { count: impact.shops }) },
           { amount: impact.calorieTargetsMet === null ? '—' : `${impact.calorieTargetsMet}%`, label: t('waste.calorieTargets'), icon: 'target' as const, display: t('waste.calorieTargets'), detail: t('waste.calorieTargetsNote') },
           { amount: impact.proteinTargetsMet === null ? '—' : `${impact.proteinTargetsMet}%`, label: t('waste.proteinAverage'), icon: 'bar-chart-2' as const, display: t('waste.proteinShort'), detail: t('waste.proteinNote') },
           { amount: `~${formatMoney(impact.euros)}`, label: t('waste.pantryReused', { partly: impact.unpriced ? t('waste.partial') : '' }), icon: 'refresh-cw' as const, display: t(impact.unpriced ? 'waste.pantryShortPartly' : 'waste.pantryShortUsed') },

@@ -9,14 +9,15 @@ import {activities,sexes} from '../types/profile';
 import { goals } from '../types/preferences';
 import {validateProfile} from '../services/profile-domain';
 import {ui} from '../lib/theme';
-const names=[t('profileSteps.about'),"Ziele",t('profileSteps.diet'),t('profileSteps.allergies'),t('profileSteps.review')];
+// Read per render, so switching language re-labels the steps instead of keeping the first locale.
+const stepNames=()=>[t('profileSteps.about'),t('profileSteps.goals'),t('profileSteps.diet'),t('profileSteps.allergies'),t('profileSteps.review')];
 export default function PersonalProfileScreen(){const {draft:p,store,step,ready,error}=useProfile();const [busy,setBusy]=useState(false),[message,setMessage]=useState<string|null>(null);
  const e=validateProfile(p),update=store.update;
- if(!ready)return <Screen><Text>Dein Profil wird geladen …</Text></Screen>;
+ if(!ready)return <Screen><Text>{t('personal.loading')}</Text></Screen>;
  const next=()=>{const keys=[['displayName','sex','age','heightCm','weightKg'],['primaryNutritionGoal','activityLevel','defaultDailyCalories','defaultProteinTargetGrams'],['dietaryPreferences'],['allergens','intolerances']][step]??[];if(keys.some(k=>e[k])){setMessage(t('personal.checkFields'));return;}setMessage(null);update({},Math.min(4,step+1));};
- return <Screen top={false} bottom><ScreenHeader eyebrow={t('personal.eyebrow', { step: step+1 })} title={names[step]} subtitle={t('personal.intro')} /><ErrorMessage message={message??error} />
+ return <Screen top={false} bottom><ScreenHeader eyebrow={t('personal.eyebrow', { step: step+1 })} title={stepNames()[step]} subtitle={t('personal.intro')} /><ErrorMessage message={message??error} />
  {step===0&&<><TextInput label="Anzeigename (freiwillig)" value={p.displayName} onChangeText={displayName=>update({displayName})} error={e.displayName} />
- <Text style={ui.small}>Die Angabe des Geschlechts ist freiwillig. In diesem Profil wird sie derzeit nicht zur Zielberechnung verwendet.</Text>
+ <Text style={ui.small}>{t('personal.sexNote')}</Text>
  {sexes.map(s=><SelectionChip key={s} label={term(s)} selected={p.sex===s} onPress={()=>update({sex:s})} />)}
  <OptionalNumber label="Alter (freiwillig)" value={p.age} onChange={age=>update({age})} error={e.age} />
  <OptionalNumber label={t('personal.height')} hint={t('personal.bodyNote')} value={p.heightCm} onChange={heightCm=>update({heightCm})} error={e.heightCm} />
@@ -34,8 +35,8 @@ export default function PersonalProfileScreen(){const {draft:p,store,step,ready,
    t('personal.body', { height: p.heightCm??t('personal.notSet'), weight: p.weightKg??t('personal.notSet') }),
    t('personal.goalLine', { goal: term(p.primaryNutritionGoal), activity: p.activityLevel ? term(p.activityLevel) : t('personal.noActivity') }),
    t('personal.nutritionLine', { calories: p.defaultDailyCalories??t('personal.planTarget'), mode: term(p.proteinMode), grams: p.proteinMode==='manual'?`${p.defaultProteinTargetGrams} g`:'' }),p.dietaryPreferences.map(d=>term(d)).join(', '),[...p.allergens,...p.intolerances].map(term).join(', ')||t('personal.noAllergies')].map((s,i)=><SectionCard key={i} title={s} />)}
- {names.slice(0,4).map((n,i)=><SecondaryButton key={n} label={`Bearbeiten ${n}`} onPress={()=>update({},i)} />)}
+ {stepNames().slice(0,4).map((n,i)=><SecondaryButton key={n} label={t('personal.editSection', { section: n })} onPress={()=>update({},i)} />)}
  <PrimaryButton label={t('personal.save')} loading={busy} onPress={()=>{setBusy(true);void store.save().then(()=>router.dismissTo('/profile')).catch(e=>setMessage(e.message)).finally(()=>setBusy(false));}} /></>}
- {step<4&&<PrimaryButton label="Weiter" onPress={next} />}{step>0&&<SecondaryButton label={t('personal.back')} onPress={()=>update({},step-1)} />}
+ {step<4&&<PrimaryButton label={t('personal.next')} onPress={next} />}{step>0&&<SecondaryButton label={t('personal.back')} onPress={()=>update({},step-1)} />}
  <SecondaryButton label={t('personal.saveAndClose')} onPress={()=>{void store.flush().then(()=>router.dismissTo('/profile')).catch(e=>setMessage(e.message));}} /></Screen>;
 }

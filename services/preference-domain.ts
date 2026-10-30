@@ -1,4 +1,4 @@
-import { formatNumber, slotLabel, t, term } from './i18n';
+import { formatMoney, formatNumber, slotLabel, t, term } from './i18n';
 import {
   allergens,
   diets,
@@ -131,13 +131,13 @@ export const activeSlotLabels = (p: { slotDefaults?: SlotDefaults }): string[] =
   mealSlots.filter((slot) => slotDefaultsOf(p)[slot]).map((slot) => slotLabel(slot));
 export function preferenceChips(p: UserPreferences): string[] {
   return [
-    `${p.planningDays} Tage`,
-    `${p.householdSize} ${p.householdSize === 1 ? "Person" : "Personen"}`,
+    t('summary.daysPlanned', { count: p.planningDays }),
+    t('summary.people', { count: p.householdSize }),
     `${activeSlotLabels(p).join(", ")}`,
     `${formatNumber(p.dailyCalories)} kcal`,
     term(p.primaryGoal),
     ...p.dietaryPreferences.filter((d) => d !== "none").map((d) => term(d)),
-    p.budgetEnabled ? `€${p.weeklyBudgetEur} Budget` : "Kein Budgetlimit",
+    p.budgetEnabled ? t('summary.budgetAmount', { amount: formatMoney(p.weeklyBudgetEur ?? 0) }) : t('summary.noBudget'),
   ];
 }
 /** Check persisted input without coercing malformed data into valid preferences. */

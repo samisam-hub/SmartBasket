@@ -50,7 +50,7 @@ export function ShoppingList({ basket }: { basket: SavedBasket }) {
     </Pressable>)}
     {!!rows.length && <SecondaryButton label={t('shoppingList.share')} disabled={!ready || sharing} onPress={() => { void share(); }} />}
     {copy && <>
-      <Text style={ui.small}>Markiere und kopiere diese Liste in eine Nachricht:</Text>
+      <Text style={ui.small}>{t('shoppingList.copyHint')}</Text>
       <Text selectable style={ui.body}>{text}</Text>
     </>}
     <Text style={ui.caption}>{t('shoppingList.ticksNote')}</Text>

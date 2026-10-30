@@ -32,7 +32,7 @@ export default function PlanSlotScreen() {
   const mealSlot = mealSlots.includes(slot as MealSlot) ? (slot as MealSlot) : null;
   // "for" names the people this dish is for; without it the whole household eats it.
   const eating = forParam?.split(',').filter(Boolean);
-  const eatingNames = eating?.map(id => plan?.participants?.find(person => person.id === id)?.name || 'Person');
+  const eatingNames = eating?.map(id => plan?.participants?.find(person => person.id === id)?.name || t('household.person'));
   const replacing = replaceItem ? plan?.items.find(item => item.id === replaceItem && item.date === date && item.mealSlot === mealSlot) : undefined;
   const candidatePlan = useMemo(() => replacing && plan && saved ? clearChoice(plan, replacing.id, saved) : plan,
     [plan, saved, replacing]);
@@ -40,7 +40,7 @@ export default function PlanSlotScreen() {
   const suggestions = useMemo(() => valid ? suggestMeals(candidatePlan!, date, mealSlot!, saved!, catalog.products, [...shown, ...(replacing ? [replacing.meal.id] : [])], eating, mealRatings) : [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [valid, candidatePlan, date, mealSlot, saved, catalog.products, shown, forParam, mealRatings, replacing]);
-  if (!ready || catalog.loading) return <Screen><Text style={ui.body}>Gerichte werden gesucht …</Text></Screen>;
+  if (!ready || catalog.loading) return <Screen><Text style={ui.body}>{t('slot.searching')}</Text></Screen>;
   if (!valid) return <Screen bottom>
     <ScreenHeader title={t('slot.notPlanned')} subtitle={t('slot.pickFirst')} />
     <SecondaryButton label={t('slot.backToCalendar')} onPress={() => router.replace('/')} />
