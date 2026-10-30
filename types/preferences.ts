@@ -62,6 +62,10 @@ export interface PreferenceValues {
   participants?: import("./profile").PlanParticipant[];
   /** Absent before the meal standard existed; slotDefaultsOf falls back to the default. */
   slotDefaults?: SlotDefaults;
+  /** What this household calls itself, and the picture beside that name. Both optional: a
+   *  household that never names itself is shown by the people on it. */
+  householdName?: string;
+  householdAvatarUri?: string | null;
   householdSize: number;
   planningDays: number;
   dailyCalories: number;

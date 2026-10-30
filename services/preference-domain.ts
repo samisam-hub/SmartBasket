@@ -160,6 +160,9 @@ export function isDraft(value: unknown): value is PreferenceDraft {
     (p.weeklyBudgetEur === null || typeof p.weeklyBudgetEur === "number") &&
     (p.participants === undefined || validParticipantList(p.participants)) &&
     (p.slotDefaults === undefined || validSlotDefaults(p.slotDefaults)) &&
+    (p.householdName === undefined || (typeof p.householdName === "string" && p.householdName.length <= 80)) &&
+    (p.householdAvatarUri === undefined || p.householdAvatarUri === null ||
+      (typeof p.householdAvatarUri === "string" && p.householdAvatarUri.length > 0 && p.householdAvatarUri.length <= 200000)) &&
     // Absent means metric; anything else stored there is not a preference we can honour.
     (p.unitSystem === undefined || isUnitSystem(p.unitSystem)) &&
     (p.preferredMealIds === undefined ||

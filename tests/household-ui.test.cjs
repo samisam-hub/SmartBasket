@@ -10,8 +10,13 @@ const stub = (name) => {
 };
 const original = Module._load;
 Module._load = function (request, parent, isMain) {
-  if (request === "react-native") return { Text: "Text", View: "View", Pressable: "Pressable" };
+  if (request === "react-native") return { Text: "Text", View: "View", Pressable: "Pressable", Image: "Image" };
   if (request === "@expo/vector-icons/Feather") return { __esModule: true, default: stub("Feather") };
+  // The picker reaches for the camera roll; the list only has to show what was already chosen.
+  if (request === "expo-image-picker") return {
+    requestMediaLibraryPermissionsAsync: async () => ({ granted: false }),
+    launchImageLibraryAsync: async () => ({ canceled: true }),
+  };
   if (request === "./ui") return { PrimaryButton: stub("PrimaryButton") };
   if (request === "../lib/theme")
     return { colors: {}, radii: {}, spacing: {}, typography: { body: {}, h3: {} }, ui: {} };

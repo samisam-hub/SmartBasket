@@ -1,5 +1,6 @@
 import { formatNumber, kindLabel, t } from '../services/i18n';
 import Feather from '@expo/vector-icons/Feather';
+import { Avatar } from './Avatar';
 import { Pressable, Text, View } from 'react-native';
 import { PrimaryButton } from './ui';
 import { participantKind } from '../services/profile-domain';
@@ -32,9 +33,7 @@ export function PersonRow({ person, onPress }: { person: PlanParticipant; onPres
   const amount = person.dailyCalories ? t('household.calories', { amount: formatNumber(person.dailyCalories) }) : null;
   return <Pressable accessibilityRole="button" accessibilityLabel={t('household.edit', { name, kind })}
     onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
-    <View style={[styles.avatar, { backgroundColor: avatarTint(person.id) }]}>
-      <Text style={styles.initials}>{initials(person.name)}</Text>
-    </View>
+    <Avatar name={person.name} id={person.id} uri={person.avatarUri} size={56} />
     <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
       <Text numberOfLines={1} style={styles.name}>{name}</Text>
       <Text numberOfLines={1} style={ui.small}>{amount ? `${kind} · ${amount}` : kind}</Text>

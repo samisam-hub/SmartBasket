@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { Text, View } from 'react-native';
 import { HouseholdList } from '@/components/HouseholdList';
+import { AvatarPicker } from '@/components/Avatar';
 import { IntroArt } from '@/components/IntroArt';
 import { NumberInput } from '@/components/NumberInput';
-import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SectionCard, SelectionChip, TextButton } from '@/components/ui';
+import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SectionCard, SelectionChip, TextButton, TextInput } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
 import { ui, spacing } from '@/lib/theme';
 import { t } from '@/services/i18n';
@@ -31,6 +32,14 @@ export default function HouseholdSetupScreen() {
   };
   return <Screen bottom>
     <ScreenHeader eyebrow={t('setup.eyebrow')} title={t('setup.title')} subtitle={t('setup.subtitle')} />
+    <SectionCard compact title={t('household.identity')}>
+      <AvatarPicker name={draft.householdName ?? ''} id="household" uri={draft.householdAvatarUri}
+        onChange={householdAvatarUri => store.update({ householdAvatarUri })} />
+      <TextInput label={t('household.name')} value={draft.householdName ?? ''} maxLength={80}
+        placeholder={t('household.namePlaceholder')}
+        onChangeText={householdName => store.update({ householdName })} />
+      <Text style={ui.small}>{t('household.identityHint')}</Text>
+    </SectionCard>
     <HouseholdList people={people}
       onOpen={id => router.push({ pathname: '/household-setup/person', params: { id } })}
       onAdd={() => router.push('/household-setup/person')} />

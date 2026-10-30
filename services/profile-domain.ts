@@ -71,7 +71,8 @@ export function isParticipant(p:PlanParticipant):boolean {
  range(p.age,1,120,true)&&(p.sex===null||sexes.includes(p.sex))&&p.dailyCalories!==null&&range(p.dailyCalories,1000,5000,true)&&
  p.proteinTarget!==null&&range(p.proteinTarget,1,500,true)&&Array.isArray(p.dietaryPreferences)&&p.dietaryPreferences.length>0&&p.dietaryPreferences.every(x=>diets.includes(x))&&
  Array.isArray(p.allergens)&&p.allergens.every(x=>allergens.includes(x))&&Array.isArray(p.intolerances)&&p.intolerances.every(x=>['lactose','gluten'].includes(x))&&typeof p.isCurrentUser==='boolean'&&
- (p.kind===undefined||participantKinds.includes(p.kind))&&(p.activityLevel===undefined||p.activityLevel===null||activities.includes(p.activityLevel));
+ (p.kind===undefined||participantKinds.includes(p.kind))&&(p.activityLevel===undefined||p.activityLevel===null||activities.includes(p.activityLevel))&&
+ (p.avatarUri===undefined||p.avatarUri===null||(typeof p.avatarUri==='string'&&p.avatarUri.length>0&&p.avatarUri.length<=200000));
 }
 /** One shared menu must meet everybody's restrictions; each person's defaults remain distinct. */
 export function participantPreferences(base:UserPreferences,participants:PlanParticipant[]):UserPreferences {

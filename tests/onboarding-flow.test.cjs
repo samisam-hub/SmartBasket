@@ -37,7 +37,10 @@ test("the introduction says what was asked of it, in three pages, in both langua
       // What it is, what it watches, how the week runs — and the allergy promise qualified.
       for (const promise of promises[locale]) assert.match(all, promise, `${locale}: ${promise}`);
       for (const page of pages) {
-        assert.ok(page.title.length > 0 && page.body.length > 0);
+        assert.ok(page.title.length > 0, "every page is titled");
+        // A page either says its piece in a line or lists it; an empty page says nothing.
+        assert.ok(page.body?.length || page.points?.items.length, `${page.title} carries no content`);
+        for (const item of page.points?.items ?? []) assert.ok(item.trim().length, "no empty list line");
         assert.ok(page.kind, "every page carries its illustration");
       }
     } finally { resetLocale(); }

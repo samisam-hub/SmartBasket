@@ -23,4 +23,6 @@ export interface PlanParticipant {
  /** Absent on participants saved before the calendar onboarding; those count as adults with unknown activity. */
  kind?:ParticipantKind;
  activityLevel?:typeof activities[number]|null;
+ /** A small picture, kept with the household rather than as a path into the device's gallery. */
+ avatarUri?:string|null;
 }

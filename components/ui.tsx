@@ -1,6 +1,7 @@
 import { t } from '../services/i18n';
 import Feather from "@expo/vector-icons/Feather";
 import {StateIllustration,type IllustrationKind} from './BrandAssets';
+import { useState } from "react";
 import type { ComponentProps, PropsWithChildren, ReactNode } from "react";
 import {
   ActivityIndicator,
@@ -532,6 +533,14 @@ export function EmptyState({
   );
 }
 const styles = StyleSheet.create({
+  dropdown: { flexDirection: "row", alignItems: "center", gap: spacing.sm,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radii.medium,
+    backgroundColor: colors.surface, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, minHeight: 48 },
+  dropdownOpen: { borderColor: colors.primary },
+  dropdownList: { borderWidth: 1, borderColor: colors.border, borderRadius: radii.medium,
+    backgroundColor: colors.surface, overflow: "hidden" },
+  dropdownItem: { flexDirection: "row", alignItems: "center", gap: spacing.sm,
+    paddingHorizontal: spacing.lg, paddingVertical: spacing.md, minHeight: 44 },
   button: {
     minHeight: 56,
     padding: spacing.lg,
@@ -692,3 +701,68 @@ const styles = StyleSheet.create({
     backgroundColor: colors.pale,
   },
 });
+
+/** A choice that takes one line until it is opened, instead of a field of chips.
+ *
+ *  Built in the app rather than from a native picker: one control that behaves the same on a
+ *  phone and in a browser, reads its state out loud, and can hold several answers where the
+ *  question allows it. */
+export function Dropdown({ label, options, value, onChange, multiple = false, placeholder, disabled }: {
+  label: string;
+  options: { value: string; label: string }[];
+  /** One value, or the chosen values where `multiple` is set. Null means nothing chosen yet. */
+  value: string | string[] | null;
+  onChange: (value: string | null, values: string[]) => void;
+  multiple?: boolean;
+  placeholder?: string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const chosen = multiple ? (Array.isArray(value) ? value : []) : value === null ? [] : [value as string];
+  const shown = chosen.map(one => options.find(option => option.value === one)?.label ?? one);
+  const summary = shown.length ? shown.join(', ') : placeholder ?? t('dropdown.choose');
+  const pick = (option: string) => {
+    if (!multiple) { onChange(chosen[0] === option ? null : option, chosen[0] === option ? [] : [option]); setOpen(false); return; }
+    const next = chosen.includes(option) ? chosen.filter(one => one !== option) : [...chosen, option];
+    onChange(next[0] ?? null, next);
+  };
+  return (
+    <View style={{ gap: 6 }}>
+      <Text style={ui.caption}>{label}</Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open, disabled }}
+        accessibilityLabel={t(open ? 'dropdown.close' : 'dropdown.open', { label })}
+        disabled={disabled}
+        onPress={() => setOpen(!open)}
+        style={({ pressed }) => [styles.dropdown, open && styles.dropdownOpen, pressed && { opacity: 0.8 }]}
+      >
+        <Text numberOfLines={2} style={[ui.body, { flex: 1, minWidth: 0, color: shown.length ? colors.ink : colors.muted }]}>
+          {summary}
+        </Text>
+        <Feather name={open ? 'chevron-up' : 'chevron-down'} size={20} color={colors.muted} />
+      </Pressable>
+      {open && (
+        <View style={styles.dropdownList}>
+          {options.map(option => {
+            const selected = chosen.includes(option.value);
+            return (
+              <Pressable
+                key={option.value}
+                accessibilityRole={multiple ? 'checkbox' : 'radio'}
+                accessibilityState={{ checked: selected, selected }}
+                onPress={() => pick(option.value)}
+                style={({ pressed }) => [styles.dropdownItem, pressed && { backgroundColor: colors.pale }]}
+              >
+                <Text style={[ui.body, { flex: 1, minWidth: 0, color: selected ? colors.primary : colors.ink }]}>
+                  {option.label}
+                </Text>
+                {selected && <Feather name="check" size={18} color={colors.primary} />}
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
+    </View>
+  );
+}
