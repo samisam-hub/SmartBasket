@@ -1,4 +1,4 @@
-import { term } from '@/services/i18n';
+import { formatMoney, t, term } from '@/services/i18n';
 import { useEffect } from 'react';
 import { router } from 'expo-router';
 import { Text } from 'react-native';
@@ -31,25 +31,23 @@ export default function HouseholdScreen() {
   }, [saved?.onboardingCompleted, saving, settled, stored, store]);
 
   if (ready && !saved?.onboardingCompleted) return <Screen bottom>
-    <SectionCard title="Set up your preferences first">
-      <Text style={ui.body}>
-        The household is part of your preferences. Set them up once and this screen keeps them.
-      </Text>
-      <PrimaryButton label="Set my preferences" disabled={flow.disabled} onPress={() => flow.edit()} />
-      <SecondaryButton label="Back" onPress={() => router.back()} />
+    <SectionCard title={t('householdScreen.needsSetup')}>
+      <Text style={ui.body}>{t('householdScreen.needsSetupBody')}</Text>
+      <PrimaryButton label={t('householdScreen.setPreferences')} disabled={flow.disabled} onPress={() => flow.edit()} />
+      <SecondaryButton label={t('householdScreen.back')} onPress={() => router.back()} />
     </SectionCard>
   </Screen>;
   return <Screen bottom>
-    <HouseholdFields title="Household" onBack={() => router.back()} people={people}
+    <HouseholdFields title={t('householdScreen.title')} onBack={() => router.back()} people={people}
       goal={draft.primaryGoal} onChange={setPeople} />
     <ErrorMessage message={store.getSnapshot().localError} />
-    <Text style={ui.eyebrow}>NUTRITION GOALS</Text>
-    <DetailRow icon="target" title="What the plan aims for" value={term(draft.primaryGoal)}
+    <Text style={ui.eyebrow}>{t('householdScreen.goals')}</Text>
+    <DetailRow icon="target" title={t('householdScreen.aim')} value={term(draft.primaryGoal)}
       onPress={() => flow.edit('goals')} />
-    <DetailRow icon="bar-chart-2" title="Budget per week"
+    <DetailRow icon="bar-chart-2" title={t('householdScreen.budget')}
       value={draft.budgetEnabled && draft.weeklyBudgetEur !== null
-        ? `about €${draft.weeklyBudgetEur}`
-        : 'No budget limit'}
+        ? t('householdScreen.budgetAbout', { amount: formatMoney(draft.weeklyBudgetEur) })
+        : t('householdScreen.noBudget')}
       onPress={() => flow.edit('budget')} />
     <PersistenceStatus />
   </Screen>;
