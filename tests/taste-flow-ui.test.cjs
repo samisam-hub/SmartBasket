@@ -47,7 +47,7 @@ test('week → taste → automatic plan → editable day or basket, without sele
   await act(() => button(screen, 'SecondaryButton', 'Weiter: Was mögt ihr?').props.onPress());
   assert.equal(routes.pop(), '/plan/taste');
   await act(() => screen.update(React.createElement(Taste)));
-  await act(() => button(screen, 'SecondaryButton', 'Frühstück wischen').props.onPress());
+  // The run starts on the first pass by itself; there is no menu of slots to come back to.
   let card = screen.root.findByType('MealSwipeCards');
   const first = card.props.suggestions[0].meal.id;
   assert.equal(card.props.mode, 'taste');
@@ -77,7 +77,6 @@ test('week → taste → automatic plan → editable day or basket, without sele
 test('a failed local save keeps the user on taste with an error instead of claiming a saved plan', async () => {
   await setup(); failWrites = true;
   let screen; await act(() => { screen = create(React.createElement(Taste)); });
-  await act(() => button(screen, 'SecondaryButton', 'Frühstück wischen').props.onPress());
   await act(() => screen.root.findByType('MealSwipeCards').props.onTake());
   await act(async () => { button(screen, 'PrimaryButton', 'Wochenplan erstellen').props.onPress(); await new Promise(resolve => setImmediate(resolve)); });
   assert.deepEqual(routes, []);

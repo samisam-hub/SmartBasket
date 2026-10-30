@@ -92,3 +92,35 @@ test('old caches without ratings still load; corrupt ratings cannot overwrite st
   assert.throws(() => bad.generate(prefs(), []));
   assert.equal(device.data.get('bad'), corrupt);
 });
+
+test('one run shows every dish once, in meal order, and skips what is already rated', () => {
+  const { tastePasses } = require('../services/meals/taste.ts');
+  const p = prefs({ householdSize: 2 });
+  const slots = ['breakfast', 'lunch', 'dinner', 'snack'];
+  const passes = tastePasses(p, slots);
+  assert.deepEqual(passes.map(pass => pass.key), ['breakfast', 'main', 'snack'], 'breakfast, then the main meals, then snacks');
+  // Three quarters of the recipes fit both lunch and dinner; asking twice showed the same dish again.
+  const shown = passes.flatMap(pass => pass.meals.map(meal => meal.id));
+  assert.equal(new Set(shown).size, shown.length, 'no dish is asked about twice');
+  const lunchAndDinner = passes.find(pass => pass.key === 'main');
+  assert.deepEqual(lunchAndDinner.slots, ['lunch', 'dinner']);
+  // A household that only plans breakfast is not asked about dinner.
+  assert.deepEqual(tastePasses(p, ['breakfast']).map(pass => pass.key), ['breakfast']);
+  // What was answered before is not asked again, and nothing else is dropped.
+  const [first, second] = shown;
+  const resumed = tastePasses(p, slots, { [first]: true, [second]: false }).flatMap(pass => pass.meals.map(meal => meal.id));
+  assert.deepEqual(resumed, shown.filter(id => id !== first && id !== second));
+});
+
+test('the dishes offered already respect the household: no lactose where it is avoided', () => {
+  const { tastePasses } = require('../services/meals/taste.ts');
+  const { compatibleMeal } = require('../services/meals/planner.ts');
+  const slots = ['breakfast', 'lunch', 'dinner', 'snack'];
+  const lactoseFree = prefs({ dietaryPreferences: ['lactose_free'] });
+  const offered = tastePasses(lactoseFree, slots).flatMap(pass => pass.meals);
+  assert.ok(offered.length, 'a lactose-free household still has dishes to rate');
+  for (const meal of offered) assert.ok(compatibleMeal(meal, lactoseFree), `${meal.name} fits the household`);
+  // And fewer than a household with no restriction at all.
+  const all = tastePasses(prefs({}), slots).flatMap(pass => pass.meals);
+  assert.ok(offered.length < all.length, 'a restriction takes dishes out before the first card');
+});

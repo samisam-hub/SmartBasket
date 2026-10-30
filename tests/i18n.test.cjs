@@ -144,7 +144,8 @@ test("every key a screen asks for exists, and every key in the dictionary is ask
     const source = fs.readFileSync(file, 'utf8');
     for (const match of source.matchAll(/['"]([a-z][\w-]*(?:\.[\w-]+)+)['"]/g)) mentioned.add(match[1]);
   }
-  const dynamic = /^(term|category|group|kind|mode|ready|units|filter|auth|intro\.\d|language)\./;
+  // These families are reached through a value rather than written out: `t(`term.${diet}`)`.
+  const dynamic = /^(term|category|group|kind|mode|ready|units|filter|auth|intro\.\d|language|taste\.pass)\./;
   const unused = Object.keys(de).filter(key => !mentioned.has(key) && !dynamic.test(key));
   assert.deepEqual(unused, [], 'these keys are no longer used by any screen');
 });
