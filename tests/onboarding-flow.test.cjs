@@ -22,17 +22,24 @@ test("liked meals travel with the draft, and a broken list is refused", () => {
   assert.equal(isDraft({ ...defaultDraft, preferredMealIds: [7] }), false);
 });
 
-test("the introduction says what was asked of it, in three pages", () => {
-  assert.equal(introPages.length, 3);
-  const all = JSON.stringify(introPages).toLowerCase();
-  // What it is, what it watches, how the week runs.
-  assert.match(all, /shopping list/);
-  for (const promise of ["fitness goal", "budget", "allerg"])
-    assert.ok(all.includes(promise), `the introduction mentions ${promise}`);
-  // The allergy promise is qualified rather than absolute.
-  assert.match(all, /check the label/);
-  for (const page of introPages) {
-    assert.ok(page.title.length > 0 && page.body.length > 0);
-    assert.ok(page.kind, "every page carries its illustration");
+test("the introduction says what was asked of it, in three pages, in both languages", async () => {
+  const { setLocale, resetLocale } = require("../services/i18n/index.ts");
+  const promises = {
+    de: [/einkaufsliste/, /fitnessziel/, /budget/, /allerg/, /etikett/],
+    en: [/shopping list/, /fitness goal/, /budget/, /allerg/, /check the label/],
+  };
+  for (const locale of ["de", "en"]) {
+    await setLocale(locale);
+    try {
+      const pages = introPages();
+      assert.equal(pages.length, 3);
+      const all = JSON.stringify(pages).toLowerCase();
+      // What it is, what it watches, how the week runs — and the allergy promise qualified.
+      for (const promise of promises[locale]) assert.match(all, promise, `${locale}: ${promise}`);
+      for (const page of pages) {
+        assert.ok(page.title.length > 0 && page.body.length > 0);
+        assert.ok(page.kind, "every page carries its illustration");
+      }
+    } finally { resetLocale(); }
   }
 });

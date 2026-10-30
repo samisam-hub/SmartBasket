@@ -3,8 +3,11 @@ import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, spacing, typography } from "@/lib/theme";
 import { useMerchantDemo } from "@/services/merchant-demo";
+import { t } from "@/services/i18n";
+import { useLocale } from "@/hooks/useLocale";
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  useLocale();
   // The fictional product catalog is a merchant demo, not something a real user should stumble on.
   const { demo } = useMerchantDemo();
   return (
@@ -29,7 +32,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Plan",
+          title: t('tab.plan'),
           tabBarIcon: ({ color, size }) => (
             <Feather name="calendar" color={color} size={size} />
           ),
@@ -38,7 +41,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="basket"
         options={{
-          title: "Einkaufsliste",
+          title: t('tab.list'),
           tabBarIcon: ({ color, size }) => (
             <Feather name="shopping-cart" color={color} size={size} />
           ),
@@ -48,7 +51,7 @@ export default function TabLayout() {
         name="products"
         options={{
           href: demo ? undefined : null,
-          title: "Produkte",
+          title: t('tab.products'),
           tabBarIcon: ({ color, size }) => (
             <Feather name="grid" color={color} size={size} />
           ),
@@ -57,7 +60,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profil",
+          title: t('tab.profile'),
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" color={color} size={size} />
           ),

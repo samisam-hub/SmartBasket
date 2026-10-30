@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { usePreferences } from '@/context/PreferencesContext';
 import { quickStart } from '@/services/quick-start';
 import { ui } from '@/lib/theme';
+import { t } from '@/services/i18n';
 
 /** The link a tester opens in a shop: smartbasket://try, or /try on the web build.
  *
@@ -27,20 +28,18 @@ export default function TryScreen() {
     });
   }, [ready, saving, store]);
   if (failed) return <Screen bottom>
-    <SectionCard title="That did not work">
-      <Text style={ui.body}>
-        The sample household could not be saved on this device. Nothing was changed.
-      </Text>
+    <SectionCard title={t('try.failedTitle')}>
+      <Text style={ui.body}>{t('try.failedBody')}</Text>
       <ErrorMessage message={authError} />
-      <PrimaryButton label="Try again" onPress={() => { setFailed(false); started.current = false; }} />
-      <SecondaryButton label="Set up my own preferences" onPress={() => router.replace('/')} />
+      <PrimaryButton label={t('try.again')} onPress={() => { setFailed(false); started.current = false; }} />
+      <SecondaryButton label={t('try.own')} onPress={() => router.replace('/')} />
     </SectionCard>
   </Screen>;
   return <Screen>
     <View style={{ gap: 12, alignItems: 'center', paddingVertical: 48 }}>
       <ActivityIndicator />
-      <Text style={ui.body}>Setting up a sample household…</Text>
-      <Text style={ui.small}>No account needed. You can change everything afterwards.</Text>
+      <Text style={ui.body}>{t('try.loading')}</Text>
+      <Text style={ui.small}>{t('try.loadingNote')}</Text>
     </View>
   </Screen>;
 }

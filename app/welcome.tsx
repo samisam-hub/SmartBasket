@@ -6,6 +6,7 @@ import { IntroArt } from '@/components/IntroArt';
 import { ErrorMessage, PrimaryButton, Screen, SecondaryButton, TextButton } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { spacing, ui } from '@/lib/theme';
+import { t } from '@/services/i18n';
 
 /** The first screen of the app: say what this is, then let somebody in three ways.
  *
@@ -23,7 +24,7 @@ export default function WelcomeScreen() {
       router.replace('/intro');
     } catch {
       // Without a connection there is still a usable app; only the cloud part is missing.
-      setError('No connection to the account service. You can carry on — your plan stays on this device.');
+      setError(t('welcome.offline'));
       router.replace('/intro');
     } finally { setBusy(false); }
   };
@@ -31,23 +32,16 @@ export default function WelcomeScreen() {
     <View style={{ gap: spacing.lg, paddingTop: spacing.xl }}>
       <BrandLogo />
       <IntroArt kind="list" />
-      <Text accessibilityRole="header" style={[ui.title, { textAlign: 'center' }]}>
-        Plan the week, shop it once
-      </Text>
-      <Text style={[ui.body, { textAlign: 'center' }]}>
-        SmartBasket turns the meals your household plans into one shopping list, with the amounts
-        already added up.
-      </Text>
+      <Text accessibilityRole="header" style={[ui.title, { textAlign: 'center' }]}>{t('welcome.title')}</Text>
+      <Text style={[ui.body, { textAlign: 'center' }]}>{t('welcome.body')}</Text>
     </View>
     <ErrorMessage message={error} />
-    <PrimaryButton label="Continue as guest" loading={busy} disabled={!ready}
+    <PrimaryButton label={t('welcome.guest')} loading={busy} disabled={!ready}
       onPress={() => { void asGuest(); }} />
-    <Text style={[ui.small, { textAlign: 'center' }]}>
-      No email, no password. You can create an account later and keep everything you planned.
-    </Text>
-    <SecondaryButton label="Create an account" disabled={busy}
+    <Text style={[ui.small, { textAlign: 'center' }]}>{t('welcome.guestNote')}</Text>
+    <SecondaryButton label={t('welcome.create')} disabled={busy}
       onPress={() => router.push({ pathname: '/account', params: { mode: 'create' } })} />
-    <TextButton label="I already have an account" disabled={busy}
+    <TextButton label={t('welcome.haveAccount')} disabled={busy}
       onPress={() => router.push({ pathname: '/account', params: { mode: 'signin' } })} />
   </Screen>;
 }

@@ -18,6 +18,9 @@ Module._load=function(request,parent,isMain){
  if(request==='@/context/ProfileContext')return {ProfileProvider:pass};
  if(request==='@/context/WeekPlanContext')return {WeekPlanProvider:pass};
  if(request==='@/lib/theme')return {colors:{}};
+ if(request==='@react-native-async-storage/async-storage')return {__esModule:true,default:{getItem:async()=>null,setItem:async()=>{}}};
+ if(request==='@/services/i18n')return {initLocale:async()=>'de',t:key=>key};
+ if(request==='@/hooks/useLocale')return {useLocale:()=>'de'};
  return original.call(this,request,parent,isMain);
 };
 require.extensions['.tsx']=(module,file)=>module._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,file);

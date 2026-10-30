@@ -1,7 +1,9 @@
-import { formatNumber , term } from "@/services/i18n";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { formatNumber, locales, setLocale, t, term } from "@/services/i18n";
+import { useLocale } from "@/hooks/useLocale";
 import { BrandLogo } from '@/components/BrandAssets';
 import { router } from "expo-router";
-import { Alert, Text } from "react-native";
+import { Alert, Text, View } from "react-native";
 import {
   DetailRow,
   InfoCard,
@@ -11,6 +13,7 @@ import {
   SecondaryButton,
   ScreenHeader,
   SectionCard,
+  SelectionChip,
   TextButton,
 } from "@/components/ui";
 import { PersistenceStatus } from "@/components/PersistenceStatus";
@@ -27,17 +30,19 @@ export default function ProfileScreen() {
   const flow = useBasketFlow();
   const auth=useAuth(),personal=useProfile(),p=personal.saved;
   const demo=useMerchantDemo();
+  const locale=useLocale();
+  const [languageError,setLanguageError]=useState<string|null>(null);
   const [accountError,setAccountError]=useState<string|null>(null),[signingOut,setSigningOut]=useState(false),[deleting,setDeleting]=useState(false);
   const deleteAccount=()=>Alert.alert(
-    "Konto endgültig löschen?",
-    "Dein angemeldetes Konto und alle Cloud-Daten einschließlich Warenkörben, Speiseplänen und Einstellungen werden gelöscht. Dies kann nicht rückgängig gemacht werden.",
+    t('profile.deleteTitle'),
+    t('profile.deleteBody'),
     [
-      {text:"Abbrechen",style:'cancel'},
-      {text:"Endgültig löschen",style:'destructive',onPress:()=>{
+      {text:t('profile.cancel'),style:'cancel'},
+      {text:t('profile.deleteConfirm'),style:'destructive',onPress:()=>{
         setAccountError(null);setDeleting(true);
         void auth.service?.deleteAccount()
           .then(()=>router.dismissTo('/account'))
-          .catch(e=>setAccountError(e instanceof Error?e.message:"Das Konto konnte nicht gelöscht werden. Bitte versuche es erneut."))
+          .catch(e=>setAccountError(e instanceof Error?e.message:t('profile.deleteFailed')))
           .finally(()=>setDeleting(false));
       }},
     ],
@@ -46,125 +51,99 @@ export default function ProfileScreen() {
   return (
     <Screen><BrandLogo compact />
       <ScreenHeader
-        eyebrow="FÜR DICH"
-        title="Profil"
-        subtitle="Alle deine Einstellungen an einem Ort."
+        eyebrow={t('profile.eyebrow')}
+        title={t('profile.title')}
+        subtitle={t('profile.subtitle')}
       />
-      <SectionCard title={auth.session?.user.is_anonymous||!auth.session?"Gast":p?.displayName||"Dein Konto"}>
-        <Text style={ui.body}>{auth.session?.user.email??"SmartBasket-Gastsitzung"}</Text>
-        {auth.session?.user.is_anonymous||!auth.session?<><Text style={ui.small}>Erstelle ein Konto, um deine SmartBasket-Daten geräteübergreifend zu behalten.</Text><PrimaryButton label="Konto erstellen" onPress={()=>router.push('/account')} /><TextButton label="Anmelden" onPress={()=>router.push({pathname:'/account',params:{mode:'signin'}})} /></>:<Text style={ui.small}>Angemeldet · Sitzung auf diesem Gerät gespeichert</Text>}
+      <SectionCard title={t('profile.language')}>
+        <Text style={ui.small}>{t('profile.languageHint')}</Text>
+        <View style={ui.wrap}>
+          {locales.map(choice => <SelectionChip key={choice} label={t(`language.${choice}`)}
+            selected={locale === choice}
+            onPress={() => { setLanguageError(null);
+              void setLocale(choice, AsyncStorage).catch(() => setLanguageError(t('profile.languageFailed'))); }} />)}
+        </View>
+        {languageError && <Text style={ui.small}>{languageError}</Text>}
+      </SectionCard>
+      <SectionCard title={auth.session?.user.is_anonymous||!auth.session?t('profile.guest'):p?.displayName||t('profile.yourAccount')}>
+        <Text style={ui.body}>{auth.session?.user.email??t('profile.guestSession')}</Text>
+        {auth.session?.user.is_anonymous||!auth.session?<><Text style={ui.small}>{t('profile.createAccountHint')}</Text><PrimaryButton label={t('profile.createAccount')} onPress={()=>router.push('/account')} /><TextButton label={t('profile.signIn')} onPress={()=>router.push({pathname:'/account',params:{mode:'signin'}})} /></>:<Text style={ui.small}>{t('profile.signedIn')}</Text>}
         {auth.error&&<Text style={ui.small}>{auth.error}</Text>}
       </SectionCard>
-      <SectionCard title="Persönliche Angaben"><Text style={ui.body}>{p?`${p.displayName||"Name nicht angegeben"} · ${p.sex ? term(p.sex) : "Geschlecht nicht angegeben"} · ${p.age??"Alter nicht angegeben"}`:"Lege persönliche Vorgaben fest – auch als Gast."}</Text><TextButton label={personal.pending?"Persönliches Profil fortsetzen":"Persönliche Angaben bearbeiten"} onPress={()=>editPersonal(0)} /></SectionCard>
-      <SectionCard title="Ernährungsziele"><Text style={ui.body}>{p?`${term(p.primaryNutritionGoal)} · ${p.defaultDailyCalories??"Planziel"} kcal · ${term(p.proteinMode)} Eiweiß`:"Noch keine persönlichen Vorgaben."}</Text><TextButton label="Persönliche Ernährungsziele bearbeiten" onPress={()=>editPersonal(1)} /></SectionCard>
-      <SectionCard title="Ernährungseinstellungen"><Text style={ui.body}>{p?.dietaryPreferences.map(d=>term(d)).join(', ')??"Nicht festgelegt"}</Text><TextButton label="Persönliche Ernährungsweise bearbeiten" onPress={()=>editPersonal(2)} /></SectionCard>
-      <SectionCard title="Persönliche Allergien und Unverträglichkeiten"><Text style={ui.body}>{p?[...p.allergens,...p.intolerances].map(term).join(', ')||"Keine ausgewählt":"Nicht festgelegt"}</Text><TextButton label="Persönliche Allergien und Unverträglichkeiten bearbeiten" onPress={()=>editPersonal(3)} /></SectionCard>
+      <SectionCard title={t('profile.personal')}><Text style={ui.body}>{p?`${p.displayName||t('profile.noName')} · ${p.sex ? term(p.sex) : t('profile.noSex')} · ${p.age??t('profile.noAge')}`:t('profile.personalEmpty')}</Text><TextButton label={t(personal.pending?'profile.personalResume':'profile.personalEdit')} onPress={()=>editPersonal(0)} /></SectionCard>
+      <SectionCard title={t('profile.goals')}><Text style={ui.body}>{p?`${term(p.primaryNutritionGoal)} · ${p.defaultDailyCalories??t('profile.planTarget')} kcal · ${term(p.proteinMode)} ${t('profile.protein')}`:t('profile.noGoals')}</Text><TextButton label={t('profile.goalsEdit')} onPress={()=>editPersonal(1)} /></SectionCard>
+      <SectionCard title={t('profile.diet')}><Text style={ui.body}>{p?.dietaryPreferences.map(d=>term(d)).join(', ')??t('profile.notSet')}</Text><TextButton label={t('profile.dietEdit')} onPress={()=>editPersonal(2)} /></SectionCard>
+      <SectionCard title={t('profile.allergiesPersonal')}><Text style={ui.body}>{p?[...p.allergens,...p.intolerances].map(term).join(', ')||t('profile.noneSelected'):t('profile.notSet')}</Text><TextButton label={t('profile.allergiesPersonalEdit')} onPress={()=>editPersonal(3)} /></SectionCard>
       {personal.error&&<Text style={ui.small}>{personal.error}</Text>}
       <DetailRow
         icon="users"
-        title="Haushalt"
+        title={t('profile.household')}
         value={
           saved
-            ? `${saved.householdSize} ${saved.householdSize === 1 ? "Person" : "Personen"} · ${formatNumber(saved.dailyCalories)} kcal pro Tag im Schnitt`
-            : "Noch nicht eingerichtet"
+            ? t('profile.householdValue', { count: saved.householdSize, calories: formatNumber(saved.dailyCalories) })
+            : t('profile.householdEmpty')
         }
         onPress={() => router.push("/household")}
       />
-      <SectionCard title="Vorgaben für neue Pläne">
+      <SectionCard title={t('profile.defaults')}>
         {saved ? (
           <PreferenceSummary preferences={saved} />
         ) : (
-          <Text style={ui.body}>
-
-            Sag uns zum Start, was dir wichtig ist.
-          </Text>
+          <Text style={ui.body}>{t('profile.defaultsEmpty')}</Text>
         )}
         <PrimaryButton
-          label={
-            editing
-              ? "Bearbeitung der Einstellungen fortsetzen"
-              : saved
-                ? "Einstellungen bearbeiten"
-                : "Meine Einstellungen festlegen"
-          }
+          label={t(editing ? 'profile.settingsResume' : saved ? 'profile.settingsEdit' : 'profile.settingsStart')}
           disabled={flow.disabled}
           onPress={() => flow.edit()}
         />
       </SectionCard>
       <PersistenceStatus />
-      <SectionCard title="Allergien und Unverträglichkeiten">
+      <SectionCard title={t('profile.allergies')}>
         <PreferenceRow
-          label="Deine Auswahl"
+          label={t('profile.yourChoice')}
           value={
             saved
-              ? saved.allergens.map((a) => term(a)).join(", ") ||
-                "Keine ausgewählt"
-              : "Nicht festgelegt"
+              ? saved.allergens.map((a) => term(a)).join(", ") || t('profile.noneSelected')
+              : t('profile.notSet')
           }
         />
         <TextButton
-          label="Allergien bearbeiten"
+          label={t('profile.allergiesEdit')}
           disabled={flow.disabled}
           onPress={() => flow.edit("allergies")}
         />
-        <Text style={ui.small}>
-
-          Prüfe immer die Verpackungsangaben. Gespeicherte Einstellungen garantieren keine Eignung bei Allergien.
-        </Text>
+        <Text style={ui.small}>{t('profile.allergiesNote')}</Text>
       </SectionCard>
-      <SectionCard title="Händler-Demo">
-        <Text style={ui.body}>
-          {demo.demo
-            ? 'Der Produkte-Tab ist sichtbar. Seine Marken und Preise sind erfundene Demo-Daten.'
-            : 'Aus. Der Produktkatalog besteht aus erfundenen Demo-Daten, um Händlern das Matching zu zeigen.'}
-        </Text>
-        <SecondaryButton label={demo.demo ? 'Produktkatalog ausblenden' : 'Produktkatalog anzeigen'}
+      <SectionCard title={t('profile.demo')}>
+        <Text style={ui.body}>{t(demo.demo ? 'profile.demoOn' : 'profile.demoOff')}</Text>
+        <SecondaryButton label={t(demo.demo ? 'profile.demoHide' : 'profile.demoShow')}
           onPress={() => demo.set(!demo.demo)} />
-        <Text style={ui.small}>
-          Für echte Testnutzer ausgeschaltet lassen: erfundene Preise wirken wie echte.
-        </Text>
+        <Text style={ui.small}>{t('profile.demoNote')}</Text>
       </SectionCard>
-      <SectionCard title="Gespeicherte Warenkörbe">
-        <Text style={ui.body}>
-
-          Öffne deine gespeicherten Warenkörbe mit den zugehörigen Speiseplänen.
-        </Text>
+      <SectionCard title={t('profile.savedBaskets')}>
+        <Text style={ui.body}>{t('profile.savedBasketsHint')}</Text>
         <TextButton
-          label="Warenkorb öffnen"
+          label={t('profile.openBasket')}
           onPress={() => router.navigate("/basket")}
         />
       </SectionCard>
-      <SectionCard title="Gespeicherte Speisepläne"><TextButton label="Gespeicherte Speisepläne ansehen" onPress={()=>router.push('/saved-meal-plans')} /></SectionCard>
-      <SectionCard title="Konto">
+      <SectionCard title={t('route.savedPlans')}><TextButton label={t('profile.savedPlansView')} onPress={()=>router.push('/saved-meal-plans')} /></SectionCard>
+      <SectionCard title={t('route.account')}>
         {accountError&&<Text style={ui.small}>{accountError}</Text>}
-        <TextButton label="Passwort zurücksetzen" onPress={()=>router.push({pathname:'/account',params:{mode:'forgot'}})} />
-        {auth.session&&!auth.session.user.is_anonymous&&<PrimaryButton label="Abmelden" loading={signingOut} onPress={()=>{setSigningOut(true);void auth.service?.signOut().then(()=>router.dismissTo('/profile')).catch(e=>setAccountError(e.message)).finally(()=>setSigningOut(false));}} />}
-        {auth.session&&!auth.session.user.is_anonymous&&<TextButton label="Konto löschen" disabled={deleting||signingOut} onPress={deleteAccount} />}
-        {deleting&&<Text style={ui.small}>Dein Konto wird gelöscht …</Text>}
+        <TextButton label={t('profile.resetPassword')} onPress={()=>router.push({pathname:'/account',params:{mode:'forgot'}})} />
+        {auth.session&&!auth.session.user.is_anonymous&&<PrimaryButton label={t('profile.signOut')} loading={signingOut} onPress={()=>{setSigningOut(true);void auth.service?.signOut().then(()=>router.dismissTo('/profile')).catch(e=>setAccountError(e.message)).finally(()=>setSigningOut(false));}} />}
+        {auth.session&&!auth.session.user.is_anonymous&&<TextButton label={t('profile.deleteAccount')} disabled={deleting||signingOut} onPress={deleteAccount} />}
+        {deleting&&<Text style={ui.small}>{t('profile.deleting')}</Text>}
       </SectionCard>
-      <InfoCard title="Benachrichtigungen">
-
-        Erinnerungen folgen später. SmartBasket versendet derzeit keine Benachrichtigungen.
-      </InfoCard>
-      <SectionCard title="Hilfe und Rückmeldung">
-        <Text style={ui.body}>
-
-          Brauchst du Hilfe beim Speichern oder Ändern deiner Einstellungen?
-        </Text>
+      <InfoCard title={t('profile.notifications')}>{t('profile.notificationsBody')}</InfoCard>
+      <SectionCard title={t('profile.help')}>
+        <Text style={ui.body}>{t('profile.helpBody')}</Text>
         <TextButton
-          label="Hilfe ansehen"
-          onPress={() =>
-            Alert.alert(
-              "SmartBasket-Hilfe",
-              "Unter Meine Einstellungen kannst du deine Angaben ändern. Nur lokal bedeutet, dass sie auf diesem Gerät gespeichert, aber nicht hochgeladen sind. Nutze nach dem Wiederverbinden Cloud-Synchronisierung wiederholen. Rückmeldungen können noch nicht direkt gesendet werden.",
-            )
-          }
+          label={t('profile.helpView')}
+          onPress={() => Alert.alert(t('profile.helpTitle'), t('profile.helpText'))}
         />
       </SectionCard>
-      <InfoCard title="Über SmartBasket">
-
-        Einkaufen passend zu deinen Zielen. Version 0.1.0 · Dein Assistent für Speiseplanung und Einkauf. Anonyme Cloud-Profile sind an diese Installation gebunden. Neuinstallation oder Löschen der App-Daten kann den Zugriff aufheben.
-      </InfoCard>
+      <InfoCard title={t('profile.about')}>{t('profile.aboutBody')}</InfoCard>
     </Screen>
   );
 }
