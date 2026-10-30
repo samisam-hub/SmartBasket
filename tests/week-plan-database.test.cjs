@@ -31,6 +31,7 @@ const migrations = [
   "20260924144255_ready_meal_metadata.sql",
   "20261006090000_calendar_week_plans.sql",
   "20261021120000_everyday_meal_allergens.sql",
+  "20261030140000_wine_sulfites.sql",
 ];
 const user = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 const monday = "2026-10-05";
@@ -245,13 +246,13 @@ test("the save RPC accepts both plan versions and still guards the fixed period"
   } finally { await db.close(); }
 });
 
-test('mustard and celery persist in preferences and profiles while unknown allergens stay rejected', async () => {
+test('mustard, celery and sulfites persist in preferences and profiles while unknown allergens stay rejected', async () => {
   const db = await database();
   try {
-    const result = await insertPreferences(db, { allergens: ['mustard', 'celery'] });
-    assert.deepEqual(fromRow(asJsonRow(result.rows[0])).allergens, ['mustard', 'celery']);
-    await db.query('insert into public.profiles(id, allergens) values($1,$2)', [user, ['mustard', 'celery']]);
-    assert.deepEqual((await db.query('select allergens from public.profiles')).rows[0].allergens, ['mustard', 'celery']);
+    const result = await insertPreferences(db, { allergens: ['mustard', 'celery', 'sulfites'] });
+    assert.deepEqual(fromRow(asJsonRow(result.rows[0])).allergens, ['mustard', 'celery', 'sulfites']);
+    await db.query('insert into public.profiles(id, allergens) values($1,$2)', [user, ['mustard', 'celery', 'sulfites']]);
+    assert.deepEqual((await db.query('select allergens from public.profiles')).rows[0].allergens, ['mustard', 'celery', 'sulfites']);
     await assert.rejects(insertPreferences(db, { allergens: ['unknown'] }), e => e.code === '23514');
     await assert.rejects(db.exec("update public.profiles set allergens = array['unknown']"), e => e.code === '23514');
   } finally { await db.close(); }

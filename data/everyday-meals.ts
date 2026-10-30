@@ -11,7 +11,8 @@ export const everydayIngredients = [...referenceIngredients.ingredients, ...inte
 
 export function buildEverydayMeals(definitions: Record<string, IngredientDefinition>): Meal[] {
   return [...catalog.meals, ...internationalCatalog.meals].map(entry => {
-    const date = internationalCatalog.meals.some(meal => meal.id === entry.id) ? '2026-10-30T00:00:00Z' : '2026-10-21T00:00:00Z';
+    const date = ('createdAt' in entry && typeof entry.createdAt === 'string' ? entry.createdAt : undefined) ??
+      (internationalCatalog.meals.some(meal => meal.id === entry.id) ? '2026-10-30T00:00:00Z' : '2026-10-21T00:00:00Z');
     const amounts = entry.amounts.map(line => {
       const ingredient = definitions[line.ingredientKey];
       if (!ingredient) throw new Error(`Unknown everyday ingredient: ${line.ingredientKey}`);

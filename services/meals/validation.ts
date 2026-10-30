@@ -33,7 +33,7 @@ function validItem(i: MealChoice, people?: Set<string>): boolean {
     Number.isFinite(i.servings) && i.servings > 0 && i.servings <= 15 &&
     !!i.meal && typeof i.meal.id === 'string' && typeof i.meal.name === 'string' && i.meal.servings === 1 &&
     validRecipeMetadata(i.meal) && validChoice(i) && Array.isArray(i.meal.dietaryTags) && Array.isArray(i.meal.allergens) && Array.isArray(i.meal.ingredients) &&
-    (!isCook(i) || i.meal.ingredients.length > 0) && i.meal.ingredients.length <= 12 &&
+    (!isCook(i) || i.meal.ingredients.length > 0) && i.meal.ingredients.length <= 20 &&
     i.meal.ingredients.every(l => l && ingredients[l.ingredientKey] &&
       typeof l.ingredientName === 'string' && l.unit === ingredients[l.ingredientKey].unit &&
       Number.isFinite(l.quantity) && l.quantity > 0 && l.quantity <= 2000 && typeof l.flexible === 'boolean' &&

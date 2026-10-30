@@ -2749,6 +2749,179 @@
         }
       ],
       "nutritionSource": "curated-development-estimate"
+    },
+    {
+      "id": "de-weihnachtsente-blaukraut-kartoffelknoedel",
+      "name": "Weihnachtsente mit Blaukraut und Kartoffelknödeln (Entenbrust)",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 55,
+      "totalMinutes": 110,
+      "method": "cook",
+      "ingredients": [
+        "Entenbrust mit Haut (roh, ohne Knochen)",
+        "Rotkohl / Blaukraut (frisch)",
+        "Apfel",
+        "Zwiebel",
+        "Butter",
+        "Branntweinessig",
+        "Zucker",
+        "Gewürznelken (ganz)",
+        "Lorbeerblätter (getrocknet)",
+        "Kartoffeln (mehligkochend, geschält)",
+        "Kartoffelstärke",
+        "Eier (essbarer Anteil)",
+        "Karotten",
+        "Tomatenmark",
+        "Gemüsebrühe Pulver"
+      ],
+      "preparationNote": "Für vier Portionen mit insgesamt 800 g roher Entenbrust mit Haut ohne Knochen; keine ganze Ente verwenden. Für das Blaukraut Rotkohl fein schneiden. 100 g Zwiebel und Apfel würfeln, in 20 g Butter anschwitzen, Kohl, Essig, Zucker, Nelken, 1 Lorbeerblatt und etwa 200 ml Wasser zugeben. Zugedeckt 60–75 Minuten weich schmoren, bei Bedarf Wasser ergänzen. Nelken und Lorbeer vor dem Servieren entfernen. Parallel die geschälten, mehligkochenden Kartoffeln 20–25 Minuten kochen, abgießen, gut ausdampfen lassen und durchpressen. Lauwarm mit Ei, Kartoffelstärke und Salz vermengen; 8 Knödel formen und in leicht siedendem Salzwasser 15–20 Minuten gar ziehen lassen, nicht sprudelnd kochen. Entenbrusthaut rautenförmig einschneiden, ohne ins Fleisch zu schneiden. Salzen, mit der Hautseite in eine kalte Pfanne legen und bei mittlerer Hitze 8–12 Minuten Fett auslassen. Wenden, 2 Minuten anbraten, dann im vorgeheizten Ofen bei 160 °C Ober-/Unterhitze etwa 20–30 Minuten fertig garen; im Kern mindestens 70 °C für 2 Minuten erreichen. 5 Minuten ruhen lassen. Für die Sauce überschüssiges Entenfett abgießen, übrige Zwiebel, Karotte und Tomatenmark im Bratensatz anrösten. Mit 300 ml Wasser und Brühepulver ablöschen, übriges Lorbeerblatt zugeben, etwa 15 Minuten einkochen, Lorbeer entfernen und Sauce passieren. Entenbrust aufschneiden, mit Blaukraut, je 2 Knödeln und Sauce servieren. Die Gesamtzeit berücksichtigt parallele Arbeitsschritte. Nährwerte sind Rohwaren-Schätzungen einschließlich Haut; abgegossenes Entenfett ist nicht abgezogen.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "duck_breast",
+          "quantity": 800
+        },
+        {
+          "ingredientKey": "red_cabbage",
+          "quantity": 800
+        },
+        {
+          "ingredientKey": "apple",
+          "quantity": 200
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 200
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 20
+        },
+        {
+          "ingredientKey": "vinegar",
+          "quantity": 30
+        },
+        {
+          "ingredientKey": "sugar",
+          "quantity": 20
+        },
+        {
+          "ingredientKey": "cloves",
+          "quantity": 0.5
+        },
+        {
+          "ingredientKey": "bay_leaf",
+          "quantity": 0.4
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 1000
+        },
+        {
+          "ingredientKey": "potato_starch",
+          "quantity": 100
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 50
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 100
+        },
+        {
+          "ingredientKey": "tomato_paste",
+          "quantity": 20
+        },
+        {
+          "ingredientKey": "broth",
+          "quantity": 6
+        }
+      ],
+      "nutritionSource": "curated-development-estimate",
+      "createdAt": "2026-10-30T00:00:00Z"
+    },
+    {
+      "id": "de-herbstliches-hirschgulasch",
+      "name": "Herbstliches Hirschgulasch mit Rotwein, Pilzen und Preiselbeeren",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 40,
+      "totalMinutes": 160,
+      "method": "cook",
+      "ingredients": [
+        "Hirschgulasch (roh, ohne Knochen)",
+        "Champignons",
+        "Zwiebel",
+        "Karotten",
+        "Tomatenmark",
+        "Sonnenblumenöl",
+        "Gemüsebrühe Pulver",
+        "Schlagsahne 30 %",
+        "Wildpreiselbeeren im Glas (gezuckert)",
+        "Wacholderbeeren (getrocknet)",
+        "Lorbeerblätter (getrocknet)",
+        "Rotwein (trocken)"
+      ],
+      "preparationNote": "Hirschfleisch trocken tupfen und in etwa 3 cm große Würfel schneiden. Zwiebeln und Karotten würfeln, Champignons vierteln. Fleisch portionsweise in heißem Sonnenblumenöl kräftig anbraten und herausnehmen. Zwiebeln und Karotten im Bräter anrösten, Tomatenmark kurz mitrösten. Mit 300 ml trockenem Rotwein ablöschen und etwa 5 Minuten einkochen. 400 ml Wasser und Brühepulver zugeben und Fleisch wieder in den Bräter geben. Wacholderbeeren leicht andrücken und mit Lorbeer in ein Gewürzsäckchen geben. Zugedeckt bei kleiner Hitze etwa 90–120 Minuten schmoren, bis das Fleisch zart ist; bei Bedarf Wasser ergänzen. Pilze in den letzten 20 Minuten zugeben. Gewürzsäckchen entfernen, Sahne und Preiselbeeren einrühren und die Sauce etwa 10 Minuten offen einkochen. Mit Salz und Pfeffer abschmecken. Mit Rotwein zubereitet; durch das Schmoren wird das Gericht nicht verlässlich alkoholfrei. Enthält Sulfite. Die Nährwertschätzung zählt den eingesetzten Wein vollständig mit; der verbleibende Alkoholanteil wird nicht geschätzt. Die Mengen und Nährwerte gelten für das Gulasch ohne Beilage; Schmorzeit hängt vom Fleischstück ab.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "venison_stew",
+          "quantity": 800
+        },
+        {
+          "ingredientKey": "mushrooms",
+          "quantity": 400
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 300
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 200
+        },
+        {
+          "ingredientKey": "tomato_paste",
+          "quantity": 40
+        },
+        {
+          "ingredientKey": "sunflower_oil",
+          "quantity": 20
+        },
+        {
+          "ingredientKey": "broth",
+          "quantity": 8
+        },
+        {
+          "ingredientKey": "cream",
+          "quantity": 80
+        },
+        {
+          "ingredientKey": "lingonberry_preserve",
+          "quantity": 60
+        },
+        {
+          "ingredientKey": "juniper",
+          "quantity": 2
+        },
+        {
+          "ingredientKey": "bay_leaf",
+          "quantity": 0.4
+        },
+        {
+          "ingredientKey": "red_wine",
+          "quantity": 300
+        }
+      ],
+      "nutritionSource": "curated-development-estimate",
+      "createdAt": "2026-10-30T00:00:00Z"
     }
   ],
   "nutritionNote": "Redaktionelle Referenzwerte pro 100 g bzw. 100 ml, keine Laborwerte oder markenspezifischen Produktangaben. Mengen sind essbare Rohgewichte, Trockengewichte bzw. ausdrücklich abgetropfte Gewichte. Nährwerte werden aus den Zutaten berechnet; die App skaliert Portionen nach Kalorienbedarf. Zeiten gelten weiterhin für vier Basisportionen."
