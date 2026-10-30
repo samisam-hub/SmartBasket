@@ -1,4 +1,5 @@
-import {StateIllustration,failureIllustration} from '@/components/BrandAssets';
+import { dietaryFieldLabel } from "@/services/i18n";
+import { StateIllustration, failureIllustration } from '@/components/BrandAssets';
 import { useState } from "react";
 import { Redirect, router } from "expo-router";
 import { ActivityIndicator, FlatList, ScrollView, Text, View } from "react-native";
@@ -11,7 +12,7 @@ import { EmptyState, ErrorMessage, ScreenHeader, SearchInput, SelectionChip, Tex
 import { useProducts } from "@/hooks/useProducts";
 import { useMerchantDemo } from "@/services/merchant-demo";
 import { categories, emptyFilters } from "@/types/product";
-import { dietaryFields, dietaryNames, hasDiscoveryPreferences } from "@/services/catalog/discovery";
+import { dietaryFields, hasDiscoveryPreferences } from "@/services/catalog/discovery";
 import { colors, spacing, ui } from "@/lib/theme";
 export default function ProductsScreen() {
   // Taking the tab out of the bar does not close the route: a link, a back stack or the bar that
@@ -49,7 +50,7 @@ export default function ProductsScreen() {
         {showFilters && <>
           <View style={ui.wrap}>
             <SelectionChip label="Eiweißreich" selected={filters.highProtein} onPress={() => setFilters(f => ({ ...f, highProtein: !f.highProtein }))} />
-            {dietaryFields.map(field => <SelectionChip key={field} label={dietaryNames[field]} selected={filters[field]}
+            {dietaryFields.map(field => <SelectionChip key={field} label={dietaryFieldLabel(field)} selected={filters[field]}
               onPress={() => setFilters(f => ({ ...f, [field]: !f[field] }))} />)}
             <SelectionChip label="Passt zu deinen Einstellungen" selected={filters.matchesPreferences} disabled={!hasDiscoveryPreferences(catalog.saved)}
               onPress={() => setFilters(f => ({ ...f, matchesPreferences: !f.matchesPreferences }))} />

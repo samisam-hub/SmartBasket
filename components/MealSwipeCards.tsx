@@ -1,5 +1,5 @@
-import { germanSavedName } from '../lib/legacy-display';
-import { germanLabel } from '../lib/german';
+import { contentName } from '../services/i18n/content';
+import { term } from '../services/i18n';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, PanResponder, Text, View } from 'react-native';
 import type { Meal } from '../types/meal';
@@ -91,11 +91,11 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
       {upcoming && <View pointerEvents="none" accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants" style={[ui.card, styles.behind]}>
         <Text style={ui.eyebrow}>Als Nächstes</Text>
-        <Text style={ui.subheading}>{germanSavedName(upcoming.meal.name)}</Text>
+        <Text style={ui.subheading}>{contentName(upcoming.meal.name)}</Text>
         <MealImage meal={upcoming.meal} />
       </View>}
       <Animated.View testID="meal-card" accessible accessibilityRole="button"
-        accessibilityLabel={`${germanSavedName(current.meal.name)}. ${mode === 'taste'
+        accessibilityLabel={`${contentName(current.meal.name)}. ${mode === 'taste'
           ? 'Rechts: mögen. Links: nicht mögen.'
           : 'Wische nach rechts zum Auswählen, nach links für den nächsten Vorschlag.'}`}
         {...(busy ? {} : responder.panHandlers)}
@@ -115,7 +115,7 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
         </Animated.View>
         <Text style={ui.eyebrow}>{mode === 'taste' ? 'GESCHMACK'
           : suggestions.length > 1 ? `1 von ${suggestions.length}` : 'Vorerst letzter Vorschlag'}</Text>
-        <Text style={ui.subheading}>{germanSavedName(current.meal.name)}</Text>
+        <Text style={ui.subheading}>{contentName(current.meal.name)}</Text>
         <MealImage meal={current.meal} />
         <Text style={ui.small}>{mealLine(current.meal)}</Text>
       </Animated.View>
@@ -144,4 +144,4 @@ const styles = {
   stampNextText: { color: colors.muted, fontWeight: '800' as const, fontSize: 16, letterSpacing: 1 },
 };
 const mealLine = (meal: Meal) =>
-  `${meal.ingredients.length} Zutaten · ${meal.dietaryTags.length ? meal.dietaryTags.map(germanLabel).join(', ') : 'keine Ernährungsangaben'}`;
+  `${meal.ingredients.length} Zutaten · ${meal.dietaryTags.length ? meal.dietaryTags.map(term).join(', ') : 'keine Ernährungsangaben'}`;

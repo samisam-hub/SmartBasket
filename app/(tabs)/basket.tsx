@@ -1,3 +1,4 @@
+import { formatDate } from '@/services/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -96,7 +97,7 @@ export default function ShoppingListScreen() {
     <ErrorMessage message={failure} />
     {warning && <Text style={ui.small}>{warning}</Text>}
     {basket.result.purchasedAt && <Text style={ui.small}>
-      Gekauft am {new Date(basket.result.purchasedAt).toLocaleDateString('de-DE')}. Das ist ein Beleg, keine Einkaufsliste.
+      Gekauft am {formatDate(basket.result.purchasedAt)}. Das ist ein Beleg, keine Einkaufsliste.
     </Text>}
     {groups.map(group => <View key={group.key} style={{ gap: spacing.xs }}>
       <Text style={ui.eyebrow}>{group.label.toUpperCase()}</Text>

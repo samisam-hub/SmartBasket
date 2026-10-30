@@ -1,3 +1,4 @@
+import { formatDate } from '@/services/i18n';
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, Text, View } from 'react-native';
@@ -50,7 +51,7 @@ export default function SavedListsScreen() {
       const open = () => router.push({ pathname: '/basket-setup', params: { savedId: b.id } });
       return <SectionCard key={b.id}>
       <SavedBasketPreview basket={b} onOpen={open} />
-      {b.result.purchasedAt ? <Text style={ui.small}>Purchased · {new Date(b.result.purchasedAt).toLocaleDateString('en-GB')}</Text> : <SecondaryButton label="Edit list" disabled={busy} onPress={() => router.push({ pathname: '/basket-setup', params: { savedId: b.id, edit: '1' } })} />}
+      {b.result.purchasedAt ? <Text style={ui.small}>Purchased · {formatDate(b.result.purchasedAt)}</Text> : <SecondaryButton label="Edit list" disabled={busy} onPress={() => router.push({ pathname: '/basket-setup', params: { savedId: b.id, edit: '1' } })} />}
       {action?.id===b.id?<>
         {action.kind==='rename'?<TextInput label="List name" value={name} onChangeText={setName} maxLength={120} editable={!busy} />:<Text style={ui.body}>Delete “{b.name}”? Its saved meal plan will also be removed. This cannot be undone.</Text>}
         <ErrorMessage message={actionError} />

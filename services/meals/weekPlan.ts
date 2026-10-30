@@ -1,3 +1,4 @@
+import { intlLocale } from '../i18n';
 import type {
   AnyMealPlan,
   AnyMealPlanItem,
@@ -86,8 +87,17 @@ export const plannedDayCount = (plan: AnyMealPlan): number =>
 /** Items of either plan shape, where only the choice itself matters. */
 export const planChoices = (plan: AnyMealPlan): MealChoice[] => plan.items;
 // Plan dates are stored as calendar days, so the label is formatted in UTC as well.
-const dayFormat = new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
-export const planDateLabel = (date: string): string => dayFormat.format(parsePlanDate(date) ?? new Date(NaN));
+const dayFormats = new Map<string, Intl.DateTimeFormat>();
+const dayFormat = () => {
+  const tag = intlLocale();
+  let format = dayFormats.get(tag);
+  if (!format) {
+    format = new Intl.DateTimeFormat(tag, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+    dayFormats.set(tag, format);
+  }
+  return format;
+};
+export const planDateLabel = (date: string): string => dayFormat().format(parsePlanDate(date) ?? new Date(NaN));
 export interface PlanDay { key: string; label: string; date: string | null; items: AnyMealPlanItem[] }
 /** Every day a plan covers, in order, including days with nothing planned on them. */
 export function planDays(plan: AnyMealPlan): PlanDay[] {

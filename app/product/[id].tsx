@@ -1,5 +1,5 @@
-import { germanLabel, formatNumber } from '../../lib/german';
-import {StateIllustration,failureIllustration} from '@/components/BrandAssets';
+import { categoryLabel, dietaryFieldLabel, formatDate, formatNumber, term } from '@/services/i18n';
+import { StateIllustration, failureIllustration } from '@/components/BrandAssets';
 import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -9,11 +9,11 @@ import { ProductEstimateNotice } from '@/components/ProductEstimateNotice';
 import { AddProductButton } from '@/components/AddProductButton';
 import { EmptyState, ErrorMessage, InfoCard, PreferenceRow, Screen, SectionCard, TextButton } from "@/components/ui";
 import { getProductRepository } from "@/services/products";
-import { allergenConflicts, dietaryFields, dietaryNames, estimatedPrice, hasDiscoveryPreferences, matchesPreferences } from "@/services/catalog/discovery";
+import { allergenConflicts, dietaryFields, estimatedPrice, hasDiscoveryPreferences, matchesPreferences } from "@/services/catalog/discovery";
 import { usePreferences } from "@/context/PreferencesContext";
-import { categoryLabels, type Product } from "@/types/product";
+import type { Product } from "@/types/product";
 import { colors, ui } from "@/lib/theme";
-const displayList = (values: string[]) => values.map(germanLabel).join(", ").replace(/_/g, " ");
+const displayList = (values: string[]) => values.map(term).join(", ").replace(/_/g, " ");
 export default function ProductDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { saved } = usePreferences();
@@ -38,7 +38,7 @@ export default function ProductDetails() {
     </> : !product ? <EmptyState illustration="dataError" title="Produkt nicht gefunden" description="Dieser Artikel ist möglicherweise nicht mehr im Katalog. Gehe zurück, um andere Produkte zu entdecken." /> : <>
       <ProductImage uri={product.displayImageUrl} width={product.imageWidth} height={product.imageHeight} name={product.name} large />
       <View style={ui.stack}>
-        <Text style={ui.caption}>{product.brand ?? "Marke nicht angegeben"} · {categoryLabels[product.category]}</Text>
+        <Text style={ui.caption}>{product.brand ?? "Marke nicht angegeben"} · {categoryLabel(product.category)}</Text>
         <Text style={ui.heading}>{product.name}</Text>
         <Text style={ui.body}>{product.quantityLabel ?? (product.packageSize && product.packageUnit ? `${product.packageSize} ${product.packageUnit}` : "Packungsgröße nicht angegeben")}</Text>
         <Text style={[ui.subheading, { color: colors.primary }]}>{estimatedPrice(product)}</Text>
@@ -69,13 +69,13 @@ export default function ProductDetails() {
         <Text style={ui.small}>Quellenangaben können unvollständig sein. Prüfe Zutaten und Spurenhinweise auf der aktuellen Verpackung. Laktosefrei bedeutet nicht milchfrei.</Text>
       </SectionCard>
       <SectionCard title="Ernährungsangaben">
-        {dietaryFields.map(field => <PreferenceRow key={field} label={dietaryNames[field]}
+        {dietaryFields.map(field => <PreferenceRow key={field} label={dietaryFieldLabel(field)}
           value={product[field] === null ? "Unbekannt" : product[field] ? "Laut Quellenangabe" : "Nicht als geeignet ausgewiesen"} />)}
         {!!product.labels.filter(l => !l.startsWith('smartbasket:demo:')).length && <Text style={ui.small}>Kennzeichnungen der Quelle: {product.labels.filter(l => !l.startsWith('smartbasket:demo:')).join(", ")}</Text>}
       </SectionCard>
       <CatalogAttribution sources={[product.source]} />
       {product.sourceUrl && <TextButton label="Produkt auf der Quellwebsite ansehen" onPress={() => openCatalogLink(product.sourceUrl!)} />}
-      <Text style={ui.caption}>Katalog aktualisiert {new Date(product.updatedAt).toLocaleDateString('de-DE')}{product.barcode ? ` · Strichcode ${product.barcode}` : ""}</Text>
+      <Text style={ui.caption}>Katalog aktualisiert {formatDate(product.updatedAt)}{product.barcode ? ` · Strichcode ${product.barcode}` : ""}</Text>
     </>}
   </Screen>;
 }

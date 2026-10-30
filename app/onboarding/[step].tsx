@@ -1,3 +1,4 @@
+import { slotLabel, term, unitSystemLabel } from '@/services/i18n';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackHandler, Text, View } from "react-native";
 import type { NavigationProp } from "@react-navigation/native";
@@ -22,13 +23,12 @@ import {
 } from "@/components/ui";
 import { NumberInput } from "@/components/NumberInput";
 import { HouseholdFields } from "@/components/HouseholdFields";
-import { unitSystemLabels, unitSystemOf, unitSystems } from "@/services/units";
+import { unitSystemOf, unitSystems } from "@/services/units";
 import { PreferenceSummary } from "@/components/PreferenceSummary";
 import { usePreferences } from "@/context/PreferencesContext";
 import { useProfile } from "@/context/ProfileContext";
 import {
   householdValues,
-  slotLabels,
   toggleDiet,
   validatePreferences,
 } from "@/services/preference-domain";
@@ -39,7 +39,6 @@ import {
   allergens,
   diets,
   goals,
-  labels,
   slotDefaultsOf,
   steps,
   type OnboardingStep,
@@ -267,7 +266,7 @@ export default function OnboardingScreen() {
                 {unitSystems.map((system) => (
                   <SelectionChip
                     key={system}
-                    label={unitSystemLabels[system]}
+                    label={unitSystemLabel(system)}
                     selected={unitSystemOf(draft) === system}
                     onPress={() => store.update({ unitSystem: system })}
                   />
@@ -312,7 +311,7 @@ export default function OnboardingScreen() {
               {mealSlots.map((slot) => (
                 <SelectionChip
                   key={slot}
-                  label={slotLabels[slot]}
+                  label={slotLabel(slot)}
                   selected={slotDefaultsOf(draft)[slot]}
                   onPress={() =>
                     store.update({
@@ -345,7 +344,7 @@ export default function OnboardingScreen() {
                 {goals.map((primaryGoal) => (
                   <SelectionChip
                     key={primaryGoal}
-                    label={labels[primaryGoal]}
+                    label={term(primaryGoal)}
                     selected={draft.primaryGoal === primaryGoal}
                     onPress={() => store.update({ primaryGoal })}
                   />
@@ -399,7 +398,7 @@ export default function OnboardingScreen() {
               {diets.map((diet) => (
                 <SelectionChip
                   key={diet}
-                  label={labels[diet]}
+                  label={term(diet)}
                   selected={draft.dietaryPreferences.includes(diet)}
                   onPress={() =>
                     store.update({
@@ -437,7 +436,7 @@ export default function OnboardingScreen() {
                 {allergens.map((allergen) => (
                   <SelectionChip
                     key={allergen}
-                    label={labels[allergen]}
+                    label={term(allergen)}
                     selected={draft.allergens.includes(allergen)}
                     onPress={() =>
                       store.update({

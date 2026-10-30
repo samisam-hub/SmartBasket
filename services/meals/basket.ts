@@ -1,9 +1,8 @@
-import { germanLabel } from '../../lib/german';
+import { term } from '../../services/i18n';
 import type { AnyMealPlan } from '../../types/meal';
 import type { BasketGenerationResult, BasketItem } from '../../types/basket';
 import type { Product } from '../../types/product';
 import type { UserPreferences } from '../../types/preferences';
-import { labels } from '../../types/preferences';
 import { ingredients } from '../../data/meals';
 import { weekNutritionTargets } from './weekTargets';
 import { nutritionTargets } from '../basket/nutritionTargets';
@@ -50,11 +49,11 @@ export function basketFromMealPlan(plan: AnyMealPlan, preferences: UserPreferenc
     matchingDiagnostics.push({ingredientKey:r.ingredientKey,candidatesFound:diagnostic.candidates.length,rejected:diagnostic.rejected,eligibleProductIds:candidates.map(p=>p.id),selectedProductIds:solution?.choices.map(c=>c.product.id)??[],unresolvedReason});
     if(!solution){
       const safetyDetails=[
-        diagnostic.rejected.allergen_metadata_unknown ? `${diagnostic.rejected.allergen_metadata_unknown} passenden Produkten fehlt der erforderliche Nachweis der Allergenfreiheit für deine ausgewählten Allergien (${preferences.allergens.map(a=>labels[a]).join(', ')}). Das bedeutet nicht, dass sie diese Allergene enthalten.` : '',
+        diagnostic.rejected.allergen_metadata_unknown ? `${diagnostic.rejected.allergen_metadata_unknown} passenden Produkten fehlt der erforderliche Nachweis der Allergenfreiheit für deine ausgewählten Allergien (${preferences.allergens.map(a=>term(a)).join(', ')}). Das bedeutet nicht, dass sie diese Allergene enthalten.` : '',
         diagnostic.rejected.allergen_conflict ? `${diagnostic.rejected.allergen_conflict} passende Produkte enthalten laut Zutaten- oder Spurenangaben von dir ausgewählte Allergene.` : '',
         diagnostic.rejected.known_dietary_conflict ? `${diagnostic.rejected.known_dietary_conflict} passende Produkte widersprechen deinen Ernährungseinstellungen.` : '',
       ].filter(Boolean).join(' ');
-      ratios[r.ingredientKey]=fromPantry/r.requiredQuantity;warnings.push({code:`unmatched_${r.ingredientKey}`,message:`${r.ingredientName}: ${diagnostic.candidates.length?`${diagnostic.candidates.length} passende Zutatenprodukte gefunden, aber die Packungsauswahl ist nicht geklärt (${unresolvedReason?.split(', ').map(germanLabel).join(', ')}).`:safetyDetails||"Kein passendes Produkt für diese Zutat gefunden."} Nicht abgedeckte Mengen werden bei der Einkaufsabdeckung nicht mitgerechnet.`});continue;
+      ratios[r.ingredientKey]=fromPantry/r.requiredQuantity;warnings.push({code:`unmatched_${r.ingredientKey}`,message:`${r.ingredientName}: ${diagnostic.candidates.length?`${diagnostic.candidates.length} passende Zutatenprodukte gefunden, aber die Packungsauswahl ist nicht geklärt (${unresolvedReason?.split(', ').map(term).join(', ')}).`:safetyDetails||"Kein passendes Produkt für diese Zutat gefunden."} Nicht abgedeckte Mengen werden bei der Einkaufsabdeckung nicht mitgerechnet.`});continue;
     }
     objective+=solution.score;ratios[r.ingredientKey]=(solution.plannedConsumptionQuantity+fromPantry)/r.requiredQuantity;
     for(const choice of solution.choices){
@@ -62,7 +61,7 @@ export function basketFromMealPlan(plan: AnyMealPlan, preferences: UserPreferenc
       if(match.dietaryUnknown.length&&!warnings.some(w=>w.code===`diet_uncertain_${r.ingredientKey}`)){
         const unverified=match.dietaryUnknown.filter(d=>d!=='diabetes');
         warnings.push({code:`diet_uncertain_${r.ingredientKey}`,message:`${r.ingredientName}: ${[
-          unverified.length?`das ausgewählte Produkt hat unbestätigte Ernährungskennzeichnungen (${unverified.map(germanLabel).join(', ')}); die Allergenfreiheit ist nicht bestätigt.`:'',
+          unverified.length?`das ausgewählte Produkt hat unbestätigte Ernährungskennzeichnungen (${unverified.map(term).join(', ')}); die Allergenfreiheit ist nicht bestätigt.`:'',
           match.dietaryUnknown.includes('diabetes')?"das ausgewählte Produkt enthält keine Zuckerangabe und konnte deshalb nicht auf deine Einstellung diabetesbewusst geprüft werden.":'',
         ].filter(Boolean).join(' ')} Prüfe die Verpackung.`});
       }
@@ -72,7 +71,7 @@ export function basketFromMealPlan(plan: AnyMealPlan, preferences: UserPreferenc
         purchasedQuantity:choice.purchasedQuantity,plannedConsumptionQuantity:choice.plannedConsumptionQuantity,leftoverQuantity:choice.leftoverQuantity,
         quantityAdjustmentPercent:round((ratios[r.ingredientKey]-1)*100),totalWeight:r.unit==='g'?choice.purchasedQuantity:null,totalVolume:r.unit==='ml'?choice.purchasedQuantity:null,
         totalCalories:n.calories*factor,totalProtein:n.protein*factor,totalCarbohydrates:n.carbohydrates*factor,totalFat:n.fat*factor,totalFiber:null,
-        estimatedPrice:choice.estimatedPrice,reasonSelected:[{code:'ingredient_match',detail:`${germanLabel(match.stage)} Übereinstimmung für ${r.ingredientName}, Eignungswert ${match.score}; ${candidates.length} Packungsoptionen verglichen.`},
+        estimatedPrice:choice.estimatedPrice,reasonSelected:[{code:'ingredient_match',detail:`${term(match.stage)} Übereinstimmung für ${r.ingredientName}, Eignungswert ${match.score}; ${candidates.length} Packungsoptionen verglichen.`},
           {code:'package_fit',detail:`Kaufen: ${round(choice.purchasedQuantity)} ${r.unit}, eingeplant: ${round(choice.plannedConsumptionQuantity)} ${r.unit}, für später übrig: ${round(choice.leftoverQuantity)} ${r.unit}.`},
           {code:'quantity_adjustment',detail:`Zutatenverbrauch angepasst um ${round((ratios[r.ingredientKey]-1)*100)}% innerhalb des zulässigen Bereichs.`}]});
     }
@@ -86,11 +85,11 @@ export function basketFromMealPlan(plan: AnyMealPlan, preferences: UserPreferenc
   const openSlots = isWeekPlanShape(plan) ? openPlanSlots(plan).reduce((n,day)=>n+day.slots.length,0)
     : (plan.items.length!==preferences.planningDays*(plan.snacksIncluded?4:3)?1:0);
   if (isWeekPlanShape(plan)) for (const day of openPlanSlots(plan))
-    warnings.push({code:`open_slot_${day.date}`,message:`${day.date}: ${day.slots.map(germanLabel).join(', ')} noch offen. Dafür wurde nichts eingeplant oder eingekauft.`});
+    warnings.push({code:`open_slot_${day.date}`,message:`${day.date}: ${day.slots.map(term).join(', ')} noch offen. Dafür wurde nichts eingeplant oder eingekauft.`});
   if (outside) warnings.push({code:'eat_out_unknown',message:"Auswärtiges Essen benötigt keine Einkaufsartikel. Nährwerte und Kosten werden nicht erfasst; andere Mahlzeitenportionen wurden nicht erhöht."});
   const n=planNutrition(plan,ratios),knownPriceSubtotal=items.reduce((s,i)=>s+(i.estimatedPrice??0),0);
   const incomplete=ready.unmatched>0||requirements.some(r=>ratios[r.ingredientKey]<r.minimumAcceptableQuantity/r.requiredQuantity-.0001);
-  if(matchingDiagnostics.some(d=>d.unresolvedReason?.includes('allergen_metadata_unknown')))warnings.unshift({code:'allergy_evidence_gap',message:`Deine ausgewählten Allergien (${preferences.allergens.map(a=>labels[a]).join(', ')}) benötigen ausdrückliche Nachweise der Allergenfreiheit, die im Katalog oft fehlen. Ohne diesen Nachweis werden Produkte ausgeschlossen.${preferences.allergens.includes('milk')&&preferences.dietaryPreferences.includes('lactose_free')?" Milchallergie und laktosefrei sind getrennte Einstellungen. Laktosefrei allein genügt nicht für die Prüfung auf Milcheiweißallergie.":''}`});
+  if(matchingDiagnostics.some(d=>d.unresolvedReason?.includes('allergen_metadata_unknown')))warnings.unshift({code:'allergy_evidence_gap',message:`Deine ausgewählten Allergien (${preferences.allergens.map(a=>term(a)).join(', ')}) benötigen ausdrückliche Nachweise der Allergenfreiheit, die im Katalog oft fehlen. Ohne diesen Nachweis werden Produkte ausgeschlossen.${preferences.allergens.includes('milk')&&preferences.dietaryPreferences.includes('lactose_free')?" Milchallergie und laktosefrei sind getrennte Einstellungen. Laktosefrei allein genügt nicht für die Prüfung auf Milcheiweißallergie.":''}`});
   const estimatedTotalPrice=(items.length||pantryUsed.length)&&items.every(i=>i.estimatedPrice!==null)?round(knownPriceSubtotal):null;
   const budgetDifference=estimatedTotalPrice===null||targets.budgetTarget===null?null:round(estimatedTotalPrice-targets.budgetTarget);
   const budgetStatus=targets.budgetTarget===null?'disabled':budgetDifference===null?(items.length?'price_incomplete':'unknown'):budgetDifference<=0?'within_budget':budgetDifference<=targets.budgetTarget*.1?'slightly_over':'over_budget';

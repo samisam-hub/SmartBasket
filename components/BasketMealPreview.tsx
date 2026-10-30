@@ -1,5 +1,5 @@
-import { germanSavedName } from '../lib/legacy-display';
-import { germanLabel } from '../lib/german';
+import { contentName } from '../services/i18n/content';
+import { term } from '../services/i18n';
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { AnyMealPlan } from '../types/meal';
@@ -21,24 +21,24 @@ export function BasketMealPreview({ plan, onOpen, showMealSlot = true, compact =
     {width > 0 && <ScrollView horizontal pagingEnabled ref={scroll} showsHorizontalScrollIndicator={false}
       scrollEventThrottle={16} onScroll={e => setActive(Math.max(0, Math.min(items.length - 1, Math.round(e.nativeEvent.contentOffset.x / width))))}>
       {items.map(item => <Pressable key={item.id} onPress={onOpen} accessibilityRole="button"
-        accessibilityLabel={`Warenkorb öffnen: ${germanSavedName(item.meal.name)}`} style={{ width, gap: 8, paddingHorizontal: 4 }}>
-        {showMealSlot && <Text style={ui.small}>{firstDay.label} · {germanLabel(item.mealSlot)}</Text>}
+        accessibilityLabel={`Warenkorb öffnen: ${contentName(item.meal.name)}`} style={{ width, gap: 8, paddingHorizontal: 4 }}>
+        {showMealSlot && <Text style={ui.small}>{firstDay.label} · {term(item.mealSlot)}</Text>}
         {compactDetails ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
           <View style={{ flex: 1, minWidth: 0 }}><MealImage meal={item.meal} compact /></View>
           <View style={{ flex: 1, minWidth: 0, gap: 8 }}>
             <Text style={[ui.body, { fontWeight: '700', color: colors.ink }]}>{compactDetails.title}</Text>
             <Text style={[ui.body, { fontWeight: '700', color: colors.ink }]}>{compactDetails.price}</Text>
-            <Text style={ui.small}>{germanSavedName(item.meal.name)}</Text>
+            <Text style={ui.small}>{contentName(item.meal.name)}</Text>
           </View>
         </View> : <>
           <MealImage meal={item.meal} compact={compact} />
-          <Text style={[compact ? ui.small : ui.body, { textAlign: 'center' }]}>{germanSavedName(item.meal.name)}</Text>
+          <Text style={[compact ? ui.small : ui.body, { textAlign: 'center' }]}>{contentName(item.meal.name)}</Text>
         </>}
       </Pressable>)}
     </ScrollView>}
     <View style={{ flexDirection: 'row', justifyContent: 'center', alignSelf: compactDetails ? 'flex-start' : 'stretch' }}>
       {items.map((item, index) => <Pressable key={item.id} accessibilityRole="button"
-        accessibilityLabel={`Vorschau ${germanLabel(item.mealSlot)}`} accessibilityState={{ selected: active === index }}
+        accessibilityLabel={`Vorschau ${term(item.mealSlot)}`} accessibilityState={{ selected: active === index }}
         onPress={() => scroll.current?.scrollTo({ x: index * width, animated: true })}
         style={{ width: compact ? undefined : 44, flex: compact ? 1 : undefined, height: 44, alignItems: 'center', justifyContent: 'center' }}>
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: active === index ? colors.primary : colors.border }} />

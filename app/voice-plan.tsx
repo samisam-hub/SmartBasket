@@ -1,3 +1,4 @@
+import { term } from '@/services/i18n';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, Pressable, Text, View } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
@@ -11,7 +12,6 @@ import { profileParticipant } from '../services/profile-domain';
 import { nutritionTargets } from '../services/basket/nutritionTargets';
 import { compatibleMeal } from '../services/meals/planner';
 import { meals } from '../data/meals';
-import { labels } from '../types/preferences';
 import type { PlanParticipant } from '../types/profile';
 import { colors, ui } from '../lib/theme';
 import { askPlanner, transcribe, type VoiceInputLanguage, type VoiceMessage } from '../services/voice/client';
@@ -124,7 +124,7 @@ export default function VoicePlanScreen() {
       {showTranscript && messages.map((m, i) => <View key={i} style={[ui.card, { padding: 14, backgroundColor: m.role === 'assistant' ? colors.pale : colors.surface }]}><Text style={ui.eyebrow}>{m.role === 'assistant' ? 'SMARTBASKET' : "DU"}</Text><Text selectable style={ui.body}>{m.content}</Text></View>)}
       {plan && <SectionCard title="Dein bisheriger Plan">
         <Text style={ui.body}>{plan.days ?? '—'}  Tage · {plan.people.length} {plan.people.length === 1 ? 'Person' : "Personen"} · {plan.budgetEnabled ? `€${plan.budget ?? '—'} Gesamtbudget` : "Kein Budgetlimit"}</Text>
-        {plan.people.map((p, i) => <View key={i}><Text style={[ui.body, { fontWeight: '700' }]}>{p.name || `Person ${i + 1}`}</Text><Text style={ui.small}>{p.calories ?? '—'} kcal · {p.protein ?? '—'}  g Eiweiß / Tag</Text><Text style={ui.small}>{p.diets.filter(d => d !== 'none').map(d => labels[d]).join(' · ')}{p.allergens.length ? ` · Vermeiden: ${p.allergens.map(a => labels[a]).join(', ')}` : ''}</Text></View>)}
+        {plan.people.map((p, i) => <View key={i}><Text style={[ui.body, { fontWeight: '700' }]}>{p.name || `Person ${i + 1}`}</Text><Text style={ui.small}>{p.calories ?? '—'} kcal · {p.protein ?? '—'}  g Eiweiß / Tag</Text><Text style={ui.small}>{p.diets.filter(d => d !== 'none').map(d => term(d)).join(' · ')}{p.allergens.length ? ` · Vermeiden: ${p.allergens.map(a => term(a)).join(', ')}` : ''}</Text></View>)}
         {!!plan.preferredMealIds.length && <Text style={ui.small}>Essenswünsche: {plan.preferredMealIds.map(id => meals.find(m => m.id === id)?.name).filter(Boolean).join(', ')}</Text>}
         {unresolved && <Text style={ui.small}>{unresolved}</Text>}
         <PrimaryButton label={language === 'de' ? 'Bestätigen & Gerichte auswählen' : "Bestätigen und Gerichte auswählen"} disabled={!!unresolved || !messages.length || busy || phase === 'thinking' || phase === 'starting' || phase === 'stopping'} onPress={handoff} />

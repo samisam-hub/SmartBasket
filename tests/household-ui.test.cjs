@@ -24,6 +24,7 @@ require.extensions[".tsx"] = (module, file) =>
 const { HouseholdList, PersonRow, avatarTint, initials, maxHousehold } =
   require("../components/HouseholdList.tsx");
 const { newParticipant } = require("../services/profile-domain.ts");
+const { setLocale, resetLocale } = require("../services/i18n/index.ts");
 
 const person = (id, name, kind = "adult") => ({ ...newParticipant(kind, id, name, "maintain") });
 async function render(people, onOpen = () => {}, onAdd = () => {}) {
@@ -37,10 +38,10 @@ test("a person is a face, a name and what they eat", async () => {
   const people = [{ ...person("current-user", "You"), isCurrentUser: true }, person("p2", "Mia Berger", "child")];
   const view = await render(people);
   const shown = view.texts();
-  assert.match(shown, /You \(you\)/, "the phone's owner is marked");
+  assert.match(shown, /You \(du\)/, "the phone's owner is marked");
   assert.match(shown, /Mia Berger/);
-  assert.match(shown, /Adult · [\d,]+ kcal a day/);
-  assert.match(shown, /Child · [\d,]+ kcal a day/);
+  assert.match(shown, /Erwachsene Person · [\d.]+ kcal pro Tag/);
+  assert.match(shown, /Kind · [\d.]+ kcal pro Tag/);
   // Initials stand in until there is a picture to show.
   assert.match(shown, /"YO"/);
   assert.match(shown, /"MB"/);
@@ -66,7 +67,7 @@ test("a person saved before kinds existed is shown as an adult", async () => {
   let renderer;
   await act(() => { renderer = create(React.createElement(PersonRow, { person: legacy, onPress: () => {} })); });
   const shown = JSON.stringify(renderer.root.findAllByType("Text").map((n) => n.props.children));
-  assert.match(shown, /Adult · 2,000 kcal a day/);
+  assert.match(shown, /Erwachsene Person · 2.000 kcal pro Tag/);
   await act(() => renderer.unmount());
 });
 
@@ -78,7 +79,7 @@ test("tapping a person opens them; an empty household says what the list is for"
   await act(() => view.renderer.unmount());
 
   const empty = await render([]);
-  assert.match(empty.texts(), /Nobody here yet/);
+  assert.match(empty.texts(), /Noch niemand da/);
   assert.equal(empty.add().disabled, false, "an empty household can still be added to");
   await act(() => empty.renderer.unmount());
 });
@@ -87,10 +88,22 @@ test("a plan holds ten people, and the button says so instead of failing on the 
   const full = Array.from({ length: maxHousehold }, (_, index) => person(`p${index}`, `Person ${index}`));
   const view = await render(full);
   assert.equal(view.add().disabled, true);
-  assert.match(view.texts(), new RegExp(`up to ${maxHousehold} people`));
+  assert.match(view.texts(), new RegExp(`bis zu ${maxHousehold} Personen`));
   await act(() => view.renderer.unmount());
 
   const room = await render(full.slice(1));
   assert.equal(room.add().disabled, false);
   await act(() => room.renderer.unmount());
+});
+
+test("the same list reads in English when the locale says so", async () => {
+  await setLocale("en");
+  try {
+    const view = await render([{ ...person("current-user", "You"), isCurrentUser: true }]);
+    const shown = view.texts();
+    assert.match(shown, /You \(you\)/);
+    assert.match(shown, /Adult · [\d,]+ kcal a day/, "numbers follow the locale too");
+    assert.equal(view.add().label, "Add person");
+    await act(() => view.renderer.unmount());
+  } finally { resetLocale(); }
 });

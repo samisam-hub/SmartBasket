@@ -1,8 +1,8 @@
+import { formatNumber, slotLabel, term } from './i18n';
 import {
   allergens,
   diets,
   goals,
-  labels,
   slotDefaultsOf,
   type Diet,
   type PreferenceDraft,
@@ -127,22 +127,16 @@ export function normalizedValues(draft: PreferenceDraft): PreferenceValues {
     weeklyBudgetEur: draft.budgetEnabled ? draft.weeklyBudgetEur : null,
   };
 }
-export const slotLabels: Record<(typeof mealSlots)[number], string> = {
-  breakfast: "Frühstück",
-  lunch: "Mittagessen",
-  dinner: "Abendessen",
-  snack: "Snack",
-};
 export const activeSlotLabels = (p: { slotDefaults?: SlotDefaults }): string[] =>
-  mealSlots.filter((slot) => slotDefaultsOf(p)[slot]).map((slot) => slotLabels[slot]);
+  mealSlots.filter((slot) => slotDefaultsOf(p)[slot]).map((slot) => slotLabel(slot));
 export function preferenceChips(p: UserPreferences): string[] {
   return [
     `${p.planningDays} Tage`,
     `${p.householdSize} ${p.householdSize === 1 ? "Person" : "Personen"}`,
     `${activeSlotLabels(p).join(", ")}`,
-    `${p.dailyCalories.toLocaleString("de-DE")} kcal`,
-    labels[p.primaryGoal],
-    ...p.dietaryPreferences.filter((d) => d !== "none").map((d) => labels[d]),
+    `${formatNumber(p.dailyCalories)} kcal`,
+    term(p.primaryGoal),
+    ...p.dietaryPreferences.filter((d) => d !== "none").map((d) => term(d)),
     p.budgetEnabled ? `€${p.weeklyBudgetEur} Budget` : "Kein Budgetlimit",
   ];
 }

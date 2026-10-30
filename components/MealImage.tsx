@@ -1,4 +1,4 @@
-import { germanSavedName } from '../lib/legacy-display';
+import { contentName } from '../services/i18n/content';
 import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { mealImageSource } from '../lib/meal-images';
@@ -14,7 +14,7 @@ export function MealImage({ meal, compact = false, banner = false }:
     : { width: compact ? 160 : 200, maxWidth: '100%', alignSelf: 'center', gap: 4 }}>
     <View style={{ width: '100%', aspectRatio: banner ? 16 / 9 : 1,
       borderRadius: banner ? 0 : 16, overflow: 'hidden' }}>
-      <Image source={source} accessibilityLabel={germanSavedName(meal.name)}
+      <Image source={source} accessibilityLabel={contentName(meal.name)}
         resizeMode="cover" style={{ position: 'absolute', width: '100%', height: '100%' }}
         onError={() => setFailedSource(source)} />
     </View>

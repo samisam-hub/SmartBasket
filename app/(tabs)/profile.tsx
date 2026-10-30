@@ -1,5 +1,5 @@
-import { germanLabel } from '../../lib/german';
-import {BrandLogo} from '@/components/BrandAssets';
+import { formatNumber , term } from "@/services/i18n";
+import { BrandLogo } from '@/components/BrandAssets';
 import { router } from "expo-router";
 import { Alert, Text } from "react-native";
 import {
@@ -17,12 +17,11 @@ import { PersistenceStatus } from "@/components/PersistenceStatus";
 import { PreferenceSummary } from "@/components/PreferenceSummary";
 import { usePreferences } from "@/context/PreferencesContext";
 import { useBasketFlow } from "@/hooks/useBasketFlow";
-import { labels } from "@/types/preferences";
 import { ui } from "@/lib/theme";
-import {useAuth} from '@/context/AuthContext';
-import {useProfile} from '@/context/ProfileContext';
-import {useState} from 'react';
-import {useMerchantDemo} from '@/services/merchant-demo';
+import { useAuth } from '@/context/AuthContext';
+import { useProfile } from '@/context/ProfileContext';
+import { useState } from 'react';
+import { useMerchantDemo } from '@/services/merchant-demo';
 export default function ProfileScreen() {
   const { saved, editing } = usePreferences();
   const flow = useBasketFlow();
@@ -56,17 +55,17 @@ export default function ProfileScreen() {
         {auth.session?.user.is_anonymous||!auth.session?<><Text style={ui.small}>Erstelle ein Konto, um deine SmartBasket-Daten geräteübergreifend zu behalten.</Text><PrimaryButton label="Konto erstellen" onPress={()=>router.push('/account')} /><TextButton label="Anmelden" onPress={()=>router.push({pathname:'/account',params:{mode:'signin'}})} /></>:<Text style={ui.small}>Angemeldet · Sitzung auf diesem Gerät gespeichert</Text>}
         {auth.error&&<Text style={ui.small}>{auth.error}</Text>}
       </SectionCard>
-      <SectionCard title="Persönliche Angaben"><Text style={ui.body}>{p?`${p.displayName||"Name nicht angegeben"} · ${p.sex ? germanLabel(p.sex) : "Geschlecht nicht angegeben"} · ${p.age??"Alter nicht angegeben"}`:"Lege persönliche Vorgaben fest – auch als Gast."}</Text><TextButton label={personal.pending?"Persönliches Profil fortsetzen":"Persönliche Angaben bearbeiten"} onPress={()=>editPersonal(0)} /></SectionCard>
-      <SectionCard title="Ernährungsziele"><Text style={ui.body}>{p?`${germanLabel(p.primaryNutritionGoal)} · ${p.defaultDailyCalories??"Planziel"} kcal · ${germanLabel(p.proteinMode)} Eiweiß`:"Noch keine persönlichen Vorgaben."}</Text><TextButton label="Persönliche Ernährungsziele bearbeiten" onPress={()=>editPersonal(1)} /></SectionCard>
-      <SectionCard title="Ernährungseinstellungen"><Text style={ui.body}>{p?.dietaryPreferences.map(d=>labels[d]).join(', ')??"Nicht festgelegt"}</Text><TextButton label="Persönliche Ernährungsweise bearbeiten" onPress={()=>editPersonal(2)} /></SectionCard>
-      <SectionCard title="Persönliche Allergien und Unverträglichkeiten"><Text style={ui.body}>{p?[...p.allergens,...p.intolerances].map(germanLabel).join(', ')||"Keine ausgewählt":"Nicht festgelegt"}</Text><TextButton label="Persönliche Allergien und Unverträglichkeiten bearbeiten" onPress={()=>editPersonal(3)} /></SectionCard>
+      <SectionCard title="Persönliche Angaben"><Text style={ui.body}>{p?`${p.displayName||"Name nicht angegeben"} · ${p.sex ? term(p.sex) : "Geschlecht nicht angegeben"} · ${p.age??"Alter nicht angegeben"}`:"Lege persönliche Vorgaben fest – auch als Gast."}</Text><TextButton label={personal.pending?"Persönliches Profil fortsetzen":"Persönliche Angaben bearbeiten"} onPress={()=>editPersonal(0)} /></SectionCard>
+      <SectionCard title="Ernährungsziele"><Text style={ui.body}>{p?`${term(p.primaryNutritionGoal)} · ${p.defaultDailyCalories??"Planziel"} kcal · ${term(p.proteinMode)} Eiweiß`:"Noch keine persönlichen Vorgaben."}</Text><TextButton label="Persönliche Ernährungsziele bearbeiten" onPress={()=>editPersonal(1)} /></SectionCard>
+      <SectionCard title="Ernährungseinstellungen"><Text style={ui.body}>{p?.dietaryPreferences.map(d=>term(d)).join(', ')??"Nicht festgelegt"}</Text><TextButton label="Persönliche Ernährungsweise bearbeiten" onPress={()=>editPersonal(2)} /></SectionCard>
+      <SectionCard title="Persönliche Allergien und Unverträglichkeiten"><Text style={ui.body}>{p?[...p.allergens,...p.intolerances].map(term).join(', ')||"Keine ausgewählt":"Nicht festgelegt"}</Text><TextButton label="Persönliche Allergien und Unverträglichkeiten bearbeiten" onPress={()=>editPersonal(3)} /></SectionCard>
       {personal.error&&<Text style={ui.small}>{personal.error}</Text>}
       <DetailRow
         icon="users"
         title="Haushalt"
         value={
           saved
-            ? `${saved.householdSize} ${saved.householdSize === 1 ? "Person" : "Personen"} · ${saved.dailyCalories.toLocaleString("de-DE")} kcal pro Tag im Schnitt`
+            ? `${saved.householdSize} ${saved.householdSize === 1 ? "Person" : "Personen"} · ${formatNumber(saved.dailyCalories)} kcal pro Tag im Schnitt`
             : "Noch nicht eingerichtet"
         }
         onPress={() => router.push("/household")}
@@ -98,7 +97,7 @@ export default function ProfileScreen() {
           label="Deine Auswahl"
           value={
             saved
-              ? saved.allergens.map((a) => labels[a]).join(", ") ||
+              ? saved.allergens.map((a) => term(a)).join(", ") ||
                 "Keine ausgewählt"
               : "Nicht festgelegt"
           }

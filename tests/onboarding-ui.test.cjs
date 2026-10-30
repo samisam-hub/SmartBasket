@@ -16,8 +16,7 @@ Module._load = function (request, parent, isMain) {
       .map((name) => [name, stub(name)]));
   // The list has its own test; here it only has to report what it was handed.
   if (request === "./HouseholdList" && parent.filename.endsWith("HouseholdFields.tsx"))
-    return { HouseholdList: stub("HouseholdList"), maxHousehold: 10,
-      kindLabels: { adult: "Adult", child: "Child" } };
+    return { HouseholdList: stub("HouseholdList"), maxHousehold: 10 };
   if (request === "./NumberInput" && parent.filename.endsWith("HouseholdFields.tsx"))
     return { NumberInput: stub("NumberInput") };
   if (request === "./ProfileFields" && parent.filename.endsWith("HouseholdFields.tsx"))
@@ -64,7 +63,7 @@ test("one tap adds a person with a calorie suggestion, and removing them is poss
   assert.equal(view.people[1].kind, "adult");
   assert.equal(view.people[1].isCurrentUser, false);
   // Adult or child is the first choice in that editor, so a child is one tap further.
-  await act(() => view.chip("Child").props.onPress());
+  await act(() => view.chip("Kind").props.onPress());
   const child = view.people[1];
   assert.equal(child.kind, "child");
   assert.equal(child.dailyCalories, estimateCalories(child));

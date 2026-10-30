@@ -1,5 +1,9 @@
-/** Display names for older saved snapshots. Their stored content stays untouched. */
-const names: Record<string, string> = {
+/** Display names for content the data holds in English: the curated meals, their ingredients and
+ *  the snapshots older baskets saved. The stored content stays untouched — only what a screen
+ *  shows follows the locale, and an unknown name is shown as it is rather than hidden. */
+import { locale } from './index';
+
+const german: Record<string, string> = {
   "Chicken ham (cooked slices)": "Geflügelschinken (gegarte Scheiben)",
   "Smoked salmon": "Räucherlachs",
   "Beef steak (raw)": "Rindersteak (roh)",
@@ -76,6 +80,10 @@ const names: Record<string, string> = {
   "Heat & eat": "Aufwärmen",
   "Ready to eat": "Verzehrfertig",
   "Salad": "Salat",
-  "Asian meal": "Asiatisches Gericht"
+  "Asian meal": "Asiatisches Gericht",
 };
-export const germanSavedName = (name: string) => names[name] ?? name.split(" · ").map(part => names[part] ?? part).join(" · ");
+/** Names are also saved joined by " · ", so each part is looked up on its own. */
+export function contentName(name: string): string {
+  if (locale() !== 'de') return name;
+  return german[name] ?? name.split(" · ").map(part => german[part] ?? part).join(" · ");
+}

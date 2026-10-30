@@ -1,5 +1,6 @@
+import { categoryLabel } from '../services/i18n';
 import { canonicalIngredientKey, ingredientMappings } from '../data/ingredient-mappings';
-import { categories, categoryLabels, type ProductCategory } from '../types/product';
+import { categories, type ProductCategory } from '../types/product';
 import type { BasketGenerationResult, SavedBasket } from '../types/basket';
 import type { CustomItem } from './basket/custom-items';
 import { formatQuantity, type UnitSystem } from './units';
@@ -62,7 +63,7 @@ export function groupedLines(lines: ShoppingLine[]): { key: ProductCategory; lab
     group.push(line);
   }
   return categories.filter(key => groups.has(key))
-    .map(key => ({ key, label: categoryLabels[key], lines: groups.get(key)! }));
+    .map(key => ({ key, label: categoryLabel(key), lines: groups.get(key)! }));
 }
 
 /** The whole list as one piece of text, for the share sheet.

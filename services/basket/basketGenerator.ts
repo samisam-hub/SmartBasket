@@ -1,4 +1,4 @@
-import { germanLabel } from '../../lib/german';
+import { groupLabel , term } from '../../services/i18n';
 import type { Product } from '../../types/product';
 import type { UserPreferences } from '../../types/preferences';
 import type { BasketGenerationResult, BasketGroup, BasketItem, BasketWarning } from '../../types/basket';
@@ -6,7 +6,7 @@ import { isDraft, validatePreferences } from '../preference-domain';
 import { exclusionReason } from './constraints';
 import { nutritionTargets } from './nutritionTargets';
 import { packagePrice, planPackage } from './quantityPlanner';
-import { coverageAmount, groupOf, groupLabels, groups, limits, requiredGroups, scoreProduct, weights } from './scoring';
+import { coverageAmount, groupOf, groups, limits, requiredGroups, scoreProduct, weights } from './scoring';
 
 const round = (n: number) => Math.round(n * 100) / 100;
 const compareId = (a: Product, b: Product) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
@@ -120,8 +120,8 @@ export function generateBasket(input: UserPreferences, products: readonly Produc
   const items: BasketItem[] = candidates.flatMap((c, i) => {
     const n = quantities[i]; if (!n) return [];
     const amount = n * c.pack.amount, factor = amount / 100;
-    const reasons = [{ code: 'category_coverage', detail: `Ergänzt die Auswahl: ${groupLabels[c.group]}` },
-      ...input.dietaryPreferences.filter(d => d !== 'none').map(d => ({ code: `diet:${d}`, detail: `Passt zur Einstellung ${germanLabel(d)}` }))];
+    const reasons = [{ code: 'category_coverage', detail: `Ergänzt die Auswahl: ${groupLabel(c.group)}` },
+      ...input.dietaryPreferences.filter(d => d !== 'none').map(d => ({ code: `diet:${d}`, detail: `Passt zur Einstellung ${term(d)}` }))];
     if (c.product.proteinPer100g! * 4 >= c.product.caloriesPer100g! * 0.2) reasons.push({ code: 'high_protein', detail: "Mindestens 20 % der angegebenen Energie aus Eiweiß" });
     if (c.price !== null && c.calories / c.price >= 500) reasons.push({ code: 'price_efficiency', detail: "Mindestens 500 kcal pro geschätztem Euro" });
     if (c.pack.assumed) reasons.push({ code: 'assumed_package', detail: `Angenommen: ${c.pack.amount} ${c.pack.unit} Packung; tatsächliche Größe prüfen` });
@@ -147,7 +147,7 @@ export function generateBasket(input: UserPreferences, products: readonly Produc
   if (current.unknown) warnings.push({ code: 'missing_prices', message: `Preise fehlen für ${current.unknown} ausgewählte Produkte. Gesamtpreis und Budgeteinhaltung können nicht bestätigt werden.` });
   if (items.some(i => i.quantityAssumed)) warnings.push({ code: 'assumed_packages', message: "Einige Packungsgrößen sind geschätzt. Mengen und Nährwerte hängen von diesen Annahmen ab.", productIds: items.filter(i => i.quantityAssumed).map(i => i.product.id) });
   if (!nutritionMet && items.length) warnings.push({ code: 'nutrition_conflict', message: "Dieser bestmögliche Warenkorb liegt außerhalb des Spielraums für Kalorien- oder Eiweißziele." });
-  for (const c of categoryCoverage.filter(c => c.required && (!c.represented || c.amount < c.targetAmount * 0.75))) warnings.push({ code: `coverage:${c.group}`, message: c.available ? `Kategorie ${groupLabels[c.group]} ist in diesem Warenkorb nur teilweise abgedeckt.` : `Keine passenden Produkte der Kategorie ${groupLabels[c.group]} für diese Anforderungen verfügbar.` });
+  for (const c of categoryCoverage.filter(c => c.required && (!c.represented || c.amount < c.targetAmount * 0.75))) warnings.push({ code: `coverage:${c.group}`, message: c.available ? `Kategorie ${groupLabel(c.group)} ist in diesem Warenkorb nur teilweise abgedeckt.` : `Keine passenden Produkte der Kategorie ${groupLabel(c.group)} für diese Anforderungen verfügbar.` });
   if (budgetStatus === 'unachievable' || budgetStatus === 'slightly_over') warnings.push({ code: 'budget_conflict', message: "Die Berechnung konnte Ernährungs-, Abwechslungs- und Budgetziele nicht gleichzeitig erfüllen. Dies ist die beste gefundene Lösung, kein Nachweis, dass es keinen günstigeren Warenkorb gibt." });
   if (exclusions.allergen_safety_unknown) warnings.push({ code: 'allergen_evidence', message: "Produkte ohne ausdrücklichen Nachweis der Freiheit von ausgewählten Allergenen und ohne Zutatenangaben wurden ausgeschlossen. Leere Allergenlisten gelten nicht als Sicherheitsnachweis." });
   if (input.allergens.length) warnings.push({ code: 'verify_labels', message: "Quellenangaben können unvollständig oder veraltet sein. Prüfe die aktuelle Verpackung; dies ist keine Garantie für Allergiesicherheit." });

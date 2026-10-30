@@ -1,3 +1,4 @@
+import { slotLabel } from '@/services/i18n';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
@@ -5,7 +6,7 @@ import { PrimaryButton, Screen, ScreenHeader, SectionCard, SelectionChip, ErrorM
 import { usePreferences } from '@/context/PreferencesContext';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 import { currentWeekStart } from '@/components/WeekCalendar';
-import { activeSlotLabels, slotLabels } from '@/services/preference-domain';
+import { activeSlotLabels } from '@/services/preference-domain';
 import { addDays, dayOf, planDateLabel, plannedDates, weekDates } from '@/services/meals/weekPlan';
 import { mealSlots, type MealSlot } from '@/types/meal';
 import { ui } from '@/lib/theme';
@@ -55,7 +56,7 @@ export default function PlanWeekScreen() {
         label={person.name || 'Person'} selected={selectedPerson === person.id}
         onPress={() => setPersonId(person.id)} />)}</View>
       <Text style={ui.subheading}>Welche Mahlzeit?</Text>
-      <View style={ui.wrap}>{mealSlots.map(slot => <SelectionChip key={slot} label={slotLabels[slot]}
+      <View style={ui.wrap}>{mealSlots.map(slot => <SelectionChip key={slot} label={slotLabel(slot)}
         selected={routineSlot === slot} onPress={() => setRoutineSlot(slot)} />)}</View>
       <Text style={ui.subheading}>An welchen Tagen?</Text>
       <View style={ui.wrap}>{["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((label, weekday) =>

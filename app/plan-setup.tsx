@@ -1,4 +1,4 @@
-import { germanLabel } from '../lib/german';
+import { term } from '@/services/i18n';
 import {useEffect,useRef,useState} from 'react';
 import {Text} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -31,7 +31,7 @@ export default function PlanSetup(){const {saved}=usePreferences(),profile=usePr
  {ready&&<><SectionCard title="Planungszeitraum">{[3,5,7,14].map(n=><SelectionChip key={n} label={`${n} Tage`} selected={days===n} onPress={()=>setDays(n)} />)}<SelectionChip label="Budget festlegen" selected={budgetEnabled} onPress={()=>setBudgetEnabled(x=>!x)} />{budgetEnabled&&<OptionalNumber label="Gesamtbudget für den Plan (€)" value={budget} onChange={setBudget} />}</SectionCard>
  {people.map((x,i)=><SecondaryButton key={x.id} label={`${i+1}. ${x.name||'Person'}${x.isCurrentUser?' (du)':''}`} onPress={()=>setIndex(i)} />)}
  {p&&<SectionCard title={`Person ${index+1} von ${people.length}`}><TextInput label="Name" value={p.name} onChangeText={name=>patch({name})} /><OptionalNumber label="Alter (freiwillig)" value={p.age} onChange={age=>patch({age})} />
- {sexes.map(s=><SelectionChip key={s} label={germanLabel(s)} selected={p.sex===s} onPress={()=>patch({sex:s})} />)}
+ {sexes.map(s=><SelectionChip key={s} label={term(s)} selected={p.sex===s} onPress={()=>patch({sex:s})} />)}
  <OptionalNumber label="Tägliche Kalorien für diese Person" value={p.dailyCalories} onChange={dailyCalories=>patch({dailyCalories})} /><OptionalNumber label="Eiweiß in g/Tag für diese Person" value={p.proteinTarget} onChange={proteinTarget=>patch({proteinTarget})} />
  <DietFields value={p.dietaryPreferences} onChange={dietaryPreferences=>patch({dietaryPreferences})} /><AllergyFields value={p.allergens} intolerances={p.intolerances} onChange={allergens=>patch({allergens})} onIntolerances={intolerances=>patch({intolerances})} />
  {p.isCurrentUser&&profile.saved&&<SecondaryButton label="Meine persönlichen Vorgaben verwenden" onPress={()=>patch(profileParticipant(profile.saved!,saved))} />}

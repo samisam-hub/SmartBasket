@@ -5,7 +5,8 @@ const fs = require('node:fs');
 const { PGlite } = require('@electric-sql/pglite');
 const { prefs, product } = require('./basket-fixtures.cjs');
 const { fullCatalog } = require('./meal-fixtures.cjs');
-const { diets, labels } = require('../types/preferences.ts');
+const { diets } = require('../types/preferences.ts');
+const { term } = require('../services/i18n/index.ts');
 const { toggleDiet, validatePreferences, preferenceChips } = require('../services/preference-domain.ts');
 const { matchesPreferences, highSugar, sugarsUnknown } = require('../services/catalog/discovery.ts');
 const { exclusionReason } = require('../services/basket/constraints.ts');
@@ -15,7 +16,7 @@ const { meals } = require('../data/meals.ts');
 
 test('diabetes is an additional restriction that combines with every dietary pattern', () => {
   assert.ok(diets.includes('diabetes'));
-  assert.equal(labels.diabetes, "Diabetesbewusst");
+  assert.equal(term('diabetes'), "Diabetesbewusst");
   assert.deepEqual(toggleDiet(['none'], 'diabetes'), ['diabetes']);
   assert.deepEqual(toggleDiet(['vegan'], 'diabetes'), ['vegan', 'diabetes']);
   // An alternative pattern replaces only the other patterns, never the diabetes selection.

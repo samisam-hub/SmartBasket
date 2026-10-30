@@ -1,4 +1,5 @@
-import { germanSavedName } from '../../lib/legacy-display';
+import { slotLabel } from '@/services/i18n';
+import { contentName } from '@/services/i18n/content';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -6,7 +7,6 @@ import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SecondaryButton, Sec
 import { usePreferences } from '@/context/PreferencesContext';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 import { MealImage } from '@/components/MealImage';
-import { slotLabels } from '@/services/preference-domain';
 import { dayOf, isPlanDate, itemGroup, itemsInSlot, planDateLabel, sortSlots } from '@/services/meals/weekPlan';
 import { participantKind } from '@/services/profile-domain';
 import { mealSlots } from '@/types/meal';
@@ -35,9 +35,9 @@ export default function PlanDayScreen() {
     {sortSlots(day.slots).map(slot => {
       const dishes = itemsInSlot(plan, date, slot);
       const eatingSomethingElse = dishes.flatMap(dish => dish.participantIds ?? []);
-      return <SectionCard key={slot} title={slotLabels[slot]}>
+      return <SectionCard key={slot} title={slotLabel(slot)}>
         {dishes.map(item => <View key={item.id} style={ui.stack}>
-          <Text style={ui.subheading}>{germanSavedName(item.meal.name)}</Text>
+          <Text style={ui.subheading}>{contentName(item.meal.name)}</Text>
           {item.participantIds && <Text style={ui.caption}>
 
             Für {item.participantIds.map(id => people.find(person => person.id === id)?.name || 'Person').join(', ')}
@@ -67,7 +67,7 @@ export default function PlanDayScreen() {
         </View>)}
         {!dishes.length && <>
           <Text style={ui.small}>Noch nicht ausgewählt.</Text>
-          <PrimaryButton label={`${slotLabels[slot]} auswählen`}
+          <PrimaryButton label={`${slotLabel(slot)} auswählen`}
             onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo } })} />
         </>}
         {!!dishes.length && people.length > 1 && people.filter(person => !eatingSomethingElse.includes(person.id)).map(person =>
@@ -77,7 +77,7 @@ export default function PlanDayScreen() {
     })}
     <SectionCard title="Mahlzeiten dieses Tages">
       <View style={ui.wrap}>
-        {mealSlots.map(slot => <SelectionChip key={slot} label={slotLabels[slot]} selected={day.slots.includes(slot)}
+        {mealSlots.map(slot => <SelectionChip key={slot} label={slotLabel(slot)} selected={day.slots.includes(slot)}
           onPress={() => { try { store.toggleSlot(date, slot, saved); } catch { store.skip(date, slot, saved); } }} />)}
       </View>
       <Text style={ui.small}>Beim Abwählen einer Mahlzeit wird auch das gewählte Gericht entfernt. Sie zählt dann als auswärts gegessen und nicht als offene Mahlzeit.</Text>

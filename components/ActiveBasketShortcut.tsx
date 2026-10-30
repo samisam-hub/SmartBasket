@@ -1,4 +1,4 @@
-import { formatEuro } from '../lib/german';
+import { formatMoney } from '../services/i18n';
 import { basketDisplayName } from '../services/basket/naming';
 import Feather from '@expo/vector-icons/Feather';
 import { router, useSegments } from 'expo-router';
@@ -15,6 +15,6 @@ export function ActiveBasketShortcut() {
     style={{ minHeight: 48, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 8 + (segments[0] === '(tabs)' ? insets.bottom : 0), flexDirection: 'row', gap: 12, alignItems: 'center', backgroundColor: colors.primary }}>
     <Feather name="shopping-cart" size={23} color={colors.onPrimary} />
     <Text numberOfLines={1} style={[ui.small, { flex: 1, color: colors.onPrimary, fontWeight: '700' }]}>{basketDisplayName(active)}</Text>
-    <Text style={[ui.small, { color: colors.onPrimary }]}>{active.result.estimatedTotalPrice === null ? '—' : `${formatEuro(active.result.estimatedTotalPrice)}`}</Text>
+    <Text style={[ui.small, { color: colors.onPrimary }]}>{active.result.estimatedTotalPrice === null ? '—' : `${formatMoney(active.result.estimatedTotalPrice)}`}</Text>
   </Pressable>;
 }

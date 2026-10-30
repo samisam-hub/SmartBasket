@@ -1,3 +1,4 @@
+import { formatMoney } from '../services/i18n';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import Feather from '@expo/vector-icons/Feather';
@@ -37,7 +38,7 @@ App-Nutzung` },
           { amount: String(impact.shops), label: `${impact.shops === 1 ? "Einkauf" : "Einkäufe"} abgeschlossen`, icon: 'shopping-bag' as const, display: `${impact.shops === 1 ? "Einkauf" : "Einkäufe"}\nabgeschlossen` },
           { amount: impact.calorieTargetsMet === null ? '—' : `${impact.calorieTargetsMet}%`, label: "Kalorienziele erreicht", icon: 'target' as const, display: "Kalorienziele erreicht", detail: "Bestätigte Plantage pro Person, die höchstens 10 % vom Kalorienziel abweichen. Geplante Nährwerte, keine erfasste Nahrungsaufnahme." },
           { amount: impact.proteinTargetsMet === null ? '—' : `${impact.proteinTargetsMet}%`, label: "Durchschnittliche Eiweißversorgung", icon: 'bar-chart-2' as const, display: 'Eiweiß\nversorgung', detail: "Durchschnittlich geplantes Eiweiß im Verhältnis zum täglichen Eiweißziel jeder Person an bestätigten Plantagen. Kann über 100 % liegen. Geplante Nährwerte, keine erfasste Nahrungsaufnahme." },
-          { amount: `~€${impact.euros.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, label: `Vorräte wiederverwendet${impact.unpriced ? ' (teilweise)' : ''}`, icon: 'refresh-cw' as const, display: `Vorräte
+          { amount: `~${formatMoney(impact.euros)}`, label: `Vorräte wiederverwendet${impact.unpriced ? ' (teilweise)' : ''}`, icon: 'refresh-cw' as const, display: `Vorräte
 ${impact.unpriced ? 'teilweise' : 'verwendet'}` },
           { amount: impact.savedBudgetPercent === null ? '—' : `${impact.savedBudgetPercent}%`, label: "Gespartes Budget", display: "Gespartes Budget", icon: 'percent' as const, detail: "Budget abzüglich geschätzter Kosten im Verhältnis zum Budget abgeschlossener Einkäufe mit vollständigen Preisen. Ein negativer Wert bedeutet eine Budgetüberschreitung." },
         ].map(stat => <View key={stat.label} accessible accessibilityLabel={`${stat.amount} ${stat.label}. ${stat.detail ?? ''}`} style={{ flex: 1, minWidth: 0, alignItems: 'center', gap: 4 }}>

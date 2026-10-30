@@ -4,7 +4,6 @@ import type { UserPreferences } from '../../types/preferences';
 import { compatibleMeal, fitsSlot } from './planner';
 
 /** Household taste only: allergies and dietary restrictions always take precedence. */
-export const tasteSlotLabels: Record<MealSlot, string> = { breakfast: 'Frühstück', lunch: 'Mittagessen', dinner: 'Abendessen', snack: 'Snack' };
 export type MealRatings = Record<string, boolean>;
 export function validMealRatings(value: unknown): value is MealRatings {
   return !!value && typeof value === 'object' && !Array.isArray(value) &&

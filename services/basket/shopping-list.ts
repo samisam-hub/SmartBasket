@@ -1,4 +1,5 @@
-import { germanSavedName } from '../../lib/legacy-display';
+import { formatNumber } from '../i18n';
+import { contentName } from '../../services/i18n/content';
 import type { BasketGenerationResult } from '../../types/basket';
 
 export interface ShoppingRow {
@@ -8,7 +9,7 @@ export interface ShoppingRow {
   quantity: string;
   missing: boolean;
 }
-const amount = (n: number) => n.toLocaleString('de-DE', { maximumFractionDigits: 1 });
+const amount = (n: number) => formatNumber(n, 1);
 const row = (id: string, name: string, quantity: string, missing = false): ShoppingRow =>
   ({ id, name, quantity, missing, signature: JSON.stringify([name, quantity, missing]) });
 
@@ -24,7 +25,7 @@ export function shoppingRows(result: BasketGenerationResult): ShoppingRow[] {
       .reduce((sum, use) => sum + use.quantity, 0);
     if (bought + pantry >= requirement.minimumAcceptableQuantity - .001) return [];
     const needed = Math.max(0, requirement.requiredQuantity - bought - pantry);
-    return [row(`ingredient:${requirement.ingredientKey}`, germanSavedName(requirement.ingredientName),
+    return [row(`ingredient:${requirement.ingredientKey}`, contentName(requirement.ingredientName),
       `${amount(needed)} ${requirement.unit} noch benötigt`, true)];
   });
   return [...products, ...missing];

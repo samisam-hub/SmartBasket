@@ -1,3 +1,4 @@
+import { slotLabel } from '@/services/i18n';
 import { useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { Text } from 'react-native';
@@ -6,7 +7,7 @@ import { useWeekPlan } from '@/context/WeekPlanContext';
 import { useBasketCatalog } from '@/hooks/useBasketCatalog';
 import { MealSwipeCards } from '@/components/MealSwipeCards';
 import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SecondaryButton, SectionCard, TextButton } from '@/components/ui';
-import { tasteMeals, tasteSlotLabels as slotLabels } from '@/services/meals/taste';
+import { tasteMeals } from '@/services/meals/taste';
 import { mealSlots, type MealSlot } from '@/types/meal';
 import { activeSlots } from '@/types/preferences';
 import { ui } from '@/lib/theme';
@@ -59,7 +60,7 @@ export default function MealTasteScreen() {
     finally { pending.current = false; setBusy(false); }
   };
   return <Screen bottom>
-    <ScreenHeader eyebrow="1 · VORLIEBEN" title={slot ? `${slotLabels[slot]}: Was mögt ihr?` : 'Was mögt ihr gerne?'}
+    <ScreenHeader eyebrow="1 · VORLIEBEN" title={slot ? `${slotLabel(slot)}: Was mögt ihr?` : 'Was mögt ihr gerne?'}
       subtitle={`Rechts: mögen. Links: nicht mögen. Das merkt eure Vorlieben und legt noch keine Mahlzeit auf einen Tag. ${planned ? 'Danach entsteht euer Wochenplan.' : 'Danach wählt ihr die Tage, für die geplant wird.'}`} />
     <ErrorMessage message={message ?? error ?? catalog.error} />
     <Text style={ui.small}>Vorlieben bleiben für diesen Haushalt auf diesem Gerät gespeichert. Allergien und Ernährungsregeln gelten immer. Gerichte ohne Bewertung bleiben möglich; abgelehnte Gerichte werden nicht automatisch eingeplant.</Text>
@@ -67,9 +68,9 @@ export default function MealTasteScreen() {
       const dishes = tasteMeals(candidate, saved);
       const rated = dishes.filter(meal => mealRatings[meal.id] !== undefined).length;
       const liked = dishes.filter(meal => mealRatings[meal.id] === true).length;
-      return <SectionCard key={candidate} title={slotLabels[candidate]}>
+      return <SectionCard key={candidate} title={slotLabel(candidate)}>
         <Text style={ui.small}>{rated} von {dishes.length} bewertet · {liked} gemerkt</Text>
-        {dishes.length ? <SecondaryButton label={rated === dishes.length ? `${slotLabels[candidate]} erneut bewerten` : `${slotLabels[candidate]} wischen`}
+        {dishes.length ? <SecondaryButton label={rated === dishes.length ? `${slotLabel(candidate)} erneut bewerten` : `${slotLabel(candidate)} wischen`}
           disabled={busy} onPress={() => open(candidate, rated === dishes.length)} />
           : <Text style={ui.small}>Keine passenden Gerichte für eure Ernährungsregeln. Diese Mahlzeiten bleiben im Plan offen.</Text>}
       </SectionCard>;

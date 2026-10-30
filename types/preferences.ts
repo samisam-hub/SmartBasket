@@ -90,31 +90,6 @@ export interface UserPreferences extends PreferenceValues {
   createdAt: string;
   updatedAt: string;
 }
-export const labels: Record<Goal | Diet | Allergen, string> = {
-  maintain: "Gewicht halten",
-  lose_weight: "Abnehmen",
-  build_muscle: "Muskeln aufbauen",
-  high_protein: "Eiweißreich",
-  balanced: "Ausgewogene Ernährung",
-  none: "Keine Einschränkung",
-  vegetarian: "Vegetarisch",
-  vegan: "Vegan",
-  pescatarian: "Pescetarisch",
-  lactose_free: "Laktosefrei",
-  gluten_free: "Glutenfrei",
-  diabetes: "Diabetesbewusst",
-  milk: "Milch",
-  eggs: "Eier",
-  fish: "Fisch",
-  shellfish: "Krebstiere und Weichtiere",
-  peanuts: "Erdnüsse",
-  tree_nuts: "Schalenfrüchte",
-  soy: "Soja",
-  wheat: "Weizen",
-  sesame: "Sesam",
-  mustard: "Senf",
-  celery: "Sellerie",
-};
 export const defaultDraft: PreferenceDraft = {
   householdSize: 1,
   planningDays: 7,

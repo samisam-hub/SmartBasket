@@ -1,5 +1,5 @@
+import { formatDate, formatDateTime, formatMoney } from '@/services/i18n';
 import { basketDisplayName } from '../services/basket/naming';
-import { formatEuro } from '../lib/german';
 import { useEffect, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { Text } from 'react-native';
@@ -22,11 +22,11 @@ export default function PantryScreen(){
  {error&&<Text accessibilityRole="alert" style={ui.body}>{error}</Text>}
  <SecondaryButton label={busy?"Wird geladen …":"Vorräte neu laden"} disabled={busy} onPress={()=>setRetry(n=>n+1)} />
  {!busy&&!lots.length&&<Text style={ui.body}>Noch keine verfügbaren Vorräte.</Text>}
- {lots.map(l=><SectionCard key={l.id}><Text style={ui.body}>{l.product.name}</Text><Text style={ui.small}>{Math.round(l.quantity)} {l.unit}  · gekauft am {new Date(l.purchasedAt).toLocaleDateString('de-DE')}</Text>
+ {lots.map(l=><SectionCard key={l.id}><Text style={ui.body}>{l.product.name}</Text><Text style={ui.small}>{Math.round(l.quantity)} {l.unit}  · gekauft am {formatDate(l.purchasedAt)}</Text>
  {remove===l.id?<><Text style={ui.small}>Diesen Restbestand entfernen?</Text><SecondaryButton label="Verbrauch oder Entsorgung bestätigen" disabled={busy} onPress={()=>{setBusy(true);void removePantryLot(owner,l.id).then(()=>{setRemove(null);setRetry(n=>n+1);}).catch(e=>setError(e.message)).finally(()=>setBusy(false));}} /><SecondaryButton label="Abbrechen" onPress={()=>setRemove(null)} /></>:<SecondaryButton label="Verbraucht / entsorgt" onPress={()=>setRemove(l.id)} />}</SectionCard>)}
  </>}
  {!historyOnly&&<Text style={ui.title}>Einkaufsverlauf</Text>}
  {!busy&&!error&&!history.length&&<Text style={ui.body}>Noch keine abgeschlossenen Einkäufe.</Text>}
- {history.map(p=><SectionCard key={p.basketId}><Text style={ui.body}>{basketDisplayName(p.basket)}</Text><Text style={ui.small}>{new Date(p.purchasedAt).toLocaleString('de-DE')} · {p.basket.result.items.reduce((n,i)=>n+i.packageCount,0)}  Packungen · geschätzt {p.basket.result.estimatedTotalPrice===null?"Preis unvollständig":`${formatEuro(p.basket.result.estimatedTotalPrice)}`}</Text>{p.basket.result.items.map(i=><Text key={i.product.id} style={ui.small}>{i.product.name} · {i.packageCount} × {i.packageAmount} {i.quantityUnit}</Text>)}</SectionCard>)}
+ {history.map(p=><SectionCard key={p.basketId}><Text style={ui.body}>{basketDisplayName(p.basket)}</Text><Text style={ui.small}>{formatDateTime(p.purchasedAt)} · {p.basket.result.items.reduce((n,i)=>n+i.packageCount,0)}  Packungen · geschätzt {p.basket.result.estimatedTotalPrice===null?"Preis unvollständig":`${formatMoney(p.basket.result.estimatedTotalPrice)}`}</Text>{p.basket.result.items.map(i=><Text key={i.product.id} style={ui.small}>{i.product.name} · {i.packageCount} × {i.packageAmount} {i.quantityUnit}</Text>)}</SectionCard>)}
  </Screen>;
 }

@@ -1,11 +1,11 @@
-import { germanSavedName } from '../../lib/legacy-display';
+import { slotLabel } from '@/services/i18n';
+import { contentName } from '@/services/i18n/content';
 import { Text } from 'react-native';
 import { router } from 'expo-router';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SecondaryButton, SectionCard } from '@/components/ui';
 import { itemsInSlot, planDateLabel } from '@/services/meals/weekPlan';
 import { openPlanSlots } from '@/services/meals/validation';
-import { tasteSlotLabels as slotLabels } from '@/services/meals/taste';
 import { ui } from '@/lib/theme';
 
 export default function WeekOverviewScreen() {
@@ -23,7 +23,7 @@ export default function WeekOverviewScreen() {
     {plan.days.map(day => <SectionCard key={day.date} title={planDateLabel(day.date)}>
       {day.slots.map(slot => {
         const dishes = itemsInSlot(plan, day.date, slot);
-        return <Text key={slot} style={ui.body}>{slotLabels[slot]}: {dishes.length ? dishes.map(item => germanSavedName(item.meal.name)).join(' / ') : 'Noch offen'}</Text>;
+        return <Text key={slot} style={ui.body}>{slotLabel(slot)}: {dishes.length ? dishes.map(item => contentName(item.meal.name)).join(' / ') : 'Noch offen'}</Text>;
       })}
       <SecondaryButton label={`${planDateLabel(day.date)} bearbeiten`} onPress={() => router.push({ pathname: '/plan/[date]', params: { date: day.date, returnTo: 'week' } })} />
     </SectionCard>)}

@@ -1,4 +1,4 @@
-import { formatEuro } from '../lib/german';
+import { formatDate, formatMoney } from '@/services/i18n';
 import { loadPantry, checkoutBasket } from '@/services/pantry';
 
 import type { PantryLot } from '@/types/pantry';
@@ -332,7 +332,7 @@ export default function BasketSetupScreen() {
 
       </>}
 
-      {basket.result.purchasedAt && <Text style={ui.body}>Gekauft · {new Date(basket.result.purchasedAt).toLocaleDateString('de-DE')}</Text>}
+      {basket.result.purchasedAt && <Text style={ui.body}>Gekauft · {formatDate(basket.result.purchasedAt)}</Text>}
 
       <SecondaryButton label="Vorräte und Einkaufsverlauf" onPress={()=>router.push('/pantry')} />
 
@@ -368,7 +368,7 @@ export default function BasketSetupScreen() {
 
         {checkoutReview && <>
 
-          <Text style={ui.body}>Bestätige, dass du {basket.result.items.reduce((n,i)=>n+i.packageCount,0)}  Packungen gekauft hast. Geschätzte Kosten: {basket.result.estimatedTotalPrice===null?'unvollständig':`${formatEuro(basket.result.estimatedTotalPrice)}`}. Es wird keine Zahlung ausgelöst.</Text>
+          <Text style={ui.body}>Bestätige, dass du {basket.result.items.reduce((n,i)=>n+i.packageCount,0)}  Packungen gekauft hast. Geschätzte Kosten: {basket.result.estimatedTotalPrice===null?'unvollständig':`${formatMoney(basket.result.estimatedTotalPrice)}`}. Es wird keine Zahlung ausgelöst.</Text>
 
           <Text style={ui.small}>Geplante Mengen werden für diese Mahlzeiten reserviert. Restmengen stehen künftigen Plänen zur Verfügung. Extras bleiben verfügbar, bis du sie aus deinen Vorräten entfernst. Prüfe Mengen und Eignung vor der Bestätigung.</Text>
 

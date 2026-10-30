@@ -37,7 +37,3 @@ export function formatQuantity({ amount, unit }: Quantity, system: UnitSystem): 
   if (amount >= 16 * ML_PER_FLUID_OUNCE) return `${round(amount / ML_PER_CUP)} cups`;
   return `${round(amount / ML_PER_FLUID_OUNCE)} fl oz`;
 }
-export const unitSystemLabels: Record<UnitSystem, string> = {
-  metric: 'Metric · g and ml',
-  us: 'US · oz, lb and cups',
-};

@@ -3,8 +3,10 @@ import type { ProductCategory } from './product';
 export interface Nutrition { calories: number; protein: number; carbohydrates: number; fat: number }
 export const mealSlots = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export type MealSlot = (typeof mealSlots)[number];
-export type MealMode = 'cook' | 'ready_to_eat' | 'heat_and_eat' | 'eat_out';
-export type ReadyMealCategory = 'salad' | 'lasagne' | 'pasta' | 'asian' | 'pizza';
+export const mealModes = ['cook', 'ready_to_eat', 'heat_and_eat', 'eat_out'] as const;
+export type MealMode = (typeof mealModes)[number];
+export const readyMealCategories = ['salad', 'lasagne', 'pasta', 'asian', 'pizza'] as const;
+export type ReadyMealCategory = (typeof readyMealCategories)[number];
 export interface ReadyMealMetadata {
   category: ReadyMealCategory;
   modes: ('ready_to_eat' | 'heat_and_eat')[];

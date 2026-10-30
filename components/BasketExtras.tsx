@@ -1,4 +1,4 @@
-import { formatEuro } from '../lib/german';
+import { formatMoney } from '../services/i18n';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import type { BasketGenerationResult } from '../types/basket';
@@ -9,7 +9,7 @@ import { SearchInput, SectionCard, TextButton } from './ui';
 import { ui } from '../lib/theme';
 
 const label = (product: Product) =>
-  `${product.name}${product.brand ? ` · ${product.brand}` : ''}${product.priceEstimate === null ? '' : ` · Ca. ${formatEuro(product.priceEstimate)}`}`;
+  `${product.name}${product.brand ? ` · ${product.brand}` : ''}${product.priceEstimate === null ? '' : ` · Ca. ${formatMoney(product.priceEstimate)}`}`;
 
 /** Anything the household wants on top of the plan. Extras are bought, never cooked into a meal:
  *  they add no portions and no nutrition to the plan. */

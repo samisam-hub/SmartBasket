@@ -1,4 +1,5 @@
-import { germanSavedName } from '../../../lib/legacy-display';
+import { readyCategoryLabel, slotLabel } from '@/services/i18n';
+import { contentName } from '@/services/i18n/content';
 import { useMemo, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -11,10 +12,9 @@ import { useAuth } from '@/context/AuthContext';
 import { useBasketCatalog } from '@/hooks/useBasketCatalog';
 import { getSupabaseClient } from '@/lib/supabase';
 import { clearChoice } from '@/services/meals/weekPlanDraft';
-import { readyCategories, readyCategoryLabels } from '@/services/meals/choices';
+import { readyCategories } from '@/services/meals/choices';
 import { recordChoice, type ChoiceAction } from '@/services/meals/choiceEvents';
 import { quickIndividualMeals, suggestMeals, type MealSuggestion } from '@/services/meals/planner';
-import { slotLabels } from '@/services/preference-domain';
 import { dayOf, isPlanDate, itemsInSlot, openSlots, planDateLabel } from '@/services/meals/weekPlan';
 import { mealSlots, type MealSlot, type ReadyMealCategory } from '@/types/meal';
 import { ui } from '@/lib/theme';
@@ -69,7 +69,7 @@ export default function PlanSlotScreen() {
   const takeAway = (mode: 'heat_and_eat' | 'ready_to_eat', category?: ReadyMealCategory) =>
     act(mode, () => replacing ? store.replaceMode(replacing.id, mode, category, saved!) : store.chooseMode(date, mealSlot!, mode, category, saved!, eating));
   return <Screen bottom>
-    <ScreenHeader eyebrow={planDateLabel(date).toUpperCase()} title={slotLabels[mealSlot!]}
+    <ScreenHeader eyebrow={planDateLabel(date).toUpperCase()} title={slotLabel(mealSlot!)}
       subtitle={eatingNames?.length
         ? `Für ${eatingNames.join(', ')} allein. Diese Person nimmt dann nicht am gemeinsamen Gericht teil. Wische nach rechts zum Auswählen, nach links für den nächsten Vorschlag.`
         : "Wische nach rechts zum Auswählen, nach links für den nächsten Vorschlag. Du kannst auch die Buttons antippen."} />
@@ -84,7 +84,7 @@ export default function PlanSlotScreen() {
         <Text style={ui.small}>Eine schnelle Brotzeit oder Brotdose für diese Person. Die Zutaten kommen in den Warenkorb.</Text>
         {quickMeals.map(suggestion => <View key={suggestion.meal.id} style={ui.stack}>
           <MealImage meal={suggestion.meal} compact />
-          <SecondaryButton label={germanSavedName(suggestion.meal.name)}
+          <SecondaryButton label={contentName(suggestion.meal.name)}
             onPress={() => act('chosen', () => replacing ? store.replaceMeal(replacing.id, suggestion, saved!) : store.choose(date, mealSlot!, suggestion, saved!, eating), suggestion.meal.id)} />
         </View>)}
       </SectionCard>}
@@ -96,7 +96,7 @@ export default function PlanSlotScreen() {
       {categories.length > 0 && <>
         <Text style={ui.subheading}>Stattdessen etwas aufwärmen</Text>
         <View style={ui.wrap}>
-          {categories.map(category => <SelectionChip key={category} label={readyCategoryLabels[category]}
+          {categories.map(category => <SelectionChip key={category} label={readyCategoryLabel(category)}
             selected={false} onPress={() => takeAway('heat_and_eat', category)} />)}
         </View>
         <Text style={ui.small}>Wir suchen ein passendes Fertiggericht mit verwendbaren Angaben zu Zubereitung, Ernährung und Preis. Gibt es kein bestätigtes Produkt, zeigt der Warenkorb dies an.</Text>

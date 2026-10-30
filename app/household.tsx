@@ -1,3 +1,4 @@
+import { term } from '@/services/i18n';
 import { useEffect } from 'react';
 import { router } from 'expo-router';
 import { Text } from 'react-native';
@@ -7,7 +8,6 @@ import { DetailRow, ErrorMessage, PrimaryButton, Screen, SecondaryButton, Sectio
 import { usePreferences } from '@/context/PreferencesContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
 import { householdValues } from '@/services/preference-domain';
-import { labels } from '@/types/preferences';
 import type { PlanParticipant } from '@/types/profile';
 import { ui } from '@/lib/theme';
 
@@ -44,7 +44,7 @@ export default function HouseholdScreen() {
       goal={draft.primaryGoal} onChange={setPeople} />
     <ErrorMessage message={store.getSnapshot().localError} />
     <Text style={ui.eyebrow}>NUTRITION GOALS</Text>
-    <DetailRow icon="target" title="What the plan aims for" value={labels[draft.primaryGoal]}
+    <DetailRow icon="target" title="What the plan aims for" value={term(draft.primaryGoal)}
       onPress={() => flow.edit('goals')} />
     <DetailRow icon="bar-chart-2" title="Budget per week"
       value={draft.budgetEnabled && draft.weeklyBudgetEur !== null

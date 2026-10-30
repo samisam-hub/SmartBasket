@@ -1,3 +1,4 @@
+import { slotLabel, term } from '../services/i18n';
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -5,8 +6,6 @@ import { router } from 'expo-router';
 import type { AnyMealPlanItem, WeekPlan } from '../types/meal';
 import { openPlanSlots } from '../services/meals/validation';
 import { addDays, dayOf, itemsInSlot, itemsOn, planDate, planDateLabel, sortSlots, weekDates, weekStartOf } from '../services/meals/weekPlan';
-import { slotLabels } from '../services/preference-domain';
-import { labels } from '../types/preferences';
 import { MealImage } from './MealImage';
 import { IconButton, PrimaryButton, SecondaryButton, TextButton } from './ui';
 import { colors, radii, spacing, typography, ui } from '../lib/theme';
@@ -37,7 +36,7 @@ export function openingDate(plan: WeekPlan | null, weekStart: string, today = to
 /** What a card says beside the name. The curated meals carry no cooking time, so this says what
  *  is actually recorded: which meal of the day it is, and what one portion holds. */
 export function mealFacts(item: AnyMealPlanItem): string {
-  const parts = [slotLabels[item.mealSlot]];
+  const parts = [slotLabel(item.mealSlot)];
   if (item.meal.caloriesPerServing) parts.push(`${Math.round(item.meal.caloriesPerServing)} kcal pro Portion`);
   const servings = Math.round(item.servings * 10) / 10;
   parts.push(`${servings} ${servings === 1 ? 'Portion' : 'Portionen'}`);
@@ -118,7 +117,7 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
           <Text style={ui.small}>{mealFacts(item)}</Text>
           {!!item.meal.dietaryTags.filter(tag => tag !== 'none').length && <View style={ui.wrap}>
             {item.meal.dietaryTags.filter(tag => tag !== 'none').map(tag =>
-              <Text key={tag} style={styles.tag}>{labels[tag]}</Text>)}
+              <Text key={tag} style={styles.tag}>{term(tag)}</Text>)}
           </View>}
           {menu && <View style={ui.stack}>
             <TextButton label="Anderes wählen" onPress={() => router.push({ pathname: '/plan/[date]/[slot]',
@@ -129,12 +128,12 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
       </View>;
     })}
     {emptySlots.map(slot => <Pressable key={slot} accessibilityRole="button"
-      accessibilityLabel={`${slotLabels[slot]} wählen`} disabled={busy}
+      accessibilityLabel={`${slotLabel(slot)} wählen`} disabled={busy}
       onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot } })}
       style={({ pressed }) => [styles.openSlot, pressed && { opacity: 0.7 }]}>
       <Feather name="plus-circle" size={22} color={colors.primary} />
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={styles.cardTitle}>{slotLabels[slot]}</Text>
+        <Text style={styles.cardTitle}>{slotLabel(slot)}</Text>
         <Text style={ui.small}>Noch nicht gewählt</Text>
       </View>
       <Feather name="chevron-right" size={22} color={colors.muted} />

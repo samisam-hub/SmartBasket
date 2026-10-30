@@ -1,11 +1,11 @@
+import { formatNumber, kindLabel, t } from '../services/i18n';
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, Text, View } from 'react-native';
 import { PrimaryButton } from './ui';
 import { participantKind } from '../services/profile-domain';
-import type { ParticipantKind, PlanParticipant } from '../types/profile';
+import type { PlanParticipant } from '../types/profile';
 import { colors, radii, spacing, typography, ui } from '../lib/theme';
 
-export const kindLabels: Record<ParticipantKind, string> = { adult: 'Adult', child: 'Child' };
 /** The most people a plan may have, the same ceiling the stored preferences enforce. */
 export const maxHousehold = 10;
 
@@ -26,10 +26,11 @@ export function avatarTint(id: string): string {
 }
 /** One line of the household: who they are, what they eat, and that there is more behind it. */
 export function PersonRow({ person, onPress }: { person: PlanParticipant; onPress: () => void }) {
-  const kind = kindLabels[participantKind(person)];
-  const name = `${person.name.trim() || 'Person'}${person.isCurrentUser ? ' (you)' : ''}`;
-  const amount = person.dailyCalories ? `${person.dailyCalories.toLocaleString('en-GB')} kcal a day` : null;
-  return <Pressable accessibilityRole="button" accessibilityLabel={`${name}, ${kind}. Edit this person.`}
+  const kind = kindLabel(participantKind(person));
+  const own = person.name.trim() || t('household.person');
+  const name = person.isCurrentUser ? t('household.you', { name: own }) : own;
+  const amount = person.dailyCalories ? t('household.calories', { amount: formatNumber(person.dailyCalories) }) : null;
+  return <Pressable accessibilityRole="button" accessibilityLabel={t('household.edit', { name, kind })}
     onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
     <View style={[styles.avatar, { backgroundColor: avatarTint(person.id) }]}>
       <Text style={styles.initials}>{initials(person.name)}</Text>
@@ -54,12 +55,10 @@ export function HouseholdList({ people, onOpen, onAdd }: {
         {index > 0 && <View style={styles.divider} />}
         <PersonRow person={person} onPress={() => onOpen(person.id)} />
       </View>)
-        : <Text style={[ui.small, { padding: spacing.lg }]}>
-          Nobody here yet. Add the people you cook for, so portions and amounts follow the heads at the table.
-        </Text>}
+        : <Text style={[ui.small, { padding: spacing.lg }]}>{t('household.empty')}</Text>}
     </View>
-    <PrimaryButton icon="users" label="Add person" disabled={full} onPress={onAdd} />
-    {full && <Text style={ui.small}>{`A plan holds up to ${maxHousehold} people.`}</Text>}
+    <PrimaryButton icon="users" label={t('household.add')} disabled={full} onPress={onAdd} />
+    {full && <Text style={ui.small}>{t('household.full', { max: maxHousehold })}</Text>}
   </View>;
 }
 const styles = {

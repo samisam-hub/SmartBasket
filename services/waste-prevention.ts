@@ -1,3 +1,4 @@
+import { formatNumber } from './i18n';
 import type { Purchase } from '../types/pantry';
 import { choicesNutrition } from './meals/planner';
 import { planDays } from './meals/weekPlan';
@@ -20,7 +21,7 @@ export function wastePrevention(purchases: Purchase[]) {
 }
 
 export function formatPreventedWaste({ grams, millilitres }: ReturnType<typeof wastePrevention>) {
-  const format = (n: number) => n.toLocaleString('de-DE', { maximumFractionDigits: 2 });
+  const format = (n: number) => formatNumber(n, 2);
   const parts: string[] = [];
   if (grams > 0) parts.push(grams >= 1000 ? `${format(grams / 1000)} kg` : `${format(grams)} g`);
   if (millilitres > 0) parts.push(millilitres >= 1000 ? `${format(millilitres / 1000)} L` : `${format(millilitres)} ml`);

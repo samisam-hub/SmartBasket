@@ -1,4 +1,4 @@
-import { germanLabel } from '../../lib/german';
+import { term } from '../../services/i18n';
 import { ingredients } from '../../data/meals';
 import { canonicalIngredientKey,ingredientMappings,preparedFoodKeywords } from '../../data/ingredient-mappings';
 import type { Product } from '../../types/product';
@@ -52,7 +52,7 @@ export function diagnoseMatches(inputKey:string,products:Product[],preferences:U
   const stage=manual?'curated':alias?'alias':'category-keyword';
   const completeness=[kcal,...macros].filter(n=>n!==null).length;
   const score=(manual?60:alias?45:30)+15+(!issue?10:0)+completeness*2+Math.max(0,10-safety.unknownDiet.length*5)+(p.imageQuality==='usable'?2:0)+(p.priceEstimate!==null?2:0);
-  const reasons=[`${germanLabel(stage)} Zutatenübereinstimmung`,"passende Produktkategorie",`${completeness}/4 Nährwertangaben`,safety.unknownDiet.length?`Unbestätigte Ernährungskennzeichnungen: ${safety.unknownDiet.map(germanLabel).join(', ')}`:"Kein bekannter Ernährungskonflikt",issue ? germanLabel(issue) : "bekannte passende Packungsmenge"];
+  const reasons=[`${term(stage)} Zutatenübereinstimmung`,"passende Produktkategorie",`${completeness}/4 Nährwertangaben`,safety.unknownDiet.length?`Unbestätigte Ernährungskennzeichnungen: ${safety.unknownDiet.map(term).join(', ')}`:"Kein bekannter Ernährungskonflikt",issue ? term(issue) : "bekannte passende Packungsmenge"];
   result.candidates.push({product:p,stage,score,reasons,dietaryUnknown:safety.unknownDiet,
    packageSizeStatus:issue==='package_size_conflicting'?'conflicting':pack.packageSize===null?'unknown':'known',packageIssue:issue,
    optimizationProduct:issue?null:{...p,packageSize:size,packageUnit:unit}});

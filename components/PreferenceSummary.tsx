@@ -1,7 +1,7 @@
+import { term } from '../services/i18n';
 import { View } from "react-native";
 import { PreferenceRow } from "./ui";
 import {
-  labels,
   type OnboardingStep,
   type PreferenceDraft,
 } from "@/types/preferences";
@@ -45,7 +45,7 @@ export function PreferenceSummary({
       />
       <PreferenceRow
         label="Ernährungsziel"
-        value={labels[p.primaryGoal]}
+        value={term(p.primaryGoal)}
         onEdit={edit("goals")}
       />
       <PreferenceRow
@@ -59,12 +59,12 @@ export function PreferenceSummary({
       />
       <PreferenceRow
         label="Ernährungsweise"
-        value={p.dietaryPreferences.map((d) => labels[d]).join(", ")}
+        value={p.dietaryPreferences.map((d) => term(d)).join(", ")}
         onEdit={edit("diet")}
       />
       <PreferenceRow
         label="Allergien und Unverträglichkeiten"
-        value={p.allergens.map((a) => labels[a]).join(", ") || "Keine ausgewählt"}
+        value={p.allergens.map((a) => term(a)).join(", ") || "Keine ausgewählt"}
         onEdit={edit("allergies")}
       />
       <PreferenceRow
