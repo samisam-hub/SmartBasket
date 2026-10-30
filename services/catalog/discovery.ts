@@ -1,4 +1,4 @@
-import { intlLocale } from '../i18n';
+import { intlLocale, t } from '../i18n';
 import type { CatalogFilters, Product } from "../../types/product";
 import type { UserPreferences } from "../../types/preferences";
 export const dietaryFields = ["vegetarian", "vegan", "lactoseFree", "glutenFree"] as const;
@@ -50,7 +50,7 @@ export function productMatches(p: Product, query: string, filters: CatalogFilter
     (!filters.matchesPreferences || matchesPreferences(p, preferences));
 }
 export function estimatedPrice(p: Product): string {
-  if (p.priceEstimate === null || p.priceKind === "unavailable") return "Preis nicht verfügbar";
+  if (p.priceEstimate === null || p.priceKind === "unavailable") return t('discovery.noPrice');
   try { return `Ca. ${new Intl.NumberFormat(intlLocale(), { style: "currency", currency: p.currency }).format(p.priceEstimate)}`; }
-  catch { return "Preis nicht verfügbar"; }
+  catch { return t('discovery.noPrice'); }
 }
