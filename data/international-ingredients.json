@@ -1,0 +1,464 @@
+{
+  "nutritionSource": "curated-development-estimate",
+  "basis": "Schätzwerte je 100 g essbarer Roh-/Trockenware; Produktrezepturen und Allergendeklarationen können abweichen.",
+  "ingredients": [
+    {
+      "key": "beef_stew",
+      "name": "Rindergulasch (roh, ohne Knochen)",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Rindergulasch",
+        "Rinderschmorfleisch",
+        "beef stewing steak",
+        "diced beef"
+      ],
+      "exclude": [
+        "gekocht",
+        "gegart",
+        "mariniert",
+        "gewürzt",
+        "suppe",
+        "sauce",
+        "schwein",
+        "pork"
+      ],
+      "nutritionPer100": {
+        "calories": 150,
+        "protein": 21,
+        "carbohydrates": 0,
+        "fat": 7
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "beetroot",
+      "name": "Rote Bete (roh)",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Rote Bete",
+        "Rote Beete",
+        "beetroot"
+      ],
+      "exclude": [
+        "gekocht",
+        "gegart",
+        "eingelegt",
+        "saft",
+        "juice",
+        "salat",
+        "pulver"
+      ],
+      "nutritionPer100": {
+        "calories": 43,
+        "protein": 1.6,
+        "carbohydrates": 9.6,
+        "fat": 0.2
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "white_cabbage",
+      "name": "Weißkohl (frisch)",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Weißkohl",
+        "Weisskohl",
+        "Weißkraut",
+        "white cabbage"
+      ],
+      "exclude": [
+        "sauerkraut",
+        "salat",
+        "eingelegt",
+        "fermentiert"
+      ],
+      "nutritionPer100": {
+        "calories": 25,
+        "protein": 1.3,
+        "carbohydrates": 5.8,
+        "fat": 0.1
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "tomato_paste",
+      "name": "Tomatenmark",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "vegetables",
+        "other"
+      ],
+      "aliases": [
+        "Tomatenmark",
+        "tomato paste",
+        "tomato puree concentrate"
+      ],
+      "exclude": [
+        "gewürzt",
+        "basilikum",
+        "knoblauch"
+      ],
+      "nutritionPer100": {
+        "calories": 82,
+        "protein": 4.3,
+        "carbohydrates": 15,
+        "fat": 0.5
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "garlic",
+      "name": "Knoblauch (frisch)",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "vegetables",
+        "other"
+      ],
+      "aliases": [
+        "Knoblauch",
+        "garlic"
+      ],
+      "exclude": [
+        "pulver",
+        "powder",
+        "granulat",
+        "öl",
+        "oil",
+        "sauce",
+        "paste"
+      ],
+      "nutritionPer100": {
+        "calories": 149,
+        "protein": 6.4,
+        "carbohydrates": 33,
+        "fat": 0.5
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "sunflower_oil",
+      "name": "Sonnenblumenöl",
+      "unit": "g",
+      "group": "oil",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Sonnenblumenöl",
+        "sunflower oil"
+      ],
+      "exclude": [
+        "mischung",
+        "spray",
+        "knoblauch"
+      ],
+      "nutritionPer100": {
+        "calories": 884,
+        "protein": 0,
+        "carbohydrates": 0,
+        "fat": 100
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "dry_yeast",
+      "name": "Trockenhefe",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Trockenhefe",
+        "dry yeast",
+        "instant yeast"
+      ],
+      "exclude": [
+        "hefeextrakt",
+        "hefeflocken",
+        "nutritional"
+      ],
+      "nutritionPer100": {
+        "calories": 325,
+        "protein": 40,
+        "carbohydrates": 14,
+        "fat": 7
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "sugar",
+      "name": "Zucker",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Zucker",
+        "Kristallzucker",
+        "granulated sugar"
+      ],
+      "exclude": [
+        "puder",
+        "gelier",
+        "vanille",
+        "ersatz",
+        "sweetener"
+      ],
+      "nutritionPer100": {
+        "calories": 400,
+        "protein": 0,
+        "carbohydrates": 100,
+        "fat": 0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "lamb_stew",
+      "name": "Lammfleisch zum Schmoren (roh, ohne Knochen)",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Lammgulasch",
+        "Lammkeule ohne Knochen",
+        "Lammschulter ohne Knochen",
+        "diced lamb",
+        "boneless lamb"
+      ],
+      "exclude": [
+        "gekocht",
+        "gegart",
+        "mariniert",
+        "gewürzt",
+        "hack",
+        "minced",
+        "sauce"
+      ],
+      "nutritionPer100": {
+        "calories": 190,
+        "protein": 20,
+        "carbohydrates": 0,
+        "fat": 12
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "basmati_rice",
+      "name": "Basmatireis (trocken)",
+      "unit": "g",
+      "group": "staples",
+      "categories": [
+        "grains"
+      ],
+      "aliases": [
+        "Basmatireis",
+        "Basmati Reis",
+        "basmati rice"
+      ],
+      "exclude": [
+        "gekocht",
+        "cooked",
+        "mikrowelle",
+        "microwave",
+        "express",
+        "ready",
+        "gewürzt",
+        "sauce",
+        "pulao",
+        "pilau"
+      ],
+      "nutritionPer100": {
+        "calories": 350,
+        "protein": 8,
+        "carbohydrates": 77,
+        "fat": 1
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "raisins",
+      "name": "Rosinen",
+      "unit": "g",
+      "group": "fruit",
+      "categories": [
+        "fruit",
+        "snacks",
+        "other"
+      ],
+      "aliases": [
+        "Rosinen",
+        "Sultaninen",
+        "raisins",
+        "sultanas"
+      ],
+      "exclude": [
+        "schokolade",
+        "chocolate",
+        "rum",
+        "mischung",
+        "mix"
+      ],
+      "nutritionPer100": {
+        "calories": 299,
+        "protein": 3.1,
+        "carbohydrates": 79,
+        "fat": 0.5
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "cumin",
+      "name": "Kreuzkümmel (gemahlen)",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Kreuzkümmel",
+        "Cumin"
+      ],
+      "exclude": [
+        "mischung",
+        "mix",
+        "paste"
+      ],
+      "nutritionPer100": {
+        "calories": 375,
+        "protein": 18,
+        "carbohydrates": 44,
+        "fat": 22
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "cardamom",
+      "name": "Kardamom (gemahlen)",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Kardamom",
+        "cardamom"
+      ],
+      "exclude": [
+        "kapseln",
+        "pods",
+        "mischung",
+        "mix"
+      ],
+      "nutritionPer100": {
+        "calories": 311,
+        "protein": 11,
+        "carbohydrates": 68,
+        "fat": 7
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    }
+  ]
+}
