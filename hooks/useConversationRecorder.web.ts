@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import { useMemo } from 'react';
 import type { ConversationRecorder } from '../services/voice/conversation';
 /** One stream supplies both recording and silence detection. Never connect mic to speakers. */
@@ -11,7 +12,7 @@ export function useConversationRecorder(): ConversationRecorder {
     };
     return {
       async start(signal: AbortSignal) {
-        if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw Error("Die Sprachfunktion ist in diesem Browser nicht verfügbar. Nutze einen unterstützten Browser über eine sichere Verbindung.");
+        if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw Error(t('recorder.unsupportedBrowser'));
         try {
           stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
           if (signal.aborted) { await release(); return; }
@@ -19,7 +20,7 @@ export function useConversationRecorder(): ConversationRecorder {
           analyser = context.createAnalyser(); analyser.fftSize = 2048;
           context.createMediaStreamSource(stream).connect(analyser);
           const mime = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find(type => MediaRecorder.isTypeSupported(type));
-          if (!mime) throw Error("Dieser Browser kann kein unterstütztes Audioformat aufnehmen.");
+          if (!mime) throw Error(t('recorder.noAudioFormat'));
           recorder = new MediaRecorder(stream, { mimeType: mime, audioBitsPerSecond: 128000 });
           const chunks: Blob[] = [];
           recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };

@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { UserPreferences } from '../../types/preferences';
 import type { PlanParticipant } from '../../types/profile';
 import { participantPreferences } from '../profile-domain';
@@ -25,12 +26,12 @@ export function voiceParticipants(plan: VoicePlan, originals: PlanParticipant[])
   });
 }
 export function confirmedVoicePlan(plan: VoicePlan, base: UserPreferences, originals: PlanParticipant[]): UserPreferences {
-  if (!isVoicePlan(plan) || clarification(plan, 'en')) throw Error("Beantworte zuerst die Planungsfragen.");
-  if (plan.preferredMealIds.some(id => !meals.some(m => m.id === id))) throw Error("Ein gewünschtes Gericht ist nicht verfügbar. Bitte prüfe deine Wünsche.");
+  if (!isVoicePlan(plan) || clarification(plan, 'en')) throw Error(t('voice.answerFirst'));
+  if (plan.preferredMealIds.some(id => !meals.some(m => m.id === id))) throw Error(t('voice.wishUnavailable'));
   const result = participantPreferences({ ...base, planningDays: plan.days!, budgetEnabled: plan.budgetEnabled!,
     weeklyBudgetEur: plan.budgetEnabled ? plan.budget : null, preferredMealIds: plan.preferredMealIds }, voiceParticipants(plan, originals));
   const errors = validatePreferences(result);
   if (Object.keys(errors).length) throw Error(Object.values(errors).join(' '));
-  if (plan.preferredMealIds.some(id => !meals.some(m => m.id === id && compatibleMeal(m, result)))) throw Error("Ein gewünschtes Gericht passt nicht zu deinen Ernährungseinstellungen. Bitte wähle ein anderes.");
+  if (plan.preferredMealIds.some(id => !meals.some(m => m.id === id && compatibleMeal(m, result)))) throw Error(t('voice.wishNotAllowed'));
   return result;
 }

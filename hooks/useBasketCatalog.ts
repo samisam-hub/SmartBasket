@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabase';
 import { loadBasketCatalog } from '@/services/basket/catalog';
@@ -18,7 +19,7 @@ async function read(): Promise<BasketCatalog> {
     return { products: await loadBasketCatalog(getSupabaseClient()), loading: false, error: null };
   } catch (e) {
     return { products: [], loading: false,
-      error: e instanceof Error ? e.message : 'Der Produktkatalog konnte nicht geladen werden.' };
+      error: e instanceof Error ? e.message : t('catalog.productsFailed') };
   }
 }
 /** One fetch, however many screens are waiting. A failure is not kept, so the next screen retries. */

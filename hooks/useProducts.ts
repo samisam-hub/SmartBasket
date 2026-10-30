@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import { failureIllustration } from '../lib/failureIllustration';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getProductRepository } from "@/services/products";
@@ -30,7 +31,7 @@ export function useProducts() {
         setProducts(result.products); setHasMore(result.hasMore); setMode(result.mode); setWarning(result.warning);setFailureKind(result.failureKind);
         page.current = 0; readyKey.current = key;
       }).catch(cause => {
-        if (!abort.signal.aborted && generation.current === current) {setFailureKind(failureIllustration(cause));setError("Der Katalog konnte nicht geladen werden. Bitte versuche es erneut.");}
+        if (!abort.signal.aborted && generation.current === current) {setFailureKind(failureIllustration(cause));setError(t('products.catalogFailed'));}
       }).finally(() => {
         if (!abort.signal.aborted && generation.current === current) { pending.current = false; setLoading(false); }
       });
@@ -46,7 +47,7 @@ export function useProducts() {
       setProducts(previous => [...previous, ...result.products.filter(p => !previous.some(old => old.id === p.id))]);
       setHasMore(result.hasMore); page.current = next;
     }).catch(cause => {
-      if (generation.current === current) {setFailureKind(failureIllustration(cause));setError("Weitere Produkte konnten nicht geladen werden. Deine bisherigen Ergebnisse bleiben verfügbar.");}
+      if (generation.current === current) {setFailureKind(failureIllustration(cause));setError(t('products.moreFailed'));}
     }).finally(() => {
       if (generation.current === current) { pending.current = false; setLoadingMore(false); }
     });

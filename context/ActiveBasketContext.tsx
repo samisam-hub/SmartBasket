@@ -1,3 +1,4 @@
+import { t } from '@/services/i18n';
 import { basketDisplayName } from '../services/basket/naming';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -37,8 +38,8 @@ export function ActiveBasketProvider({ children }: PropsWithChildren) {
     return () => { alive = false; };
   }, [key, owner]);
   const discard = async (b: SavedBasket) => {
-    if (lock.current) throw Error("Warte bitte, bis das aktuelle Produkt gespeichert ist.");
-    if (b.ownerId !== owner) throw Error("Dieser Warenkorb gehört zu einem anderen Konto.");
+    if (lock.current) throw Error(t('active.waitForSave'));
+    if (b.ownerId !== owner) throw Error(t('active.otherAccount'));
     lock.current = true; setBusy(true);
     try {
       await basketPersistence().discard(b);
@@ -50,9 +51,9 @@ export function ActiveBasketProvider({ children }: PropsWithChildren) {
     } finally { lock.current = false; setBusy(false); }
   };
   const add = async (p: Product) => {
-    if (lock.current) throw Error("Warte bitte, bis das aktuelle Produkt gespeichert ist.");
+    if (lock.current) throw Error(t('active.waitForSave'));
     const b = current.current;
-    if (!b || b.ownerId !== owner || b.result.purchasedAt) throw Error("Öffne oder erstelle zuerst einen Warenkorb.");
+    if (!b || b.ownerId !== owner || b.result.purchasedAt) throw Error(t('active.openFirst'));
     lock.current = true; setBusy(true);
     const version = revision.current;
     try {
