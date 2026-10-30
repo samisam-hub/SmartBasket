@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import { Text, View } from "react-native";
 import { ErrorMessage, InfoCard, SuccessMessage, TextButton } from "./ui";
 import { usePreferences } from "@/context/PreferencesContext";
@@ -20,7 +21,7 @@ export function PersistenceStatus() {
         <>
           <ErrorMessage message={localError} />
           <TextButton
-            label="Erneut auf dem Gerät speichern"
+            label={t('persist.retryLocal')}
             onPress={() => {
               void store.retryLocal();
             }}
@@ -28,22 +29,19 @@ export function PersistenceStatus() {
         </>
       )}
       {!configured ? (
-        <InfoCard title={saved ? "Auf diesem Gerät gespeichert" : "Lokaler Modus"}>
-
-          Die Cloud-Synchronisierung ist nicht eingerichtet. Du kannst die Einrichtung auf diesem Gerät abschließen und fortsetzen.
-        </InfoCard>
+        <InfoCard title={saved ? t('persist.savedLocal') : t('persist.localMode')}>{t('persist.noCloud')}</InfoCard>
       ) : saved && pendingSync ? (
-        <InfoCard title="Nur auf diesem Gerät gespeichert">
+        <InfoCard title={t('persist.localOnly')}>
 
           Deine neuesten Einstellungen wurden noch nicht hochgeladen.
         </InfoCard>
       ) : saved ? (
-        <SuccessMessage message="Einstellungen mit deinem Konto synchronisiert." />
+        <SuccessMessage message={t('persist.synced')} />
       ) : null}
       <ErrorMessage message={remoteError} />
       {configured && (pendingSync || remoteError) && (
         <TextButton
-          label="Cloud-Synchronisierung wiederholen"
+          label={t('persist.retryCloud')}
           loading={saving}
           onPress={() => {
             void store.retryRemote();

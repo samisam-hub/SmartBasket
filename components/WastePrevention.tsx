@@ -1,4 +1,4 @@
-import { formatMoney } from '../services/i18n';
+import { formatMoney, t } from '../services/i18n';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import Feather from '@expo/vector-icons/Feather';
@@ -29,18 +29,17 @@ export function WastePrevention() {
     return () => { active = false; };
   }, [owner, ready, saved]));
   const impact = result?.owner === owner ? result.value : null;
-  return <SectionCard title="Deine Übersicht" compact pale>
-    {error ? <Text style={ui.small}>Deine Übersicht konnte nicht geladen werden.</Text> : !impact ? <Text style={ui.small}>Deine Übersicht wird geladen …</Text> : !impact.shops ? <Text style={ui.body}>Hier beginnt dein erster Einkauf. Schließe einen Einkauf ab, um deine Übersicht zu starten.</Text> : <>
+  return <SectionCard title={t('waste.title')} compact pale>
+    {error ? <Text style={ui.small}>{t('waste.overviewFailed')}</Text> : !impact ? <Text style={ui.small}>{t('waste.overviewLoading')}</Text> : !impact.shops ? <Text style={ui.body}>{t('waste.firstShop')}</Text> : <>
       <View style={{ flexDirection: 'row', gap: 4, alignItems: 'stretch' }}>
         {[
           { amount: String(impact.days), label: `${impact.days === 1 ? "Tag" : "Tage"} mit SmartBasket`, icon: 'sun' as const, display: `${impact.days === 1 ? "Tag" : "Tage"}
 App-Nutzung` },
-          { amount: String(impact.shops), label: `${impact.shops === 1 ? "Einkauf" : "Einkäufe"} abgeschlossen`, icon: 'shopping-bag' as const, display: `${impact.shops === 1 ? "Einkauf" : "Einkäufe"}\nabgeschlossen` },
-          { amount: impact.calorieTargetsMet === null ? '—' : `${impact.calorieTargetsMet}%`, label: "Kalorienziele erreicht", icon: 'target' as const, display: "Kalorienziele erreicht", detail: "Bestätigte Plantage pro Person, die höchstens 10 % vom Kalorienziel abweichen. Geplante Nährwerte, keine erfasste Nahrungsaufnahme." },
-          { amount: impact.proteinTargetsMet === null ? '—' : `${impact.proteinTargetsMet}%`, label: "Durchschnittliche Eiweißversorgung", icon: 'bar-chart-2' as const, display: 'Eiweiß\nversorgung', detail: "Durchschnittlich geplantes Eiweiß im Verhältnis zum täglichen Eiweißziel jeder Person an bestätigten Plantagen. Kann über 100 % liegen. Geplante Nährwerte, keine erfasste Nahrungsaufnahme." },
-          { amount: `~${formatMoney(impact.euros)}`, label: `Vorräte wiederverwendet${impact.unpriced ? ' (teilweise)' : ''}`, icon: 'refresh-cw' as const, display: `Vorräte
-${impact.unpriced ? 'teilweise' : 'verwendet'}` },
-          { amount: impact.savedBudgetPercent === null ? '—' : `${impact.savedBudgetPercent}%`, label: "Gespartes Budget", display: "Gespartes Budget", icon: 'percent' as const, detail: "Budget abzüglich geschätzter Kosten im Verhältnis zum Budget abgeschlossener Einkäufe mit vollständigen Preisen. Ein negativer Wert bedeutet eine Budgetüberschreitung." },
+          { amount: String(impact.shops), label: `${impact.shops === 1 ? "Einkauf" : t('waste.purchases')} abgeschlossen`, icon: 'shopping-bag' as const, display: `${impact.shops === 1 ? "Einkauf" : t('waste.purchases')}\nabgeschlossen` },
+          { amount: impact.calorieTargetsMet === null ? '—' : `${impact.calorieTargetsMet}%`, label: t('waste.calorieTargets'), icon: 'target' as const, display: t('waste.calorieTargets'), detail: t('waste.calorieTargetsNote') },
+          { amount: impact.proteinTargetsMet === null ? '—' : `${impact.proteinTargetsMet}%`, label: t('waste.proteinAverage'), icon: 'bar-chart-2' as const, display: t('waste.proteinShort'), detail: t('waste.proteinNote') },
+          { amount: `~${formatMoney(impact.euros)}`, label: t('waste.pantryReused', { partly: impact.unpriced ? t('waste.partial') : '' }), icon: 'refresh-cw' as const, display: t(impact.unpriced ? 'waste.pantryShortPartly' : 'waste.pantryShortUsed') },
+          { amount: impact.savedBudgetPercent === null ? '—' : `${impact.savedBudgetPercent}%`, label: t('waste.savedBudget'), display: t('waste.savedBudget'), icon: 'percent' as const, detail: t('waste.savedBudgetNote') },
         ].map(stat => <View key={stat.label} accessible accessibilityLabel={`${stat.amount} ${stat.label}. ${stat.detail ?? ''}`} style={{ flex: 1, minWidth: 0, alignItems: 'center', gap: 4 }}>
           {stat.icon === 'percent'
             ? <MaterialCommunityIcons name="piggy-bank-outline" size={23} color={colors.primary} />

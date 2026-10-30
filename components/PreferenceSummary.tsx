@@ -1,4 +1,4 @@
-import { term } from '../services/i18n';
+import { t, term } from '../services/i18n';
 import { View } from "react-native";
 import { PreferenceRow } from "./ui";
 import {
@@ -34,36 +34,36 @@ export function PreferenceSummary({
         onEdit={edit("household")}
       />
       <PreferenceRow
-        label="Geplante Mahlzeiten"
+        label={t('summary.plannedMeals')}
         value={activeSlotLabels(p).join(", ")}
         onEdit={edit("meals")}
       />
       <PreferenceRow
-        label="Kalorien pro Person"
-        value={`${p.dailyCalories ?? "Nicht festgelegt"} kcal/Tag`}
+        label={t('summary.caloriesPerPerson')}
+        value={`${p.dailyCalories ?? t('summary.notSet')} kcal/Tag`}
         onEdit={edit("household")}
       />
       <PreferenceRow
-        label="Ernährungsziel"
+        label={t('summary.goal')}
         value={term(p.primaryGoal)}
         onEdit={edit("goals")}
       />
       <PreferenceRow
-        label="Eiweiß pro Person"
+        label={t('summary.proteinPerPerson')}
         value={
           p.proteinMode === "automatic"
             ? "Automatisch"
-            : `${p.proteinTargetGrams ?? "Nicht festgelegt"} g/Tag`
+            : `${p.proteinTargetGrams ?? t('summary.notSet')} g/Tag`
         }
         onEdit={edit("goals")}
       />
       <PreferenceRow
-        label="Ernährungsweise"
+        label={t('summary.diet')}
         value={p.dietaryPreferences.map((d) => term(d)).join(", ")}
         onEdit={edit("diet")}
       />
       <PreferenceRow
-        label="Allergien und Unverträglichkeiten"
+        label={t('summary.allergies')}
         value={p.allergens.map((a) => term(a)).join(", ") || "Keine ausgewählt"}
         onEdit={edit("allergies")}
       />
@@ -71,8 +71,8 @@ export function PreferenceSummary({
         label={`Gesamtbudget für ${p.planningDays} Tage`}
         value={
           p.budgetEnabled
-            ? `€${p.weeklyBudgetEur ?? "Nicht festgelegt"}`
-            : "Kein Budgetlimit"
+            ? `€${p.weeklyBudgetEur ?? t('summary.notSet')}`
+            : t('summary.noBudget')
         }
         onEdit={edit("budget")}
       />

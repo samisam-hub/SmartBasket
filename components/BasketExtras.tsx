@@ -1,4 +1,4 @@
-import { formatMoney } from '../services/i18n';
+import { formatMoney, t } from '../services/i18n';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import type { BasketGenerationResult } from '../types/basket';
@@ -22,20 +22,17 @@ export function BasketExtras({ result, catalog, preferences, onAdd }: {
   const [query, setQuery] = useState('');
   const matches = addableProducts(catalog, query);
   const staples = preferences ? stapleSuggestions(catalog, preferences, result) : [];
-  return <SectionCard title="Weitere Produkte hinzufügen">
+  return <SectionCard title={t('extras.addMore')}>
     <SearchInput value={query} onChangeText={setQuery} />
-    {query.trim().length >= 2 && !matches.length && <Text style={ui.small}>
-
-      Im Katalog gibt es dafür kein passendes Produkt mit verwendbarer Packungsgröße.
-    </Text>}
+    {query.trim().length >= 2 && !matches.length && <Text style={ui.small}>{t('extras.noMatch')}</Text>}
     {matches.map(product => <TextButton key={product.id} label={label(product)} onPress={() => onAdd(product)} />)}
     {!!staples.length && <>
       <Text style={ui.subheading}>Immer dabei</Text>
       <View style={{ gap: 4 }}>
         {staples.map(staple => <TextButton key={staple.key} label={label(staple.product)} onPress={() => onAdd(staple.product)} />)}
       </View>
-      <Text style={ui.small}>Vorerst eine feste Liste. Deine regelmäßig gekauften Produkte werden noch nicht automatisch erkannt.</Text>
+      <Text style={ui.small}>{t('extras.fixedList')}</Text>
     </>}
-    <Text style={ui.small}>Extras ergänzen nur deinen Einkauf. Sie verändern weder Mahlzeitenportionen noch geplante Nährwerte.</Text>
+    <Text style={ui.small}>{t('extras.note')}</Text>
   </SectionCard>;
 }

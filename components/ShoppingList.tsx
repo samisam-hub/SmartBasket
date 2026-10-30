@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { Platform, Pressable, Share, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -31,11 +32,11 @@ export function ShoppingList({ basket }: { basket: SavedBasket }) {
   return <SectionCard title="Einkaufsliste">
     <Text style={ui.small}>{completed}  von {rows.length}  eingepackt</Text>
     <ErrorMessage message={error} />
-    {error && !blocked && <TextButton label="Häkchen erneut speichern" onPress={store.retry} />}
-    {!ready && <Text style={ui.small}>Häkchen werden geladen …</Text>}
-    {!rows.length && <Text style={ui.small}>Dieser Warenkorb enthält keine Einkaufsartikel.</Text>}
+    {error && !blocked && <TextButton label={t('shoppingList.retryTicks')} onPress={store.retry} />}
+    {!ready && <Text style={ui.small}>{t('shoppingList.loadingTicks')}</Text>}
+    {!rows.length && <Text style={ui.small}>{t('shoppingList.nothingToBuy')}</Text>}
     {rows.map(row => <Pressable key={row.id} accessibilityRole="checkbox"
-      accessibilityLabel={`${row.name}, ${row.quantity}${row.missing ? ", Produkt noch auswählen" : ''}`}
+      accessibilityLabel={`${row.name}, ${row.quantity}${row.missing ? t('shoppingList.pickProduct') : ''}`}
       accessibilityState={{ checked: rowChecked(row, checked), disabled: !ready || blocked }}
       disabled={!ready || blocked} onPress={() => store.toggle(row)} style={{ paddingVertical: 10 }}>
       <View style={[ui.row, { gap: 10 }]}>
@@ -43,15 +44,15 @@ export function ShoppingList({ basket }: { basket: SavedBasket }) {
         <View style={{ flex: 1 }}>
           <Text style={[ui.body, rowChecked(row, checked) && { textDecorationLine: 'line-through' }]}>{row.name}</Text>
           <Text style={ui.small}>{row.quantity}</Text>
-          {row.missing && <Text style={ui.caption}>Wähle ein passendes Produkt. Es ist noch nicht im Warenkorbpreis enthalten.</Text>}
+          {row.missing && <Text style={ui.caption}>{t('shoppingList.pickSuitable')}</Text>}
         </View>
       </View>
     </Pressable>)}
-    {!!rows.length && <SecondaryButton label="Einkaufsliste teilen" disabled={!ready || sharing} onPress={() => { void share(); }} />}
+    {!!rows.length && <SecondaryButton label={t('shoppingList.share')} disabled={!ready || sharing} onPress={() => { void share(); }} />}
     {copy && <>
       <Text style={ui.small}>Markiere und kopiere diese Liste in eine Nachricht:</Text>
       <Text selectable style={ui.body}>{text}</Text>
     </>}
-    <Text style={ui.caption}>Häkchen bleiben auf diesem Gerät. Beim Teilen wird eine Kopie versendet; Änderungen werden nicht synchronisiert. Ein Häkchen erfasst keinen Einkauf.</Text>
+    <Text style={ui.caption}>{t('shoppingList.ticksNote')}</Text>
   </SectionCard>;
 }

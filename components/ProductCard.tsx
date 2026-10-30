@@ -1,4 +1,4 @@
-import { dietaryFieldLabel , categoryLabel , formatNumber, term } from "@/services/i18n";
+import { t , dietaryFieldLabel , categoryLabel , formatNumber, term } from '../services/i18n';
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Chips, SectionCard } from "@/components/ui";
 import { ProductImage } from "@/components/ProductImage";
@@ -20,11 +20,11 @@ export function ProductCard({ product, preferences, onPress }: { product: Produc
           width={thumbnail ? product.imageThumbnailWidth : product.imageWidth}
           height={thumbnail ? product.imageThumbnailHeight : product.imageHeight} />
         <View style={styles.details}>
-          <Text style={ui.caption}>{product.brand ?? "Marke nicht angegeben"} · {categoryLabel(product.category)}</Text>
+          <Text style={ui.caption}>{product.brand ?? t('card.noBrand')} · {categoryLabel(product.category)}</Text>
           <Text style={ui.subheading} numberOfLines={3}>{product.name}</Text>
           {product.quantityLabel && <Text style={ui.small}>{product.quantityLabel}</Text>}
           <Text style={[ui.small, { color: colors.primary }]}>{estimatedPrice(product)}</Text>
-          {product.priceEstimateVersion==='synthetic-category-demo-2'&&<Text style={ui.caption}>Demo-Preis der Kategorie · Menge unbestätigt</Text>}
+          {product.priceEstimateVersion==='synthetic-category-demo-2'&&<Text style={ui.caption}>{t('card.demoPrice')}</Text>}
         </View>
       </View>
       <Text style={ui.small}>{product.caloriesPer100g === null ? "—" : formatNumber(product.caloriesPer100g, 1)} kcal · {product.proteinPer100g === null ? "—" : formatNumber(product.proteinPer100g, 1)}  g Eiweiß / {product.nutritionBasis === "100ml" ? "100 ml" : "100 g"}</Text>
@@ -32,7 +32,7 @@ export function ProductCard({ product, preferences, onPress }: { product: Produc
       <ProductEstimateNotice product={product} />
       {!!risk.contains.length && <Text style={styles.warning}>Allergenhinweis: enthält {risk.contains.map(term).join(", ").replace(/_/g, " ")}</Text>}
       {!!risk.traces.length && <Text style={styles.warning}>Allergenhinweis: kann enthalten {risk.traces.map(term).join(", ").replace(/_/g, " ")}</Text>}
-      {matchesPreferences(product, preferences) && <Text style={[ui.caption, { color: colors.successText }]}>Passt zu deinen Einstellungen · Verpackung prüfen</Text>}
+      {matchesPreferences(product, preferences) && <Text style={[ui.caption, { color: colors.successText }]}>{t('card.fits')}</Text>}
       {product.source === "demo" && <Text style={ui.caption}>Fiktives Demo-Produkt</Text>}
     </SectionCard>
   </Pressable>;
