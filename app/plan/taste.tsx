@@ -8,6 +8,7 @@ import { MealSwipeCards } from '@/components/MealSwipeCards';
 import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SecondaryButton, SectionCard, TextButton } from '@/components/ui';
 import { tasteMeals, tasteSlotLabels as slotLabels } from '@/services/meals/taste';
 import { mealSlots, type MealSlot } from '@/types/meal';
+import { activeSlots } from '@/types/preferences';
 import { ui } from '@/lib/theme';
 
 export default function MealTasteScreen() {
@@ -21,12 +22,16 @@ export default function MealTasteScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const pending = useRef(false);
   if (!ready) return <Screen><Text>Vorlieben werden geladen…</Text></Screen>;
-  if (!saved || !plan?.days.length) return <Screen>
+  if (!saved) return <Screen>
     <ErrorMessage message={error} />
-    <ScreenHeader title="Zuerst die Woche auswählen" subtitle="Haushalt und geplante Mahlzeiten bestimmen, welche Gerichte passen." />
-    <SecondaryButton label="Woche auswählen" onPress={() => router.replace('/plan/week')} />
+    <ScreenHeader title="Zuerst den Haushalt anlegen" subtitle="Wer mitisst, bestimmt die Portionen und welche Gerichte passen." />
+    <SecondaryButton label="Haushalt anlegen" onPress={() => router.replace('/household-setup')} />
   </Screen>;
-  const slots = mealSlots.filter(candidate => plan.days.some(day => day.slots.includes(candidate)));
+  // Vor der ersten Woche gelten die Mahlzeiten des Haushalts; danach die der geplanten Tage.
+  const planned = !!plan?.days.length;
+  const slots = planned
+    ? mealSlots.filter(candidate => plan!.days.some(day => day.slots.includes(candidate)))
+    : activeSlots(saved);
   const queue = slot ? tasteMeals(slot, saved) : [];
   const current = queue[position];
   const open = (chosen: MealSlot, restart = false) => {
@@ -55,7 +60,7 @@ export default function MealTasteScreen() {
   };
   return <Screen bottom>
     <ScreenHeader eyebrow="1 · VORLIEBEN" title={slot ? `${slotLabels[slot]}: Was mögt ihr?` : 'Was mögt ihr gerne?'}
-      subtitle="Rechts: mögen. Links: nicht mögen. Das merkt eure Vorlieben und legt noch keine Mahlzeit auf einen Tag. Danach entsteht euer Wochenplan." />
+      subtitle={`Rechts: mögen. Links: nicht mögen. Das merkt eure Vorlieben und legt noch keine Mahlzeit auf einen Tag. ${planned ? 'Danach entsteht euer Wochenplan.' : 'Danach wählt ihr die Tage, für die geplant wird.'}`} />
     <ErrorMessage message={message ?? error ?? catalog.error} />
     <Text style={ui.small}>Vorlieben bleiben für diesen Haushalt auf diesem Gerät gespeichert. Allergien und Ernährungsregeln gelten immer. Gerichte ohne Bewertung bleiben möglich; abgelehnte Gerichte werden nicht automatisch eingeplant.</Text>
     {!slot ? slots.map(candidate => {
@@ -85,8 +90,10 @@ export default function MealTasteScreen() {
       <SecondaryButton label="Zur Mahlzeitenübersicht" disabled={busy} onPress={() => setSlot(null)} />
     </>}
     <Text style={ui.small}>Ihr könnt jederzeit planen und später weiterwischen. Bestehende Entscheidungen bleiben erhalten; offene Mahlzeiten werden ergänzt.</Text>
-    <PrimaryButton label={busy ? 'Wochenplan wird erstellt…' : 'Wochenplan erstellen'} disabled={busy || catalog.loading}
-      onPress={() => { void generate(); }} />
-    <SecondaryButton label="Tage und Anwesenheit ändern" disabled={busy} onPress={() => router.push('/plan/week')} />
+    {planned
+      ? <PrimaryButton label={busy ? 'Wochenplan wird erstellt…' : 'Wochenplan erstellen'} disabled={busy || catalog.loading}
+          onPress={() => { void generate(); }} />
+      : <PrimaryButton label="Weiter: Tage auswählen" disabled={busy} onPress={() => router.replace('/plan/week')} />}
+    {planned && <SecondaryButton label="Tage und Anwesenheit ändern" disabled={busy} onPress={() => router.push('/plan/week')} />}
   </Screen>;
 }

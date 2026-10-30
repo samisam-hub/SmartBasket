@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { Text, View } from 'react-native';
 import { HouseholdList } from '@/components/HouseholdList';
@@ -8,45 +8,53 @@ import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SectionCard, Selecti
 import { usePreferences } from '@/context/PreferencesContext';
 import { ui, spacing } from '@/lib/theme';
 
-/** The household as it stands: everybody on it, the chance to add one more, and — only once
- *  somebody is on it — the weekly budget, which belongs to the household rather than a person. */
+/** Der Haushalt, wie er steht: alle Personen, die Möglichkeit, eine weitere hinzuzufügen, und —
+ *  erst wenn jemand darauf steht — das Wochenbudget, das zum Haushalt gehört, nicht zu einer Person.
+ *  Hier endet die Einrichtung: gespeichert wird, bevor es zu den Vorlieben weitergeht. */
 export default function HouseholdSetupScreen() {
   const { draft, ready, saving, store } = usePreferences();
+  const [error, setError] = useState<string | null>(null);
   const people = draft.participants ?? [];
-  // Nobody yet means there is nothing to show: go straight to adding the first person.
+  // Noch niemand da heißt: es gibt nichts zu zeigen. Dann gleich zur ersten Person.
   useEffect(() => {
     if (ready && !people.length) router.replace('/household-setup/person');
   }, [ready, people.length]);
-  if (ready && !people.length) return <Screen><Text style={ui.body}>Setting up…</Text></Screen>;
-  if (!ready) return <Screen><Text style={ui.body}>Loading…</Text></Screen>;
+  if (ready && !people.length) return <Screen><Text style={ui.body}>Wird eingerichtet…</Text></Screen>;
+  if (!ready) return <Screen><Text style={ui.body}>Wird geladen…</Text></Screen>;
   const budget = draft.budgetEnabled && draft.weeklyBudgetEur !== null;
+  const next = async () => {
+    setError(null);
+    const ok = await store.save();
+    if (!ok) { setError('Die Einrichtung konnte auf diesem Gerät nicht gespeichert werden. Nichts ist verloren — versuche es erneut.'); return; }
+    router.replace('/plan/taste');
+  };
   return <Screen bottom>
-    <ScreenHeader eyebrow="YOUR HOUSEHOLD" title="Who eats along"
-      subtitle="Portions and amounts follow the people at the table. You can change any of this later." />
+    <ScreenHeader eyebrow="EUER HAUSHALT" title="Wer isst mit"
+      subtitle="Portionen und Mengen richten sich nach den Personen am Tisch. Alles lässt sich später ändern." />
     <HouseholdList people={people}
       onOpen={id => router.push({ pathname: '/household-setup/person', params: { id } })}
       onAdd={() => router.push('/household-setup/person')} />
-    <SectionCard title="Budget for a week">
+    <SectionCard title="Budget für eine Woche">
       <View style={{ alignItems: 'center', paddingBottom: spacing.sm }}><IntroArt kind="goals" size={96} /></View>
       <Text style={ui.small}>
-        What you want to spend on groceries in a week. The list stays inside it where it can, and
-        says so plainly where it cannot.
+        Was ihr in einer Woche für Lebensmittel ausgeben wollt. Die Liste bleibt darin, wo sie kann,
+        und sagt klar, wo sie es nicht kann.
       </Text>
       <View style={ui.wrap}>
-        <SelectionChip label="Keep an eye on it" selected={draft.budgetEnabled}
+        <SelectionChip label="Budget im Blick behalten" selected={draft.budgetEnabled}
           onPress={() => store.update({ budgetEnabled: true })} />
-        <SelectionChip label="No budget limit" selected={!draft.budgetEnabled}
+        <SelectionChip label="Kein Budgetlimit" selected={!draft.budgetEnabled}
           onPress={() => store.update({ budgetEnabled: false, weeklyBudgetEur: null })} />
       </View>
-      {draft.budgetEnabled && <NumberInput label="Weekly budget (€)" value={draft.weeklyBudgetEur}
-        hint="Roughly is fine. You can change it whenever."
+      {draft.budgetEnabled && <NumberInput label="Wochenbudget (€)" value={draft.weeklyBudgetEur}
+        hint="Ungefähr genügt. Ihr könnt es jederzeit ändern."
         onChange={weeklyBudgetEur => store.update({ weeklyBudgetEur })} />}
     </SectionCard>
-    <ErrorMessage message={store.getSnapshot().localError} />
-    <PrimaryButton label="Next: pick meals you like" disabled={saving || (draft.budgetEnabled && !budget)}
-      onPress={() => router.replace('/meal-preferences')} />
+    <ErrorMessage message={error ?? store.getSnapshot().localError} />
+    <PrimaryButton label="Weiter: Gerichte bewerten" loading={saving}
+      disabled={saving || (draft.budgetEnabled && !budget)} onPress={() => { void next(); }} />
     {draft.budgetEnabled && !budget &&
-      <Text style={ui.small}>Enter a weekly budget, or choose “No budget limit”.</Text>}
-    <TextButton label="Back to the introduction" onPress={() => router.replace('/intro')} />
+      <Text style={ui.small}>Gib ein Wochenbudget ein oder wähle „Kein Budgetlimit“.</Text>}
+    <TextButton label="Zurück zur Einführung" onPress={() => router.replace('/intro')} />
   </Screen>;
 }

@@ -56,7 +56,6 @@ function AuthenticatedLayout(){
           <Stack.Screen name="intro" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen name="household-setup" options={{ headerShown: false }} />
           <Stack.Screen name="household-setup/person" options={{ headerShown: false }} />
-          <Stack.Screen name="meal-preferences" options={{ headerShown: false }} />
           <Stack.Screen name="saved-lists" options={{ title: "Alle meine Listen" }} />
           <Stack.Screen name="pantry" options={{ title: "Vorräte und Einkäufe" }} />
           <Stack.Screen name="account" options={{ title: "Konto" }} />
