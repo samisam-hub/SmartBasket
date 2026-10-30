@@ -1,4 +1,4 @@
-import { readyCategoryLabel, slotLabel } from '@/services/i18n';
+import { readyCategoryLabel, slotLabel, t } from '@/services/i18n';
 import { contentName } from '@/services/i18n/content';
 import { useMemo, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
@@ -42,8 +42,8 @@ export default function PlanSlotScreen() {
     [valid, candidatePlan, date, mealSlot, saved, catalog.products, shown, forParam, mealRatings, replacing]);
   if (!ready || catalog.loading) return <Screen><Text style={ui.body}>Gerichte werden gesucht …</Text></Screen>;
   if (!valid) return <Screen bottom>
-    <ScreenHeader title="Diese Mahlzeit ist nicht eingeplant" subtitle="Wähle zuerst Tag und Mahlzeit im Kalender aus." />
-    <SecondaryButton label="Zurück zum Kalender" onPress={() => router.replace('/')} />
+    <ScreenHeader title={t('slot.notPlanned')} subtitle={t('slot.pickFirst')} />
+    <SecondaryButton label={t('slot.backToCalendar')} onPress={() => router.replace('/')} />
   </Screen>;
   const record = (action: ChoiceAction, chosenMealId?: string) => {
     const shownMealIds = suggestions.map(suggestion => suggestion.meal.id);
@@ -59,7 +59,7 @@ export default function PlanSlotScreen() {
   };
   const act = (action: ChoiceAction, run: () => void, chosenMealId?: string) => {
     try { run(); record(action, chosenMealId); setMessage(null); next(); }
-    catch (e) { setMessage(e instanceof Error ? e.message : "Das hat nicht geklappt."); }
+    catch (e) { setMessage(e instanceof Error ? e.message : t('slot.failed')); }
   };
   const categories = readyCategories('heat_and_eat', mealSlot!);
   const ownDishAlreadyChosen = !!eating?.length && itemsInSlot(plan!, date, mealSlot!).some(item =>
@@ -72,7 +72,7 @@ export default function PlanSlotScreen() {
     <ScreenHeader eyebrow={planDateLabel(date).toUpperCase()} title={slotLabel(mealSlot!)}
       subtitle={eatingNames?.length
         ? `Für ${eatingNames.join(', ')} allein. Diese Person nimmt dann nicht am gemeinsamen Gericht teil. Wische nach rechts zum Auswählen, nach links für den nächsten Vorschlag.`
-        : "Wische nach rechts zum Auswählen, nach links für den nächsten Vorschlag. Du kannst auch die Buttons antippen."} />
+        : t('slot.swipeHint')} />
     <ErrorMessage message={message ?? error ?? catalog.error} />
     <MealSwipeCards suggestions={suggestions} exhausted={!suggestions.length}
       onTake={(suggestion: MealSuggestion) =>
@@ -80,28 +80,28 @@ export default function PlanSlotScreen() {
       onNext={() => setShown(ids => [...ids, suggestions[0].meal.id])}
       onMore={() => { record('shuffled'); rounds.current += 1; setShown(ids => [...ids, ...suggestions.map(s => s.meal.id)]); }} />
     {quickMeals.length > 0 &&
-      <SectionCard title="Einfache Mahlzeit für eine Person">
-        <Text style={ui.small}>Eine schnelle Brotzeit oder Brotdose für diese Person. Die Zutaten kommen in den Warenkorb.</Text>
+      <SectionCard title={t('slot.simpleMeal')}>
+        <Text style={ui.small}>{t('slot.lunchboxNote')}</Text>
         {quickMeals.map(suggestion => <View key={suggestion.meal.id} style={ui.stack}>
           <MealImage meal={suggestion.meal} compact />
           <SecondaryButton label={contentName(suggestion.meal.name)}
             onPress={() => act('chosen', () => replacing ? store.replaceMeal(replacing.id, suggestion, saved!) : store.choose(date, mealSlot!, suggestion, saved!, eating), suggestion.meal.id)} />
         </View>)}
       </SectionCard>}
-    <SectionCard title="Oder anders planen">
-      {!eatingNames?.length && <SecondaryButton label="Diese Mahlzeit auslassen" onPress={() => act('skipped', () => store.skip(date, mealSlot!, saved!))} />}
-      <Text style={ui.small}>Auslassen bedeutet, dass du diese Mahlzeit nicht zu Hause isst. Sie gilt als entschieden und wird nicht als Lücke im Warenkorb angezeigt.</Text>
-      <SecondaryButton label={eatingNames?.length ? `${eatingNames.join(', ')} isst auswärts` : "Ich esse auswärts"}
+    <SectionCard title={t('slot.otherWays')}>
+      {!eatingNames?.length && <SecondaryButton label={t('slot.skip')} onPress={() => act('skipped', () => store.skip(date, mealSlot!, saved!))} />}
+      <Text style={ui.small}>{t('slot.skipNote')}</Text>
+      <SecondaryButton label={eatingNames?.length ? `${eatingNames.join(', ')} isst auswärts` : t('slot.eatOut')}
         onPress={() => act('eat_out', () => replacing ? store.replaceMode(replacing.id, 'eat_out', undefined, saved!) : store.chooseMode(date, mealSlot!, 'eat_out', undefined, saved!, eating))} />
       {categories.length > 0 && <>
-        <Text style={ui.subheading}>Stattdessen etwas aufwärmen</Text>
+        <Text style={ui.subheading}>{t('slot.heatInstead')}</Text>
         <View style={ui.wrap}>
           {categories.map(category => <SelectionChip key={category} label={readyCategoryLabel(category)}
             selected={false} onPress={() => takeAway('heat_and_eat', category)} />)}
         </View>
-        <Text style={ui.small}>Wir suchen ein passendes Fertiggericht mit verwendbaren Angaben zu Zubereitung, Ernährung und Preis. Gibt es kein bestätigtes Produkt, zeigt der Warenkorb dies an.</Text>
+        <Text style={ui.small}>{t('slot.readyMealNote')}</Text>
       </>}
-      <SecondaryButton label="Zurück zum Tag" onPress={() => router.replace({ pathname: '/plan/[date]', params: { date, returnTo } })} />
+      <SecondaryButton label={t('slot.backToDay')} onPress={() => router.replace({ pathname: '/plan/[date]', params: { date, returnTo } })} />
     </SectionCard>
   </Screen>;
 }

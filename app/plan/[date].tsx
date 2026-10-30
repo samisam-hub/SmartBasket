@@ -1,4 +1,4 @@
-import { slotLabel } from '@/services/i18n';
+import { slotLabel, t } from '@/services/i18n';
 import { contentName } from '@/services/i18n/content';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
@@ -21,16 +21,16 @@ export default function PlanDayScreen() {
   if (!ready) return <Screen><Text style={ui.body}>Deine Woche wird geladen …</Text></Screen>;
   const day = plan && isPlanDate(date) ? dayOf(plan, date) : null;
   if (!saved || !plan || !day) return <Screen bottom>
-    <ScreenHeader title="Dieser Tag ist nicht eingeplant" subtitle="Wähle zuerst den Tag im Kalender aus." />
-    <PrimaryButton label="Zurück zum Kalender" onPress={() => router.replace('/plan/week')} />
+    <ScreenHeader title={t('day.notPlanned')} subtitle={t('day.pickFirst')} />
+    <PrimaryButton label={t('day.backToCalendar')} onPress={() => router.replace('/plan/week')} />
   </Screen>;
   const people = plan.participants ?? [];
-  const run = (action: () => void) => { try { action(); setMessage(null); } catch (e) { setMessage(e instanceof Error ? e.message : "Das hat nicht geklappt."); } };
+  const run = (action: () => void) => { try { action(); setMessage(null); } catch (e) { setMessage(e instanceof Error ? e.message : t('day.failed')); } };
   const openSlots = sortSlots(day.slots).filter(slot => !itemsInSlot(plan, date, slot).length);
   return <Screen bottom>
     <ScreenHeader title={planDateLabel(date)} subtitle={openSlots.length
       ? `${openSlots.length} ${openSlots.length === 1 ? 'Mahlzeit' : 'Mahlzeiten'} noch auszuwählen.`
-      : "Alle Mahlzeiten dieses Tages sind ausgewählt."} />
+      : t('day.allChosen')} />
     <ErrorMessage message={message ?? error} />
     {sortSlots(day.slots).map(slot => {
       const dishes = itemsInSlot(plan, date, slot);
@@ -56,17 +56,17 @@ export default function PlanDayScreen() {
                     eating ? present.filter(id => id !== person.id) : [...present, person.id], saved))} />;
               })}
             </View>
-            <Text style={ui.small}>Wer nicht zu Hause isst, wird beim Einkauf nicht berücksichtigt.</Text>
+            <Text style={ui.small}>{t('day.notHomeNote')}</Text>
           </>}
           <View style={[ui.row, { gap: 8 }]}>
-            <TextButton label="Anderes Gericht wählen" onPress={() => {
+            <TextButton label={t('day.chooseOther')} onPress={() => {
               router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo, replaceItem: item.id,
                 ...(item.participantIds ? { for: item.participantIds.join(',') } : {}) } }); }} />
-            <TextButton label="Nicht zu Hause" onPress={() => run(() => store.setPresence(item.id, [], saved))} />
+            <TextButton label={t('day.notHome')} onPress={() => run(() => store.setPresence(item.id, [], saved))} />
           </View>
         </View>)}
         {!dishes.length && <>
-          <Text style={ui.small}>Noch nicht ausgewählt.</Text>
+          <Text style={ui.small}>{t('day.notChosen')}</Text>
           <PrimaryButton label={`${slotLabel(slot)} auswählen`}
             onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo } })} />
         </>}
@@ -75,17 +75,17 @@ export default function PlanDayScreen() {
             onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo, for: person.id } })} />)}
       </SectionCard>;
     })}
-    <SectionCard title="Mahlzeiten dieses Tages">
+    <SectionCard title={t('day.meals')}>
       <View style={ui.wrap}>
         {mealSlots.map(slot => <SelectionChip key={slot} label={slotLabel(slot)} selected={day.slots.includes(slot)}
           onPress={() => { try { store.toggleSlot(date, slot, saved); } catch { store.skip(date, slot, saved); } }} />)}
       </View>
-      <Text style={ui.small}>Beim Abwählen einer Mahlzeit wird auch das gewählte Gericht entfernt. Sie zählt dann als auswärts gegessen und nicht als offene Mahlzeit.</Text>
+      <Text style={ui.small}>{t('day.dropNote')}</Text>
     </SectionCard>
-    <PrimaryButton label={openSlots.length ? "Weiter auswählen" : "Tag abschließen"}
+    <PrimaryButton label={openSlots.length ? t('day.carryOn') : t('day.finishDay')}
       onPress={() => openSlots.length
         ? router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot: openSlots[0], returnTo } })
         : returnTo === 'week' ? router.replace('/plan/overview') : router.replace({ pathname: '/plan/day-done', params: { date } })} />
-    <SecondaryButton label={returnTo === 'week' ? 'Zurück zum Wochenplan' : "Zurück zum Kalender"} onPress={() => router.replace(returnTo === 'week' ? '/plan/overview' : '/')} />
+    <SecondaryButton label={returnTo === 'week' ? t('day.backToWeekPlan') : t('day.backToCalendar')} onPress={() => router.replace(returnTo === 'week' ? '/plan/overview' : '/')} />
   </Screen>;
 }

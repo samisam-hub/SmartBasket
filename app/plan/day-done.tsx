@@ -1,4 +1,4 @@
-import { slotLabel } from '@/services/i18n';
+import { slotLabel, t } from '@/services/i18n';
 import { contentName } from '@/services/i18n/content';
 import { Text } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -17,14 +17,14 @@ export default function DayDoneScreen() {
   const nextDay = plan ? plannedDates(plan).find(other => openDays.some(day => day.date === other)) : undefined;
   return <Screen bottom>
     <ScreenHeader title={`${planDateLabel(date)} ist geplant`}
-      subtitle={meals.length ? `${meals.length} ${meals.length === 1 ? 'Mahlzeit' : 'Mahlzeiten'} für diesen Tag.` : "An diesem Tag wird zu Hause nicht gekocht."} />
+      subtitle={meals.length ? `${meals.length} ${meals.length === 1 ? 'Mahlzeit' : 'Mahlzeiten'} für diesen Tag.` : t('dayDone.noCooking')} />
     <SectionCard>
       {meals.map(item => <Text key={item.id} style={ui.small}>{slotLabel(item.mealSlot)}: {contentName(item.meal.name)}</Text>)}
-      {!meals.length && <Text style={ui.small}>An diesem Tag esst ihr auswärts.</Text>}
+      {!meals.length && <Text style={ui.small}>{t('dayDone.eatingOut')}</Text>}
     </SectionCard>
     {nextDay
       ? <PrimaryButton label={`${planDateLabel(nextDay)} planen`} onPress={() => router.replace({ pathname: '/plan/[date]', params: { date: nextDay } })} />
-      : <PrimaryButton label="Zurück zur Woche" onPress={() => router.replace('/')} />}
-    <SecondaryButton label="Zurück zur Woche" onPress={() => router.replace('/')} />
+      : <PrimaryButton label={t('dayDone.backToWeek')} onPress={() => router.replace('/')} />}
+    <SecondaryButton label={t('dayDone.backToWeek')} onPress={() => router.replace('/')} />
   </Screen>;
 }
