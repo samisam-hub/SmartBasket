@@ -46,7 +46,7 @@ export function matchReadyMeals<P extends AnyMealPlan>(plan: P, preferences: Use
     const selected = candidates[0];
     if (!selected) {
       unmatched++;
-      warnings.push({ code: `unmatched_ready_${item.id}`, message: `${itemDayLabel(plan, item)} · ${item.mealSlot}: ${item.meal.name} konnte keinem bestätigten Kataloggericht mit passenden Zubereitungs-, Ernährungs-, Allergen-, Preis- und Portionsangaben zugeordnet werden. Kein Produkt wurde hinzugefügt; Nährwerte und Kosten sind unbekannt.` });
+      warnings.push({ code: `unmatched_ready_${item.id}`, message: t('readyMeals.unmatched', { day: itemDayLabel(plan, item), slot: item.mealSlot, meal: item.meal.name }) });
       return;
     }
     const { product, quantity, price } = selected;

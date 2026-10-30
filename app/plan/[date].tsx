@@ -29,7 +29,7 @@ export default function PlanDayScreen() {
   const openSlots = sortSlots(day.slots).filter(slot => !itemsInSlot(plan, date, slot).length);
   return <Screen bottom>
     <ScreenHeader title={planDateLabel(date)} subtitle={openSlots.length
-      ? `${openSlots.length} ${openSlots.length === 1 ? 'Mahlzeit' : 'Mahlzeiten'} noch auszuwählen.`
+      ? t('day.openSlots', { count: openSlots.length })
       : t('day.allChosen')} />
     <ErrorMessage message={message ?? error} />
     {sortSlots(day.slots).map(slot => {
@@ -67,7 +67,7 @@ export default function PlanDayScreen() {
         </View>)}
         {!dishes.length && <>
           <Text style={ui.small}>{t('day.notChosen')}</Text>
-          <PrimaryButton label={`${slotLabel(slot)} auswählen`}
+          <PrimaryButton label={t('day.chooseSlot', { slot: slotLabel(slot) })}
             onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot, returnTo } })} />
         </>}
         {!!dishes.length && people.length > 1 && people.filter(person => !eatingSomethingElse.includes(person.id)).map(person =>

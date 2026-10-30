@@ -29,7 +29,7 @@ export async function transcribe(uri: string, signal: AbortSignal, language: Voi
   }
   form.append('language', language);
   const result = await invoke(form, signal);
-  if (typeof result?.text !== 'string' || !result.text.trim() || result.text.length > 2000) throw Error("Keine verständliche Sprache erkannt. Bitte versuche es erneut.");
+  if (typeof result?.text !== 'string' || !result.text.trim() || result.text.length > 2000) throw Error(t('voice.notUnderstood'));
   return result.text as string;
 }
 export async function askPlanner(text: string, plan: VoicePlan, history: VoiceMessage[], meals: { id: string; name: string }[], signal: AbortSignal) {

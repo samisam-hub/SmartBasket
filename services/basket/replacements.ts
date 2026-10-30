@@ -67,7 +67,7 @@ export function addBasketReplacement(original: BasketGenerationResult, requireme
     quantityAdjustmentPercent: 0, totalWeight: packed.unit === 'g' ? packed.purchased : null, totalVolume: packed.unit === 'ml' ? packed.purchased : null,
     totalCalories: nutrition.calories * factor, totalProtein: nutrition.protein * factor, totalCarbohydrates: nutrition.carbohydrates * factor,
     totalFat: nutrition.fat * factor, totalFiber: null, estimatedPrice: packagePrice(product) === null ? null : packagePrice(product)! * packed.packageCount,
-    reasonSelected: [{ code: 'manual_replacement', detail: `Hinzugefügt aus der Kategorie ${categoryLabel(product.category)} als Ersatz für ${requirement.ingredientName}.` }] };
+    reasonSelected: [{ code: 'manual_replacement', detail: t('basket.manualReplacement', { category: categoryLabel(product.category), ingredient: requirement.ingredientName }) }] };
   const result = structuredClone(original);
   if (result.items.some(i => i.product.id === product.id || i.ingredientKey === requirement.ingredientKey)) throw Error(t('basket.productOrIngredientSelected'));
   result.excludedItems = result.excludedItems?.filter(i => i.product.id !== product.id);

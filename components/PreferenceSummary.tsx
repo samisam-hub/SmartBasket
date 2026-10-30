@@ -64,11 +64,11 @@ export function PreferenceSummary({
       />
       <PreferenceRow
         label={t('summary.allergies')}
-        value={p.allergens.map((a) => term(a)).join(", ") || "Keine ausgewählt"}
+        value={p.allergens.map((a) => term(a)).join(", ") || t('summary.noneSelected')}
         onEdit={edit("allergies")}
       />
       <PreferenceRow
-        label={`Gesamtbudget für ${p.planningDays} Tage`}
+        label={t('summary.budgetForDays', { days: p.planningDays })}
         value={
           p.budgetEnabled
             ? `€${p.weeklyBudgetEur ?? t('summary.notSet')}`

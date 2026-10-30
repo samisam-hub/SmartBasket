@@ -317,7 +317,7 @@ export function NumberStepper({
           {value}
         </Text>
         <IconButton
-          label={`Erhöhen ${label}`}
+          label={t('ui.increase', { label })}
           icon="plus"
           disabled={value >= max}
           onPress={() => onChange(Math.min(max, value + 1))}

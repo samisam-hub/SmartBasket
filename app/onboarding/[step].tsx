@@ -332,7 +332,7 @@ export default function OnboardingScreen() {
             <SectionCard>
               <Text style={ui.small}>
                 {draft.participants?.length
-                  ? `Vorschlag für deinen Haushalt: etwa ${draft.dailyCalories ?? "—"} kcal pro Person und Tag. Im Bereich Haushalt kannst du den Wert pro Person ändern.`
+                  ? t('step.caloriesSuggestion', { calories: draft.dailyCalories ?? '—' })
                   : t('step.householdNeeded')}
               </Text>
               <Text style={ui.subheading}>{t('step.mainGoal')}</Text>
@@ -464,7 +464,7 @@ export default function OnboardingScreen() {
             {draft.budgetEnabled && (
               <NumberInput
                 decimal
-                label={`Gesamtbudget für ${draft.planningDays} Tage (€)`}
+                label={t('step.budgetForDays', { days: draft.planningDays })}
                 value={draft.weeklyBudgetEur}
                 onChange={(weeklyBudgetEur) =>
                   store.update({ weeklyBudgetEur })

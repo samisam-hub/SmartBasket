@@ -60,7 +60,7 @@ export function ActiveBasketProvider({ children }: PropsWithChildren) {
       const next = { ...b, result: addBasketProduct(b.result, p), syncStatus: 'local' as const };
       const response = await basketPersistence().save(next);
       if (revision.current === version) remember(response.basket);
-      return response.warning ?? `Hinzugefügt zu ${basketDisplayName(b)}`;
+      return response.warning ?? t('active.addedTo', { basket: basketDisplayName(b) });
     } finally { lock.current = false; setBusy(false); }
   };
   return <Context.Provider value={{ active, remember, clear, discard, add, busy }}>{children}</Context.Provider>;

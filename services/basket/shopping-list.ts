@@ -26,7 +26,7 @@ export function shoppingRows(result: BasketGenerationResult): ShoppingRow[] {
     if (bought + pantry >= requirement.minimumAcceptableQuantity - .001) return [];
     const needed = Math.max(0, requirement.requiredQuantity - bought - pantry);
     return [row(`ingredient:${requirement.ingredientKey}`, contentName(requirement.ingredientName),
-      `${amount(needed)} ${requirement.unit} noch benötigt`, true)];
+      t('rows.stillNeeded', { amount: amount(needed), unit: requirement.unit }), true)];
   });
   return [...products, ...missing];
 }

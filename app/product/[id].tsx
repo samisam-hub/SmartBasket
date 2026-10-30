@@ -47,13 +47,13 @@ export default function ProductDetails() {
       {product.source === "demo" && <InfoCard title="Fiktives Demo-Produkt">{t('product.sampleNote')}</InfoCard>}
       <AddProductButton product={product} />
       {risk && (!!risk.contains.length || !!risk.traces.length) && <InfoCard title="Allergenhinweis">
-        {risk.contains.length ? `Enthält von dir ausgewählte Allergene: ${displayList(risk.contains)}. ` : ""}
-        {risk.traces.length ? `Kann von dir ausgewählte Allergene enthalten: ${displayList(risk.traces)}.` : ""}
+        {risk.contains.length ? t('product.containsAllergens', { allergens: displayList(risk.contains) }) : ""}
+        {risk.traces.length ? t('product.tracesAllergens', { allergens: displayList(risk.traces) }) : ""}
       </InfoCard>}
       {hasDiscoveryPreferences(saved) && <Text style={ui.small}>
         {matchesPreferences(product, saved) ? t('product.fits') : t('product.unconfirmed')}
       </Text>}
-      <SectionCard title={`Nährwerte je ${product.nutritionBasis === "100ml" ? "100 ml" : "100 g"} · im Verkaufszustand`}>
+      <SectionCard title={t('product.nutritionTitle', { basis: product.nutritionBasis === "100ml" ? "100 ml" : "100 g" })}>
         <ProductEstimateNotice product={product} />
         {([
           ["Kalorien", product.caloriesPer100g, "kcal"], [t('product.protein'), product.proteinPer100g, "g"],

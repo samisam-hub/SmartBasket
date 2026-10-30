@@ -14,7 +14,7 @@ export default function PersonalProfileScreen(){const {draft:p,store,step,ready,
  const e=validateProfile(p),update=store.update;
  if(!ready)return <Screen><Text>Dein Profil wird geladen …</Text></Screen>;
  const next=()=>{const keys=[['displayName','sex','age','heightCm','weightKg'],['primaryNutritionGoal','activityLevel','defaultDailyCalories','defaultProteinTargetGrams'],['dietaryPreferences'],['allergens','intolerances']][step]??[];if(keys.some(k=>e[k])){setMessage(t('personal.checkFields'));return;}setMessage(null);update({},Math.min(4,step+1));};
- return <Screen top={false} bottom><ScreenHeader eyebrow={`PERSÖNLICHE VORGABEN · ${step+1} VON 5`} title={names[step]} subtitle={t('personal.intro')} /><ErrorMessage message={message??error} />
+ return <Screen top={false} bottom><ScreenHeader eyebrow={t('personal.eyebrow', { step: step+1 })} title={names[step]} subtitle={t('personal.intro')} /><ErrorMessage message={message??error} />
  {step===0&&<><TextInput label="Anzeigename (freiwillig)" value={p.displayName} onChangeText={displayName=>update({displayName})} error={e.displayName} />
  <Text style={ui.small}>Die Angabe des Geschlechts ist freiwillig. In diesem Profil wird sie derzeit nicht zur Zielberechnung verwendet.</Text>
  {sexes.map(s=><SelectionChip key={s} label={term(s)} selected={p.sex===s} onPress={()=>update({sex:s})} />)}
@@ -25,12 +25,15 @@ export default function PersonalProfileScreen(){const {draft:p,store,step,ready,
  {step===1&&<>{[...goals,'improve_habits' as const].map(g=><SelectionChip key={g} label={g==='improve_habits'?"Essgewohnheiten verbessern":term(g)} selected={p.primaryNutritionGoal===g} onPress={()=>update({primaryNutritionGoal:g})} />)}
  <Text style={ui.subheading}>{t('personal.activity')}</Text>{activities.map(a=><SelectionChip key={a} label={term(a)} selected={p.activityLevel===a} onPress={()=>update({activityLevel:a})} />)}
  <OptionalNumber label={t('personal.calories')} value={p.defaultDailyCalories} error={e.defaultDailyCalories} onChange={defaultDailyCalories=>update({defaultDailyCalories})} hint={t('personal.caloriesNote')} />
- {(['automatic','manual'] as const).map(m=><SelectionChip key={m} label={`Eiweißziel: ${term(m)}`} selected={p.proteinMode===m} onPress={()=>update({proteinMode:m})} />)}
+ {(['automatic','manual'] as const).map(m=><SelectionChip key={m} label={t('personal.proteinMode', { mode: term(m) })} selected={p.proteinMode===m} onPress={()=>update({proteinMode:m})} />)}
  <Text style={ui.small}>{t('personal.autoProtein')}</Text>
  {p.proteinMode==='manual'&&<OptionalNumber label={t('personal.protein')} value={p.defaultProteinTargetGrams} error={e.defaultProteinTargetGrams} onChange={defaultProteinTargetGrams=>update({defaultProteinTargetGrams})} />}</>}
  {step===2&&<DietFields value={p.dietaryPreferences} onChange={dietaryPreferences=>update({dietaryPreferences})} />}
  {step===3&&<AllergyFields value={p.allergens} intolerances={p.intolerances} onChange={allergens=>update({allergens})} onIntolerances={intolerances=>update({intolerances})} />}
- {step===4&&<>{[`${p.displayName||"Gast"} · ${p.sex ? term(p.sex) : t('personal.noSex')} · ${p.age??t('personal.noAge')}`,`Größe: ${p.heightCm??"nicht festgelegt"} cm · Gewicht: ${p.weightKg??"nicht festgelegt"} kg`,`${(p.primaryNutritionGoal === "improve_habits" ? term(p.primaryNutritionGoal) : term(p.primaryNutritionGoal))} · ${p.activityLevel ? term(p.activityLevel) : t('personal.noActivity')}`,`${p.defaultDailyCalories??"Planziel"} kcal · ${term(p.proteinMode)} Eiweiß ${p.proteinMode==='manual'?p.defaultProteinTargetGrams+' g':''}`,p.dietaryPreferences.map(d=>term(d)).join(', '),[...p.allergens,...p.intolerances].map(term).join(', ')||t('personal.noAllergies')].map((s,i)=><SectionCard key={i} title={s} />)}
+ {step===4&&<>{[t('personal.identity', { name: p.displayName||t('personal.guest'), sex: p.sex ? term(p.sex) : t('personal.noSex'), age: p.age??t('personal.noAge') }),
+   t('personal.body', { height: p.heightCm??t('personal.notSet'), weight: p.weightKg??t('personal.notSet') }),
+   t('personal.goalLine', { goal: term(p.primaryNutritionGoal), activity: p.activityLevel ? term(p.activityLevel) : t('personal.noActivity') }),
+   t('personal.nutritionLine', { calories: p.defaultDailyCalories??t('personal.planTarget'), mode: term(p.proteinMode), grams: p.proteinMode==='manual'?`${p.defaultProteinTargetGrams} g`:'' }),p.dietaryPreferences.map(d=>term(d)).join(', '),[...p.allergens,...p.intolerances].map(term).join(', ')||t('personal.noAllergies')].map((s,i)=><SectionCard key={i} title={s} />)}
  {names.slice(0,4).map((n,i)=><SecondaryButton key={n} label={`Bearbeiten ${n}`} onPress={()=>update({},i)} />)}
  <PrimaryButton label={t('personal.save')} loading={busy} onPress={()=>{setBusy(true);void store.save().then(()=>router.dismissTo('/profile')).catch(e=>setMessage(e.message)).finally(()=>setBusy(false));}} /></>}
  {step<4&&<PrimaryButton label="Weiter" onPress={next} />}{step>0&&<SecondaryButton label={t('personal.back')} onPress={()=>update({},step-1)} />}

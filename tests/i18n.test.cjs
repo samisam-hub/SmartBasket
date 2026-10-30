@@ -148,3 +148,36 @@ test("every key a screen asks for exists, and every key in the dictionary is ask
   const unused = Object.keys(de).filter(key => !mentioned.has(key) && !dynamic.test(key));
   assert.deepEqual(unused, [], 'these keys are no longer used by any screen');
 });
+
+test('no screen keeps a German sentence of its own any more', () => {
+  const fs = require('node:fs'), path = require('node:path');
+  // The dictionaries hold the German; the content names hold the dish names; the voice contract is
+  // shared with a backend that has no layer and says so in a comment of its own.
+  const exempt = ['services/i18n/', 'services/voice/contract.ts'];
+  const files = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (/\.tsx?$/.test(entry.name) && !exempt.some(skip => full.startsWith(skip))) files.push(full);
+    }
+  };
+  for (const root of ['app', 'components', 'services', 'hooks', 'context']) walk(root);
+  const german = [];
+  for (const file of files) {
+    for (const [index, line] of fs.readFileSync(file, 'utf8').split('\n').entries()) {
+      // Regex literals can carry a German letter as a character to fold, not as a word.
+      const code = line.replace(/\/\/.*$/, '').replace(/\/\*.*?\*\//g, '')
+        .replace(/\/(?:[^/\\\n]|\\.)+\/[gimsuy]*/g, '/re/');
+      if (/^\s*\*/.test(line) || /\/\*\*/.test(line)) continue;
+      // A quoted string or a JSX text node carrying a letter only German uses.
+      const quoted = [...code.matchAll(/(?<![\w.])(?:"([^"\n]*[äöüßÄÖÜ][^"\n]*)"|'([^'\n]*[äöüßÄÖÜ][^'\n]*)'|`([^`\n]*[äöüßÄÖÜ][^`\n]*)`)/g)];
+      const jsx = [...code.matchAll(/>\s*([^<>{}]*[äöüßÄÖÜ][^<>{}]*?)\s*</g)];
+      for (const match of [...quoted, ...jsx]) {
+        const text = (match[1] ?? match[2] ?? match[3] ?? '').trim();
+        if (text.length > 3) german.push(`${file}:${index + 1}  ${text.slice(0, 60)}`);
+      }
+    }
+  }
+  assert.deepEqual(german, [], 'these German strings belong in the dictionaries');
+});

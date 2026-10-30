@@ -168,7 +168,7 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
     // Include each spoken meal wish once when compatible; keep the usual portion scoring.
     const wished=allOptions.filter(m=>p.preferredMealIds?.includes(m.id)&&!plan.items.some(i=>i.meal.id===m.id));
     const options=wished.length?wished:allOptions;
-    if(!options.length){plan.warnings.push({code:`missing_${day}_${slot}`,message:`Tag ${day+1}: kein passendes Gericht für ${term(slot)} verfügbar. Es wurde keine ungeeignete Alternative ausgewählt.`});continue;}
+    if(!options.length){plan.warnings.push({code:`missing_${day}_${slot}`,message:t('planner.noMealForSlot', { day: day+1, slot: term(slot) })});continue;}
     const prior=plan.items.filter(i=>i.dayIndex===day).reduce((n,i)=>{const x=mealNutrition(i);return {calories:n.calories+x.calories/p.householdSize,protein:n.protein+x.protein/p.householdSize};},{calories:0,protein:0});
     const candidates=scoredCandidates(options,{
       slot,householdSize:p.householdSize,dailyCalories,dailyProteinTarget:targets.dailyProteinTarget,

@@ -1,5 +1,5 @@
 import { contentName } from '../services/i18n/content';
-import { term } from '../services/i18n';
+import { t, term } from '../services/i18n';
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { AnyMealPlan } from '../types/meal';
@@ -21,7 +21,7 @@ export function BasketMealPreview({ plan, onOpen, showMealSlot = true, compact =
     {width > 0 && <ScrollView horizontal pagingEnabled ref={scroll} showsHorizontalScrollIndicator={false}
       scrollEventThrottle={16} onScroll={e => setActive(Math.max(0, Math.min(items.length - 1, Math.round(e.nativeEvent.contentOffset.x / width))))}>
       {items.map(item => <Pressable key={item.id} onPress={onOpen} accessibilityRole="button"
-        accessibilityLabel={`Warenkorb öffnen: ${contentName(item.meal.name)}`} style={{ width, gap: 8, paddingHorizontal: 4 }}>
+        accessibilityLabel={t('preview.openBasketMeal', { meal: contentName(item.meal.name) })} style={{ width, gap: 8, paddingHorizontal: 4 }}>
         {showMealSlot && <Text style={ui.small}>{firstDay.label} · {term(item.mealSlot)}</Text>}
         {compactDetails ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
           <View style={{ flex: 1, minWidth: 0 }}><MealImage meal={item.meal} compact /></View>

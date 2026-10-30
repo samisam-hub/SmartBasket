@@ -54,7 +54,7 @@ export function recalculateBasket(original: BasketGenerationResult, productId?: 
 
 /** Unchecked rows stay available to restore, but never enter totals or checkout. */
 export function toggleBasketProduct(original: BasketGenerationResult, productId: string): BasketGenerationResult {
-  if (original.purchasedAt) throw Error("Bereits eingekaufte Warenkörbe können nicht bearbeitet werden.");
+  if (original.purchasedAt) throw Error(t('store.basket.purchasedNoEdit'));
   const selected = original.items.find(i => i.product.id === productId);
   if (selected) {
     const result = removeBasketProduct(original, productId);

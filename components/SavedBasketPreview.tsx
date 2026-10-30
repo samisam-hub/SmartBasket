@@ -17,7 +17,7 @@ export function SavedBasketPreview({ basket: b, onOpen, minimal = false }: { bas
   if (minimal && b.result.mealPlan?.items.length) {
     const plan = b.result.mealPlan;
     return <>
-      <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Öffnen ${title}`} style={{ gap: 8 }}>
+      <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={t('preview.open', { title })} style={{ gap: 8 }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
           <Text style={[ui.subheading, { flexGrow: 1 }]}>{title}</Text>
           <Text style={[ui.body, { fontWeight: '700' }]}>{b.result.estimatedTotalPrice === null ? t('preview.noPrice') : `${formatMoney(b.result.estimatedTotalPrice)}`}</Text>
@@ -36,7 +36,7 @@ export function SavedBasketPreview({ basket: b, onOpen, minimal = false }: { bas
     </>;
   }
   return <>
-    <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Öffnen ${title}`} style={{ gap: 8 }}>
+    <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={t('preview.open', { title })} style={{ gap: 8 }}>
       <Text style={ui.subheading}>{title}</Text>
       {!minimal && <Text style={ui.small}>{b.result.items.length}  Produkte · {b.syncStatus === 'synced' ? "Synchronisiert" : t('preview.onThisDevice')}</Text>}
       <Text style={ui.body}>{minimal && b.result.estimatedTotalPrice !== null ? `${formatMoney(b.result.estimatedTotalPrice)}` : basketPrice(b.result.estimatedTotalPrice)}</Text>

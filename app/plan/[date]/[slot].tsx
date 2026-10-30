@@ -71,7 +71,7 @@ export default function PlanSlotScreen() {
   return <Screen bottom>
     <ScreenHeader eyebrow={planDateLabel(date).toUpperCase()} title={slotLabel(mealSlot!)}
       subtitle={eatingNames?.length
-        ? `Für ${eatingNames.join(', ')} allein. Diese Person nimmt dann nicht am gemeinsamen Gericht teil. Wische nach rechts zum Auswählen, nach links für den nächsten Vorschlag.`
+        ? t('slot.aloneHint', { people: eatingNames.join(', ') })
         : t('slot.swipeHint')} />
     <ErrorMessage message={message ?? error ?? catalog.error} />
     <MealSwipeCards suggestions={suggestions} exhausted={!suggestions.length}
@@ -91,7 +91,7 @@ export default function PlanSlotScreen() {
     <SectionCard title={t('slot.otherWays')}>
       {!eatingNames?.length && <SecondaryButton label={t('slot.skip')} onPress={() => act('skipped', () => store.skip(date, mealSlot!, saved!))} />}
       <Text style={ui.small}>{t('slot.skipNote')}</Text>
-      <SecondaryButton label={eatingNames?.length ? `${eatingNames.join(', ')} isst auswärts` : t('slot.eatOut')}
+      <SecondaryButton label={eatingNames?.length ? t('slot.eatingOut', { people: eatingNames.join(', ') }) : t('slot.eatOut')}
         onPress={() => act('eat_out', () => replacing ? store.replaceMode(replacing.id, 'eat_out', undefined, saved!) : store.chooseMode(date, mealSlot!, 'eat_out', undefined, saved!, eating))} />
       {categories.length > 0 && <>
         <Text style={ui.subheading}>{t('slot.heatInstead')}</Text>

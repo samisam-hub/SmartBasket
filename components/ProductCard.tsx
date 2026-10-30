@@ -1,4 +1,4 @@
-import { t , dietaryFieldLabel , categoryLabel , formatNumber, term } from '../services/i18n';
+import { categoryLabel, dietaryFieldLabel, formatNumber, t, term } from '../services/i18n';
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Chips, SectionCard } from "@/components/ui";
 import { ProductImage } from "@/components/ProductImage";
@@ -27,7 +27,7 @@ export function ProductCard({ product, preferences, onPress }: { product: Produc
           {product.priceEstimateVersion==='synthetic-category-demo-2'&&<Text style={ui.caption}>{t('card.demoPrice')}</Text>}
         </View>
       </View>
-      <Text style={ui.small}>{product.caloriesPer100g === null ? "—" : formatNumber(product.caloriesPer100g, 1)} kcal · {product.proteinPer100g === null ? "—" : formatNumber(product.proteinPer100g, 1)}  g Eiweiß / {product.nutritionBasis === "100ml" ? "100 ml" : "100 g"}</Text>
+      <Text style={ui.small}>{t('card.nutritionPer100', { calories: product.caloriesPer100g === null ? '—' : formatNumber(product.caloriesPer100g, 1), protein: product.proteinPer100g === null ? '—' : formatNumber(product.proteinPer100g, 1), basis: product.nutritionBasis === '100ml' ? '100 ml' : '100 g' })}</Text>
       {!!diet.length && <Chips labels={diet.slice(0, 3)} />}
       <ProductEstimateNotice product={product} />
       {!!risk.contains.length && <Text style={styles.warning}>Allergenhinweis: enthält {risk.contains.map(term).join(", ").replace(/_/g, " ")}</Text>}

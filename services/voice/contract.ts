@@ -58,6 +58,9 @@ export function isVoiceReply(value: unknown): value is VoiceReply {
   return typeof r.reply === 'string' && r.reply.length <= 3000 && ['de', 'en'].includes(r.language)
     && (r.unresolved === null || (typeof r.unresolved === 'string' && r.unresolved.length <= 1000)) && isVoicePlan(r.plan);
 }
+/** The spoken questions follow the language of the conversation, not the interface locale, and
+ *  this file is shared with the voice backend, which has no translation layer. So both wordings
+ *  live here rather than in the dictionaries. */
 export function clarification(p: VoicePlan, language: 'de' | 'en'): string | null {
   const de = language === 'de';
   if (![3, 5, 7, 14].includes(p.days ?? 0)) return de ? 'Für wie viele Tage? Möglich sind 3, 5, 7 oder 14 Tage.' : 'How many days? Choose 3, 5, 7 or 14 days.';

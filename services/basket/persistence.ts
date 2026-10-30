@@ -134,6 +134,6 @@ export class BasketPersistence {
 }
 export function newSavedBasket(result: BasketGenerationResult, preferences: UserPreferences, ownerId: string | null): SavedBasket {
   return { id: `basket-${Date.now()}-${Math.random().toString(36).slice(2)}`, cloudId: null, ownerId,
-    name: `Warenkorb für ${basketDayCount(result, preferences)} ${basketDayCount(result, preferences) === 1 ? "Tag" : "Tage"}`, createdAt: new Date().toISOString(), preferences,
+    name: t('basketName.days', { count: basketDayCount(result, preferences) }), createdAt: new Date().toISOString(), preferences,
     result, syncStatus: 'local' };
 }

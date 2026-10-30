@@ -28,13 +28,13 @@ export const isPlanDate = (date: unknown): date is string =>
   typeof date === 'string' && parsePlanDate(date) !== null;
 export function addDays(date: string, days: number): string {
   const parsed = parsePlanDate(date);
-  if (!parsed) throw Error("Ungültiges Plandatum");
+  if (!parsed) throw Error(t('plan.invalidDate'));
   return planDate(new Date(parsed.getTime() + days * 86400000));
 }
 /** The Monday on or before the given day; weeks in the calendar always start on Monday. */
 export function weekStartOf(date: string): string {
   const parsed = parsePlanDate(date);
-  if (!parsed) throw Error("Ungültiges Plandatum");
+  if (!parsed) throw Error(t('plan.invalidDate'));
   return addDays(date, -((parsed.getUTCDay() + 6) % 7));
 }
 export const isWeekStart = (date: unknown): date is string =>

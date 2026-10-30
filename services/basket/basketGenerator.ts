@@ -120,11 +120,11 @@ export function generateBasket(input: UserPreferences, products: readonly Produc
   const items: BasketItem[] = candidates.flatMap((c, i) => {
     const n = quantities[i]; if (!n) return [];
     const amount = n * c.pack.amount, factor = amount / 100;
-    const reasons = [{ code: 'category_coverage', detail: `Ergänzt die Auswahl: ${groupLabel(c.group)}` },
+    const reasons = [{ code: 'category_coverage', detail: t('generator.coverageReason', { group: groupLabel(c.group) }) },
       ...input.dietaryPreferences.filter(d => d !== 'none').map(d => ({ code: `diet:${d}`, detail: `Passt zur Einstellung ${term(d)}` }))];
     if (c.product.proteinPer100g! * 4 >= c.product.caloriesPer100g! * 0.2) reasons.push({ code: 'high_protein', detail: t('generator.proteinShare') });
     if (c.price !== null && c.calories / c.price >= 500) reasons.push({ code: 'price_efficiency', detail: t('generator.caloriesPerEuro') });
-    if (c.pack.assumed) reasons.push({ code: 'assumed_package', detail: `Angenommen: ${c.pack.amount} ${c.pack.unit} Packung; tatsächliche Größe prüfen` });
+    if (c.pack.assumed) reasons.push({ code: 'assumed_package', detail: t('generator.assumedPackage', { amount: c.pack.amount, unit: c.pack.unit }) });
     return [{ product: c.product, group: c.group, packageCount: n, packageAmount: c.pack.amount, quantityUnit: c.pack.unit,
       quantityAssumed: c.pack.assumed, totalWeight: c.pack.unit === 'g' ? round(amount) : null, totalVolume: c.pack.unit === 'ml' ? round(amount) : null,
       totalCalories: round(factor * c.product.caloriesPer100g!), totalProtein: round(factor * c.product.proteinPer100g!),
@@ -144,10 +144,10 @@ export function generateBasket(input: UserPreferences, products: readonly Produc
   const budgetStatus: BasketGenerationResult['budgetStatus'] = !input.budgetEnabled ? 'disabled' : price === null ? 'unknown' :
     !nutritionMet || !coverageMet || price > targets.budgetTarget! * 1.1 ? 'unachievable' : price > targets.budgetTarget! ? 'slightly_over' : 'within_budget';
   if (!items.length) warnings.push({ code: 'no_eligible_products', message: t('generator.noneFit') });
-  if (current.unknown) warnings.push({ code: 'missing_prices', message: `Preise fehlen für ${current.unknown} ausgewählte Produkte. Gesamtpreis und Budgeteinhaltung können nicht bestätigt werden.` });
+  if (current.unknown) warnings.push({ code: 'missing_prices', message: t('generator.missingPrices', { count: current.unknown }) });
   if (items.some(i => i.quantityAssumed)) warnings.push({ code: 'assumed_packages', message: t('generator.estimatedPackages'), productIds: items.filter(i => i.quantityAssumed).map(i => i.product.id) });
   if (!nutritionMet && items.length) warnings.push({ code: 'nutrition_conflict', message: t('generator.outsideTargets') });
-  for (const c of categoryCoverage.filter(c => c.required && (!c.represented || c.amount < c.targetAmount * 0.75))) warnings.push({ code: `coverage:${c.group}`, message: c.available ? `Kategorie ${groupLabel(c.group)} ist in diesem Warenkorb nur teilweise abgedeckt.` : `Keine passenden Produkte der Kategorie ${groupLabel(c.group)} für diese Anforderungen verfügbar.` });
+  for (const c of categoryCoverage.filter(c => c.required && (!c.represented || c.amount < c.targetAmount * 0.75))) warnings.push({ code: `coverage:${c.group}`, message: t(c.available ? 'generator.partialCoverage' : 'generator.noCoverage', { group: groupLabel(c.group) }) });
   if (budgetStatus === 'unachievable' || budgetStatus === 'slightly_over') warnings.push({ code: 'budget_conflict', message: t('generator.bestFound') });
   if (exclusions.allergen_safety_unknown) warnings.push({ code: 'allergen_evidence', message: t('generator.allergenEvidence') });
   if (input.allergens.length) warnings.push({ code: 'verify_labels', message: t('generator.sourceData') });
