@@ -1,5 +1,5 @@
 import { contentName } from '../services/i18n/content';
-import { term } from '../services/i18n';
+import { t, term } from '../services/i18n';
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { AnyMealPlan, AnyMealPlanItem } from '../types/meal';
@@ -35,7 +35,7 @@ function DayMeals({ plan, label, items, ratios }: { plan: AnyMealPlan; label: st
           <Text style={ui.eyebrow}>{term(item.mealSlot).toUpperCase()}</Text>
           <Text style={ui.subheading}>{contentName(item.meal.name)}</Text>
           <MealImage meal={item.meal} compact />
-          {mealNutritionKnown(item, ratios) ? <ParticipantNutrition plan={plan} participantIds={item.participantIds} nutrition={mealNutrition(item, ratios)} /> : <Text style={ui.small}>Nährwerte unbekannt{item.mealMode==='eat_out'?" · Auswärts essen · Keine Einkaufsartikel":" · Kein passendes Produkt zugeordnet"}</Text>}
+          {mealNutritionKnown(item, ratios) ? <ParticipantNutrition plan={plan} participantIds={item.participantIds} nutrition={mealNutrition(item, ratios)} /> : <Text style={ui.small}>Nährwerte unbekannt{item.mealMode==='eat_out'?t('confirmed.eatOut'):t('confirmed.noProduct')}</Text>}
           {item.readyMealMatch && (ratios?.[`ready:${item.readyMealMatch.productId}`]??1)>0 && <Text style={ui.small}>{item.readyMealMatch.productName}</Text>}
         </View>)}
       </ScrollView>}
@@ -54,7 +54,7 @@ function DayMeals({ plan, label, items, ratios }: { plan: AnyMealPlan; label: st
 
 export function ConfirmedMeals({ plan, ratios }: { plan: AnyMealPlan; ratios?: Record<string, number> }) {
   // Days nobody planned are left out instead of shown as an empty row.
-  return <SectionCard title="Bestätigte Mahlzeiten">
+  return <SectionCard title={t('confirmed.title')}>
     {planDays(plan).filter(day => day.items.length).map(day => <DayMeals key={day.key} plan={plan} ratios={ratios}
       label={day.label} items={[...day.items].sort((a, b) => slots.indexOf(a.mealSlot) - slots.indexOf(b.mealSlot))} />)}
   </SectionCard>;

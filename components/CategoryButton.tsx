@@ -1,4 +1,4 @@
-import { categoryLabel } from '../services/i18n';
+import { categoryLabel, t } from '../services/i18n';
 import { Image, Pressable, Text, View } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { categories, type ProductCategory } from '../types/product';
@@ -9,7 +9,7 @@ const photoSize = 68;
 // One bundled 4×4 photo sheet; row-major order matches the catalog categories.
 export function CategoryButton({ category, selected, onPress, label }: { category: ProductCategory | 'all'; selected: boolean; onPress: () => void; label?: string }) {
   const index = category === 'all' ? 0 : categories.indexOf(category);
-  return <Pressable accessibilityRole="button" accessibilityLabel={label ?? (category === 'all' ? "Alle Produkte" : categoryLabel(category))}
+  return <Pressable accessibilityRole="button" accessibilityLabel={label ?? (category === 'all' ? t('category.all') : categoryLabel(category))}
     accessibilityState={{ selected }} onPress={onPress}
     style={({ pressed }) => ({ width: 104, minHeight: 114, borderRadius: 16, borderWidth: 1,
       borderColor: selected ? colors.primary : colors.border, backgroundColor: selected && category !== 'all' ? colors.primary : colors.surface,

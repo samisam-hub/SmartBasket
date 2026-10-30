@@ -1,4 +1,4 @@
-import { formatMoney } from '../services/i18n';
+import { formatMoney, t } from '../services/i18n';
 import { basketDisplayName } from '../services/basket/naming';
 import { Pressable, Text, View } from 'react-native';
 import { planNutrition } from '../services/meals/planner';
@@ -20,7 +20,7 @@ export function SavedBasketPreview({ basket: b, onOpen, minimal = false }: { bas
       <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Öffnen ${title}`} style={{ gap: 8 }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
           <Text style={[ui.subheading, { flexGrow: 1 }]}>{title}</Text>
-          <Text style={[ui.body, { fontWeight: '700' }]}>{b.result.estimatedTotalPrice === null ? "Preis nicht verfügbar" : `${formatMoney(b.result.estimatedTotalPrice)}`}</Text>
+          <Text style={[ui.body, { fontWeight: '700' }]}>{b.result.estimatedTotalPrice === null ? t('preview.noPrice') : `${formatMoney(b.result.estimatedTotalPrice)}`}</Text>
         </View>
       </Pressable>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
@@ -38,7 +38,7 @@ export function SavedBasketPreview({ basket: b, onOpen, minimal = false }: { bas
   return <>
     <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Öffnen ${title}`} style={{ gap: 8 }}>
       <Text style={ui.subheading}>{title}</Text>
-      {!minimal && <Text style={ui.small}>{b.result.items.length}  Produkte · {b.syncStatus === 'synced' ? "Synchronisiert" : "Auf diesem Gerät"}</Text>}
+      {!minimal && <Text style={ui.small}>{b.result.items.length}  Produkte · {b.syncStatus === 'synced' ? "Synchronisiert" : t('preview.onThisDevice')}</Text>}
       <Text style={ui.body}>{minimal && b.result.estimatedTotalPrice !== null ? `${formatMoney(b.result.estimatedTotalPrice)}` : basketPrice(b.result.estimatedTotalPrice)}</Text>
     </Pressable>
     {b.result.mealPlan && <BasketMealPreview plan={b.result.mealPlan} onOpen={onOpen} showMealSlot={!minimal} />}

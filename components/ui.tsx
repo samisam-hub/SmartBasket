@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import Feather from "@expo/vector-icons/Feather";
 import {StateIllustration,type IllustrationKind} from './BrandAssets';
 import type { ComponentProps, PropsWithChildren, ReactNode } from "react";
@@ -271,8 +272,8 @@ export function SearchInput({
         style={styles.searchText}
         value={value}
         onChangeText={onChangeText}
-        accessibilityLabel="Produkte suchen"
-        placeholder="Lebensmittel oder Marken suchen"
+        accessibilityLabel={t('ui.searchProducts')}
+        placeholder={t('ui.searchPlaceholder')}
         maxLength={120}
         placeholderTextColor={colors.muted}
         autoCorrect={false}
@@ -281,7 +282,7 @@ export function SearchInput({
       />
       {value ? (
         <IconButton
-          label="Suche löschen"
+          label={t('ui.clearSearch')}
           icon="x"
           onPress={() => onChangeText("")}
         />

@@ -62,11 +62,11 @@ test("a line says in words whether it is in the trolley, and hides its details u
   assert.doesNotMatch(texts(), /Planned: 700 g/, "the detail is folded away");
   const checkbox = () => renderer.root.findAll((node) => node.props.accessibilityRole === "checkbox")[0];
   assert.equal(checkbox().props.accessibilityState.checked, false);
-  assert.match(checkbox().props.accessibilityLabel, /still to buy/);
+  assert.match(checkbox().props.accessibilityLabel, /noch zu kaufen/);
 
   await act(() => { renderer.update(row({ ticked: true, expanded: true })); });
   assert.equal(checkbox().props.accessibilityState.checked, true);
-  assert.match(checkbox().props.accessibilityLabel, /in the trolley/);
+  assert.match(checkbox().props.accessibilityLabel, /im Wagen/);
   assert.match(texts(), /Planned: 700 g/, "opening it shows what is known");
   await act(() => renderer.unmount());
 });

@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, Text, View } from 'react-native';
 import type { ReactNode } from 'react';
@@ -23,7 +24,7 @@ export function BasketItemRow({ name, quantity, price, image, ticked, expanded, 
   return <View style={[styles.row, ticked && styles.rowTicked]}>
     <View style={styles.line}>
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: ticked }}
-        accessibilityLabel={`${name}, ${ticked ? 'in the trolley' : 'still to buy'}`}
+        accessibilityLabel={`${name}, ${ticked ? t('row.inTrolley') : t('row.toBuy')}`}
         onPress={onTick} style={({ pressed }) => [styles.tickTarget, pressed && { opacity: 0.6 }]}>
         <View style={[styles.tick, ticked && styles.tickOn]}>
           {ticked && <Feather name="check" size={18} color={colors.onPrimary} />}
@@ -31,7 +32,7 @@ export function BasketItemRow({ name, quantity, price, image, ticked, expanded, 
       </Pressable>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded }}
         accessibilityLabel={`${name}, ${quantity}${price ? `, ${price}` : ''}`}
-        accessibilityHint="Show or hide what is known about this product"
+        accessibilityHint={t('itemRow.toggle')}
         onPress={onToggle} style={({ pressed }) => [styles.body, pressed && { opacity: 0.7 }]}>
         <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
           <Text numberOfLines={2} style={[styles.name, ticked && styles.nameTicked]}>{name}</Text>

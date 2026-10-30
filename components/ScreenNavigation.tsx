@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import Feather from '@expo/vector-icons/Feather';
 import { router, usePathname, useSegments } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
@@ -5,9 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography } from '../lib/theme';
 
 const destinations = [
-  { label: "Startseite", path: '/', icon: 'home' },
-  { label: "Warenkorb", path: '/basket', icon: 'shopping-bag' },
-  { label: "Produkte", path: '/products', icon: 'grid' },
+  { label: t('nav.home'), path: '/', icon: 'home' },
+  { label: t('nav.basket'), path: '/basket', icon: 'shopping-bag' },
+  { label: t('nav.products'), path: '/products', icon: 'grid' },
   { label: "Profil", path: '/profile', icon: 'user' },
 ] as const;
 
