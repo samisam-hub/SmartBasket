@@ -91,14 +91,16 @@ test("a basket from a week with gaps and dropped slots is not partial", () => {
   // The saved planning period no longer has to match: the week carries its own days.
   assert.equal(preferences.planningDays, 7);
   assert.doesNotThrow(() => basketFromMealPlan(plan, prefs({ householdSize: 2, planningDays: 14 }), fullCatalog));
-  assert.throws(() => basketFromMealPlan(plan, prefs({ householdSize: 3 }), fullCatalog), /Preferences changed/);
+  assert.throws(() => basketFromMealPlan(plan, prefs({ householdSize: 3 }), fullCatalog), /Einstellungen haben sich geändert/);
   // Coverage is measured over the meals they chose, not over a seven-day week: three days with
   // seven chosen slots out of twelve possible ones.
   const share = plannedSlotShare(plan);
   assert.ok(share > 1.9 && share < 2.5, `${share} day equivalents`);
-  assert.equal(result.calorieTarget, nutritionTargets({ ...preferences, planningDays: share }).calorieTarget);
+  const expectedCalorieTarget = nutritionTargets({ ...preferences, planningDays: share }).calorieTarget;
+  assert.ok(Math.abs(result.calorieTarget - expectedCalorieTarget) < 1e-8,
+    `calorie target ${result.calorieTarget}, expected ${expectedCalorieTarget}`);
   assert.ok(result.calorieCoveragePercent >= 90 && result.calorieCoveragePercent <= 110,
-    `coverage ${result.calorieCoveragePercent}`);
+    `Versorgung ${result.calorieCoveragePercent}`);
 });
 
 test("an open chosen slot is what makes a week basket partial, and it says which", () => {
@@ -109,7 +111,7 @@ test("an open chosen slot is what makes a week basket partial, and it says which
   assert.equal(result.status, "partial");
   const warning = result.warnings.find((w) => w.code === "open_slot_2026-10-06");
   assert.ok(warning);
-  assert.match(warning.message, /dinner still open/);
+  assert.match(warning.message, /Abendessen noch offen/);
   // A day nobody planned is never reported as a gap.
   for (const w of result.warnings) assert.ok(!w.code.includes("2026-10-07"));
 });
@@ -130,11 +132,11 @@ test("ingredients, nutrition and portions read a week plan the same way", () => 
   assert.ok(Math.abs(person.calorieTarget - plan.targetCalories / 3 / 2) < 1e-9);
   // Day labels: a fixed-period plan counts days, a week names them.
   const labels = planDays(plan).map((day) => day.label);
-  assert.deepEqual(labels, ["Mon 5 Oct", "Tue 6 Oct", "Thu 8 Oct"]);
-  assert.equal(itemDayLabel(plan, plan.items[0]), "Mon 5 Oct");
+  assert.deepEqual(labels, ["Mo., 5. Okt.", "Di., 6. Okt.", "Do., 8. Okt."]);
+  assert.equal(itemDayLabel(plan, plan.items[0]), "Mo., 5. Okt.");
   const legacy = generateMealPlan(prefs({ planningDays: 3, householdSize: 1, dailyCalories: 1700 }));
-  assert.deepEqual(planDays(legacy).map((day) => day.label), ["Day 1", "Day 2", "Day 3"]);
-  assert.equal(itemDayLabel(legacy, legacy.items[0]), "Day 1");
+  assert.deepEqual(planDays(legacy).map((day) => day.label), ["Tag 1", "Tag 2", "Tag 3"]);
+  assert.equal(itemDayLabel(legacy, legacy.items[0]), "Tag 1");
   assert.equal(planDays(legacy).every((day) => day.items.length), true);
 });
 

@@ -1,9 +1,18 @@
-import type { AnyMealPlan, MealChoice, MealPlan, MealSlot, WeekPlan } from '../../types/meal';
+import type { AnyMealPlan, MealChoice, Meal, MealPlan, MealSlot, WeekPlan } from '../../types/meal';
 import { mealSlots } from '../../types/meal';
 import { ingredients } from '../../data/meals';
 import {isParticipant} from '../profile-domain';
 import { isCook, readyCategories } from './choices';
 import { groupsOverlap, inWeek, isPlanDate, isWeekPlanShape, isWeekStart, itemGroup, sortSlots } from './weekPlan';
+function validRecipeMetadata(meal: Meal): boolean {
+  if (meal.mealSlots !== undefined && (!Array.isArray(meal.mealSlots) || !meal.mealSlots.length ||
+    new Set(meal.mealSlots).size !== meal.mealSlots.length || !meal.mealSlots.every(slot => mealSlots.includes(slot)))) return false;
+  const time = meal.preparation;
+  return time === undefined || (!!time && Number.isInteger(time.activeMinutes) && time.activeMinutes > 0 &&
+    Number.isInteger(time.totalMinutes) && time.totalMinutes >= time.activeMinutes &&
+    Number.isInteger(time.referenceServings) && time.referenceServings > 0 &&
+    ['assemble', 'cook', 'bake', 'soak'].includes(time.method) && typeof time.note === 'string');
+}
 function validChoice(i: MealChoice) {
   if (isCook(i)) return i.readyMealCategory === undefined && i.readyMealMatch === undefined;
   if (!['ready_to_eat', 'heat_and_eat', 'eat_out'].includes(i.mealMode!) || i.meal?.nutritionSource !== 'unrecorded' || i.meal?.ingredients?.length !== 0) return false;
@@ -23,7 +32,7 @@ function validItem(i: MealChoice, people?: Set<string>): boolean {
       i.participantIds.every(id => typeof id === 'string' && (!people || people.has(id))))) &&
     Number.isFinite(i.servings) && i.servings > 0 && i.servings <= 15 &&
     !!i.meal && typeof i.meal.id === 'string' && typeof i.meal.name === 'string' && i.meal.servings === 1 &&
-    validChoice(i) && Array.isArray(i.meal.dietaryTags) && Array.isArray(i.meal.allergens) && Array.isArray(i.meal.ingredients) &&
+    validRecipeMetadata(i.meal) && validChoice(i) && Array.isArray(i.meal.dietaryTags) && Array.isArray(i.meal.allergens) && Array.isArray(i.meal.ingredients) &&
     (!isCook(i) || i.meal.ingredients.length > 0) && i.meal.ingredients.length <= 12 &&
     i.meal.ingredients.every(l => l && ingredients[l.ingredientKey] &&
       typeof l.ingredientName === 'string' && l.unit === ingredients[l.ingredientKey].unit &&

@@ -68,14 +68,14 @@ test("an empty week carries the household over and starts without days", () => {
   assert.equal(plan.householdSize, 2);
   assert.equal(plan.participants, undefined);
   assert.equal(plannedDayCount(plan), 0);
-  assert.throws(() => emptyWeekPlan("2026-10-06", preferences), /Monday/);
+  assert.throws(() => emptyWeekPlan("2026-10-06", preferences), /Montag/);
   // Participants are snapshotted, not shared with the preferences object.
-  const people = [{ id: "current-user", name: "You", age: null, sex: null, dailyCalories: 2000,
+  const people = [{ id: "current-user", name: "Du", age: null, sex: null, dailyCalories: 2000,
     proteinTarget: 100, dietaryPreferences: ["none"], allergens: [], intolerances: [], isCurrentUser: true }];
   const shared = emptyWeekPlan(monday, prefs({ householdSize: 1, participants: people }));
   assert.deepEqual(shared.participants, people);
   shared.participants[0].name = "Changed";
-  assert.equal(people[0].name, "You");
+  assert.equal(people[0].name, "Du");
 });
 
 test("days hold the chosen slots, and gaps between days are normal", () => {

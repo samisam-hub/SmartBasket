@@ -3,6 +3,7 @@ import type { NavigationState, PartialState } from "@react-navigation/native";
 export type PreferenceIntent = "onboarding" | "edit";
 export type RootStackParams = {
   "(tabs)": undefined;
+  "plan/week": undefined;
   "onboarding/[step]": { step: string; intent?: PreferenceIntent; review?: string };
   "basket-setup": { savedId?: string } | undefined;
   "product/[id]": { id: string };
@@ -21,4 +22,9 @@ export function preferenceExitState(intent: PreferenceIntent): PartialState<Navi
       },
     }],
   };
+}
+
+/** Successful first setup goes straight into week selection, with no onboarding route behind it. */
+export function planningEntryState(): PartialState<NavigationState<RootStackParams>> {
+  return { index: 1, routes: [{ name: '(tabs)' }, { name: 'plan/week' }] };
 }

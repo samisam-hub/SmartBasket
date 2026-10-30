@@ -24,6 +24,10 @@ export interface MealIngredient {
   flexible: boolean; minAdjustmentPercent: number; maxAdjustmentPercent: number; category: IngredientGroup;
 }
 export interface Meal {
+  /** Optional for old saved snapshots; new recipes explicitly support multiple meal slots. */
+  mealSlots?: MealSlot[];
+  preparation?: { activeMinutes: number; totalMinutes: number; referenceServings: number;
+    method: 'assemble' | 'cook' | 'bake' | 'soak'; note: string };
   id: string; name: string; mealType: MealSlot; servings: number;
   caloriesPerServing: number; proteinPerServing: number; carbohydratesPerServing: number; fatPerServing: number;
   dietaryTags: Diet[]; allergens: Allergen[]; ingredients: MealIngredient[];

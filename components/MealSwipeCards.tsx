@@ -1,3 +1,5 @@
+import { germanSavedName } from '../lib/legacy-display';
+import { germanLabel } from '../lib/german';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, PanResponder, Text, View } from 'react-native';
 import type { Meal } from '../types/meal';
@@ -23,7 +25,7 @@ const SPAN = 320;
 /** Screen 4: one card at a time. Right takes it and the meal is done; left shows the next card.
  *  The two round buttons do exactly the same and move the card the same way, so a tap is as
  *  legible as a swipe: in both cases the card visibly leaves in the direction of the decision. */
-export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore, busy }: {
+export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore, busy, mode = 'choice' }: {
   suggestions: MealSuggestion[];
   /** No compatible meal is left to show, so only the honest ways out remain. */
   exhausted: boolean;
@@ -31,6 +33,8 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
   onNext: () => void;
   onMore: () => void;
   busy?: boolean;
+  /** 'taste' asks whether a meal is liked at all; 'choice' picks one for a slot. */
+  mode?: 'choice' | 'taste';
 }) {
   const [width, setWidth] = useState(0);
   const offset = useRef(new Animated.Value(0)).current;
@@ -71,11 +75,11 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
     onPanResponderRelease: (_event, gesture) => decide(swipeAction(gesture.dx, gesture.dy, width)),
     onPanResponderTerminate: () => decide('none'),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [width, current?.meal.id, busy]);
-  if (!current) return <SectionCard title={exhausted ? 'No more meals fit this slot' : 'Nothing to show'}>
+  }), [width, current?.meal.id, busy, mode]);
+  if (!current) return <SectionCard title={exhausted ? 'Keine weiteren passenden Gerichte' : 'Nichts anzuzeigen'}>
     <Text style={ui.body}>{exhausted
-      ? 'Every compatible meal for this slot has been shown. Rather than repeating one, pick one of these:'
-      : 'No suggestion is available right now.'}</Text>
+      ? 'Alle passenden Gerichte für diese Mahlzeit wurden gezeigt. Statt eines zu wiederholen, wähle einen dieser Wege:'
+      : 'Gerade ist kein Vorschlag verfügbar.'}</Text>
   </SectionCard>;
   return <View style={{ gap: spacing.md }} onLayout={event => {
     const next = event.nativeEvent.layout.width;
@@ -86,12 +90,14 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
           already loaded when it comes to the front. It is not animated and takes no touches. */}
       {upcoming && <View pointerEvents="none" accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants" style={[ui.card, styles.behind]}>
-        <Text style={ui.eyebrow}>Next up</Text>
-        <Text style={ui.subheading}>{upcoming.meal.name}</Text>
+        <Text style={ui.eyebrow}>Als Nächstes</Text>
+        <Text style={ui.subheading}>{germanSavedName(upcoming.meal.name)}</Text>
         <MealImage meal={upcoming.meal} />
       </View>}
       <Animated.View testID="meal-card" accessible accessibilityRole="button"
-        accessibilityLabel={`${current.meal.name}. Swipe right to take it, left for the next one.`}
+        accessibilityLabel={`${germanSavedName(current.meal.name)}. ${mode === 'taste'
+          ? 'Rechts: mögen. Links: nicht mögen.'
+          : 'Wische nach rechts zum Auswählen, nach links für den nächsten Vorschlag.'}`}
         {...(busy ? {} : responder.panHandlers)}
         style={[ui.card, { gap: spacing.sm, transform: [
           { translateX: offset },
@@ -101,25 +107,29 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
         {/* The decision is named while the card is still in hand, in its own colour. */}
         <Animated.View pointerEvents="none" style={[styles.stamp, styles.stampTake,
           { opacity: offset.interpolate({ inputRange: [0, threshold], outputRange: [0, 1], extrapolate: 'clamp' }) }]}>
-          <Text style={styles.stampTakeText}>TAKE</Text>
+          <Text style={styles.stampTakeText}>{mode === 'taste' ? 'MAG ICH' : 'NEHMEN'}</Text>
         </Animated.View>
         <Animated.View pointerEvents="none" style={[styles.stamp, styles.stampNext,
           { opacity: offset.interpolate({ inputRange: [-threshold, 0], outputRange: [1, 0], extrapolate: 'clamp' }) }]}>
-          <Text style={styles.stampNextText}>NEXT</Text>
+          <Text style={styles.stampNextText}>{mode === 'taste' ? 'NEIN' : 'WEITER'}</Text>
         </Animated.View>
-        <Text style={ui.eyebrow}>{suggestions.length > 1 ? `1 of ${suggestions.length}` : 'Last one for now'}</Text>
-        <Text style={ui.subheading}>{current.meal.name}</Text>
+        <Text style={ui.eyebrow}>{mode === 'taste' ? 'GESCHMACK'
+          : suggestions.length > 1 ? `1 von ${suggestions.length}` : 'Vorerst letzter Vorschlag'}</Text>
+        <Text style={ui.subheading}>{germanSavedName(current.meal.name)}</Text>
         <MealImage meal={current.meal} />
         <Text style={ui.small}>{mealLine(current.meal)}</Text>
       </Animated.View>
     </View>
     <View style={styles.buttons}>
-      <ChoiceButton icon="x" tone="next" caption="Next" label="Show the next one"
-        disabled={busy || suggestions.length < 2} onPress={() => decide('next')} />
-      <ChoiceButton icon="check" tone="take" caption="Take" label="Take this one"
+      <ChoiceButton icon="x" tone="next" caption={mode === 'taste' ? 'Nein' : 'Weiter'}
+        label={mode === 'taste' ? 'Mögen wir nicht' : 'Nächsten Vorschlag zeigen'}
+        disabled={busy || (mode !== 'taste' && suggestions.length < 2)} onPress={() => decide('next')} />
+      <ChoiceButton icon={mode === 'taste' ? 'heart' : 'check'} tone="take"
+        caption={mode === 'taste' ? 'Mag ich' : 'Nehmen'}
+        label={mode === 'taste' ? 'Mögen wir' : 'Dieses Gericht wählen'}
         disabled={busy} onPress={() => decide('take')} />
     </View>
-    <TextButton label="Show two others" disabled={busy} onPress={onMore} />
+    {mode !== 'taste' && <TextButton label="Zwei andere zeigen" disabled={busy} onPress={onMore} />}
   </View>;
 }
 const styles = {
@@ -134,4 +144,4 @@ const styles = {
   stampNextText: { color: colors.muted, fontWeight: '800' as const, fontSize: 16, letterSpacing: 1 },
 };
 const mealLine = (meal: Meal) =>
-  `${meal.ingredients.length} ingredients · ${meal.dietaryTags.length ? meal.dietaryTags.join(', ') : 'no dietary tags'}`;
+  `${meal.ingredients.length} Zutaten · ${meal.dietaryTags.length ? meal.dietaryTags.map(germanLabel).join(', ') : 'keine Ernährungsangaben'}`;

@@ -8,7 +8,7 @@ const {optimizePackages}=require('../services/meals/packageOptimizer.ts');
 const {basketFromMealPlan}=require('../services/meals/basket.ts');
 const {matchProducts}=require('../services/meals/matching.ts');
 const {isBasketResult}=require('../services/basket/persistence.ts');
-const requirement=(patch={})=>({ingredientKey:'chicken',ingredientName:'Chicken breast',unit:'g',requiredQuantity:620,flexible:true,minimumAcceptableQuantity:558,maximumAcceptableQuantity:682,sourceMealIds:['one'],...patch});
+const requirement=(patch={})=>({ingredientKey:'chicken',ingredientName:"Hähnchenbrust",unit:'g',requiredQuantity:620,flexible:true,minimumAcceptableQuantity:558,maximumAcceptableQuantity:682,sourceMealIds:['one'],...patch});
 const sku=(size,patch={})=>product(size,{packageSize:size,...patch});
 const {fullCatalog}=require('./meal-fixtures.cjs');
 
@@ -16,9 +16,9 @@ test('milk allergy evidence gaps explain empty baskets without weakening safety 
  const p=prefs({householdSize:2,planningDays:3,dailyCalories:1500,primaryGoal:'build_muscle',proteinMode:'manual',proteinTargetGrams:100,dietaryPreferences:['lactose_free'],allergens:['milk']});
  const result=basketFromMealPlan({...generateMealPlan(p,fullCatalog),status:'confirmed'},p,fullCatalog);
  assert.equal(result.items.length,0);
- assert.ok(result.warnings.some(w=>w.code==='allergy_evidence_gap'&&w.message.includes('Milk allergy and lactose-free')));
+ assert.ok(result.warnings.some(w=>w.code==='allergy_evidence_gap'&&w.message.includes('Milchallergie und laktosefrei')));
  assert.ok(result.matchingDiagnostics.some(d=>d.unresolvedReason.includes('allergen_metadata_unknown')));
- assert.ok(result.warnings.some(w=>w.message.includes('This does not mean they contain those allergens')));
+ assert.ok(result.warnings.some(w=>w.message.includes('Das bedeutet nicht, dass sie diese Allergene enthalten')));
  const withoutAllergy={...p,allergens:[]};
  assert.ok(basketFromMealPlan({...generateMealPlan(withoutAllergy,fullCatalog),status:'confirmed'},withoutAllergy,fullCatalog).items.length>0);
  assert.deepEqual(p.allergens,['milk']);
@@ -57,7 +57,7 @@ test('nutrition recalculates underfill and does not count leftover package calor
  assert.equal(result.adjustedMealNutrition[0].nutrition.calories,720);
 });
 test('meal safety, unknown ingredient and replacement constraints',()=>{
- assert.equal(meals.length,32);
+ assert.equal(meals.length,98);
  for(const diet of ['vegan','vegetarian','pescatarian','lactose_free','gluten_free']){
   const p=prefs({dietaryPreferences:[diet]});const plan=generateMealPlan(p);assert.ok(plan.items.length);assert.ok(plan.items.every(i=>compatibleMeal(i.meal,p)));
  }

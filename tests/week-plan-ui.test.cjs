@@ -86,11 +86,11 @@ test("one card at a time: right takes it, left moves on, and tapping does the sa
   assert.ok(JSON.stringify(behind.findAllByType("Text").map((node) => node.props.children)).includes("Meal B"));
   assert.equal(behind.props.importantForAccessibility, "no-hide-descendants");
   const button = (label) => renderer.root.findAll((node) => node.props.label === label)[0];
-  await act(() => button("Take this one").props.onPress());
+  await act(() => button("Dieses Gericht wählen").props.onPress());
   assert.deepEqual(taken, ["a"]);
-  await act(() => button("Show the next one").props.onPress());
+  await act(() => button("Nächsten Vorschlag zeigen").props.onPress());
   assert.deepEqual(nexts, [1]);
-  await act(() => button("Show two others").props.onPress());
+  await act(() => button("Zwei andere zeigen").props.onPress());
   assert.deepEqual(mores, [1]);
   // The same decisions through the gesture handlers.
   const handlers = renderer.root.findAll((node) => node.props.testID === "meal-card")[0].props;
@@ -116,7 +116,7 @@ test("a decision is visible: the card leaves in the direction it was decided", a
   const since = (start) => animations.slice(start).filter((a) => a.kind === "timing" && a.to !== 1);
 
   let mark = animations.length;
-  await act(() => button("Take this one").props.onPress());
+  await act(() => button("Dieses Gericht wählen").props.onPress());
   const take = since(mark);
   assert.equal(take.length, 1, "taking a meal moves the card exactly once");
   assert.ok(take[0].to > 0, "the card taken leaves to the right");
@@ -124,7 +124,7 @@ test("a decision is visible: the card leaves in the direction it was decided", a
   assert.deepEqual(taken, ["a"], "the meal is taken once the card has left");
 
   mark = animations.length;
-  await act(() => button("Show the next one").props.onPress());
+  await act(() => button("Nächsten Vorschlag zeigen").props.onPress());
   const next = since(mark);
   assert.equal(next.length, 1);
   assert.ok(next[0].to < 0, "a skipped card leaves to the left");
@@ -143,22 +143,22 @@ test("an exhausted slot says so instead of offering a repeat", async () => {
   await act(() => { renderer = create(React.createElement(MealSwipeCards,
     { suggestions: [], exhausted: true, onTake: () => {}, onNext: () => {}, onMore: () => {} })); });
   const text = JSON.stringify(renderer.root.findAllByType("Text").map((node) => node.props.children));
-  assert.match(text, /Every compatible meal for this slot has been shown/);
-  assert.deepEqual(renderer.root.findAll((node) => node.props.label === "Take this one"), []);
+  assert.match(text, /Alle passenden Gerichte für diese Mahlzeit wurden gezeigt/);
+  assert.deepEqual(renderer.root.findAll((node) => node.props.label === "Dieses Gericht wählen"), []);
   await act(() => renderer.unmount());
 });
 
 test("the calendar shows each day's state and only offers a basket once something is planned", async () => {
   let plan = startWeek(monday, preferences);
   assert.equal(dayState(plan, monday), "unplanned");
-  assert.match(weekSummary(plan), /No day planned yet/);
+  assert.match(weekSummary(plan), /Noch kein Tag geplant/);
   plan = toggleDay(plan, monday, preferences);
   assert.equal(dayState(plan, monday), "open");
-  assert.match(weekSummary(plan), /1 day planned · 0 meals chosen · 3 still open/);
+  assert.match(weekSummary(plan), /1 Tag geplant · 0 Gerichte gewählt · 3 noch offen/);
   for (const slot of ["breakfast", "lunch", "dinner"])
     plan = chooseMeal(plan, monday, slot, suggestion(plan, monday, slot), preferences);
   assert.equal(dayState(plan, monday), "done");
-  assert.match(weekSummary(plan), /ready for a basket/);
+  assert.match(weekSummary(plan), /bereit für die Einkaufsliste/);
   assert.equal(dayState(plan, "2026-10-06"), "unplanned");
 
   let renderer, baskets = 0, weeks = [], picked = [];
@@ -173,44 +173,44 @@ test("the calendar shows each day's state and only offers a basket once somethin
 
   // An empty week offers picking days, not a basket.
   await act(() => { renderer = create(render(startWeek(monday, preferences))); });
-  assert.deepEqual(labelled("Create my basket"), []);
-  assert.ok(labelled("Pick your days").length > 0);
-  assert.match(texts(), /Nothing is planned for this day/);
+  assert.deepEqual(labelled("Einkaufsliste erstellen"), []);
+  assert.ok(labelled("Tage wählen").length > 0);
+  assert.match(texts(), /Für diesen Tag ist nichts geplant/);
 
   await act(() => { renderer.update(render(plan)); });
-  const basket = labelled("Create my basket")[0];
+  const basket = labelled("Einkaufsliste erstellen")[0];
   assert.ok(basket);
   await act(() => basket.props.onPress());
   assert.equal(baskets, 1);
   // The day on screen shows its meals as cards, with what is actually recorded about them.
-  assert.match(texts(), /Breakfast · \d+ kcal a portion/);
-  assert.deepEqual(labelled("Plan this day"), [], "a planned day is not offered for planning again");
+  assert.match(texts(), /Frühstück · \d+ kcal pro Portion/);
+  assert.deepEqual(labelled("Diesen Tag planen"), [], "a planned day is not offered for planning again");
 
   // The arrows move whole weeks.
-  await act(() => byLabel("Next week")[0].props.onPress());
-  await act(() => byLabel("Previous week")[0].props.onPress());
+  await act(() => byLabel("Nächste Woche")[0].props.onPress());
+  await act(() => byLabel("Vorherige Woche")[0].props.onPress());
   assert.deepEqual(weeks, ["2026-10-12", "2026-09-28"]);
 
   // Tapping a weekday switches the day shown; it does not leave the calendar.
   pushed.length = 0;
-  await act(() => byLabel("Wed 7 Oct")[0].props.onPress());
+  await act(() => byLabel("Mi., 7. Okt.")[0].props.onPress());
   assert.deepEqual(picked, ["2026-10-07"]);
   assert.deepEqual(pushed, [], "picking a day navigates nowhere");
   await act(() => { renderer.update(render(plan)); });
-  assert.match(texts(), /Nothing is planned for this day/, "an unplanned day says so and offers to plan it");
-  assert.ok(labelled("Plan this day").length > 0);
+  assert.match(texts(), /Für diesen Tag ist nichts geplant/, "an unplanned day says so and offers to plan it");
+  assert.ok(labelled("Diesen Tag planen").length > 0);
 
   // Back on the planned day, a meal's menu opens its two answers.
   shown = monday;
   await act(() => { renderer.update(render(plan)); });
   const options = renderer.root.findAll((node) =>
-    typeof node.props.label === "string" && node.props.label.startsWith("Options for"));
+    typeof node.props.label === "string" && node.props.label.startsWith("Optionen für"));
   assert.ok(options.length, "every card carries a menu");
-  assert.deepEqual(labelled("Choose another"), [], "the menu stays closed until it is asked for");
+  assert.deepEqual(labelled("Anderes wählen"), [], "the menu stays closed until it is asked for");
   await act(() => options[0].props.onPress());
-  assert.ok(labelled("Choose another").length > 0);
+  assert.ok(labelled("Anderes wählen").length > 0);
   pushed.length = 0;
-  await act(() => labelled("Choose another")[0].props.onPress());
+  await act(() => labelled("Anderes wählen")[0].props.onPress());
   assert.equal(pushed[0].pathname, "/plan/[date]/[slot]");
   assert.equal(pushed[0].params.date, monday);
   await act(() => renderer.unmount());
@@ -224,7 +224,7 @@ test("a planned day with an undecided meal offers that meal, and a week opens on
   await act(() => { renderer = create(React.createElement(WeekCalendar, { plan, weekStart: monday,
     selected: monday, onSelect: () => {}, onWeek: () => {}, onBasket: () => {} })); });
   // What is still open is a line of its own, not a silent gap.
-  const open = renderer.root.findAll((node) => node.props.accessibilityLabel === "Choose Lunch");
+  const open = renderer.root.findAll((node) => node.props.accessibilityLabel === "Mittagessen wählen");
   assert.ok(open.length);
   pushed.length = 0;
   await act(() => open[0].props.onPress());
@@ -237,11 +237,49 @@ test("a planned day with an undecided meal offers that meal, and a week opens on
   assert.equal(openingDate(null, monday, "2026-11-30"), monday, "and failing that the Monday");
 });
 
+test("an empty week offers taking the previous week's plan, after picking days", async () => {
+  let copied = 0, renderer;
+  await act(() => { renderer = create(React.createElement(WeekCalendar, {
+    plan: startWeek("2026-10-12", preferences), weekStart: "2026-10-12", selected: "2026-10-12",
+    onSelect: () => {}, onWeek: () => {}, onBasket: () => {}, onCopyPrevious: () => { copied++; } })); });
+  const labels = renderer.root.findAll((node) => typeof node.type === "string" && node.props.label)
+    .map((node) => node.props.label);
+  assert.ok(labels.includes("Plan der Vorwoche übernehmen"));
+  assert.ok(labels.indexOf("Tage wählen") < labels.indexOf("Plan der Vorwoche übernehmen"),
+    "picking days comes first; copying is the shortcut");
+  pushed.length = 0;
+  await act(() => renderer.root.findAll((node) => node.props.label === "Tage wählen")[0].props.onPress());
+  assert.deepEqual(pushed, ["/plan/week"]);
+  await act(() => renderer.root.findAll((node) => node.props.label === "Plan der Vorwoche übernehmen")[0].props.onPress());
+  assert.equal(copied, 1);
+  await act(() => renderer.unmount());
+});
+
+test("the last taste card can still be rejected, by button or by swipe, and never offers a shuffle", async () => {
+  let liked = 0, disliked = 0, screen;
+  const plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  await act(() => { screen = create(React.createElement(MealSwipeCards, { mode: "taste",
+    suggestions: [suggestion(plan, monday, "breakfast")], exhausted: false,
+    onTake: () => { liked++; }, onNext: () => { disliked++; },
+    onMore: () => assert.fail("taste cannot shuffle") })); });
+  const button = (label) => screen.root.findAll((node) => node.props.label === label)[0];
+  const no = button("Mögen wir nicht");
+  assert.equal(no.props.disabled, false, "the only card left can still be rejected");
+  await act(() => no.props.onPress());
+  const handlers = screen.root.findAll((node) => node.props.testID === "meal-card")[0].props;
+  await act(() => handlers.onPanResponderRelease({}, { dx: -200, dy: 0 }));
+  await act(() => button("Mögen wir").props.onPress());
+  assert.equal(disliked, 2);
+  assert.equal(liked, 1);
+  assert.deepEqual(screen.root.findAllByType("TextButton"), [], "taste never offers a shuffle");
+  await act(() => screen.unmount());
+});
+
 test("a meal card says what is recorded and never invents a cooking time", () => {
   const preferences = prefs();
   let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
   plan = chooseMeal(plan, monday, "dinner", suggestion(plan, monday, "dinner"), preferences);
   const facts = mealFacts(plan.items[0]);
-  assert.match(facts, /^Dinner · \d+ kcal a portion · [\d.]+ portions?$/);
+  assert.match(facts, /^Abendessen · \d+ kcal pro Portion · [\d.]+ Portionen?$/);
   assert.doesNotMatch(facts, /min|Min/, "the curated meals carry no cooking time");
 });

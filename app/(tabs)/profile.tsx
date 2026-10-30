@@ -1,3 +1,4 @@
+import { germanLabel } from '../../lib/german';
 import {BrandLogo} from '@/components/BrandAssets';
 import { router } from "expo-router";
 import { Alert, Text } from "react-native";
@@ -29,15 +30,15 @@ export default function ProfileScreen() {
   const demo=useMerchantDemo();
   const [accountError,setAccountError]=useState<string|null>(null),[signingOut,setSigningOut]=useState(false),[deleting,setDeleting]=useState(false);
   const deleteAccount=()=>Alert.alert(
-    'Delete account permanently?',
-    'This removes your signed-in account and its cloud data, including saved baskets, meal plans and preferences. This cannot be undone.',
+    "Konto endgültig löschen?",
+    "Dein angemeldetes Konto und alle Cloud-Daten einschließlich Warenkörben, Speiseplänen und Einstellungen werden gelöscht. Dies kann nicht rückgängig gemacht werden.",
     [
-      {text:'Cancel',style:'cancel'},
-      {text:'Delete permanently',style:'destructive',onPress:()=>{
+      {text:"Abbrechen",style:'cancel'},
+      {text:"Endgültig löschen",style:'destructive',onPress:()=>{
         setAccountError(null);setDeleting(true);
         void auth.service?.deleteAccount()
           .then(()=>router.dismissTo('/account'))
-          .catch(e=>setAccountError(e instanceof Error?e.message:'Account deletion failed. Please retry.'))
+          .catch(e=>setAccountError(e instanceof Error?e.message:"Das Konto konnte nicht gelöscht werden. Bitte versuche es erneut."))
           .finally(()=>setDeleting(false));
       }},
     ],
@@ -46,121 +47,124 @@ export default function ProfileScreen() {
   return (
     <Screen><BrandLogo compact />
       <ScreenHeader
-        eyebrow="MADE FOR YOU"
-        title="Profile"
-        subtitle="Your preferences, all in one place."
+        eyebrow="FÜR DICH"
+        title="Profil"
+        subtitle="Alle deine Einstellungen an einem Ort."
       />
-      <SectionCard title={auth.session?.user.is_anonymous||!auth.session?'Guest':p?.displayName||'Your account'}>
-        <Text style={ui.body}>{auth.session?.user.email??'Anonymous SmartBasket session'}</Text>
-        {auth.session?.user.is_anonymous||!auth.session?<><Text style={ui.small}>Create an account to keep your SmartBasket data across devices.</Text><PrimaryButton label="Create account" onPress={()=>router.push('/account')} /><TextButton label="Sign in" onPress={()=>router.push({pathname:'/account',params:{mode:'signin'}})} /></>:<Text style={ui.small}>Signed in · Session saved on this device</Text>}
+      <SectionCard title={auth.session?.user.is_anonymous||!auth.session?"Gast":p?.displayName||"Dein Konto"}>
+        <Text style={ui.body}>{auth.session?.user.email??"SmartBasket-Gastsitzung"}</Text>
+        {auth.session?.user.is_anonymous||!auth.session?<><Text style={ui.small}>Erstelle ein Konto, um deine SmartBasket-Daten geräteübergreifend zu behalten.</Text><PrimaryButton label="Konto erstellen" onPress={()=>router.push('/account')} /><TextButton label="Anmelden" onPress={()=>router.push({pathname:'/account',params:{mode:'signin'}})} /></>:<Text style={ui.small}>Angemeldet · Sitzung auf diesem Gerät gespeichert</Text>}
         {auth.error&&<Text style={ui.small}>{auth.error}</Text>}
       </SectionCard>
-      <SectionCard title="Personal details"><Text style={ui.body}>{p?`${p.displayName||'Name not set'} · ${p.sex??'Sex not set'} · ${p.age??'Age not set'}`:'Set long-term personal defaults, even as a guest.'}</Text><TextButton label={personal.pending?'Resume personal profile':'Edit personal details'} onPress={()=>editPersonal(0)} /></SectionCard>
-      <SectionCard title="Nutrition goals"><Text style={ui.body}>{p?`${p.primaryNutritionGoal.replaceAll('_',' ')} · ${p.defaultDailyCalories??'Plan target'} kcal · ${p.proteinMode} protein`:'No personal defaults yet.'}</Text><TextButton label="Edit personal nutrition goals" onPress={()=>editPersonal(1)} /></SectionCard>
-      <SectionCard title="Dietary preferences"><Text style={ui.body}>{p?.dietaryPreferences.map(d=>labels[d]).join(', ')??'Not set'}</Text><TextButton label="Edit personal diet" onPress={()=>editPersonal(2)} /></SectionCard>
-      <SectionCard title="Personal allergies & intolerances"><Text style={ui.body}>{p?[...p.allergens,...p.intolerances].join(', ')||'None selected':'Not set'}</Text><TextButton label="Edit personal allergies & intolerances" onPress={()=>editPersonal(3)} /></SectionCard>
+      <SectionCard title="Persönliche Angaben"><Text style={ui.body}>{p?`${p.displayName||"Name nicht angegeben"} · ${p.sex ? germanLabel(p.sex) : "Geschlecht nicht angegeben"} · ${p.age??"Alter nicht angegeben"}`:"Lege persönliche Vorgaben fest – auch als Gast."}</Text><TextButton label={personal.pending?"Persönliches Profil fortsetzen":"Persönliche Angaben bearbeiten"} onPress={()=>editPersonal(0)} /></SectionCard>
+      <SectionCard title="Ernährungsziele"><Text style={ui.body}>{p?`${germanLabel(p.primaryNutritionGoal)} · ${p.defaultDailyCalories??"Planziel"} kcal · ${germanLabel(p.proteinMode)} Eiweiß`:"Noch keine persönlichen Vorgaben."}</Text><TextButton label="Persönliche Ernährungsziele bearbeiten" onPress={()=>editPersonal(1)} /></SectionCard>
+      <SectionCard title="Ernährungseinstellungen"><Text style={ui.body}>{p?.dietaryPreferences.map(d=>labels[d]).join(', ')??"Nicht festgelegt"}</Text><TextButton label="Persönliche Ernährungsweise bearbeiten" onPress={()=>editPersonal(2)} /></SectionCard>
+      <SectionCard title="Persönliche Allergien und Unverträglichkeiten"><Text style={ui.body}>{p?[...p.allergens,...p.intolerances].map(germanLabel).join(', ')||"Keine ausgewählt":"Nicht festgelegt"}</Text><TextButton label="Persönliche Allergien und Unverträglichkeiten bearbeiten" onPress={()=>editPersonal(3)} /></SectionCard>
       {personal.error&&<Text style={ui.small}>{personal.error}</Text>}
       <DetailRow
         icon="users"
-        title="Household"
+        title="Haushalt"
         value={
           saved
-            ? `${saved.householdSize} ${saved.householdSize === 1 ? "person" : "people"} · ${saved.dailyCalories.toLocaleString("en-GB")} kcal a day on average`
-            : "Not set up yet"
+            ? `${saved.householdSize} ${saved.householdSize === 1 ? "Person" : "Personen"} · ${saved.dailyCalories.toLocaleString("de-DE")} kcal pro Tag im Schnitt`
+            : "Noch nicht eingerichtet"
         }
         onPress={() => router.push("/household")}
       />
-      <SectionCard title="Plan setup preferences">
+      <SectionCard title="Vorgaben für neue Pläne">
         {saved ? (
           <PreferenceSummary preferences={saved} />
         ) : (
           <Text style={ui.body}>
-            Tell us what matters to you to get started.
+
+            Sag uns zum Start, was dir wichtig ist.
           </Text>
         )}
         <PrimaryButton
           label={
             editing
-              ? "Resume preference edits"
+              ? "Bearbeitung der Einstellungen fortsetzen"
               : saved
-                ? "Edit preferences"
-                : "Set my preferences"
+                ? "Einstellungen bearbeiten"
+                : "Meine Einstellungen festlegen"
           }
           disabled={flow.disabled}
           onPress={() => flow.edit()}
         />
       </SectionCard>
       <PersistenceStatus />
-      <SectionCard title="Allergies & intolerances">
+      <SectionCard title="Allergien und Unverträglichkeiten">
         <PreferenceRow
-          label="Your selections"
+          label="Deine Auswahl"
           value={
             saved
               ? saved.allergens.map((a) => labels[a]).join(", ") ||
-                "None selected"
-              : "Not set"
+                "Keine ausgewählt"
+              : "Nicht festgelegt"
           }
         />
         <TextButton
-          label="Edit allergies"
+          label="Allergien bearbeiten"
           disabled={flow.disabled}
           onPress={() => flow.edit("allergies")}
         />
         <Text style={ui.small}>
-          Always check product labels. Saved selections do not guarantee allergy
-          suitability.
+
+          Prüfe immer die Verpackungsangaben. Gespeicherte Einstellungen garantieren keine Eignung bei Allergien.
         </Text>
       </SectionCard>
-      <SectionCard title="Merchant demo">
+      <SectionCard title="Händler-Demo">
         <Text style={ui.body}>
           {demo.demo
-            ? 'The Products tab is visible. Its brands and prices are invented demo data.'
-            : 'Off. The product catalogue is fictional demo data for showing merchants what matching looks like.'}
+            ? 'Der Produkte-Tab ist sichtbar. Seine Marken und Preise sind erfundene Demo-Daten.'
+            : 'Aus. Der Produktkatalog besteht aus erfundenen Demo-Daten, um Händlern das Matching zu zeigen.'}
         </Text>
-        <SecondaryButton label={demo.demo ? 'Hide the product catalogue' : 'Show the product catalogue'}
+        <SecondaryButton label={demo.demo ? 'Produktkatalog ausblenden' : 'Produktkatalog anzeigen'}
           onPress={() => demo.set(!demo.demo)} />
         <Text style={ui.small}>
-          Leave this off for anyone testing the app for real: invented prices read as real ones.
+          Für echte Testnutzer ausgeschaltet lassen: erfundene Preise wirken wie echte.
         </Text>
       </SectionCard>
-      <SectionCard title="Saved baskets">
+      <SectionCard title="Gespeicherte Warenkörbe">
         <Text style={ui.body}>
-          Open your saved grocery baskets and their original plan snapshots.
+
+          Öffne deine gespeicherten Warenkörbe mit den zugehörigen Speiseplänen.
         </Text>
         <TextButton
-          label="Open basket"
+          label="Warenkorb öffnen"
           onPress={() => router.navigate("/basket")}
         />
       </SectionCard>
-      <SectionCard title="Saved meal plans"><TextButton label="View saved meal plans" onPress={()=>router.push('/saved-meal-plans')} /></SectionCard>
-      <SectionCard title="Account">
+      <SectionCard title="Gespeicherte Speisepläne"><TextButton label="Gespeicherte Speisepläne ansehen" onPress={()=>router.push('/saved-meal-plans')} /></SectionCard>
+      <SectionCard title="Konto">
         {accountError&&<Text style={ui.small}>{accountError}</Text>}
-        <TextButton label="Reset password" onPress={()=>router.push({pathname:'/account',params:{mode:'forgot'}})} />
-        {auth.session&&!auth.session.user.is_anonymous&&<PrimaryButton label="Sign out" loading={signingOut} onPress={()=>{setSigningOut(true);void auth.service?.signOut().then(()=>router.dismissTo('/profile')).catch(e=>setAccountError(e.message)).finally(()=>setSigningOut(false));}} />}
-        {auth.session&&!auth.session.user.is_anonymous&&<TextButton label="Delete account" disabled={deleting||signingOut} onPress={deleteAccount} />}
-        {deleting&&<Text style={ui.small}>Deleting your account…</Text>}
+        <TextButton label="Passwort zurücksetzen" onPress={()=>router.push({pathname:'/account',params:{mode:'forgot'}})} />
+        {auth.session&&!auth.session.user.is_anonymous&&<PrimaryButton label="Abmelden" loading={signingOut} onPress={()=>{setSigningOut(true);void auth.service?.signOut().then(()=>router.dismissTo('/profile')).catch(e=>setAccountError(e.message)).finally(()=>setSigningOut(false));}} />}
+        {auth.session&&!auth.session.user.is_anonymous&&<TextButton label="Konto löschen" disabled={deleting||signingOut} onPress={deleteAccount} />}
+        {deleting&&<Text style={ui.small}>Dein Konto wird gelöscht …</Text>}
       </SectionCard>
-      <InfoCard title="Notifications">
-        Reminders are coming later. SmartBasket does not send notifications yet.
+      <InfoCard title="Benachrichtigungen">
+
+        Erinnerungen folgen später. SmartBasket versendet derzeit keine Benachrichtigungen.
       </InfoCard>
-      <SectionCard title="Help & Feedback">
+      <SectionCard title="Hilfe und Rückmeldung">
         <Text style={ui.body}>
-          Need help saving or changing your preferences?
+
+          Brauchst du Hilfe beim Speichern oder Ändern deiner Einstellungen?
         </Text>
         <TextButton
-          label="View help"
+          label="Hilfe ansehen"
           onPress={() =>
             Alert.alert(
-              "SmartBasket help",
-              "Use My preferences to edit your answers. Local-only means your preferences are saved on this device but not uploaded. Use Retry cloud sync after reconnecting. Feedback submission is not available yet.",
+              "SmartBasket-Hilfe",
+              "Unter Meine Einstellungen kannst du deine Angaben ändern. Nur lokal bedeutet, dass sie auf diesem Gerät gespeichert, aber nicht hochgeladen sind. Nutze nach dem Wiederverbinden Cloud-Synchronisierung wiederholen. Rückmeldungen können noch nicht direkt gesendet werden.",
             )
           }
         />
       </SectionCard>
-      <InfoCard title="About SmartBasket">
-        Fuel your goals. Version 0.1.0 · Your fitness-oriented grocery
-        assistant. Anonymous cloud profiles are tied to this installation;
-        reinstalling or clearing app data can lose access.
+      <InfoCard title="Über SmartBasket">
+
+        Einkaufen passend zu deinen Zielen. Version 0.1.0 · Dein Assistent für Speiseplanung und Einkauf. Anonyme Cloud-Profile sind an diese Installation gebunden. Neuinstallation oder Löschen der App-Daten kann den Zugriff aufheben.
       </InfoCard>
     </Screen>
   );

@@ -5,10 +5,11 @@ const {prefs,catalog}=require('./basket-fixtures.cjs');
 const {generateBasket}=require('../services/basket/basketGenerator.ts');
 const {newSavedBasket}=require('../services/basket/persistence.ts');
 global.IS_REACT_ACT_ENVIRONMENT=true;
+let discards=0, dismissed=0;
 let params={},generated=0,saveCalls=0,resolveSave,load=async()=>catalog;
 // The calendar's week arrives already decided; confirm() is what the screen asks it for.
 let weekConfirmations=0,weekPlan=null;
-const weekStore={initialize:async()=>{},confirm:()=>{weekConfirmations++;if(!weekPlan)throw Error('Plan at least one meal before creating a basket.');return weekPlan;}};
+const weekStore={initialize:async()=>{},confirm:()=>{weekConfirmations++;if(!weekPlan)throw Error("Plane mindestens eine Mahlzeit, bevor du einen Warenkorb erstellst.");return weekPlan;}};
 const saved=newSavedBasket(generateBasket(prefs(),catalog),prefs(),prefs().userId);
 const preferenceState={ready:true,saved:prefs()};
 const components=Object.fromEntries(['EmptyState','PrimaryButton','Screen','ScreenHeader','SecondaryButton'].map(name=>[name,props=>React.createElement(name,props,props.children)]));
@@ -16,15 +17,17 @@ const remember=()=>{};
 const originalLoad=Module._load;
 Module._load=function(request,parent,isMain){
   if(request==='@react-native-async-storage/async-storage')return {__esModule:true,default:{getItem:async()=>null,setItem:async()=>{}}};
-  if(request==='@/context/ActiveBasketContext')return {useActiveBasket:()=>({active:null,remember,clear:()=>{}})};
+  if(request==='@/context/ActiveBasketContext')return {useActiveBasket:()=>({active:null,remember,clear:()=>{},discard:async()=>{discards++;},busy:false})};
   if(request==='@/services/pantry')return {loadPantry:async()=>({state:{version:0,lots:[]},purchases:[]})};
   if(request==='react-native')return {ActivityIndicator:'Spinner',Text:'Text'};
-  if(request==='expo-router')return {router:{dismissTo:()=>{}},useLocalSearchParams:()=>params};
+  if(request==='expo-router')return {router:{dismissTo:()=>{dismissed++;}},useLocalSearchParams:()=>params};
   if(request==='@/components/ui')return components;
   if(request==='@/components/MealPlanReview')return {MealPlanReview:props=>React.createElement('MealReview',props)};
   if(request==='@/services/meals/planner')return {generateMealPlan:(...args)=>{generated++;return require('../services/meals/planner.ts').generateMealPlan(...args);}};
   if(request==='@/services/meals/basket')return {basketFromMealPlan:(plan,p)=>({...generateBasket(p,catalog),engineVersion:'2',mealPlan:plan})};
   if(request==='@/components/BasketResult')return {BasketResult:props=>React.createElement('Result',props)};
+  if(request==='@/components/ShareBasket')return {ShareBasket:props=>React.createElement('ShareBasket',props)};
+  if(request==='@/components/ShoppingList')return {ShoppingList:props=>React.createElement('ShoppingList',props)};
   if(request==='@/components/BasketExtras')return {BasketExtras:props=>React.createElement('Extras',props)};
   if(request==='@/context/PreferencesContext')return {usePreferences:()=>preferenceState};
   if(request==='@/context/WeekPlanContext')return {useWeekPlan:()=>({plan:weekPlan,ready:true,error:null,store:weekStore})};
@@ -50,12 +53,14 @@ test('actual screen requires meal confirmation, saves once on double tap, reopen
   assert.equal(renderer.root.findAllByType('MealReview').length,1);
   await act(()=>renderer.root.findByType('MealReview').props.onConfirm());
   assert.equal(renderer.root.findAllByType('Result').length,1);
+  assert.equal(renderer.root.findAllByType('ShoppingList').length,0);
+  assert.equal(typeof renderer.root.findByType('Result').props.onToggleProduct,'function');
   assert.equal(renderer.root.findByType('Screen').props.bottom,true);assert.equal(renderer.root.findByType('Screen').props.top,false);
-  const saveButton=renderer.root.findAllByType('PrimaryButton').find(b=>b.props.label==='Save meal plan & basket');
+  const saveButton=renderer.root.findAllByType('PrimaryButton').find(b=>b.props.label==="Speiseplan und Warenkorb speichern");
   await act(async()=>{saveButton.props.onPress();saveButton.props.onPress();await Promise.resolve();});
   assert.equal(saveCalls,1);
   await act(async()=>{resolveSave();await Promise.resolve();});await flush();
-  assert.ok(renderer.root.findAllByType('PrimaryButton').some(b=>b.props.label==='Basket saved'&&b.props.disabled));
+  assert.ok(renderer.root.findAllByType('PrimaryButton').some(b=>b.props.label==="Warenkorb gespeichert"&&b.props.disabled));
   params={savedId:saved.id};await act(()=>renderer.update(React.createElement(Screen)));await flush();
   assert.equal(generated,1);assert.deepEqual(renderer.root.findByType('Result').props.result,saved.result);
   await act(()=>renderer.unmount());
@@ -107,4 +112,19 @@ test('a week from the calendar goes straight to a basket, and an empty one says 
   }
   await act(()=>renderer.unmount());
   params={};
+});
+
+test('unfinished basket deletion requires confirmation and keeps the meal plan', async () => {
+ params={savedId:saved.id}; discards=0; dismissed=0;
+ let renderer;
+ await act(()=>{renderer=create(React.createElement(Screen));}); await flush();
+ const button=label=>renderer.root.findAll(node=>node.props.label===label)[0];
+ await act(()=>button("Warenkorb löschen").props.onPress());
+ assert.equal(discards,0);
+ await act(()=>button("Warenkorb behalten").props.onPress());
+ assert.equal(discards,0);
+ await act(()=>button("Warenkorb löschen").props.onPress());
+ await act(()=>button("Warenkorb endgültig löschen").props.onPress()); await flush();
+ assert.equal(discards,1); assert.equal(dismissed,1);
+ await act(()=>renderer.unmount()); params={};
 });

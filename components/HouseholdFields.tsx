@@ -26,15 +26,15 @@ import type { Goal } from "../types/preferences";
 import { ui } from "../lib/theme";
 
 const activityLabels: Record<keyof typeof onboardingActivities, string> = {
-  sedentary: "Mostly sitting",
+  sedentary: "Überwiegend sitzend",
   normal: "Normal",
-  active: "Active",
+  active: "Aktiv",
 };
 const sexLabels: Record<(typeof sexes)[number], string> = {
-  female: "Female",
-  male: "Male",
-  other: "Other",
-  prefer_not_to_say: "Rather not say",
+  female: "Weiblich",
+  male: "Männlich",
+  other: "Divers",
+  prefer_not_to_say: "Keine Angabe",
 };
 const activityChoice = (person: PlanParticipant) =>
   (Object.keys(activityLabels) as (keyof typeof onboardingActivities)[]).find(
@@ -77,14 +77,14 @@ export function HouseholdFields({
       {title && (
         <View style={ui.row}>
           {onBack && (
-            <IconButton icon="chevron-left" label="Back" onPress={onBack} />
+            <IconButton icon="chevron-left" label="Zurück" onPress={onBack} />
           )}
           <Text accessibilityRole="header" style={[ui.title, { flex: 1 }]}>
             {title}
           </Text>
           <IconButton
             icon="plus"
-            label="Add person"
+            label="Person hinzufügen"
             disabled={people.length >= maxHousehold}
             onPress={add}
           />
@@ -96,17 +96,17 @@ export function HouseholdFields({
         onAdd={add}
       />
       <Text style={ui.small}>
-        The daily amount is a suggestion from age, sex and activity, not a
-        nutrition prescription. Tap a person to refine or correct it.
+        Die Tagesmenge ist ein Vorschlag anhand von Alter, Geschlecht und Aktivität, keine
+        Ernährungsvorgabe. Tippe auf eine Person, um die Angaben anzupassen.
       </Text>
       {open && (
-        <SectionCard title={open.name || "This person"}>
+        <SectionCard title={open.name || "Diese Person"}>
           <TextInput
             label="Name"
             value={open.name}
             onChangeText={(name) => patch(open.id, { name })}
           />
-          <Text style={ui.subheading}>Adult or child</Text>
+          <Text style={ui.subheading}>Erwachsene Person oder Kind</Text>
           <View style={ui.wrap}>
             {participantKinds.map((kind) => (
               <SelectionChip
@@ -117,11 +117,11 @@ export function HouseholdFields({
               />
             ))}
           </View>
-          <Text style={ui.subheading}>Optional details</Text>
+          <Text style={ui.subheading}>Freiwillige Angaben</Text>
           <OptionalNumber
-            label="Age"
+            label="Alter"
             value={open.age}
-            hint="Leave blank to use a typical age for the suggestion."
+            hint="Leer lassen, um für den Vorschlag ein typisches Alter zu verwenden."
             onChange={(age) => patch(open.id, { age })}
           />
           <View style={ui.wrap}>
@@ -156,11 +156,11 @@ export function HouseholdFields({
             ))}
           </View>
           <NumberInput
-            label="Daily amount for this person (kcal)"
+            label="Tagesmenge für diese Person (kcal)"
             hint={
               open.dailyCalories === estimateCalories(open)
-                ? "Our suggestion. Change it and we keep your number."
-                : "Your own number. Clear it to get the suggestion back."
+                ? "Unser Vorschlag. Wenn du ihn änderst, behalten wir deinen Wert bei."
+                : "Dein eigener Wert. Lösche ihn, um wieder den Vorschlag zu verwenden."
             }
             value={open.dailyCalories}
             onChange={(dailyCalories) =>
@@ -174,7 +174,7 @@ export function HouseholdFields({
           />
           {!open.isCurrentUser && (
             <SecondaryButton
-              label="Remove this person"
+              label="Diese Person entfernen"
               onPress={() => {
                 onChange(people.filter((person) => person.id !== open.id));
                 setOpenId(null);

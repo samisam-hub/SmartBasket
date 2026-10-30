@@ -18,7 +18,7 @@ async function read(): Promise<BasketCatalog> {
     return { products: await loadBasketCatalog(getSupabaseClient()), loading: false, error: null };
   } catch (e) {
     return { products: [], loading: false,
-      error: e instanceof Error ? e.message : 'The product catalog could not be loaded.' };
+      error: e instanceof Error ? e.message : 'Der Produktkatalog konnte nicht geladen werden.' };
   }
 }
 /** One fetch, however many screens are waiting. A failure is not kept, so the next screen retries. */

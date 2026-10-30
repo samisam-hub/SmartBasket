@@ -43,7 +43,7 @@ export function fromRow(row: PreferenceRow): UserPreferences {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
-  if (!isSaved(p)) throw new Error("Invalid cloud preferences");
+  if (!isSaved(p)) throw new Error("Ungültige Cloud-Einstellungen");
   return p;
 }
 export function toRow(p: UserPreferences, userId: string) {
@@ -67,14 +67,14 @@ export function toRow(p: UserPreferences, userId: string) {
 let identity: Promise<string> | null = null;
 async function ensureIdentity(): Promise<string> {
   const supabase = getSupabaseClient();
-  if (!supabase) throw new Error("Supabase is not configured");
+  if (!supabase) throw new Error("Die Cloud-Verbindung ist nicht eingerichtet");
   const { data, error } = await supabase.auth.getSession();
   if (error) throw error;
   if (data.session) return data.session.user.id;
   const result = await supabase.auth.signInAnonymously();
   if (result.error) throw result.error;
   if (!result.data.user)
-    throw new Error("Anonymous sign-in did not return a user");
+    throw new Error("Die Gastanmeldung hat keinen Benutzer zurückgegeben");
   return result.data.user.id;
 }
 async function userId() {
@@ -86,7 +86,7 @@ async function userId() {
   }
 }
 export function scopedRemotePreferences(expectedUserId?:string):RemotePreferences {
-const check=(id:string)=>{if(expectedUserId&&id!==expectedUserId)throw Error('Account changed. Reopen preferences.');};
+const check=(id:string)=>{if(expectedUserId&&id!==expectedUserId)throw Error("Das Konto hat sich geändert. Öffne die Einstellungen erneut.");};
 return {
   async load() {
     const id = await userId();
@@ -103,7 +103,7 @@ return {
     const id = await userId();
     check(id);
     if (preferences.userId && preferences.userId !== id)
-      throw new Error("These preferences belong to a different session.");
+      throw new Error("Diese Einstellungen gehören zu einer anderen Sitzung.");
     const { data, error } = await getSupabaseClient()!
       .from("user_preferences")
       .upsert(toRow(preferences, id), { onConflict: "user_id" })

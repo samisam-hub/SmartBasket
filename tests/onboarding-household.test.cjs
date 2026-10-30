@@ -39,7 +39,7 @@ class MemoryStorage {
   }
 }
 const adult = (patch = {}) => ({
-  ...newParticipant("adult", "current-user", "You", "maintain"),
+  ...newParticipant("adult", "current-user", "Du", "maintain"),
   isCurrentUser: true,
   ...patch,
 });
@@ -118,7 +118,7 @@ test("the household list drives size and per-person calories, and every person s
 test("the meal standard has a default, is validated, and needs at least one meal", () => {
   assert.deepEqual(defaultSlotDefaults, { breakfast: true, lunch: true, dinner: true, snack: false });
   assert.deepEqual(activeSlots({}), ["breakfast", "lunch", "dinner"]);
-  assert.deepEqual(activeSlotLabels({}), ["Breakfast", "Lunch", "Dinner"]);
+  assert.deepEqual(activeSlotLabels({}), ["Frühstück", "Mittagessen", "Abendessen"]);
   assert.deepEqual(activeSlots({ slotDefaults: { ...defaultSlotDefaults, snack: true, lunch: false } }),
     ["breakfast", "dinner", "snack"]);
   assert.ok(validSlotDefaults(defaultSlotDefaults));
@@ -147,7 +147,7 @@ test("preferences and participants saved before the calendar onboarding stay rea
   assert.ok(isSaved(legacySaved));
   // A participant stored inside an old plan snapshot has no kind and no activity level.
   const legacyPerson = {
-    id: "current-user", name: "You", age: null, sex: null, dailyCalories: 2000,
+    id: "current-user", name: "Du", age: null, sex: null, dailyCalories: 2000,
     proteinTarget: 100, dietaryPreferences: ["none"], allergens: [], intolerances: [],
     isCurrentUser: true,
   };

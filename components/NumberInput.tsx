@@ -16,7 +16,7 @@ export function NumberInput({
   hint?: string;
   decimal?: boolean;
 }) {
-  const [text, setText] = useState(value === null ? "" : String(value));
+  const [text, setText] = useState(value === null ? "" : String(value).replace(".", ","));
   return (
     <TextInput
       label={label}

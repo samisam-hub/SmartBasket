@@ -13,19 +13,19 @@ import { colors, radii, spacing, typography, ui } from '../lib/theme';
 
 export const todayPlanDate = (now: Date = new Date()) => planDate(now);
 export const currentWeekStart = (now: Date = new Date()) => weekStartOf(todayPlanDate(now));
-const weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const weekdayNames = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 /** What one day of the calendar shows: nothing planned, meals still open, or all decided. */
 export function dayState(plan: WeekPlan | null, date: string): 'unplanned' | 'open' | 'done' {
   if (!plan || !dayOf(plan, date)) return 'unplanned';
   return openPlanSlots(plan).some(day => day.date === date) ? 'open' : 'done';
 }
 export function weekSummary(plan: WeekPlan | null): string {
-  if (!plan || !plan.days.length) return 'No day planned yet. Pick the days you want to cook for.';
+  if (!plan || !plan.days.length) return 'Noch kein Tag geplant. Wähle die Tage, für die du kochen willst.';
   const open = openPlanSlots(plan).reduce((count, day) => count + day.slots.length, 0);
   const meals = plan.items.length;
-  const days = `${plan.days.length} ${plan.days.length === 1 ? 'day' : 'days'}`;
-  if (open) return `${days} planned · ${meals} ${meals === 1 ? 'meal' : 'meals'} chosen · ${open} still open`;
-  return `${days} planned · ${meals} ${meals === 1 ? 'meal' : 'meals'} chosen · ready for a basket`;
+  const days = `${plan.days.length} ${plan.days.length === 1 ? 'Tag' : 'Tage'}`;
+  if (open) return `${days} geplant · ${meals} ${meals === 1 ? 'Gericht' : 'Gerichte'} gewählt · ${open} noch offen`;
+  return `${days} geplant · ${meals} ${meals === 1 ? 'Gericht' : 'Gerichte'} gewählt · bereit für die Einkaufsliste`;
 }
 /** The day a week opens on: today when it is in this week, otherwise the first day with something
  *  planned, and failing that the Monday it starts on. */
@@ -38,21 +38,22 @@ export function openingDate(plan: WeekPlan | null, weekStart: string, today = to
  *  is actually recorded: which meal of the day it is, and what one portion holds. */
 export function mealFacts(item: AnyMealPlanItem): string {
   const parts = [slotLabels[item.mealSlot]];
-  if (item.meal.caloriesPerServing) parts.push(`${Math.round(item.meal.caloriesPerServing)} kcal a portion`);
+  if (item.meal.caloriesPerServing) parts.push(`${Math.round(item.meal.caloriesPerServing)} kcal pro Portion`);
   const servings = Math.round(item.servings * 10) / 10;
-  parts.push(`${servings} ${servings === 1 ? 'portion' : 'portions'}`);
+  parts.push(`${servings} ${servings === 1 ? 'Portion' : 'Portionen'}`);
   return parts.join(' · ');
 }
 
 /** Screen 6: the week as the first thing the household sees. The strip picks a day, the cards show
  *  what that day holds, and each card carries the two answers a planned meal can still get. */
-export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBasket, busy }: {
+export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBasket, onCopyPrevious, busy }: {
   plan: WeekPlan | null;
   weekStart: string;
   selected: string;
   onSelect: (date: string) => void;
   onWeek: (weekStart: string) => void;
   onBasket: () => void;
+  onCopyPrevious?: () => void;
   busy?: boolean;
 }) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -65,12 +66,12 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
   const emptySlots = day ? sortSlots(day.slots).filter(slot => !itemsInSlot(plan!, date, slot).length) : [];
   return <View style={ui.stack}>
     <View style={ui.row}>
-      <Text accessibilityRole="header" style={[ui.title, { flex: 1 }]}>Your week</Text>
-      <IconButton icon="sliders" label="Pick the days of this week" disabled={busy}
+      <Text accessibilityRole="header" style={[ui.title, { flex: 1 }]}>Deine Woche</Text>
+      <IconButton icon="sliders" label="Tage dieser Woche wählen" disabled={busy}
         onPress={() => router.push('/plan/week')} />
     </View>
     <View style={[ui.row, { gap: spacing.xs, alignItems: 'stretch' }]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Previous week" disabled={busy}
+      <Pressable accessibilityRole="button" accessibilityLabel="Vorherige Woche" disabled={busy}
         onPress={() => onWeek(addDays(weekStart, -7))} style={styles.arrow}>
         <Feather name="chevron-left" size={18} color={colors.primary} />
       </Pressable>
@@ -80,8 +81,8 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
         const count = plan ? itemsOn(plan, weekday).length : 0;
         return <Pressable key={weekday} accessibilityRole="button" disabled={busy}
           accessibilityState={{ selected: chosen }}
-          accessibilityLabel={`${planDateLabel(weekday)}: ${state === 'unplanned' ? 'nothing planned'
-            : `${count} ${count === 1 ? 'meal' : 'meals'}, ${state === 'open' ? 'still open' : 'all decided'}`}`}
+          accessibilityLabel={`${planDateLabel(weekday)}: ${state === 'unplanned' ? 'nichts geplant'
+            : `${count} ${count === 1 ? 'Gericht' : 'Gerichte'}, ${state === 'open' ? 'noch offen' : 'alles entschieden'}`}`}
           onPress={() => { setOpenMenu(null); onSelect(weekday); }}
           style={({ pressed }) => [styles.pill, chosen && styles.pillOn,
             !chosen && weekday === today && styles.pillToday, pressed && { opacity: 0.7 }]}>
@@ -91,16 +92,16 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
             chosen && state !== 'unplanned' && styles.dotOn]} />
         </Pressable>;
       })}
-      <Pressable accessibilityRole="button" accessibilityLabel="Next week" disabled={busy}
+      <Pressable accessibilityRole="button" accessibilityLabel="Nächste Woche" disabled={busy}
         onPress={() => onWeek(addDays(weekStart, 7))} style={styles.arrow}>
         <Feather name="chevron-right" size={18} color={colors.primary} />
       </Pressable>
     </View>
     <Text style={ui.small}>{planDateLabel(date)}</Text>
     {!day && <View style={styles.empty}>
-      <Text style={ui.body}>Nothing is planned for this day. A day you skip is not a gap: the basket only
-        counts the meals you chose to eat at home.</Text>
-      <PrimaryButton label="Plan this day" disabled={busy} onPress={() => router.push('/plan/week')} />
+      <Text style={ui.body}>Für diesen Tag ist nichts geplant. Ein ausgelassener Tag ist keine Lücke: die Liste zählt nur
+        die Mahlzeiten, die ihr zu Hause essen wollt.</Text>
+      <PrimaryButton label="Diesen Tag planen" disabled={busy} onPress={() => router.push('/plan/week')} />
     </View>}
     {items.map(item => {
       const menu = openMenu === item.id;
@@ -110,38 +111,41 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
         <View style={styles.cardBody}>
           <View style={ui.row}>
             <Text style={[styles.cardTitle, { flex: 1 }]}>{item.meal.name}</Text>
-            <IconButton icon="more-horizontal" label={`Options for ${item.meal.name}`}
+            <IconButton icon="more-horizontal" label={`Optionen für ${item.meal.name}`}
               onPress={() => setOpenMenu(menu ? null : item.id)} />
           </View>
-          {eating?.length && <Text style={[ui.caption, { color: colors.primary }]}>For {eating.join(', ')}</Text>}
+          {eating?.length && <Text style={[ui.caption, { color: colors.primary }]}>Für {eating.join(', ')}</Text>}
           <Text style={ui.small}>{mealFacts(item)}</Text>
           {!!item.meal.dietaryTags.filter(tag => tag !== 'none').length && <View style={ui.wrap}>
             {item.meal.dietaryTags.filter(tag => tag !== 'none').map(tag =>
               <Text key={tag} style={styles.tag}>{labels[tag]}</Text>)}
           </View>}
           {menu && <View style={ui.stack}>
-            <TextButton label="Choose another" onPress={() => router.push({ pathname: '/plan/[date]/[slot]',
+            <TextButton label="Anderes wählen" onPress={() => router.push({ pathname: '/plan/[date]/[slot]',
               params: { date, slot: item.mealSlot, ...(item.participantIds ? { for: item.participantIds.join(',') } : {}) } })} />
-            <TextButton label="Open this day" onPress={() => router.push({ pathname: '/plan/[date]', params: { date } })} />
+            <TextButton label="Diesen Tag öffnen" onPress={() => router.push({ pathname: '/plan/[date]', params: { date } })} />
           </View>}
         </View>
       </View>;
     })}
     {emptySlots.map(slot => <Pressable key={slot} accessibilityRole="button"
-      accessibilityLabel={`Choose ${slotLabels[slot]}`} disabled={busy}
+      accessibilityLabel={`${slotLabels[slot]} wählen`} disabled={busy}
       onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot } })}
       style={({ pressed }) => [styles.openSlot, pressed && { opacity: 0.7 }]}>
       <Feather name="plus-circle" size={22} color={colors.primary} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={styles.cardTitle}>{slotLabels[slot]}</Text>
-        <Text style={ui.small}>Not chosen yet</Text>
+        <Text style={ui.small}>Noch nicht gewählt</Text>
       </View>
       <Feather name="chevron-right" size={22} color={colors.muted} />
     </Pressable>)}
     <Text style={ui.small}>{weekSummary(plan)}</Text>
-    <SecondaryButton label={plan?.days.length ? 'Change the days' : 'Pick your days'} disabled={busy}
+    <SecondaryButton label={plan?.days.length ? 'Tage ändern' : 'Tage wählen'} disabled={busy}
       onPress={() => router.push('/plan/week')} />
-    {!!plan?.items.length && <PrimaryButton label="Create my basket" disabled={busy} onPress={onBasket} />}
+    {onCopyPrevious && <SecondaryButton label="Plan der Vorwoche übernehmen" disabled={busy} onPress={onCopyPrevious} />}
+    {plan?.days.length ? <SecondaryButton label={openPlanSlots(plan).length ? 'Vorlieben & Wochenplan' : 'Wochenplan ansehen'}
+      disabled={busy} onPress={() => router.push(openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} /> : null}
+    {!!plan?.items.length && <PrimaryButton label="Einkaufsliste erstellen" disabled={busy} onPress={onBasket} />}
   </View>;
 }
 const styles = {

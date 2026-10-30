@@ -2,9 +2,20 @@
 
 Stand: 6. Oktober 2026 · Plan: [docs/KALENDER-FLOW-PLAN.md](KALENDER-FLOW-PLAN.md)
 
-**Alle Phasen des Plans sind umgesetzt und grün** (`npm run typecheck`, `npm run lint`, `npm test` — 182 Tests). Offen sind nur noch die Punkte unter „Offene Entscheidungen" und die kuratierten Einfach-Gerichte, die Bild-Assets brauchen.
+**Alle Phasen des Plans sind umgesetzt.** Der ursprüngliche Stand bestand 182 Tests. Die nachfolgende Familien-Flow-Korrektur ergänzt die unten beschriebenen Funktionen; offene Produktentscheidungen stehen am Ende.
 
 Branch: `claude/kalender-flow`, gepusht.
+
+## Ergänzung: Familien-Flow und Einkaufsliste
+
+- Wochenentwürfe bleiben beim Wochenwechsel und nach einem Neustart erhalten. Der lokale Cache liest das bisherige Ein-Wochen-Format und speichert beim nächsten Schreiben alle Wochen; ein Reset löscht nur die aktive Woche. Gespeicherte Version-1-Mahlzeitenpläne bleiben unverändert lesbar.
+- Eine noch leere Woche kann die unmittelbar vorherige Woche als bearbeitbaren Entwurf übernehmen: gewählte Tage und Slots, Gerichte und Anwesenheit wandern auf dieselben Wochentage. Die Vorwoche bleibt erhalten; Fertiggerichte werden für den neuen Korb neu abgeglichen. Bei geändertem Haushalt, Portionsbedarf oder unpassenden Rezepten ist die Übernahme nicht verfügbar.
+- Anwesenheits-Chips bleiben nach dem Abwählen sichtbar. Personen mit einem anderen Gericht im selben Slot können nicht doppelt zugeordnet werden. „Not at home“ entfernt nur das ausgewählte Gericht. Nach dem Löschen eines eigenen Gerichts lässt es sich erneut auswählen.
+- Mengen folgen den individuellen Portionsanteilen statt der Kopfzahl, auch bei Fertiggerichten. Die Wochenziele berücksichtigen die tatsächlich anwesenden Personen; offene Slots planen weiterhin für den Haushalt.
+- Die Korbansicht enthält eine abhakbare Einkaufsliste mit Packungsmengen, Extras und noch fehlenden Zutaten nach Vorratsabzug. Haken bleiben lokal pro Konto und Korb erhalten; geänderte Mengen oder Produkte öffnen die betroffene Position erneut. Abhaken verbucht keinen Einkauf.
+- „Share shopping list“ teilt eine Textkopie über das Betriebssystem beziehungsweise den Browser, mit auswählbarem Text als Fallback. Haken und Änderungen werden nicht zwischen Geräten synchronisiert. Kontodaten und Ernährungsziele sind nicht Bestandteil des Teilungstextes.
+
+Die folgenden Commit- und Implementierungsbeschreibungen dokumentieren den ursprünglichen Stand; die Ergänzungen ersetzen insbesondere die damalige Mengenberechnung nach Köpfen und den Ein-Wochen-Cache.
 
 ## Pflichtregeln für jede weitere Phase
 
@@ -53,7 +64,7 @@ Ein Slot kann mehrere Gerichte tragen, solange sie **verschiedene Personen** ver
 - Migration `20261006150000_meals_per_participant_group.sql`: `meal_plan_items` bekommt `item_key` und `participant_ids`, die Uniqueness wandert von `(plan, plan_date, meal_slot)` auf `(plan, plan_date, meal_slot, item_key)`, bestehende Kalenderzeilen werden aus dem Snapshot nachgefüllt. Version-1-Zeilen behalten ihr „ein Gericht pro Tagesnummer und Slot" und dürfen keine `participant_ids` tragen. Die RPC schreibt beides mit.
 - UI: Auf dem Tagesscreen steht unter jedem Gericht „X isst was anderes"; der Slot-Screen plant dann über `?for=<id>` nur für diese Person, inklusive Auswärts und Aufwärmen.
 
-**Noch nicht drin**: die kuratierten Einfach-Gerichte „belegtes Brot" und „Lunchbox" aus `data/meals.ts`. Die Mechanik funktioniert mit jedem bestehenden passenden Gericht; neue Katalog-Gerichte brauchen vorher Illustrationen in `assets/meals/`, weil `tests/meal-images.test.cjs` für jedes Gericht ein passendes Bild verlangt (und `mealImageSource` bewusst kein Bild liefert, dessen Zutaten nicht exakt stimmen).
+**Ergänzt:** „Cottage cheese and carrot bread“ und „Chicken ham lunchbox“ stehen beim eigenen Mittagsgericht direkt zur Wahl. Beide haben eigene Illustrationen mit genau den verwendeten Zutaten. Allergie- und Ernährungsfilter gelten auch für diese Abkürzung.
 
 ## Fallen, die in Phase 0–6 Zeit gekostet haben
 

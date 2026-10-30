@@ -2,7 +2,7 @@ require('./register.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {splitNutrition}=require('../services/meals/portions.ts');
 const plan={householdSize:2,planningDays:3,targetCalories:10500,targetProtein:750,
- participants:[{id:'me',name:'You',dailyCalories:1500,proteinTarget:100},
+ participants:[{id:'me',name:"Du",dailyCalories:1500,proteinTarget:100},
  {id:'partner',name:'Partner',dailyCalories:2000,proteinTarget:150}]};
 
 test('unequal meal portions conserve nutrition and keep protein proportional to food',()=>{
@@ -14,7 +14,7 @@ test('unequal meal portions conserve nutrition and keep protein proportional to 
 });
 test('summary divides all planned nutrition by days and preserves participant names',()=>{
  const rows=splitNutrition(plan,{calories:10500,protein:735},3);
- assert.deepEqual(rows.map(p=>[p.name,p.calories,p.protein]),[['You',1500,105],['Partner',2000,140]]);
+ assert.deepEqual(rows.map(p=>[p.name,p.calories,p.protein]),[["Du",1500,105],['Partner',2000,140]]);
 });
 test('legacy shared plans use equal portions and single-person plans retain all nutrition',()=>{
  const legacy={...plan,participants:undefined};

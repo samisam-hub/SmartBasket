@@ -4,7 +4,7 @@ import {useAuth} from './AuthContext';
 import {WeekPlanStore} from '../services/week-plan-store';
 const Context=createContext<WeekPlanStore|null>(null);
 export const weekPlanKey=(owner:string)=>`smartbasket.week-plan.v1:${owner}`;
-/** One planned week per identity. A draft is never copied between identities: signing in opens an
+/** Local week plans and attendance defaults per identity. A draft is never copied between identities: signing in opens an
  *  empty week for that account and leaves the local one untouched. */
 export function WeekPlanProvider({children}:PropsWithChildren){
  const {session}=useAuth();const owner=session?.user.id??'local';

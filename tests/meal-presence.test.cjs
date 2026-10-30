@@ -17,7 +17,7 @@ const person = (id, name, dailyCalories, patch = {}) => ({
   dietaryPreferences: ["none"], allergens: [], intolerances: [], isCurrentUser: id === "current-user",
   kind: "adult", activityLevel: null, ...patch,
 });
-const household = [person("current-user", "You", 2200), person("partner", "Partner", 2000),
+const household = [person("current-user", "Du", 2200), person("partner", "Partner", 2000),
   person("kid", "Kid", 1400, { kind: "child" })];
 const preferences = prefs({ householdSize: 3, dailyCalories: 1870, participants: household });
 const plannedDay = () => {
@@ -37,12 +37,12 @@ test("everybody eats along by default, and that is stored as no list at all", ()
   assert.equal(dinner(all).servings, dinner(plan).servings);
 });
 
-test("the quantity follows the heads at the table", () => {
+test("the quantity follows individual calorie shares at the table", () => {
   const plan = plannedDay();
   const full = dinner(plan).servings;
   const withoutKid = setPresence(plan, dinner(plan).id, ["current-user", "partner"], preferences);
   assert.deepEqual(dinner(withoutKid).participantIds, ["current-user", "partner"]);
-  assert.ok(Math.abs(dinner(withoutKid).servings - full * 2 / 3) < 1e-9, `${dinner(withoutKid).servings} of ${full}`);
+  assert.ok(Math.abs(dinner(withoutKid).servings - full * 4200 / 5600) < 1e-9, `${dinner(withoutKid).servings} of ${full}`);
   // Less food on the list, and less nutrition counted for that meal.
   assert.ok(mealNutrition(dinner(withoutKid)).calories < mealNutrition(dinner(plan)).calories);
   const before = aggregateIngredients(plan), after = aggregateIngredients(withoutKid);
@@ -58,7 +58,7 @@ test("the quantity follows the heads at the table", () => {
   assert.equal(dinner(again).participantIds, undefined);
   // One person alone gets one person's worth.
   const alone = setPresence(plan, dinner(plan).id, ["kid"], preferences);
-  assert.ok(Math.abs(dinner(alone).servings - full / 3) < 1e-9);
+  assert.ok(Math.abs(dinner(alone).servings - full * 1400 / 5600) < 1e-9);
 });
 
 test("nobody at the table means the meal is not planned at all", () => {
@@ -68,9 +68,9 @@ test("nobody at the table means the meal is not planned at all", () => {
   assert.ok(!dayOf(empty, monday).slots.includes("dinner"), "a meal nobody eats at home is skipped");
   assert.ok(isWeekPlan({ ...empty, status: "confirmed" }) || !empty.days.length);
   // A person who is not in this plan cannot be seated at it.
-  assert.throws(() => setPresence(plan, dinner(plan).id, ["stranger"], preferences), /not in this plan/);
+  assert.throws(() => setPresence(plan, dinner(plan).id, ["stranger"], preferences), /nicht in diesem Plan/);
   // And an undecided slot has no presence to set.
-  assert.throws(() => setPresence(plan, "2026-10-05-lunch", ["kid"], preferences), /Choose a meal/);
+  assert.throws(() => setPresence(plan, "2026-10-05-lunch", ["kid"], preferences), /Wähle zuerst ein Gericht/);
 });
 
 test("only the people eating a meal share its nutrition", () => {
@@ -122,4 +122,35 @@ test("plans saved before per-meal presence keep meaning the whole household", ()
     items: planned.items.map((item) => ({ ...item, participantIds: [] })) }), false, "an empty list is not a meal");
   assert.equal(isWeekPlan({ ...planned, status: "confirmed",
     items: planned.items.map((item) => ({ ...item, participantIds: ["kid", "kid"] })) }), false);
+});
+
+test('removing an adult removes more food than removing a child and the weekly targets follow presence', () => {
+  const plan = plannedDay(), item = dinner(plan);
+  const childOnly = setPresence(plan, item.id, ['kid'], preferences);
+  const adultOnly = setPresence(plan, item.id, ['current-user'], preferences);
+  assert.ok(dinner(childOnly).servings < dinner(adultOnly).servings);
+  assert.ok(Math.abs(dinner(childOnly).servings / dinner(adultOnly).servings - 1400 / 2200) < 1e-9);
+  // The still-open breakfast and lunch remain planned for everyone; dinner only for the child.
+  assert.ok(Math.abs(childOnly.targetCalories - (5600 * (.25 + .32) + 1400 * .32)) < 1e-8);
+  assert.ok(childOnly.targetProtein < adultOnly.targetProtein);
+  const { weekNutritionTargets } = require('../services/meals/weekTargets.ts');
+  assert.equal(weekNutritionTargets(childOnly, preferences).calorieTarget, childOnly.targetCalories);
+  assert.equal(dinner(plan).participantIds, undefined, 'the original snapshot is untouched');
+});
+
+test('ready meal purchases respect the attending group and clear stale matches after presence changes', () => {
+  const { chooseMode } = require('../services/meals/weekPlanDraft.ts');
+  const { matchReadyMeals } = require('../services/meals/readyMeals.ts');
+  const { product } = require('./basket-fixtures.cjs');
+  let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  plan = chooseMode(plan, monday, 'dinner', 'heat_and_eat', 'lasagne', preferences, ['kid']);
+  const sku = product(900, { name: 'Verified lasagne', category: 'other', packageSize: 400, packageSizeStatus: 'known',
+    readyMeal: { category: 'lasagne', modes: ['heat_and_eat'], slots: ['dinner'], portionGrams: 350, available: true, evidence: 'Test fixture' } });
+  const matched = matchReadyMeals(plan, preferences, [sku], null);
+  assert.equal(matched.unmatched, 0);
+  assert.equal(matched.items[0].plannedConsumptionQuantity, 350 * 3 * 1400 / 5600);
+  const changed = setPresence(matched.plan, matched.plan.items[0].id, ['current-user'], preferences);
+  assert.equal(changed.items[0].readyMealMatch, undefined);
+  const rematched = matchReadyMeals(changed, preferences, [sku], null);
+  assert.ok(rematched.items[0].plannedConsumptionQuantity > matched.items[0].plannedConsumptionQuantity);
 });

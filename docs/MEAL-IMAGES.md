@@ -1,8 +1,10 @@
 # Approved meal illustrations
 
-Update: the catalog now has 31 meals and snacks. See COMFORT-MEALS-AND-SNACKS.md. The visible AI caption was removed at the user's request; provenance remains in these project documents. The notes below describe the original 24-image batch.
+Update: the catalog now has 34 meals and snacks. See COMFORT-MEALS-AND-SNACKS.md. The visible AI caption was removed at the user's request; provenance remains in these project documents. The notes below describe the original 24-image batch.
 
-All 24 current meals have AI serving illustrations bundled locally in assets/meals, shown in meal review and confirmed basket meals, with an explicit AI caption. The three individually approved images are preserved; 21 more were generated at the user's request in the same style. They are not catalog/product photographs. Missing or failed illustrations leave the existing meal text usable. Image selection checks ingredient keys as well as meal ID to avoid misleading saved snapshots.
+All 24 meals in the original batch have AI serving illustrations bundled locally in assets/meals. The three individually approved images are preserved; 21 more were generated at the user's request in the same style. They are not catalog/product photographs. Missing or failed illustrations leave the existing meal text usable. Image selection checks ingredient keys as well as meal ID to avoid misleading saved snapshots.
+
+The two simple individual lunches added for the family flow have their own generated 1254 × 1254 illustrations: `assets/meals/cottage-carrot-bread.png` shows wholemeal bread, cottage cheese and carrots; `assets/meals/chicken-ham-lunchbox.png` shows wholemeal bread with cooked chicken ham, apple and carrots. Both were generated with the built-in image_gen tool on 6 October 2026, visually checked, and matched against the exact recipe ingredients in `mealImageSource`.
 
 The full prompts, built-in image_gen tool provenance, original paths and project asset paths for the additional 21 images are recorded in meal-image-prompts.json. All generated outputs were visually inspected for meal identity and composition. This image-only expansion does not change recipes or nutrition. The display remains centered, 200 px square (160 px in confirmed baskets), constrained by the card width; an explicit square wrapper prevents React Native Web from using the intrinsic PNG height.
 

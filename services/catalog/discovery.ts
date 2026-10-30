@@ -3,7 +3,7 @@ import type { UserPreferences } from "../../types/preferences";
 export const dietaryFields = ["vegetarian", "vegan", "lactoseFree", "glutenFree"] as const;
 export type DietaryField = (typeof dietaryFields)[number];
 export const dietaryNames: Record<DietaryField, string> = {
-  vegetarian: "Vegetarian", vegan: "Vegan", lactoseFree: "Lactose-free", glutenFree: "Gluten-free",
+  vegetarian: "Vegetarisch", vegan: "Vegan", lactoseFree: "Laktosefrei", glutenFree: "Glutenfrei",
 };
 export const searchTokens = (query: string) => (query.slice(0, 120).toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).slice(0, 8);
 export const searchExpression = (query: string) => searchTokens(query).map(t => `${t}:*`).join(" & ");
@@ -52,7 +52,7 @@ export function productMatches(p: Product, query: string, filters: CatalogFilter
     (!filters.matchesPreferences || matchesPreferences(p, preferences));
 }
 export function estimatedPrice(p: Product): string {
-  if (p.priceEstimate === null || p.priceKind === "unavailable") return "Price unavailable";
-  try { return `Est. ${new Intl.NumberFormat("en-IE", { style: "currency", currency: p.currency }).format(p.priceEstimate)}`; }
-  catch { return "Price unavailable"; }
+  if (p.priceEstimate === null || p.priceKind === "unavailable") return "Preis nicht verfügbar";
+  try { return `Ca. ${new Intl.NumberFormat("de-DE", { style: "currency", currency: p.currency }).format(p.priceEstimate)}`; }
+  catch { return "Preis nicht verfügbar"; }
 }

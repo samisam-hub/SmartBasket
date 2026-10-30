@@ -9,7 +9,8 @@ const {
 const { isWeekPlan } = require("../services/meals/validation.ts");
 const { aggregateIngredients } = require("../services/meals/aggregation.ts");
 const { basketFromMealPlan } = require("../services/meals/basket.ts");
-const { mealNutrition, suggestMeals } = require("../services/meals/planner.ts");
+const { mealNutrition, quickIndividualMeals, suggestMeals } = require("../services/meals/planner.ts");
+const { meals } = require('../data/meals.ts');
 const { coveredInSlot, itemGroup, itemsInSlot } = require("../services/meals/weekPlan.ts");
 const { prefs } = require("./basket-fixtures.cjs");
 const { fullCatalog } = require("./meal-fixtures.cjs");
@@ -20,7 +21,7 @@ const person = (id, name, dailyCalories, patch = {}) => ({
   dietaryPreferences: ["none"], allergens: [], intolerances: [], isCurrentUser: id === "current-user",
   kind: "adult", activityLevel: null, ...patch,
 });
-const household = [person("current-user", "You", 2200), person("partner", "Partner", 2000),
+const household = [person("current-user", "Du", 2200), person("partner", "Partner", 2000),
   person("kid", "Kid", 1400, { kind: "child" })];
 const preferences = prefs({ householdSize: 3, dailyCalories: 1870, participants: household });
 const familyDinner = () => {
@@ -46,9 +47,9 @@ test("one slot can hold a family meal and somebody's own dish", () => {
   assert.deepEqual(kidDish.participantIds, ["kid"]);
   assert.deepEqual(coveredInSlot(split, monday, "dinner").sort(), ["current-user", "kid", "partner"]);
   assert.notEqual(familyDish.id, kidDish.id);
-  // Quantities follow the heads at each table and add up to the household again.
-  assert.ok(Math.abs(familyDish.servings - familyServings * 2 / 3) < 1e-9);
-  assert.ok(Math.abs(kidDish.servings - familyServings / 3) < 1e-9);
+  // Each dish is scaled to the nutritional share of its own group.
+  assert.ok(Math.abs(familyDish.servings - familyServings * 4200 / 5600) < 1e-9);
+  assert.ok(Math.abs(kidDish.servings - suggestMeals(family, monday, "dinner", preferences, fullCatalog, [], ["kid"])[0].servings * 1400 / 5600) < 1e-9);
   assert.ok(isWeekPlan({ ...split, status: "confirmed" }));
   // Everyone keeps eating: the shopping list covers both dishes.
   const requirements = aggregateIngredients(split);
@@ -59,6 +60,29 @@ test("one slot can hold a family meal and somebody's own dish", () => {
   // Only dinner was planned here, so breakfast and lunch are open; the split itself is not a gap.
   for (const warning of basket.warnings.filter(w => w.code.startsWith("open_slot_")))
     assert.ok(!warning.message.includes("dinner"), warning.message);
+});
+
+test('a child can take a simple lunchbox while the family keeps its meal, with only its ingredients added', () => {
+  let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  const familyMeal = meals.find(meal => meal.id === 'chicken-potato');
+  plan = chooseMeal(plan, monday, 'lunch', { meal: familyMeal, servings: 3 }, preferences);
+  const quick = quickIndividualMeals(plan, 'lunch', preferences);
+  assert.deepEqual(quick.map(option => option.meal.id), ['cottage-carrot-bread', 'chicken-ham-lunchbox']);
+  const lunchbox = quick.find(option => option.meal.id === 'chicken-ham-lunchbox');
+  plan = chooseMeal(plan, monday, 'lunch', lunchbox, preferences, ['kid']);
+  const dishes = itemsInSlot(plan, monday, 'lunch');
+  assert.deepEqual(dishes.map(dish => dish.participantIds), [['current-user', 'partner'], ['kid']]);
+  const expectedServings = 1400 * .32 / lunchbox.meal.caloriesPerServing;
+  assert.ok(Math.abs(dishes[1].servings - expectedServings) < 1e-9);
+  const requirements = aggregateIngredients(plan);
+  assert.ok(requirements.some(line => line.ingredientKey === 'chicken_ham' && line.sourceMealIds.includes(dishes[1].id)));
+  assert.ok(requirements.some(line => line.ingredientKey === 'apple' && line.sourceMealIds.includes(dishes[1].id)));
+  assert.ok(!requirements.some(line => line.ingredientKey === 'cottage'));
+  assert.ok(basketFromMealPlan({ ...plan, status: 'confirmed' }, preferences, fullCatalog).items.length > 0);
+  assert.deepEqual(quickIndividualMeals(plan, 'dinner', preferences), []);
+  assert.deepEqual(quickIndividualMeals(plan, 'lunch', prefs({ ...preferences, allergens: ['wheat'] })), []);
+  assert.deepEqual(quickIndividualMeals(plan, 'lunch', prefs({ ...preferences, allergens: ['milk'] })).map(option => option.meal.id),
+    ['chicken-ham-lunchbox']);
 });
 
 test("nobody eats twice in one slot, however the dishes are added", () => {
@@ -75,7 +99,7 @@ test("nobody eats twice in one slot, however the dishes are added", () => {
   assert.deepEqual(itemsInSlot(three, monday, "dinner")[0].participantIds, ["current-user"]);
   // Seating somebody at a dish they are not eating is refused rather than silently moved.
   assert.throws(() => setPresence(split, familyDish.id, ["current-user", "partner", "kid"], preferences),
-    /already eating something else/);
+    /isst.*bereits etwas anderes/);
   // A plan that feeds one person twice in a slot is invalid, whoever built it.
   assert.equal(isWeekPlan({ ...split, status: "confirmed",
     items: split.items.map(item => item.id === kidDish.id ? { ...item, participantIds: ["kid", "partner"] } : item) }),
@@ -100,8 +124,8 @@ test("an own dish can also be eating out or heating something up", () => {
   let noPeople = toggleDay(startWeek(monday, plain), monday, plain);
   const [suggestion] = suggestMeals(noPeople, monday, "dinner", plain, fullCatalog);
   noPeople = chooseMeal(noPeople, monday, "dinner", suggestion, plain);
-  assert.throws(() => chooseMeal(noPeople, monday, "dinner", suggestion, plain, ["someone"]), /people of your household/);
-  assert.throws(() => chooseMeal(familyDinner(), monday, "dinner", suggestion, preferences, ["ghost"]), /not in this plan/);
+  assert.throws(() => chooseMeal(noPeople, monday, "dinner", suggestion, plain, ["someone"]), /Personen deines Haushalts/);
+  assert.throws(() => chooseMeal(familyDinner(), monday, "dinner", suggestion, preferences, ["ghost"]), /nicht in diesem Plan/);
 });
 
 test("removing dishes leaves the slot in an honest state", () => {
@@ -195,4 +219,13 @@ test("the save RPC stores every dish of a slot with who eats it", async () => {
     assert.deepEqual(dinner.map(row => row.participant_ids).sort(),
       [["current-user", "partner"], ["kid"]].sort());
   } finally { await db.close(); }
+});
+
+test('an absent person can choose a dish again without erasing the remaining family meal', () => {
+  const split = ownDish(familyDinner());
+  const own = itemsInSlot(split, monday, 'dinner').find(item => item.participantIds?.includes('kid'));
+  const without = clearChoice(split, own.id, preferences);
+  const restored = ownDish(without);
+  assert.equal(itemsInSlot(restored, monday, 'dinner').length, 2);
+  assert.deepEqual(coveredInSlot(restored, monday, 'dinner').sort(), ['current-user', 'kid', 'partner']);
 });

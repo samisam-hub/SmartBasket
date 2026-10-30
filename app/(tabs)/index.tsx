@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
-import { Redirect, router } from 'expo-router';
+import { Redirect, router, useFocusEffect } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { LatestBasket } from '@/components/LatestBasket';
 import { WastePrevention } from '@/components/WastePrevention';
-import { FloatingButton, PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
+import { ErrorMessage, FloatingButton, PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
 import { quickStart } from '@/services/quick-start';
 import { useProfile } from '@/context/ProfileContext';
@@ -20,13 +20,16 @@ import { colors, ui } from '@/lib/theme';
 export default function HomeScreen() {
   const preferences = usePreferences();
   const { saved, editing, ready: preferencesReady } = preferences;
-  // Fetch the product catalog while the week is still being picked, so the first meal card does not
-  // have to wait for it. It is cached for the rest of the app run.
+  const [copyError, setCopyError] = useState<string | null>(null);
+  // Den Produktkatalog laden, waehrend die Woche noch gewaehlt wird; er gilt fuer den App-Lauf.
   useEffect(() => { primeBasketCatalog(); }, []);
-  // Somebody opening the app for the first time is met by the welcome, not by an empty plan.
-  // Once setting up has started, the flow carries on where it was instead of beginning again.
+  // Wer die App zum ersten Mal oeffnet, sieht den Einstieg und keinen leeren Plan. Wer mittendrin
+  // ist, macht dort weiter, statt wieder von vorn zu beginnen.
   const firstVisit = preferencesReady && !saved && !editing;
   const week = useWeekPlan();
+  useFocusEffect(useCallback(() => {
+    if (saved && week.ready) week.store.open(currentWeekStart(), saved);
+  }, [saved, week.ready, week.store]));
   const { saved: profile } = useProfile();
   const flow = useBasketFlow();
   const { active } = useActiveBasket();
@@ -40,45 +43,50 @@ export default function HomeScreen() {
     ? { pathname: '/plan/[date]', params: { date: day } }
     : '/plan/week');
   const name = profile?.displayName.trim();
-  const details = saved ? preferenceChips(saved).slice(2).filter(label => !label.includes('budget')) : [];
+  const details = saved ? preferenceChips(saved).slice(2).filter(label => !label.includes("Budget")) : [];
   if (firstVisit) return <Redirect href="/welcome" />;
   return <Screen compact floating={saved
-    ? <FloatingButton icon="plus" label="Add a meal to this day" disabled={flow.disabled || !week.ready}
+    ? <FloatingButton icon="plus" label="Mahlzeit zu diesem Tag hinzufügen" disabled={flow.disabled || !week.ready}
       onPress={addMeal} />
     : undefined}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 }}>
       <Text accessibilityRole="header" style={[ui.heading, { flex: 1, fontWeight: '800', fontSize: 22 }]}>Smart<Text style={{ color: colors.primary }}>Basket</Text></Text>
-      <Text style={[ui.small, { color: colors.ink, flexShrink: 1 }]} numberOfLines={1}>{name ? `Hi ${name}` : 'Welcome'}</Text>
-      <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Open your basket" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
+      <Text style={[ui.small, { color: colors.ink, flexShrink: 1 }]} numberOfLines={1}>{name ? `Hallo ${name}` : "Willkommen"}</Text>
+      <Pressable onPress={openCart} accessibilityRole="button" accessibilityLabel="Deinen Warenkorb öffnen" style={{ padding: 10 }}><Feather name="shopping-bag" size={26} color={colors.ink} /></Pressable>
     </View>
     <WastePrevention />
+    <ErrorMessage message={week.error} />
+    <ErrorMessage message={copyError} />
     {saved ? <WeekCalendar plan={week.plan} weekStart={weekStart}
       busy={flow.disabled || !week.ready}
       selected={day}
       onSelect={setPicked}
       onWeek={start => { setPicked(null); week.store.open(start, saved); }}
+      onCopyPrevious={week.store.canCopyPreviousWeek(weekStart, saved)
+        ? () => { try { week.store.copyPreviousWeek(weekStart, saved); setCopyError(null); }
+          catch (e) { setCopyError(e instanceof Error ? e.message : "Die Vorwoche konnte nicht übernommen werden."); } } : undefined}
       onBasket={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />
-      : <SectionCard title="Start planning">
-        <PrimaryButton label="Set up your preferences" disabled={flow.disabled} onPress={flow.create} />
-        <SecondaryButton label="Start with a sample household" disabled={flow.disabled}
+      : <SectionCard title="Planung starten">
+        <PrimaryButton label="Deine Einstellungen festlegen" disabled={flow.disabled} onPress={flow.create} />
+        <SecondaryButton label="Mit einem Beispielhaushalt starten" disabled={flow.disabled}
           onPress={() => { void quickStart(preferences.store); }} />
         <Text style={ui.small}>
-          The sample is two people, a full week and the standard meals. Nothing is asked and nothing
-          is final: the household screen and your preferences change all of it.
+          Das Beispiel sind zwei Personen, eine ganze Woche und die Standardmahlzeiten. Es wird
+          nichts gefragt und nichts ist endgültig: Haushalt und Einstellungen ändern alles davon.
         </Text>
       </SectionCard>}
-    <SecondaryButton label="View recent shops" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
-    <Pressable accessibilityRole="button" accessibilityLabel="Plan by voice" onPress={() => router.push('/voice-plan')}
+    <SecondaryButton label="Letzte Einkäufe ansehen" onPress={()=>router.push({ pathname: '/pantry', params: { view: 'history' } })} />
+    <Pressable accessibilityRole="button" accessibilityLabel="Per Sprache planen" onPress={() => router.push('/voice-plan')}
       style={({pressed}) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: colors.pale, opacity: pressed ? .75 : 1 })}>
       <Feather name="mic" size={24} color={colors.primary} />
-      <View style={{flex: 1}}><Text style={[ui.small, {fontWeight: '700', color: colors.ink}]}>Plan by voice</Text><Text style={ui.caption}>Tell us what you fancy</Text></View>
+      <View style={{flex: 1}}><Text style={[ui.small, {fontWeight: '700', color: colors.ink}]}>Per Sprache planen</Text><Text style={ui.caption}>Sag uns, worauf du Lust hast</Text></View>
       <Feather name="chevron-right" size={20} color={colors.primary} />
     </Pressable>
     <LatestBasket />
     <View style={{ flexDirection: 'row', gap: 12 }}>
       {[
-        { title: 'Your pantry', subtitle: 'Use what you already have', route: '/pantry' as const, photo: 8 },
-        { title: 'Browse products', subtitle: 'Find what you need', route: '/products' as const, photo: 1 },
+        { title: "Deine Vorräte", subtitle: "Nutze, was du schon hast", route: '/pantry' as const, photo: 8 },
+        { title: "Produkte entdecken", subtitle: "Finde, was du brauchst", route: '/products' as const, photo: 1 },
       ].map(tile => <Pressable key={tile.title} onPress={()=>router.push(tile.route)} accessibilityRole="button" accessibilityLabel={tile.title}
         style={({pressed})=>[ui.card,{ flex: 1, minWidth: 0, padding: 12, gap: 6, borderRadius: 14, opacity: pressed ? .75 : 1 }]}>
         <Text style={[ui.small,{fontWeight:'700',color:colors.ink}]}>{tile.title}</Text>
@@ -91,10 +99,10 @@ export default function HomeScreen() {
     {saved && <SectionCard compact>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ flex: 1 }}>
-          <Text style={ui.subheading}>Your preferences</Text>
+          <Text style={ui.subheading}>Deine Einstellungen</Text>
           <Text style={ui.small}>{details.join(' · ')}</Text>
         </View>
-        <TextButton label={editing ? 'Resume edits' : 'Edit'} disabled={flow.disabled} onPress={() => flow.edit()} />
+        <TextButton label={editing ? "Bearbeitung fortsetzen" : "Bearbeiten"} disabled={flow.disabled} onPress={() => flow.edit()} />
       </View>
     </SectionCard>}
   </Screen>;

@@ -1,165 +1,66 @@
-require("./register.cjs");
-const { test } = require("node:test"), assert = require("node:assert/strict");
-const { listName, openingList } = require("../services/shopping-list.ts");
+require('./register.cjs');
+const { test } = require('node:test'), assert = require('node:assert/strict');
+const { shoppingRows, shoppingListText, rowChecked } = require('../services/basket/shopping-list.ts');
+const { ShoppingListStore, shoppingListKey } = require('../services/shopping-list-store.ts');
+const { product } = require('./basket-fixtures.cjs');
+const item = (id, patch = {}) => ({ product: product(id), packageCount: 2, packageAmount: 500, quantityUnit: 'g', quantityAssumed: false, ingredientKey: 'rice', plannedConsumptionQuantity: 800, ...patch });
+const requirement = (key, qty) => ({ ingredientKey: key, ingredientName: key, requiredQuantity: qty, minimumAcceptableQuantity: qty * .9, unit: 'g' });
+const result = () => ({ items: [item(1)], ingredientRequirements: [requirement('rice', 1000), requirement('beans', 200)], pantryUsed: [{ ingredientKey: 'rice', quantity: 200 }] });
+class Disk { values = new Map(); fail = false; async getItem(k) { return this.values.get(k) ?? null; } async setItem(k, v) { if (this.fail) throw Error('disk full'); this.values.set(k, v); } }
 
-const basket = (id, createdAt, { purchased = false, name = `${id} list` } = {}) => ({
-  id, name, createdAt, ownerId: null, cloudId: null, syncStatus: "local",
-  preferences: {}, result: { items: [], purchasedAt: purchased ? "2026-10-20T10:00:00Z" : undefined },
+test('shopping rows distinguish packages, pantry coverage, extras and missing ingredients', () => {
+  const input = result(); input.items.push(item(2, { ingredientKey: 'extra:2', isExtra: true }));
+  const rows = shoppingRows(input);
+  assert.equal(rows.length, 3);
+  assert.equal(rows[0].quantity, '2 × 500 g');
+  assert.equal(rows[2].id, 'ingredient:beans');
+  assert.equal(rows[2].quantity, '200 g noch benötigt');
+  assert.equal(rows.some(r => r.id === 'ingredient:rice'), false, 'pantry stock is not bought twice');
+  input.pantryUsed = [];
+  assert.equal(shoppingRows(input).find(r => r.id === 'ingredient:rice').quantity, '200 g noch benötigt');
+  input.items[0].plannedConsumptionQuantity = 950;
+  assert.equal(shoppingRows(input).some(r => r.id === 'ingredient:rice'), false, 'allowed flexible portions are not missing food');
 });
 
-test("the tab opens on the list still being shopped", () => {
-  const older = basket("a", "2026-10-01T00:00:00Z");
-  const newer = basket("b", "2026-10-20T00:00:00Z");
-  // Someone standing in a shop wants the list they are holding, not the newest one.
-  assert.equal(openingList([older, newer], older).id, "a");
-  assert.equal(openingList([older, newer], null).id, "b", "without one in hand, the newest");
+test('checkmarks survive restart, remain private to basket/account, and reopen changed or replaced products', async () => {
+  const disk = new Disk(), key = shoppingListKey('anna', 'basket-1');
+  const store = new ShoppingListStore(disk, key); await store.initialize();
+  const row = shoppingRows(result())[0]; store.toggle(row); await store.flush();
+  const again = new ShoppingListStore(disk, key); await again.initialize();
+  assert.ok(rowChecked(row, again.getSnapshot().checked));
+  const changed = shoppingRows({ ...result(), items: [item(1, { packageCount: 3 })] })[0];
+  assert.equal(rowChecked(changed, again.getSnapshot().checked), false);
+  again.reconcile([changed]); await again.flush();
+  assert.equal(rowChecked(row, again.getSnapshot().checked), false, 'old check does not reappear after another quantity change');
+  again.toggle(changed); again.toggle(changed); await again.flush();
+  assert.deepEqual(again.getSnapshot().checked, {});
+  again.toggle(row); again.reconcile([shoppingRows({ ...result(), items: [item(9)] })[0]]); await again.flush();
+  assert.deepEqual(again.getSnapshot().checked, {});
+  for (const otherKey of [shoppingListKey('partner', 'basket-1'), shoppingListKey('anna', 'basket-2'), shoppingListKey(null, 'basket-1')]) {
+    const other = new ShoppingListStore(disk, otherKey); await other.initialize(); assert.deepEqual(other.getSnapshot().checked, {});
+  }
 });
 
-test("a bought list is a receipt, not a list", () => {
-  const bought = basket("a", "2026-10-20T00:00:00Z", { purchased: true });
-  const open = basket("b", "2026-10-01T00:00:00Z");
-  assert.equal(openingList([bought, open], null).id, "b", "the open one wins even though it is older");
-  assert.equal(openingList([bought, open], bought).id, "b", "and a bought one is not kept in hand");
-  // Unless there is nothing else: then the receipt is better than an empty tab.
-  assert.equal(openingList([bought], null).id, "a");
+test('unreadable checkmarks are preserved; write failures are visible and can be retried', async () => {
+  const disk = new Disk(), row = shoppingRows(result())[0];
+  await disk.setItem('bad', '{broken');
+  const broken = new ShoppingListStore(disk, 'bad'); await broken.initialize();
+  assert.equal(broken.getSnapshot().blocked, true); broken.toggle(row); broken.reconcile([]); broken.retry();
+  await broken.flush(); assert.equal(await disk.getItem('bad'), '{broken');
+  const store = new ShoppingListStore(disk, 'good'); await store.initialize();
+  disk.fail = true; store.toggle(row); await assert.rejects(store.flush());
+  assert.ok(store.getSnapshot().error); assert.ok(rowChecked(row, store.getSnapshot().checked));
+  disk.fail = false; store.retry(); await store.flush();
+  assert.equal(store.getSnapshot().error, null);
+  const reopened = new ShoppingListStore(disk, 'good'); await reopened.initialize(); assert.ok(rowChecked(row, reopened.getSnapshot().checked));
 });
 
-test("a remembered list that was deleted is not shown", () => {
-  const gone = basket("gone", "2026-10-20T00:00:00Z");
-  const kept = basket("kept", "2026-10-01T00:00:00Z");
-  assert.equal(openingList([kept], gone).id, "kept");
-  assert.equal(openingList([], gone), null);
-});
-
-test("nothing saved means nothing to open", () => {
-  assert.equal(openingList([], null), null);
-  assert.equal(openingList([{ id: "broken" }], null), null, "a row without a date is not a list");
-});
-
-test("a list carries the name of its basket, never a second one", () => {
-  assert.equal(listName(basket("a", "2026-10-01T00:00:00Z", { name: "7-day basket" })), "7-day basket");
-  assert.equal(listName(basket("a", "2026-10-01T00:00:00Z", { name: "   " })), "Shopping list");
-  assert.equal(listName(null), "Shopping list");
-});
-
-const { groupedLines, shoppingLines } = require("../services/shopping-list.ts");
-const result = (extra) => ({ items: [], ...extra });
-
-test("the list is what the plan needs, as ingredients rather than packages", () => {
-  const lines = shoppingLines(result({ ingredientRequirements: [
-    { ingredientKey: "cherry_tomatoes", ingredientName: "Cherry tomatoes", requiredQuantity: 500, unit: "g" },
-    { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 40, unit: "ml" },
-  ] }));
-  assert.deepEqual(lines.map((l) => [l.name, l.amount, l.unit]),
-    [["Cherry tomatoes", 500, "g"], ["Olive oil", 40, "ml"]]);
-  assert.equal(lines[0].category, "vegetables", "a known ingredient knows its aisle");
-});
-
-test("an ingredient the catalog does not know still reaches the list", () => {
-  const lines = shoppingLines(result({ ingredientRequirements: [
-    { ingredientKey: "moon_cheese", ingredientName: "Moon cheese", requiredQuantity: 100, unit: "g" },
-  ] }));
-  assert.equal(lines.length, 1, "nothing is dropped for being unrecognised");
-  assert.equal(lines[0].category, "other");
-  assert.deepEqual(groupedLines(lines).map((g) => g.label), ["Other"], "it lands in the catalog's own last category");
-});
-
-test("a quantity that is zero or broken is not a line to shop for", () => {
-  const lines = shoppingLines(result({ ingredientRequirements: [
-    { ingredientKey: "a", ingredientName: "Zero", requiredQuantity: 0, unit: "g" },
-    { ingredientKey: "b", ingredientName: "Broken", requiredQuantity: NaN, unit: "g" },
-    { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 10, unit: "ml" },
-  ] }));
-  assert.deepEqual(lines.map((l) => l.name), ["Olive oil"]);
-});
-
-test("a basket from the older engine still produces a list", () => {
-  // Those carry no aggregated requirements; the packages they were built from are the next best truth.
-  const lines = shoppingLines(result({ items: [
-    { product: { id: "p1", name: "Tinned tomatoes", category: "vegetables" },
-      ingredientKey: "chopped_tomatoes", packageCount: 2, packageAmount: 400,
-      purchasedQuantity: 800, quantityUnit: "g" },
-  ] }));
-  assert.deepEqual(lines.map((l) => [l.name, l.amount, l.unit]), [["Tinned tomatoes", 800, "g"]]);
-});
-
-test("groups follow the order a shop is walked, and the unknown comes last", () => {
-  const groups = groupedLines(shoppingLines(result({ ingredientRequirements: [
-    { ingredientKey: "moon_cheese", ingredientName: "Moon cheese", requiredQuantity: 100, unit: "g" },
-    { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 40, unit: "ml" },
-    { ingredientKey: "cherry_tomatoes", ingredientName: "Cherry tomatoes", requiredQuantity: 500, unit: "g" },
-  ] })));
-  assert.equal(groups.at(-1).label, "Other");
-  const labels = groups.map((g) => g.label);
-  assert.ok(labels.indexOf("Vegetables") < labels.indexOf("Other"));
-  assert.equal(new Set(labels).size, labels.length, "no category appears twice");
-  assert.equal(groups.reduce((n, g) => n + g.lines.length, 0), 3, "every line lands in exactly one group");
-});
-
-const { shoppingListText } = require("../services/shopping-list.ts");
-const { addCustomItem, customItemError, loadCustomItems, removeCustomItem,
-  saveCustomItems } = require("../services/basket/custom-items.ts");
-const device = (initial = {}) => {
-  const kept = { ...initial };
-  return { kept, getItem: async (k) => kept[k] ?? null, setItem: async (k, v) => { kept[k] = v; } };
-};
-
-test("own entries are added where they were typed and can be taken off again", () => {
-  let items = addCustomItem([], "  Kitchen roll  ", " 2 packs ");
-  assert.equal(items[0].name, "Kitchen roll");
-  assert.equal(items[0].note, "2 packs");
-  items = addCustomItem(items, "Coffee");
-  assert.deepEqual(items.map((i) => i.name), ["Kitchen roll", "Coffee"], "the order the list was built in");
-  assert.equal(items[1].note, null, "no amount is not an empty amount");
-  assert.deepEqual(removeCustomItem(items, items[0].id).map((i) => i.name), ["Coffee"]);
-});
-
-test("an entry has to say something", () => {
-  assert.match(customItemError("   "), /Type what you want/);
-  assert.match(customItemError("x".repeat(81)), /80 characters/);
-  assert.equal(customItemError("Coffee"), null);
-  assert.throws(() => addCustomItem([], " "), /Type what you want/);
-});
-
-test("own entries survive leaving the screen, per list, and a broken file is dropped", async () => {
-  const storage = device();
-  await saveCustomItems(storage, "list-a", addCustomItem([], "Coffee"));
-  assert.deepEqual((await loadCustomItems(storage, "list-a")).map((i) => i.name), ["Coffee"]);
-  assert.deepEqual(await loadCustomItems(storage, "list-b"), [], "another list has its own additions");
-  const broken = device({ "smartbasket.list-extras.v1:list-a": "{not json" });
-  assert.deepEqual(await loadCustomItems(broken, "list-a"), []);
-  const wrong = device({ "smartbasket.list-extras.v1:list-a": JSON.stringify([{ id: "x" }]) });
-  assert.deepEqual(await loadCustomItems(wrong, "list-a"), [], "a half-written entry is not restored");
-});
-
-test("sharing sends one list: generated lines and own entries together", () => {
-  const groups = groupedLines(shoppingLines(result({ ingredientRequirements: [
-    { ingredientKey: "cherry_tomatoes", ingredientName: "Cherry tomatoes", requiredQuantity: 500, unit: "g" },
-    { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 40, unit: "ml" },
-  ] })));
-  const extras = addCustomItem([], "Kitchen roll", "2 packs");
-  const text = shoppingListText({ name: "7-day basket", groups, extras,
-    ticked: ["cherry_tomatoes"], system: "metric" });
-  assert.match(text, /^7-day basket/);
-  assert.match(text, /\[x\] Cherry tomatoes — 500 g/, "what is in the trolley is marked, not dropped");
-  assert.match(text, /\[ \] Olive oil — 40 ml/);
-  assert.match(text, /ADDED BY YOU/);
-  assert.match(text, /\[ \] Kitchen roll — 2 packs/, "own entries travel with the list, not separately");
-});
-
-test("sharing writes the units the household chose", () => {
-  const groups = groupedLines(shoppingLines(result({ ingredientRequirements: [
-    { ingredientKey: "cherry_tomatoes", ingredientName: "Cherry tomatoes", requiredQuantity: 500, unit: "g" },
-  ] })));
-  const us = shoppingListText({ name: "List", groups, extras: [], ticked: [], system: "us" });
-  assert.match(us, /1\.1 lb/);
-  assert.doesNotMatch(us, / 500 g/);
-});
-
-test("a list with nothing added has no empty section", () => {
-  const groups = groupedLines(shoppingLines(result({ ingredientRequirements: [
-    { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 40, unit: "ml" },
-  ] })));
-  const text = shoppingListText({ name: "List", groups, extras: [], ticked: [], system: "metric" });
-  assert.doesNotMatch(text, /ADDED BY YOU/);
+test('shared text separates picked-up items from remaining purchases and includes unresolved ingredients', () => {
+  const rows = shoppingRows(result()), checked = { [rows[0].id]: rows[0].signature };
+  const text = shoppingListText('Family week', rows, checked);
+  assert.match(text, /SmartBasket · Family week/);
+  assert.match(text, /\[ \] beans — 200 g noch benötigt \(passendes Produkt auswählen\)/);
+  assert.match(text, /Bereits eingepackt:/);
+  assert.ok(text.includes(`[x] ${rows[0].name} — 2 × 500 g`));
+  assert.equal(/kcal|allerg|userId|calorie/.test(text), false);
 });

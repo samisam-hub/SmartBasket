@@ -33,7 +33,7 @@ export function matchReadyMeals<P extends AnyMealPlan>(plan: P, preferences: Use
   requests.forEach((item, index) => {
     const budgetShare = remaining === null ? null : Math.max(0, remaining) / (requests.length - index);
     const candidates = readyMealCandidates(item, products, preferences).map(product => {
-      const quantity = product.readyMeal!.portionGrams * plan.householdSize;
+      const quantity = product.readyMeal!.portionGrams * (plan.version === '2' ? item.servings : plan.householdSize);
       const already = grouped.get(product.id)?.quantity ?? 0;
       const extraPackages = Math.ceil((already + quantity) / product.packageSize!) - Math.ceil(already / product.packageSize!);
       const price = extraPackages * packagePrice(product)!;
@@ -45,7 +45,7 @@ export function matchReadyMeals<P extends AnyMealPlan>(plan: P, preferences: Use
     const selected = candidates[0];
     if (!selected) {
       unmatched++;
-      warnings.push({ code: `unmatched_ready_${item.id}`, message: `${itemDayLabel(plan, item)} · ${item.mealSlot}: ${item.meal.name} could not be matched to a verified available catalog meal with suitable preparation, dietary/allergen evidence, price and portion data. No product was added; nutrition and cost are unknown.` });
+      warnings.push({ code: `unmatched_ready_${item.id}`, message: `${itemDayLabel(plan, item)} · ${item.mealSlot}: ${item.meal.name} konnte keinem bestätigten Kataloggericht mit passenden Zubereitungs-, Ernährungs-, Allergen-, Preis- und Portionsangaben zugeordnet werden. Kein Produkt wurde hinzugefügt; Nährwerte und Kosten sind unbekannt.` });
       return;
     }
     const { product, quantity, price } = selected;
@@ -66,7 +66,7 @@ export function matchReadyMeals<P extends AnyMealPlan>(plan: P, preferences: Use
       totalWeight: purchased, totalVolume: null, totalCalories: product.caloriesPer100g! * factor, totalProtein: product.proteinPer100g! * factor,
       totalCarbohydrates: product.carbohydratesPer100g! * factor, totalFat: product.fatPer100g! * factor, totalFiber: product.fiberPer100g === null ? null : product.fiberPer100g * factor,
       estimatedPrice: Math.round(packageCount * packagePrice(product)! * 100) / 100,
-      reasonSelected: [{ code: 'ready_meal_match', detail: 'Catalog meal matched after confirmation using category, preparation, meal slot, dietary evidence, household portions and remaining budget.' }] });
+      reasonSelected: [{ code: 'ready_meal_match', detail: 'Kataloggericht nach Bestätigung anhand von Kategorie, Zubereitung, Mahlzeit, Ernährungsnachweisen, Haushaltsportionen und verbleibendem Budget zugeordnet.' }] });
   }
   return { plan: next, items, requirements, warnings, unmatched };
 }

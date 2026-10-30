@@ -31,6 +31,7 @@ export interface BasketItem {
 }
 export interface BasketGenerationResult {
   purchasedAt?: string;
+  excludedItems?: BasketItem[];
   pantryUsed?: import('./pantry').PantryUse[];
   removedProductIds?: string[];
   removedIngredientKeys?: string[];

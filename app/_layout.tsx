@@ -46,31 +46,31 @@ function AuthenticatedLayout(){
           />
           <Stack.Screen
             name="basket-setup"
-            options={{ title: "Create my basket" }}
+            options={{ title: "Warenkorb erstellen" }}
           />
-          <Stack.Screen name="product/[id]" options={{ title: "Product details" }} />
-          {/* Brings its own large heading, back control and add action, as the design asks. */}
+          <Stack.Screen name="product/[id]" options={{ title: "Produktdetails" }} />
+          {/* Bringen ihre eigene Kopfzeile mit, wie der Entwurf es verlangt. */}
           <Stack.Screen name="household" options={{ headerShown: false }} />
-          {/* A link straight into a usable plan; it only passes through. */}
           <Stack.Screen name="try" options={{ headerShown: false, gestureEnabled: false }} />
-          {/* The way in, and the explanation that follows it: both bring their own layout. */}
           <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen name="intro" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen name="household-setup" options={{ headerShown: false }} />
           <Stack.Screen name="household-setup/person" options={{ headerShown: false }} />
           <Stack.Screen name="meal-preferences" options={{ headerShown: false }} />
-          <Stack.Screen name="saved-lists" options={{ title: "All my lists" }} />
-          <Stack.Screen name="pantry" options={{ title: "Pantry & purchases" }} />
-          <Stack.Screen name="account" options={{ title: "Account" }} />
-          <Stack.Screen name="auth/callback" options={{ title: "Verify account" }} />
-          <Stack.Screen name="personal-profile" options={{ title: "Personal profile" }} />
-          <Stack.Screen name="plan-setup" options={{ title: "Plan participants" }} />
-          <Stack.Screen name="plan/week" options={{ title: "Your week" }} />
-          <Stack.Screen name="plan/[date]" options={{ title: "Your day" }} />
-          <Stack.Screen name="plan/[date]/[slot]" options={{ title: "Choose a meal" }} />
-          <Stack.Screen name="plan/day-done" options={{ title: "Day planned" }} />
-          <Stack.Screen name="voice-plan" options={{ title: "Plan by voice" }} />
-          <Stack.Screen name="saved-meal-plans" options={{ title: "Saved meal plans" }} />
+          <Stack.Screen name="saved-lists" options={{ title: "Alle meine Listen" }} />
+          <Stack.Screen name="pantry" options={{ title: "Vorräte und Einkäufe" }} />
+          <Stack.Screen name="account" options={{ title: "Konto" }} />
+          <Stack.Screen name="auth/callback" options={{ title: "Konto bestätigen" }} />
+          <Stack.Screen name="personal-profile" options={{ title: "Persönliches Profil" }} />
+          <Stack.Screen name="plan-setup" options={{ title: "Personen im Plan" }} />
+          <Stack.Screen name="plan/taste" options={{ title: "Was mögt ihr?" }} />
+          <Stack.Screen name="plan/overview" options={{ title: "Dein Wochenplan" }} />
+          <Stack.Screen name="plan/week" options={{ title: "Deine Woche" }} />
+          <Stack.Screen name="plan/[date]" options={{ title: "Dein Tag" }} />
+          <Stack.Screen name="plan/[date]/[slot]" options={{ title: "Gericht auswählen" }} />
+          <Stack.Screen name="plan/day-done" options={{ title: "Tag geplant" }} />
+          <Stack.Screen name="voice-plan" options={{ title: "Per Sprache planen" }} />
+          <Stack.Screen name="saved-meal-plans" options={{ title: "Gespeicherte Speisepläne" }} />
         </Stack>
         <ActiveBasketShortcut />
         <ScreenNavigation />

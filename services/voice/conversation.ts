@@ -22,8 +22,8 @@ export class TurnDetector {
   }
 }
 const delay = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
-  if (signal.aborted) { reject(new Error('Stopped')); return; }
-  const abort = () => { clearTimeout(timer); reject(new Error('Stopped')); };
+  if (signal.aborted) { reject(new Error("Beendet")); return; }
+  const abort = () => { clearTimeout(timer); reject(new Error("Beendet")); };
   const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); }, ms);
   signal.addEventListener('abort', abort, { once: true });
 });
@@ -71,13 +71,13 @@ export class VoiceConversation {
           const started = now(), detector = new TurnDetector(); let decision: 'send' | 'empty' | null = null;
           while (!decision && !signal.aborted) {
             await wait(100, signal);
-            if (!recorder.isRecording()) throw Error('Microphone disconnected. Please start the conversation again.');
+            if (!recorder.isRecording()) throw Error("Die Mikrofonverbindung wurde getrennt. Starte das Gespräch erneut.");
             decision = this.finishTurn ? 'send' : detector.sample(now() - started, recorder.level());
           }
           uri = await recorder.stop();
           if (signal.aborted) break;
-          if (decision === 'empty') { this.ports.error('No speech heard. The conversation is paused. Tap the microphone to try again.'); break; }
-          if (!uri) throw Error('Recording unavailable. Please start the conversation again.');
+          if (decision === 'empty') { this.ports.error("Keine Sprache erkannt. Das Gespräch ist pausiert. Tippe auf das Mikrofon, um es erneut zu versuchen."); break; }
+          if (!uri) throw Error("Aufnahme nicht verfügbar. Starte das Gespräch erneut.");
           this.ports.phase('thinking');
           const processing = new AbortController();
           const abort = () => processing.abort(); signal.addEventListener('abort', abort, { once: true });
@@ -85,10 +85,10 @@ export class VoiceConversation {
           let answer: { text: string; language: string };
           try {
             const text = await this.ports.transcribe(uri, processing.signal);
-            if (processing.signal.aborted) throw Error('Request stopped. Please try again.');
-            if (!text.trim()) throw Error('No clear speech heard. Please try again.');
+            if (processing.signal.aborted) throw Error("Anfrage beendet. Bitte versuche es erneut.");
+            if (!text.trim()) throw Error("Keine verständliche Sprache erkannt. Bitte versuche es erneut.");
             answer = await this.ports.reply(text, processing.signal);
-            if (processing.signal.aborted) throw Error('Request stopped. Please try again.');
+            if (processing.signal.aborted) throw Error("Anfrage beendet. Bitte versuche es erneut.");
           } finally { clearTimeout(timeout); signal.removeEventListener('abort', abort); }
           await recorder.discard(uri); uri = null;
           if (signal.aborted) break;
@@ -105,7 +105,7 @@ export class VoiceConversation {
         }
       }
     } catch (e) {
-      if (!signal.aborted) this.ports.error(e instanceof Error ? e.message : 'Conversation paused. Please try again.');
+      if (!signal.aborted) this.ports.error(e instanceof Error ? e.message : "Gespräch pausiert. Bitte versuche es erneut.");
     }
   }
 }

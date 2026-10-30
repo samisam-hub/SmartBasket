@@ -10,7 +10,7 @@ const stub = (name) => {
 };
 const original = Module._load;
 Module._load = function (request, parent, isMain) {
-  if (request === "react-native") return { Text: "Text", View: "View" };
+  if (request === "react-native") return { Text: "Text", View: "Ansehen" };
   if (request === "./ui" && parent.filename.endsWith("HouseholdFields.tsx"))
     return Object.fromEntries(["IconButton", "SecondaryButton", "SectionCard", "SelectionChip", "TextInput"]
       .map((name) => [name, stub(name)]));
@@ -33,7 +33,7 @@ const { HouseholdFields } = require("../components/HouseholdFields.tsx");
 const { estimateCalories, newParticipant } = require("../services/profile-domain.ts");
 
 const you = {
-  ...newParticipant("adult", "current-user", "You", "maintain"),
+  ...newParticipant("adult", "current-user", "Du", "maintain"),
   isCurrentUser: true,
 };
 async function render(initial) {
@@ -57,7 +57,7 @@ async function render(initial) {
 test("one tap adds a person with a calorie suggestion, and removing them is possible", async () => {
   const view = await render([you]);
   assert.equal(view.shown().length, 1);
-  assert.equal(view.shown()[0].name, "You");
+  assert.equal(view.shown()[0].name, "Du");
   // One way to add. The person starts as an adult and their editor opens straight away.
   await view.add();
   assert.equal(view.people.length, 2);
@@ -71,7 +71,7 @@ test("one tap adds a person with a calorie suggestion, and removing them is poss
   assert.ok(child.dailyCalories < view.people[0].dailyCalories);
   // The editor opens on the new person, and only they can be removed.
   const remove = view.renderer.root.findAllByType("SecondaryButton")
-    .find((b) => b.props.label === "Remove this person");
+    .find((b) => b.props.label === "Diese Person entfernen");
   assert.ok(remove);
   await act(() => remove.props.onPress());
   assert.equal(view.people.length, 1);
@@ -82,21 +82,21 @@ test("activity and sex refine the suggestion; a typed amount survives further ta
   const view = await render([you]);
   await view.open("current-user");
   const before = view.people[0].dailyCalories;
-  await act(() => view.chip("Active").props.onPress());
+  await act(() => view.chip("Aktiv").props.onPress());
   assert.ok(view.people[0].dailyCalories > before);
-  await act(() => view.chip("Female").props.onPress());
+  await act(() => view.chip("Weiblich").props.onPress());
   assert.equal(view.people[0].sex, "female");
   assert.equal(view.people[0].dailyCalories, estimateCalories(view.people[0]));
   const input = () => view.renderer.root.findByType("NumberInput");
   await act(() => input().props.onChange(2345));
   assert.equal(view.people[0].dailyCalories, 2345);
-  await act(() => view.chip("Mostly sitting").props.onPress());
+  await act(() => view.chip("Überwiegend sitzend").props.onPress());
   assert.equal(view.people[0].dailyCalories, 2345, "a typed amount is not overwritten");
-  assert.match(input().props.hint, /Your own number/);
+  assert.match(input().props.hint, /Dein eigener Wert/);
   // Clearing the field hands the suggestion back.
   await act(() => input().props.onChange(null));
   assert.equal(view.people[0].dailyCalories, estimateCalories(view.people[0]));
-  assert.match(input().props.hint, /Our suggestion/);
+  assert.match(input().props.hint, /Unser Vorschlag/);
 });
 
 test("a heading and its add button appear only where the screen has no header of its own", async () => {
@@ -105,9 +105,9 @@ test("a heading and its add button appear only where the screen has no header of
     { people: [you], goal: "maintain", onChange: () => {}, ...props });
   await act(() => { renderer = create(element()); });
   assert.deepEqual(renderer.root.findAllByType("IconButton"), [], "onboarding brings its own header");
-  await act(() => { renderer.update(element({ title: "Household" })); });
+  await act(() => { renderer.update(element({ title: "Haushalt" })); });
   const add = renderer.root.findAllByType("IconButton")[0];
-  assert.equal(add.props.label, "Add person");
+  assert.equal(add.props.label, "Person hinzufügen");
   assert.equal(add.props.icon, "plus");
   await act(() => renderer.unmount());
 });

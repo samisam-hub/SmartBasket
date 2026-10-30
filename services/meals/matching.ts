@@ -1,3 +1,4 @@
+import { germanLabel } from '../../lib/german';
 import { ingredients } from '../../data/meals';
 import { canonicalIngredientKey,ingredientMappings,preparedFoodKeywords } from '../../data/ingredient-mappings';
 import type { Product } from '../../types/product';
@@ -29,7 +30,7 @@ export function diagnoseMatches(inputKey:string,products:Product[],preferences:U
   const keyword=config.requiredKeywords.some(a=>normalizeIngredientText(a).split(' ').every(token=>contains(name,token)));
   if(!manual&&!alias&&!keyword){reject(p,'naming_mismatch');continue;}
   if(!config.allowedCategories.includes(p.category)){reject(p,'category_mismatch');continue;}
-  if([...config.blockedKeywords,...preparedFoodKeywords].some(a=>contains(name,a))||
+  if([...config.blockedKeywords,...preparedFoodKeywords.filter(word => !config.allowedPreparedKeywords?.includes(word))].some(a=>contains(name,a))||
     (key==='salmon'&&/seelachs|pollock/.test(name))||
     (key==='tofu'&&/caseinat|milk|cheese|jalape/i.test(p.ingredientsText??''))){reject(p,'unsuitable_product_form');continue;}
   if(['chicken_breast','turkey'].includes(key)&&/nitrit|nitrite|carrageen|rauch|dextrose|gegart|stabilisator|konservierungs/i.test(p.ingredientsText??'')){reject(p,'unsuitable_product_form');continue;}
@@ -45,13 +46,13 @@ export function diagnoseMatches(inputKey:string,products:Product[],preferences:U
   else if(size===null)issue='package_size_unknown';
   if(unit==='piece'&&size!==null){if(p.packageMassPerUnit) {size*=p.packageMassPerUnit;unit='g';}else issue='piece_mass_unknown';}
   if(key==='eggs'&&unit==='g'&&size!==null&&size<150)issue='possible_serving_not_package';
-  if(['tuna','chickpeas'].includes(key)){const drained=p.packageDrainedWeight??pack.packageDrainedWeight;
+  if(config.drainedWeight || ['tuna','chickpeas'].includes(key)){const drained=p.packageDrainedWeight??pack.packageDrainedWeight;
    if(drained&&size&&drained<=size){size=drained;unit='g';}else issue='drained_weight_unknown';}
   if(!issue&&unit!==definition.unit)issue='unit_conversion_unknown';
   const stage=manual?'curated':alias?'alias':'category-keyword';
   const completeness=[kcal,...macros].filter(n=>n!==null).length;
   const score=(manual?60:alias?45:30)+15+(!issue?10:0)+completeness*2+Math.max(0,10-safety.unknownDiet.length*5)+(p.imageQuality==='usable'?2:0)+(p.priceEstimate!==null?2:0);
-  const reasons=[`${stage} ingredient match`,'compatible internal category',`${completeness}/4 nutrition values`,safety.unknownDiet.length?`Unverified lifestyle metadata: ${safety.unknownDiet.join(', ')}`:'No known dietary conflict',issue??'known compatible package quantity'];
+  const reasons=[`${germanLabel(stage)} Zutatenübereinstimmung`,"passende Produktkategorie",`${completeness}/4 Nährwertangaben`,safety.unknownDiet.length?`Unbestätigte Ernährungskennzeichnungen: ${safety.unknownDiet.map(germanLabel).join(', ')}`:"Kein bekannter Ernährungskonflikt",issue ? germanLabel(issue) : "bekannte passende Packungsmenge"];
   result.candidates.push({product:p,stage,score,reasons,dietaryUnknown:safety.unknownDiet,
    packageSizeStatus:issue==='package_size_conflicting'?'conflicting':pack.packageSize===null?'unknown':'known',packageIssue:issue,
    optimizationProduct:issue?null:{...p,packageSize:size,packageUnit:unit}});

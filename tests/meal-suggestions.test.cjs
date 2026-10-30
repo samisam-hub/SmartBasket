@@ -31,8 +31,9 @@ test("a slot gets exactly two different meals that fit the slot and the househol
     for (const { meal, servings } of suggestions) {
       assert.ok(compatibleMeal(meal, preferences));
       assert.ok(servings > 0 && servings <= preferences.householdSize * 1.5);
-      // Breakfast and snack are their own slots; lunch and dinner meals are interchangeable.
-      if (slot === "breakfast") assert.equal(meal.mealType, "breakfast");
+      // New recipes declare their slots; old recipes retain their original fallback.
+      if (meal.mealSlots) assert.ok(meal.mealSlots.includes(slot));
+      else if (slot === "breakfast") assert.equal(meal.mealType, "breakfast");
       else assert.ok(["lunch", "dinner"].includes(meal.mealType));
     }
   }
@@ -144,9 +145,9 @@ test("suggestions need valid, completed preferences", () => {
   const preferences = prefs();
   const plan = week(preferences, fullDay());
   assert.throws(() => suggestMeals(plan, monday, "dinner", { ...preferences, onboardingCompleted: false }),
-    /preferences/);
+    /Einstellungen/);
   assert.throws(() => suggestMeals(plan, monday, "dinner", { ...preferences, dailyCalories: 10 }),
-    /preferences/);
+    /Einstellungen/);
   // The catalog is optional: without it the suggestions still come, availability just scores 0.
   assert.equal(suggestMeals(plan, monday, "dinner", preferences).length, 2);
 });

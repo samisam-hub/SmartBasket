@@ -30,7 +30,7 @@ test('anonymous session resumes, email upgrade retains identity, password follow
  assert.ok(emailError('bad'));assert.ok(passwordError('short'));
 });
 test('personal defaults and participant overrides stay distinct; shared diets/allergens union and targets sum exactly',()=>{
- const profile={...structuredClone(emptyProfile),displayName:'You',defaultDailyCalories:1700,primaryNutritionGoal:'high_protein',dietaryPreferences:['lactose_free']};
+ const profile={...structuredClone(emptyProfile),displayName:"Du",defaultDailyCalories:1700,primaryNutritionGoal:'high_protein',dietaryPreferences:['lactose_free']};
  const copy=structuredClone(profile),me=profileParticipant(profile,prefs());assert.equal(me.dailyCalories,1700);
  const partner={...structuredClone(me),id:'partner',name:'Partner',dailyCalories:2201,proteinTarget:80,dietaryPreferences:['none'],allergens:['peanuts'],isCurrentUser:false};
  const input=participantPreferences(prefs({planningDays:3}),[{...me,dailyCalories:2200},partner]);
@@ -66,9 +66,9 @@ test('email and password registration validates first, keeps guest identity and 
  const s=authService(client);
  await assert.rejects(s.beginRegistration('a@example.com','short','callback'));assert.equal(calls.length,0);
  await s.beginRegistration('a@example.com','chosen-password','callback');assert.deepEqual(calls,[{email:'a@example.com'}]);
- await assert.rejects(s.completeRegistration(),/confirm your email/);assert.equal(calls.length,1);
+ await assert.rejects(s.completeRegistration(),/Bestätige zuerst deine E-Mail-Adresse/);assert.equal(calls.length,1);
  user={...user,is_anonymous:false,email_confirmed_at:'2026-09-07'};
  assert.equal(await s.completeRegistration(),true);assert.deepEqual(calls[1],{password:'chosen-password'});assert.equal(await s.completeRegistration(),false);
- user={...user,is_anonymous:true};await s.beginRegistration('a@example.com','another-password','callback');user={...user,id:'other',is_anonymous:false};await assert.rejects(s.completeRegistration(),/Account changed/);assert.equal(await s.completeRegistration(),false);
+ user={...user,is_anonymous:true};await s.beginRegistration('a@example.com','another-password','callback');user={...user,id:'other',is_anonymous:false};await assert.rejects(s.completeRegistration(),/Konto hat sich geändert/);assert.equal(await s.completeRegistration(),false);
  user={...user,is_anonymous:true};await s.beginRegistration('a@example.com','another-password','callback');s.clearRegistration();assert.equal(await s.completeRegistration(),false);
 });

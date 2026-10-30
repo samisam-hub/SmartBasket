@@ -38,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="basket"
         options={{
-          title: "Shopping list",
+          title: "Einkaufsliste",
           tabBarIcon: ({ color, size }) => (
             <Feather name="shopping-cart" color={color} size={size} />
           ),
@@ -48,7 +48,7 @@ export default function TabLayout() {
         name="products"
         options={{
           href: demo ? undefined : null,
-          title: "Products",
+          title: "Produkte",
           tabBarIcon: ({ color, size }) => (
             <Feather name="grid" color={color} size={size} />
           ),
@@ -57,7 +57,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: "Profil",
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" color={color} size={size} />
           ),
