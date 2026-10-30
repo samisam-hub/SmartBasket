@@ -171,9 +171,19 @@ test('no screen keeps a German sentence of its own any more', () => {
         .replace(/\/(?:[^/\\\n]|\\.)+\/[gimsuy]*/g, '/re/');
       if (/^\s*\*/.test(line) || /\/\*\*/.test(line)) continue;
       // A quoted string or a JSX text node carrying a letter only German uses.
+      // German sentences do not all carry an umlaut, so a few of its commonest words count too.
+      const germanWord = /\b(der|die|das|und|oder|nicht|keine?|dein(e|en|em|er)?|ist|sind|wird|werden|Schritt|Woche|Tage?|Personen?|Einkauf|Warenkorb|Gerichte?|Mahlzeiten?|Haushalt|Budgetlimit|speichern|bearbeiten|Weiter|Zurück|Alle|Profil)\b/;
       const quoted = [...code.matchAll(/(?<![\w.])(?:"([^"\n]*[äöüßÄÖÜ][^"\n]*)"|'([^'\n]*[äöüßÄÖÜ][^'\n]*)'|`([^`\n]*[äöüßÄÖÜ][^`\n]*)`)/g)];
       const jsx = [...code.matchAll(/>\s*([^<>{}]*[äöüßÄÖÜ][^<>{}]*?)\s*</g)];
-      for (const match of [...quoted, ...jsx]) {
+      const words = [...code.matchAll(/(?<![\w.])(?:"([^"\n]*)"|'([^'\n]*)'|`([^`\n]*)`)/g)]
+        .concat([...code.matchAll(/>\s*([^<>{}]*?)\s*</g)])
+        .filter(match => {
+          const text = (match[1] ?? match[2] ?? match[3] ?? '').trim();
+          // A dictionary key, a path and an id are not sentences.
+          return germanWord.test(text) && !/^[a-z][\w-]*(\.[\w-]+)+$/.test(text) &&
+            !text.startsWith('@/') && !text.includes('person-');
+        });
+      for (const match of [...quoted, ...jsx, ...words]) {
         const text = (match[1] ?? match[2] ?? match[3] ?? '').trim();
         if (text.length > 3) german.push(`${file}:${index + 1}  ${text.slice(0, 60)}`);
       }

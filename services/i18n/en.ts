@@ -159,7 +159,9 @@ export const en: Record<TranslationKey, Phrase> = {
   'profile.language': 'Language',
   'profile.languageHint': 'Follows your device until you choose otherwise here.',
   'profile.languageFailed': 'Your language could not be saved on this device. It still applies for this run.',
-  'language.de': 'German',
+  // Each language is offered in its own name, so somebody who cannot read the current one
+  // still finds theirs.
+  'language.de': 'Deutsch',
   'language.en': 'English',
   'profile.guest': 'Guest',
   'profile.yourAccount': 'Your account',
