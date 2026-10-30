@@ -1,5 +1,5 @@
 import { slotLabel, t } from '@/services/i18n';
-import { weekdayShort , addDays, dayOf, planDateLabel, plannedDates, weekDates } from '@/services/meals/weekPlan';
+import { weekdayShort, addDays, dayOf, monthStartOf, planDateLabel, plannedDates } from '@/services/meals/weekPlan';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
@@ -7,6 +7,7 @@ import { PrimaryButton, Screen, ScreenHeader, SectionCard, SelectionChip, ErrorM
 import { usePreferences } from '@/context/PreferencesContext';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 import { currentWeekStart } from '@/components/WeekCalendar';
+import { MonthCalendar } from '@/components/MonthCalendar';
 import { activeSlotLabels } from '@/services/preference-domain';
 import { mealSlots, type MealSlot } from '@/types/meal';
 import { ui } from '@/lib/theme';
@@ -16,6 +17,8 @@ export default function PlanWeekScreen() {
   const [copyError, setCopyError] = useState<string | null>(null);
   const [personId, setPersonId] = useState<string | null>(null);
   const [routineSlot, setRoutineSlot] = useState<MealSlot>('lunch');
+  // The month on screen; it follows the week being planned until somebody pages away from it.
+  const [month, setMonth] = useState<string | null>(null);
   const { saved } = usePreferences();
   const { plan, ready, error, attendanceRules, store } = useWeekPlan();
   const weekStart = plan?.weekStart ?? currentWeekStart();
@@ -43,10 +46,10 @@ export default function PlanWeekScreen() {
       <Text style={ui.small}>{t('week.copyNote')}</Text>
     </SectionCard>}
     <SectionCard>
-      <View style={ui.wrap}>
-        {weekDates(weekStart).map(date => <SelectionChip key={date} label={planDateLabel(date)}
-          selected={!!plan && !!dayOf(plan, date)} onPress={() => open(date)} />)}
-      </View>
+      <MonthCalendar month={month ?? monthStartOf(weekStart)} onMonth={setMonth}
+        selected={planned} onSelect={open} />
+      <Text style={ui.small}>{t('week.pickOnCalendar')}</Text>
+      <Text style={ui.small}>{t('week.chosen', { count: planned.length })}</Text>
       <Text style={ui.small}>{t('week.slotsNote', { slots: activeSlotLabels(saved).join(', ').toLowerCase() })}</Text>
     </SectionCard>
     {!!saved.participants?.length && <SectionCard title={t('week.routine')}>

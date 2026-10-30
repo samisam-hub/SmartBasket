@@ -56,6 +56,7 @@ export default function MealTasteScreen() {
     if (pending.current) return;
     pending.current = true; setBusy(true); setMessage(null);
     try {
+      if (catalog.error && !catalog.products.length) { setMessage(catalog.error); return; }
       await store.saveDraft();
       store.generate(saved, catalog.products);
       await store.flush();
@@ -69,7 +70,7 @@ export default function MealTasteScreen() {
     <ScreenHeader eyebrow={t('taste.eyebrow')}
       title={done ? t('taste.allDone') : t('taste.titleSlot', { slot: t(`taste.pass.${pass.key}`) })}
       subtitle={done ? undefined : t('taste.subtitle', { next: t(planned ? 'taste.nextPlan' : 'taste.nextDays') })} />
-    <ErrorMessage message={message ?? error ?? (planned ? catalog.error : null)} />
+    <ErrorMessage message={message ?? error} />
     {done
       ? <SectionCard>
           <Text style={ui.body}>{t('taste.allDoneBody', { liked })}</Text>

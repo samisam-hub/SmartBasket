@@ -1,10 +1,9 @@
-import { slotLabel, t } from '@/services/i18n';
-import { contentName } from '@/services/i18n/content';
+import { t } from '@/services/i18n';
 import { Text } from 'react-native';
 import { router } from 'expo-router';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SecondaryButton, SectionCard } from '@/components/ui';
-import { itemsInSlot, planDateLabel } from '@/services/meals/weekPlan';
+import { PlannedWeek } from '@/components/PlannedWeek';
 import { openPlanSlots } from '@/services/meals/validation';
 import { ui } from '@/lib/theme';
 
@@ -20,13 +19,8 @@ export default function WeekOverviewScreen() {
     {open > 0 && <SectionCard title={t('overview.openMeals', { count: open })}>
       <Text style={ui.small}>{t('overview.exhaustedNote')}</Text>
     </SectionCard>}
-    {plan.days.map(day => <SectionCard key={day.date} title={planDateLabel(day.date)}>
-      {day.slots.map(slot => {
-        const dishes = itemsInSlot(plan, day.date, slot);
-        return <Text key={slot} style={ui.body}>{slotLabel(slot)}: {dishes.length ? dishes.map(item => contentName(item.meal.name)).join(' / ') : 'Noch offen'}</Text>;
-      })}
-      <SecondaryButton label={t('overview.editDay', { date: planDateLabel(day.date) })} onPress={() => router.push({ pathname: '/plan/[date]', params: { date: day.date, returnTo: 'week' } })} />
-    </SectionCard>)}
+    <PlannedWeek plan={plan}
+      onOpenDay={date => router.push({ pathname: '/plan/[date]', params: { date, returnTo: 'week' } })} />
     <PrimaryButton label={t('overview.toList')} disabled={!plan.items.length || open > 0}
       onPress={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />
     <SecondaryButton label={t('overview.changeTastes')} onPress={() => router.push('/plan/taste')} />
