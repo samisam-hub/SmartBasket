@@ -8,6 +8,7 @@ import { WastePrevention } from '@/components/WastePrevention';
 import { ErrorMessage, FloatingButton, PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
 import { quickStart } from '@/services/quick-start';
+import { useMerchantDemo } from '@/services/merchant-demo';
 import { useProfile } from '@/context/ProfileContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
 import { primeBasketCatalog } from '@/hooks/useBasketCatalog';
@@ -34,6 +35,7 @@ export default function HomeScreen() {
   const { saved: profile } = useProfile();
   const flow = useBasketFlow();
   const { active } = useActiveBasket();
+  const { demo } = useMerchantDemo();
   const openCart = () => active ? router.push({ pathname: '/basket-setup', params: { savedId: active.id } }) : router.navigate('/basket');
   // Which day the week is showing. Null until the plan has loaded, so it can open on a real day.
   const weekStart = week.plan?.weekStart ?? currentWeekStart();
@@ -84,7 +86,8 @@ export default function HomeScreen() {
     <View style={{ flexDirection: 'row', gap: 12 }}>
       {[
         { title: t('home.pantry'), subtitle: t('home.pantryHint'), route: '/pantry' as const, photo: 8 },
-        { title: t('home.discover'), subtitle: t('home.discoverHint'), route: '/products' as const, photo: 1 },
+        // The catalogue is the merchant demo: no tile to it while the tab itself is hidden.
+        ...(demo ? [{ title: t('home.discover'), subtitle: t('home.discoverHint'), route: '/products' as const, photo: 1 }] : []),
       ].map(tile => <Pressable key={tile.title} onPress={()=>router.push(tile.route)} accessibilityRole="button" accessibilityLabel={tile.title}
         style={({pressed})=>[ui.card,{ flex: 1, minWidth: 0, padding: 12, gap: 6, borderRadius: 14, opacity: pressed ? .75 : 1 }]}>
         <Text style={[ui.small,{fontWeight:'700',color:colors.ink}]}>{tile.title}</Text>
