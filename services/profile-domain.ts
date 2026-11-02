@@ -27,7 +27,9 @@ export const activityFactors:Record<typeof activities[number],number>={low:1.2,l
 const referenceAdult={female:{heightCm:165,weightKg:65},male:{heightCm:178,weightKg:78},other:{heightCm:172,weightKg:72}};
 const referenceChild=[{maxAge:3,heightCm:95,weightKg:14},{maxAge:6,heightCm:115,weightKg:21},
  {maxAge:9,heightCm:133,weightKg:29},{maxAge:12,heightCm:148,weightKg:40},{maxAge:120,heightCm:165,weightKg:55}];
-const referenceAge={adult:40,child:8};
+// Nothing stated means a grown-up at a desk: age 35, sedentary, a build between the two references.
+const referenceAge={adult:35,child:8};
+const referenceActivity={adult:'low',child:'moderate'} as const;
 export const participantKind=(p:Pick<PlanParticipant,'kind'>):ParticipantKind=>p.kind??'adult';
 /** Mifflin-St Jeor basal rate times an activity factor, rounded to 50 kcal and clamped to the stored 1,000-5,000 range.
  *  A suggestion for shopping amounts, never a personalized nutrition prescription. */
@@ -38,7 +40,7 @@ export function estimateCalories(p:{kind?:ParticipantKind;age?:number|null;sex?:
  // Mifflin-St Jeor offsets: +5 male, -161 female; an unstated sex uses the midpoint of the two.
  const offset=p.sex==='male'?5:p.sex==='female'?-161:-78;
  const basal=10*weightKg+6.25*heightCm-5*age+offset;
- const estimate=basal*activityFactors[p.activityLevel??'moderate'];
+ const estimate=basal*activityFactors[p.activityLevel??referenceActivity[kind]];
  return Math.min(5000,Math.max(1000,Math.round(estimate/50)*50));
 }
 export const estimateProtein=(calories:number,goal:Goal):number=>Math.max(1,Math.round(calories*proteinPercent[goal]/4));
@@ -72,7 +74,8 @@ export function isParticipant(p:PlanParticipant):boolean {
  p.proteinTarget!==null&&range(p.proteinTarget,1,500,true)&&Array.isArray(p.dietaryPreferences)&&p.dietaryPreferences.length>0&&p.dietaryPreferences.every(x=>diets.includes(x))&&
  Array.isArray(p.allergens)&&p.allergens.every(x=>allergens.includes(x))&&Array.isArray(p.intolerances)&&p.intolerances.every(x=>['lactose','gluten'].includes(x))&&typeof p.isCurrentUser==='boolean'&&
  (p.kind===undefined||participantKinds.includes(p.kind))&&(p.activityLevel===undefined||p.activityLevel===null||activities.includes(p.activityLevel))&&
- (p.avatarUri===undefined||p.avatarUri===null||(typeof p.avatarUri==='string'&&p.avatarUri.length>0&&p.avatarUri.length<=200000));
+ (p.avatarUri===undefined||p.avatarUri===null||(typeof p.avatarUri==='string'&&p.avatarUri.length>0&&p.avatarUri.length<=200000))&&
+ range(p.heightCm??null,50,250)&&range(p.weightKg??null,10,500);
 }
 /** One shared menu must meet everybody's restrictions; each person's defaults remain distinct. */
 export function participantPreferences(base:UserPreferences,participants:PlanParticipant[]):UserPreferences {

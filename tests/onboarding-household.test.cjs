@@ -69,6 +69,20 @@ test("the calorie suggestion follows the taps a person made and stays inside the
   }
 });
 
+test("height and weight count towards the suggestion; without them a desk job is assumed", () => {
+  // Nothing stated: a grown-up at a desk, not an averagely active one.
+  const plain = estimateCalories({});
+  assert.equal(plain, estimateCalories({ age: 35, activityLevel: "low" }));
+  const person = patchParticipant(adult(), { sex: "female", age: 35, activityLevel: "low" }, "maintain");
+  const small = patchParticipant(person, { heightCm: 160, weightKg: 55 }, "maintain");
+  const tall = patchParticipant(person, { heightCm: 185, weightKg: 95 }, "maintain");
+  assert.ok(small.dailyCalories < person.dailyCalories);
+  assert.ok(tall.dailyCalories > person.dailyCalories);
+  // Cleared again, the suggestion falls back to the typical body for those details.
+  const cleared = patchParticipant(tall, { heightCm: null, weightKg: null }, "maintain");
+  assert.equal(cleared.dailyCalories, person.dailyCalories);
+});
+
 test("details move the suggestion along; a corrected target is kept", () => {
   const person = adult();
   const child = patchParticipant(person, { kind: "child", age: 8 }, "maintain");

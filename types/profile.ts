@@ -25,4 +25,7 @@ export interface PlanParticipant {
  activityLevel?:typeof activities[number]|null;
  /** A small picture, kept with the household rather than as a path into the device's gallery. */
  avatarUri?:string|null;
+ /** Measurements sharpen the calorie suggestion; without them typical values stand in. */
+ heightCm?:number|null;
+ weightKg?:number|null;
 }

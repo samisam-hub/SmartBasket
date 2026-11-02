@@ -12,6 +12,18 @@ import { spacing, ui } from '../lib/theme';
 const activityChoices = Object.keys(onboardingActivities) as (keyof typeof onboardingActivities)[];
 const activityChoice = (person: PlanParticipant) =>
   activityChoices.find(choice => onboardingActivities[choice] === person.activityLevel);
+/** The details the suggestion actually used, named in the order they are asked for. */
+function suggestionBasis(person: PlanParticipant): string {
+  const choice = activityChoice(person);
+  const given = [
+    person.age === null ? null : t('person.ageValue', { count: person.age }),
+    person.sex === null ? null : term(person.sex),
+    choice ? term(choice) : null,
+    person.heightCm == null ? null : t('person.heightValue', { count: person.heightCm }),
+    person.weightKg == null ? null : t('person.weightValue', { count: person.weightKg }),
+  ].filter((detail): detail is string => detail !== null);
+  return given.length ? given.join(', ') : t('person.typicalValues');
+}
 
 /** Everything about one person on one page: who they are, what they need, what they avoid.
  *
@@ -48,10 +60,16 @@ export function PersonForm({ person, goal, onChange }: {
         placeholder={t('dropdown.none')}
         onChange={value => patch({ activityLevel: value === null ? null
           : onboardingActivities[value as keyof typeof onboardingActivities] })} />
+      <OptionalNumber label={t('person.height')} value={person.heightCm ?? null}
+        onChange={heightCm => patch({ heightCm })} />
+      <OptionalNumber label={t('person.weight')} value={person.weightKg ?? null}
+        onChange={weightKg => patch({ weightKg })} />
       <NumberInput label={t('person.calories')} value={person.dailyCalories}
         hint={t(person.dailyCalories === estimateCalories(person) ? 'person.ourSuggestion' : 'person.yourNumber')}
         onChange={dailyCalories => patch({
           dailyCalories: dailyCalories === null ? estimateCalories(person) : dailyCalories })} />
+      {/* What the suggestion rests on, so an unexpected number can be traced to a missing detail. */}
+      <Text style={ui.small}>{t('person.basedOn', { details: suggestionBasis(person) })}</Text>
     </SectionCard>
     <SectionCard compact title={t('person.diet')}>
       <Dropdown multiple label={t('person.dietLabel')} options={words(diets)}
