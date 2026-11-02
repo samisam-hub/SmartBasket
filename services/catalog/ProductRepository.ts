@@ -63,17 +63,17 @@ export class ProductRepository {
   private demoPage(query: string, filters: CatalogFilters, preferences: UserPreferences | null, page: number): CatalogPage {
     const rows = this.demo.filter(p => productMatches(p, query, filters, preferences)).sort((a,b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
     return { products: rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE), hasMore: rows.length > (page + 1) * PAGE_SIZE,
-      mode: "demo", warning: "Live catalog unavailable. Showing a small fictional demo catalog; prices and nutrition are illustrative." };
+      mode: "demo", warning: "Online-Katalog nicht verfügbar. Ein kleiner Demo-Katalog wird angezeigt; Preise und Nährwerte sind beispielhaft." };
   }
   async get(id: string, signal?: AbortSignal): Promise<Product | null> {
     const demo = this.demo.find(p => p.id === id);
     if (demo) return demo;
     if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
-    if (!this.client) throw new Error("Catalog unavailable. Reconnect and retry.");
+    if (!this.client) throw new Error("Katalog nicht verfügbar. Stelle die Verbindung wieder her und versuche es erneut.");
     let request = this.client.from("products").select(columns).eq("id", id);
     if (signal) request = request.abortSignal(signal);
     const { data, error } = await request.maybeSingle();
-    if (error) throw new Error("Product could not be loaded. Reconnect and retry.");
+    if (error) throw new Error("Das Produkt konnte nicht geladen werden. Stelle die Verbindung wieder her und versuche es erneut.");
     return data ? productFromRow(data as unknown as Record<string, unknown>) : null;
   }
 }

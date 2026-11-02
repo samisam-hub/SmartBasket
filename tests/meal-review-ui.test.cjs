@@ -5,7 +5,7 @@ const {prefs}=require('./basket-fixtures.cjs');const {generateMealPlan}=require(
 global.IS_REACT_ACT_ENVIRONMENT=true;
 const original=Module._load;
 Module._load=function(request,parent,isMain){
- if(request==='react-native')return {Text:'Text',View:'View',Image:'Image'};
+ if(request==='react-native')return {Text:'Text',View:"Ansehen",Image:'Image'};
  if(request==='./ui'&&parent.filename.endsWith('MealPlanReview.tsx'))return Object.fromEntries(['PrimaryButton','SecondaryButton','SectionCard'].map(n=>[n,p=>React.createElement(n,p,p.children)]));
  if(request==='../lib/theme')return {ui:{}};
  return original.call(this,request,parent,isMain);
@@ -27,8 +27,8 @@ test('meal review displays twelve slots, changes a compatible meal and explicitl
  const p=prefs({planningDays:3,dietaryPreferences:['vegan']});let plan=generateMealPlan(p),confirmed=0,renderer;
  const render=()=>React.createElement(MealPlanReview,{plan,preferences:p,onChange:next=>{plan=next;renderer.update(render());},onConfirm:()=>confirmed++});
  await act(()=>{renderer=create(render());});assert.equal(confirmed,0);assert.equal(renderer.root.findAllByType('SectionCard').length,13);
- const before=plan.items[0].meal.id;await act(()=>renderer.root.findAllByType('SecondaryButton').find(b=>b.props.label==='Replace meal').props.onPress());
- await act(()=>renderer.root.findAllByType('SecondaryButton').find(b=>b.props.label==='I want to cook').props.onPress());
+ const before=plan.items[0].meal.id;await act(()=>renderer.root.findAllByType('SecondaryButton').find(b=>b.props.label==="Gericht austauschen").props.onPress());
+ await act(()=>renderer.root.findAllByType('SecondaryButton').find(b=>b.props.label==="Ich möchte kochen").props.onPress());
  const alternative=renderer.root.findAllByType('SecondaryButton').find(b=>b.props.label.includes('kcal'));assert.ok(alternative);
  await act(()=>alternative.props.onPress());assert.notEqual(plan.items[0].meal.id,before);assert.ok(plan.items[0].meal.dietaryTags.includes('vegan'));
  await act(()=>renderer.root.findByType('PrimaryButton').props.onPress());assert.equal(confirmed,1);await act(()=>renderer.unmount());
@@ -39,14 +39,14 @@ test('replacement UI separates modes, supports back, and commits only category o
  await act(()=>{renderer=create(render());});
  const buttons=()=>renderer.root.findAllByType('SecondaryButton');
  const click=label=>act(()=>buttons().find(b=>b.props.label===label).props.onPress());
- const openLunch=()=>act(()=>buttons().filter(b=>b.props.label==='Replace meal')[1].props.onPress());
+ const openLunch=()=>act(()=>buttons().filter(b=>b.props.label==="Gericht austauschen")[1].props.onPress());
  await openLunch();assert.ok(!buttons().some(b=>b.props.label.includes('kcal')));
- for(const name of ['I want to cook','I don’t want to cook','I only want to heat it up','I’m eating out'])assert.ok(buttons().some(b=>b.props.label===name));
- await click('I don’t want to cook');assert.ok(buttons().some(b=>b.props.label==='Salad'));assert.ok(buttons().some(b=>b.props.label==='Pizza'));
- await click('Back to meal options');await click('I only want to heat it up');assert.ok(!buttons().some(b=>b.props.label==='Salad'));
+ for(const name of ["Ich möchte kochen","Ich möchte nicht kochen","Ich möchte nur aufwärmen","Ich esse auswärts"])assert.ok(buttons().some(b=>b.props.label===name));
+ await click("Ich möchte nicht kochen");assert.ok(buttons().some(b=>b.props.label==="Salat"));assert.ok(buttons().some(b=>b.props.label==='Pizza'));
+ await click("Zurück zur Mahlzeitenauswahl");await click("Ich möchte nur aufwärmen");assert.ok(!buttons().some(b=>b.props.label==="Salat"));
  await click('Lasagne');assert.equal(plan.items[1].mealMode,'heat_and_eat');assert.equal(plan.items[1].readyMealCategory,'lasagne');assert.equal(plan.items[1].readyMealMatch,undefined);
- await openLunch();await click('I’m eating out');assert.equal(plan.items[1].mealMode,'eat_out');assert.equal(plan.items[1].readyMealCategory,undefined);
- await openLunch();await click('I want to cook');assert.ok(buttons().some(b=>b.props.label.includes('kcal')));
+ await openLunch();await click("Ich esse auswärts");assert.equal(plan.items[1].mealMode,'eat_out');assert.equal(plan.items[1].readyMealCategory,undefined);
+ await openLunch();await click("Ich möchte kochen");assert.ok(buttons().some(b=>b.props.label.includes('kcal')));
  await act(()=>buttons().find(b=>b.props.label.includes('kcal')).props.onPress());assert.equal(plan.items[1].mealMode,'cook');
  await act(()=>renderer.unmount());
 });

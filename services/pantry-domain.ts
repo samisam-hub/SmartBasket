@@ -18,12 +18,12 @@ export function allocatePantry(requirement: IngredientRequirement, lots: PantryL
 }
 
 export function checkoutPantry(state: PantryState, basket: SavedBasket, purchasedAt: string): PantryState {
-  if (basket.result.purchasedAt) throw Error('This basket is already purchased.');
+  if (basket.result.purchasedAt) throw Error("Dieser Warenkorb wurde bereits als eingekauft erfasst.");
   const lots = structuredClone(state.lots);
   for (const use of basket.result.pantryUsed ?? []) {
     const lot = lots.find(l => l.id === use.lotId);
     if (!lot || lot.unit !== use.unit || !Number.isFinite(use.quantity) || use.quantity <= 0 || lot.quantity + .001 < use.quantity)
-      throw Error('Your pantry changed. Refresh the basket before checkout.');
+      throw Error("Deine Vorräte haben sich geändert. Aktualisiere den Warenkorb vor dem Abschließen.");
     lot.quantity = Math.max(0, lot.quantity - use.quantity);
   }
   for (const item of basket.result.items) {

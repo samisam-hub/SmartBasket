@@ -15,7 +15,7 @@ const { meals } = require('../data/meals.ts');
 
 test('diabetes is an additional restriction that combines with every dietary pattern', () => {
   assert.ok(diets.includes('diabetes'));
-  assert.equal(labels.diabetes, 'Diabetes-friendly');
+  assert.equal(labels.diabetes, "Diabetesbewusst");
   assert.deepEqual(toggleDiet(['none'], 'diabetes'), ['diabetes']);
   assert.deepEqual(toggleDiet(['vegan'], 'diabetes'), ['vegan', 'diabetes']);
   // An alternative pattern replaces only the other patterns, never the diabetes selection.
@@ -26,7 +26,7 @@ test('diabetes is an additional restriction that combines with every dietary pat
     assert.equal(validatePreferences(prefs({ dietaryPreferences })).dietaryPreferences, undefined);
   assert.ok(validatePreferences(prefs({ dietaryPreferences: ['none', 'diabetes'] })).dietaryPreferences);
   assert.ok(validatePreferences(prefs({ dietaryPreferences: ['diabetes', 'diabetes'] })).dietaryPreferences);
-  assert.ok(preferenceChips(prefs({ dietaryPreferences: ['diabetes'] })).includes('Diabetes-friendly'));
+  assert.ok(preferenceChips(prefs({ dietaryPreferences: ['diabetes'] })).includes("Diabetesbewusst"));
 });
 
 test('diabetes filters declared sugars and never reads an undeclared value as low', () => {

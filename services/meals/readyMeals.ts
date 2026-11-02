@@ -1,13 +1,14 @@
-import type { MealPlan, MealPlanItem, Nutrition, IngredientRequirement } from '../../types/meal';
+import type { AnyMealPlan, MealChoice, Nutrition, IngredientRequirement } from '../../types/meal';
 import type { Product } from '../../types/product';
 import type { UserPreferences } from '../../types/preferences';
 import type { BasketItem, BasketWarning } from '../../types/basket';
 import { skuSafety } from './skuSafety';
 import { isReadyMealMetadata, readyCategories } from './choices';
 import { packagePrice } from '../basket/quantityPlanner';
+import { itemDayLabel, plannedDayCount } from './weekPlan';
 
 /** Never infer ready-to-eat or heating suitability from a name (e.g. dry lasagne sheets). */
-export function readyMealCandidates(item: MealPlanItem, products: Product[], preferences: UserPreferences) {
+export function readyMealCandidates(item: MealChoice, products: Product[], preferences: UserPreferences) {
   if (!item.readyMealCategory || !readyCategories(item.mealMode!, item.mealSlot).includes(item.readyMealCategory)) return [];
   return products.filter(p => {
     const meta = p.readyMeal;
@@ -24,27 +25,27 @@ export function readyMealCandidates(item: MealPlanItem, products: Product[], pre
 }
 
 /** Called only by the confirmed-plan matcher. Re-matching always clears old selections. */
-export function matchReadyMeals(plan: MealPlan, preferences: UserPreferences, products: Product[], remainingBudget: number | null) {
-  const next: MealPlan = { ...plan, items: plan.items.map(i => { const copy = { ...i }; delete copy.readyMealMatch; return copy; }) };
+export function matchReadyMeals<P extends AnyMealPlan>(plan: P, preferences: UserPreferences, products: Product[], remainingBudget: number | null) {
+  const next = { ...plan, items: plan.items.map(i => { const copy = { ...i }; delete copy.readyMealMatch; return copy; }) } as P;
   const requests = next.items.filter(i => i.mealMode === 'ready_to_eat' || i.mealMode === 'heat_and_eat');
   const warnings: BasketWarning[] = [], grouped = new Map<string, { product: Product; quantity: number; ids: string[] }>();
   let remaining = remainingBudget, unmatched = 0;
   requests.forEach((item, index) => {
     const budgetShare = remaining === null ? null : Math.max(0, remaining) / (requests.length - index);
     const candidates = readyMealCandidates(item, products, preferences).map(product => {
-      const quantity = product.readyMeal!.portionGrams * plan.householdSize;
+      const quantity = product.readyMeal!.portionGrams * (plan.version === '2' ? item.servings : plan.householdSize);
       const already = grouped.get(product.id)?.quantity ?? 0;
       const extraPackages = Math.ceil((already + quantity) / product.packageSize!) - Math.ceil(already / product.packageSize!);
       const price = extraPackages * packagePrice(product)!;
       const fraction = item.mealSlot === 'lunch' || item.mealSlot === 'dinner' ? .32 : .1;
-      const target = plan.targetCalories / plan.planningDays * fraction;
+      const target = plan.targetCalories / Math.max(1, plannedDayCount(plan)) * fraction;
       const score = (budgetShare === null ? 0 : Math.max(0, price - budgetShare) * 10) + price + Math.abs(product.caloriesPer100g! * quantity / 100 - target) / target;
       return { product, quantity, price, score };
     }).sort((a, b) => a.score - b.score || a.product.id.localeCompare(b.product.id));
     const selected = candidates[0];
     if (!selected) {
       unmatched++;
-      warnings.push({ code: `unmatched_ready_${item.id}`, message: `Day ${item.dayIndex + 1} · ${item.mealSlot}: ${item.meal.name} could not be matched to a verified available catalog meal with suitable preparation, dietary/allergen evidence, price and portion data. No product was added; nutrition and cost are unknown.` });
+      warnings.push({ code: `unmatched_ready_${item.id}`, message: `${itemDayLabel(plan, item)} · ${item.mealSlot}: ${item.meal.name} konnte keinem bestätigten Kataloggericht mit passenden Zubereitungs-, Ernährungs-, Allergen-, Preis- und Portionsangaben zugeordnet werden. Kein Produkt wurde hinzugefügt; Nährwerte und Kosten sind unbekannt.` });
       return;
     }
     const { product, quantity, price } = selected;
@@ -65,7 +66,7 @@ export function matchReadyMeals(plan: MealPlan, preferences: UserPreferences, pr
       totalWeight: purchased, totalVolume: null, totalCalories: product.caloriesPer100g! * factor, totalProtein: product.proteinPer100g! * factor,
       totalCarbohydrates: product.carbohydratesPer100g! * factor, totalFat: product.fatPer100g! * factor, totalFiber: product.fiberPer100g === null ? null : product.fiberPer100g * factor,
       estimatedPrice: Math.round(packageCount * packagePrice(product)! * 100) / 100,
-      reasonSelected: [{ code: 'ready_meal_match', detail: 'Catalog meal matched after confirmation using category, preparation, meal slot, dietary evidence, household portions and remaining budget.' }] });
+      reasonSelected: [{ code: 'ready_meal_match', detail: 'Kataloggericht nach Bestätigung anhand von Kategorie, Zubereitung, Mahlzeit, Ernährungsnachweisen, Haushaltsportionen und verbleibendem Budget zugeordnet.' }] });
   }
   return { plan: next, items, requirements, warnings, unmatched };
 }

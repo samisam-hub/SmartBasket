@@ -1,3 +1,4 @@
+import { mealSlots, type MealSlot } from "./meal";
 export const goals = [
   "maintain",
   "lose_weight",
@@ -24,10 +25,14 @@ export const allergens = [
   "soy",
   "wheat",
   "sesame",
+  "mustard",
+  "celery",
+  "sulfites",
 ] as const;
 export const steps = [
   "welcome",
   "household",
+  "meals",
   "goals",
   "diet",
   "allergies",
@@ -38,7 +43,25 @@ export type Goal = (typeof goals)[number];
 export type Diet = (typeof diets)[number];
 export type Allergen = (typeof allergens)[number];
 export type OnboardingStep = (typeof steps)[number];
+/** Which meals the household plans by default; the calendar prefills every chosen day with these. */
+export type SlotDefaults = Record<MealSlot, boolean>;
+export const defaultSlotDefaults: SlotDefaults = {
+  breakfast: true,
+  lunch: true,
+  dinner: true,
+  snack: false,
+};
+/** Preferences saved before the meal standard existed fall back to the default. */
+export const slotDefaultsOf = (p: { slotDefaults?: SlotDefaults }): SlotDefaults =>
+  p.slotDefaults ?? defaultSlotDefaults;
+export const activeSlots = (p: { slotDefaults?: SlotDefaults }): MealSlot[] =>
+  mealSlots.filter((slot) => slotDefaultsOf(p)[slot]);
 export interface PreferenceValues {
+  /** Household as people, so each one can carry its own targets and restrictions.
+   *  Absent in preferences saved before the calendar onboarding; householdSize still applies. */
+  participants?: import("./profile").PlanParticipant[];
+  /** Absent before the meal standard existed; slotDefaultsOf falls back to the default. */
+  slotDefaults?: SlotDefaults;
   householdSize: number;
   planningDays: number;
   dailyCalories: number;
@@ -56,7 +79,6 @@ export type PreferenceDraft = Omit<PreferenceValues, "dailyCalories"> & {
 };
 export interface UserPreferences extends PreferenceValues {
   preferredMealIds?: string[];
-  participants?: import('./profile').PlanParticipant[];
   id: string | null;
   userId: string | null;
   onboardingCompleted: boolean;
@@ -64,27 +86,30 @@ export interface UserPreferences extends PreferenceValues {
   updatedAt: string;
 }
 export const labels: Record<Goal | Diet | Allergen, string> = {
-  maintain: "Maintain",
-  lose_weight: "Lose weight",
-  build_muscle: "Build muscle",
-  high_protein: "High protein",
-  balanced: "Balanced nutrition",
-  none: "No restriction",
-  vegetarian: "Vegetarian",
+  maintain: "Gewicht halten",
+  lose_weight: "Abnehmen",
+  build_muscle: "Muskeln aufbauen",
+  high_protein: "Eiweißreich",
+  balanced: "Ausgewogene Ernährung",
+  none: "Keine Einschränkung",
+  vegetarian: "Vegetarisch",
   vegan: "Vegan",
-  pescatarian: "Pescatarian",
-  lactose_free: "Lactose-free",
-  gluten_free: "Gluten-free",
-  diabetes: "Diabetes-friendly",
-  milk: "Milk",
-  eggs: "Eggs",
-  fish: "Fish",
-  shellfish: "Shellfish",
-  peanuts: "Peanuts",
-  tree_nuts: "Tree nuts",
-  soy: "Soy",
-  wheat: "Wheat",
-  sesame: "Sesame",
+  pescatarian: "Pescetarisch",
+  lactose_free: "Laktosefrei",
+  gluten_free: "Glutenfrei",
+  diabetes: "Diabetesbewusst",
+  milk: "Milch",
+  eggs: "Eier",
+  fish: "Fisch",
+  shellfish: "Krebstiere und Weichtiere",
+  peanuts: "Erdnüsse",
+  tree_nuts: "Schalenfrüchte",
+  soy: "Soja",
+  wheat: "Weizen",
+  sesame: "Sesam",
+  mustard: "Senf",
+  celery: "Sellerie",
+  sulfites: "Schwefeldioxid und Sulfite",
 };
 export const defaultDraft: PreferenceDraft = {
   householdSize: 1,

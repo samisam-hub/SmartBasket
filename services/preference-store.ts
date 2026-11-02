@@ -73,7 +73,7 @@ export class PreferenceStore {
     if (!this.storageReadable)
       return Promise.reject(
         new Error(
-          "Local storage could not be read. Restart the app to retry safely.",
+          "Der lokale Speicher konnte nicht gelesen werden. Starte die App neu, um es erneut zu versuchen.",
         ),
       );
     const { version, draft, saved, step, editing, pendingSync } = value;
@@ -97,7 +97,7 @@ export class PreferenceStore {
       .catch(() =>
         this.publish({
           localError:
-            "Changes could not be saved on this device. Free some storage and retry before closing.",
+            "Änderungen konnten nicht auf diesem Gerät gespeichert werden. Gib Speicherplatz frei und versuche es vor dem Schließen erneut.",
         }),
       );
   }
@@ -107,7 +107,7 @@ export class PreferenceStore {
       this.publish({ localError: null });
     } catch {
       this.publish({
-        localError: "Local storage is unavailable. Restart the app to retry.",
+        localError: "Der lokale Speicher ist nicht verfügbar. Starte die App neu.",
       });
     }
   };
@@ -118,7 +118,7 @@ export class PreferenceStore {
       return true;
     } catch {
       this.publish({
-        localError: "Progress could not be saved. Please retry before leaving.",
+        localError: "Der Fortschritt konnte nicht gespeichert werden. Versuche es vor dem Verlassen erneut.",
       });
       return false;
     }
@@ -140,7 +140,7 @@ export class PreferenceStore {
           typeof c.editing !== "boolean" ||
           typeof c.pendingSync !== "boolean"
         )
-          throw new Error("Invalid local data");
+          throw new Error("Ungültige lokale Daten");
         this.publish({
           draft: c.draft,
           saved: c.saved,
@@ -153,7 +153,7 @@ export class PreferenceStore {
       this.storageReadable = false;
       this.publish({
         localError:
-          "Stored preferences could not be read. They have not been overwritten. Restart the app to retry.",
+          "Gespeicherte Einstellungen konnten nicht gelesen werden und wurden nicht überschrieben. Starte die App neu.",
       });
     }
     this.publish({ ready: true });
@@ -179,7 +179,7 @@ export class PreferenceStore {
     } catch {
       this.publish({
         remoteError:
-          "Cloud preferences could not be loaded. Your local progress is available; check your connection and backend setup.",
+          "Cloud-Einstellungen konnten nicht geladen werden. Dein lokaler Fortschritt ist verfügbar. Prüfe deine Verbindung und die Cloud-Einrichtung.",
       });
     }
   }
@@ -245,7 +245,7 @@ export class PreferenceStore {
       this.publish({
         saving: false,
         localError:
-          "Preferences could not be saved on this device. Please retry; your answers are still here.",
+          "Einstellungen konnten nicht auf diesem Gerät gespeichert werden. Versuche es erneut; deine Angaben sind noch vorhanden.",
       });
       return false;
     }
@@ -265,7 +265,7 @@ export class PreferenceStore {
     } catch {
       this.publish({
         remoteError:
-          "Saved on this device only. Cloud sync failed. Check your connection, anonymous sign-in, and database setup, then retry.",
+          "Nur auf diesem Gerät gespeichert. Die Cloud-Synchronisierung ist fehlgeschlagen. Prüfe Verbindung, Gastanmeldung und Datenbankeinrichtung und versuche es erneut.",
       });
     }
   }
@@ -291,7 +291,7 @@ export class PreferenceStore {
       } catch {
         this.publish({
           remoteError:
-            "Cloud preferences could not be loaded. Your local progress is still available.",
+            "Cloud-Einstellungen konnten nicht geladen werden. Dein lokaler Fortschritt bleibt verfügbar.",
         });
       } finally {
         this.publish({ saving: false });

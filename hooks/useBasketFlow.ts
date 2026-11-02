@@ -27,7 +27,7 @@ export function useBasketFlow() {
     disabled: !ready || saving,
     create: () => {
       if (!ready || saving) return;
-      if (saved?.onboardingCompleted) router.push("/plan-setup");
+      if (saved?.onboardingCompleted) router.push("/plan/week");
       else edit();
     },
   };

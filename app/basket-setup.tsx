@@ -1,3 +1,4 @@
+import { formatEuro } from '../lib/german';
 import { loadPantry, checkoutBasket } from '@/services/pantry';
 
 import type { PantryLot } from '@/types/pantry';
@@ -28,10 +29,11 @@ import { basketFromMealPlan } from '@/services/meals/basket';
 
 import { MealPlanReview } from '@/components/MealPlanReview';
 
-import type { MealPlan } from '@/types/meal';
+import type { AnyMealPlan, MealPlan } from '@/types/meal';
 
 import type { Product } from '@/types/product';
 
+import { basketDayCount } from '@/services/basket/naming';
 import { newSavedBasket } from '@/services/basket/persistence';
 
 import { basketOwner, basketPersistence } from '@/services/baskets';
@@ -46,18 +48,23 @@ import {participantPreferences} from '@/services/profile-domain';
 
 import {isSaved} from '@/services/preference-domain';
 
-import { removeBasketProduct } from '@/services/basket/edit';
+import { removeBasketProduct, toggleBasketProduct } from '@/services/basket/edit';
 
 import { useActiveBasket } from '@/context/ActiveBasketContext';
+import { useWeekPlan } from '@/context/WeekPlanContext';
 
 import { addBasketProduct } from '@/services/basket/add-product';
+import { BasketExtras } from '@/components/BasketExtras';
+import { ShareBasket } from '@/components/ShareBasket';
 import { addBasketReplacement, replaceBasketProduct } from '@/services/basket/replacements';
 
 export default function BasketSetupScreen() {
 
-  const { active, remember, clear } = useActiveBasket();
+  const { active, remember, clear, discard, busy: activeBusy } = useActiveBasket();
 
   const pantry = useRef<PantryLot[]>([]);
+
+  const [deleteReview, setDeleteReview] = useState(false);
 
   const [checkoutReview,setCheckoutReview]=useState(false);
 
@@ -69,7 +76,9 @@ export default function BasketSetupScreen() {
 
   const saved=planPreferences??basePreferences;
 
-  const { savedId,participants,edit } = useLocalSearchParams<{ savedId?: string;participants?:string;edit?:string }>();
+  const { savedId,participants,edit,week } = useLocalSearchParams<{ savedId?: string;participants?:string;edit?:string;week?:string }>();
+
+  const weekPlan = useWeekPlan();
 
   const [editingBasket, setEditingBasket] = useState(false);
 
@@ -123,7 +132,7 @@ export default function BasketSetupScreen() {
 
           const found = remoteFound?.result.purchasedAt ? remoteFound : cached?.id === savedId && cached.ownerId === owner ? cached : response.baskets.find(b => b.id === savedId);
 
-          if (!found) throw Error('This saved basket is unavailable for the current session.');
+          if (!found) throw Error("Dieser gespeicherte Warenkorb ist für die aktuelle Sitzung nicht verfügbar.");
 
           next = found;
 
@@ -138,7 +147,7 @@ export default function BasketSetupScreen() {
 
         } else {
 
-          if (!basePreferences?.onboardingCompleted) throw Error('Complete your preferences before generating a basket.');
+          if (!basePreferences?.onboardingCompleted) throw Error("Vervollständige deine Einstellungen, bevor du einen Warenkorb erstellst.");
 
           let input=basePreferences;
 
@@ -146,11 +155,11 @@ export default function BasketSetupScreen() {
 
             const raw=await AsyncStorage.getItem(`smartbasket.active-plan.v1:${owner??'local'}`);
 
-            if(!raw)throw Error('Review your plan participants first.');
+            if(!raw)throw Error("Prüfe zuerst die Personen in deinem Plan.");
 
             const stored=JSON.parse(raw);
 
-            if(!isSaved(stored)||!stored.participants||stored.userId!==basePreferences.userId)throw Error('Plan inputs are invalid or belong to another account.');
+            if(!isSaved(stored)||!stored.participants||stored.userId!==basePreferences.userId)throw Error("Die Planangaben sind ungültig oder gehören zu einem anderen Konto.");
 
             input=participantPreferences(stored,stored.participants);
 
@@ -162,7 +171,7 @@ export default function BasketSetupScreen() {
 
           try { products = await loadBasketCatalog(getSupabaseClient(), controller.signal); }
 
-          catch { if (!controller.signal.aborted) setNotice('Catalog unavailable. You can review meals; package matching will report missing ingredients.'); }
+          catch { if (!controller.signal.aborted) setNotice("Der Katalog ist nicht verfügbar. Du kannst Mahlzeiten prüfen; fehlende Zutaten werden bei der Produktzuordnung angezeigt."); }
 
           await new Promise(resolve => setTimeout(resolve, 0));
 
@@ -170,13 +179,22 @@ export default function BasketSetupScreen() {
 
           catalog.current=products;ownerRef.current=owner;
 
-          setPlan(generateMealPlan(input,products));
+          // The calendar is the review: its week arrives decided, so it goes straight to a basket.
+          if (week === '1') {
+
+            await weekPlan.store.initialize();
+
+            const confirmed = weekPlan.store.confirm(input);
+
+            next = newSavedBasket(basketFromMealPlan(confirmed, input, products, pantry.current), input, owner);
+
+          } else setPlan(generateMealPlan(input,products));
 
         }
 
         if (!controller.signal.aborted) setBasket(next);
 
-      } catch (e) { if (!controller.signal.aborted) setError(e instanceof Error ? e.message : 'Basket could not be loaded.'); }
+      } catch (e) { if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "Der Warenkorb konnte nicht geladen werden."); }
 
       finally { if (!controller.signal.aborted) setBusy(false); }
 
@@ -184,17 +202,17 @@ export default function BasketSetupScreen() {
 
     return () => controller.abort();
 
-  }, [ready, basePreferences, savedId, retry,participants,edit]);
+  }, [ready, basePreferences, savedId, retry,participants,edit,week,weekPlan.store]);
 
   const confirmPlan=()=>{
 
     if(!plan||!saved)return;
 
-    try { const confirmed:MealPlan={...plan,status:'confirmed'};
+    try { const confirmed:AnyMealPlan={...plan,status:'confirmed'};
 
       setBasket(newSavedBasket(basketFromMealPlan(confirmed,saved,catalog.current,pantry.current),saved,ownerRef.current));setPlan(confirmed);setError(null);
 
-    } catch(e){setError(e instanceof Error?e.message:'Could not match packages.');}
+    } catch(e){setError(e instanceof Error?e.message:"Die Packungen konnten nicht zugeordnet werden.");}
 
   };
 
@@ -210,13 +228,13 @@ export default function BasketSetupScreen() {
 
       const owner = await basketOwner(saved?.userId ?? null);
 
-      if (owner !== basket.ownerId) throw Error('Session changed. Generate a new basket before saving.');
+      if (owner !== basket.ownerId) throw Error("Die Sitzung hat sich geändert. Erstelle vor dem Speichern einen neuen Warenkorb.");
 
       const response = await basketPersistence().save(basket);
 
-      if (mounted.current && token === generation.current) { setBasket(response.basket); originalBasket.current = response.basket; setEditingBasket(false); setNotice(response.warning ?? 'Saved to this device and your SmartBasket session.'); setSavedOnce(true); }
+      if (mounted.current && token === generation.current) { setBasket(response.basket); originalBasket.current = response.basket; setEditingBasket(false); setNotice(response.warning ?? "Auf diesem Gerät und in deinem SmartBasket-Konto gespeichert."); setSavedOnce(true); }
 
-    } catch (e) { if (mounted.current && token === generation.current) setError(e instanceof Error ? e.message : 'Basket save failed. Retry.'); }
+    } catch (e) { if (mounted.current && token === generation.current) setError(e instanceof Error ? e.message : "Der Warenkorb konnte nicht gespeichert werden. Versuche es erneut."); }
 
     finally { saveLock.current = false; if (mounted.current) setSaving(false); }
 
@@ -247,6 +265,7 @@ export default function BasketSetupScreen() {
       result.removedProductIds = [...new Set([...removedIds, ...(result.removedProductIds ?? [])])];
 
       result.removedIngredientKeys = removedKeys;
+      result.excludedItems = basket.result.excludedItems;
 
       for (const extra of basket.result.items.filter(i => i.isExtra || i.extraPackageCount)) {
 
@@ -262,11 +281,11 @@ export default function BasketSetupScreen() {
 
         setBasket({ ...basket, result, syncStatus: 'local' }); setEditingBasket(true); setSavedOnce(false);
 
-        setNotice('Products refreshed. Review the shopping list and save your changes.');
+        setNotice("Produkte aktualisiert. Prüfe deinen Warenkorb und speichere die Änderungen.");
 
       }
 
-    } catch (e) { if (mounted.current && token === generation.current) setError(e instanceof Error ? e.message : 'Refresh failed. Your basket is unchanged.'); }
+    } catch (e) { if (mounted.current && token === generation.current) setError(e instanceof Error ? e.message : "Die Aktualisierung ist fehlgeschlagen. Dein Warenkorb ist unverändert."); }
 
     finally { saveLock.current = false; if (mounted.current) setSaving(false); }
 
@@ -274,17 +293,17 @@ export default function BasketSetupScreen() {
 
   return <Screen top={false} bottom>
 
-    <ScreenHeader eyebrow="YOUR GROCERIES" title={savedId ? 'Saved basket' : basket ? 'Your meal-based basket' : 'Your meal plan'} />
+    <ScreenHeader eyebrow="DEIN EINKAUF" title={savedId ? "Gespeicherter Warenkorb" : basket ? "Dein Warenkorb zum Speiseplan" : "Dein Speiseplan"} />
 
-    {busy && <><ActivityIndicator color={colors.primary} /><Text style={ui.body}>Loading products and checking your constraints…</Text></>}
+    {busy && <><ActivityIndicator color={colors.primary} /><Text style={ui.body}>Produkte werden geladen und deine Anforderungen geprüft …</Text></>}
 
     {error && <Text style={ui.small} accessibilityRole="alert">{error}</Text>}
 
-    {!busy && !basket && !plan && <EmptyState illustration="dataError" title="Basket not available" description="Your saved preferences and catalog are unchanged.">
+    {!busy && !basket && !plan && <EmptyState illustration="dataError" title="Warenkorb nicht verfügbar" description="Deine gespeicherten Einstellungen und der Katalog sind unverändert.">
 
-      <PrimaryButton label="Retry" onPress={() => setRetry(n => n + 1)} />
+      <PrimaryButton label="Erneut versuchen" onPress={() => setRetry(n => n + 1)} />
 
-      <SecondaryButton label="Edit preferences" onPress={() => flow.edit()} disabled={flow.disabled} />
+      <SecondaryButton label="Einstellungen bearbeiten" onPress={() => flow.edit()} disabled={flow.disabled} />
 
     </EmptyState>}
 
@@ -294,78 +313,103 @@ export default function BasketSetupScreen() {
 
       <MealPlanReview plan={plan} preferences={saved} onChange={setPlan} onConfirm={confirmPlan} />
 
-      <SecondaryButton label="Edit preferences" onPress={() => flow.edit()} disabled={flow.disabled} />
+      <SecondaryButton label="Einstellungen bearbeiten" onPress={() => flow.edit()} disabled={flow.disabled} />
 
     </>}
 
     {basket && <>
 
-      <Text style={ui.small}>{basket.preferences.planningDays} days · {basket.preferences.householdSize} people · {basket.preferences.dailyCalories} kcal per person per day</Text>
+      <Text style={ui.small}>{basketDayCount(basket.result, basket.preferences)}  Tage · {basket.preferences.householdSize}  Personen · {basket.preferences.dailyCalories}  kcal pro Person und Tag</Text>
 
-      {savedId && !editingBasket && !basket.result.purchasedAt && <SecondaryButton label="Edit basket" disabled={saving} onPress={() => { originalBasket.current = basket; setEditingBasket(true); }} />}
+      {savedId && !editingBasket && !basket.result.purchasedAt && <SecondaryButton label="Warenkorb bearbeiten" disabled={saving} onPress={() => { originalBasket.current = basket; setEditingBasket(true); }} />}
 
       {editingBasket && !basket.result.purchasedAt && <>
 
-        {basket.result.mealPlan && <SecondaryButton label="Refresh products from catalog" disabled={saving} onPress={() => { void refreshProducts(); }} />}
+        {basket.result.mealPlan && <SecondaryButton label="Produkte aus dem Katalog aktualisieren" disabled={saving} onPress={() => { void refreshProducts(); }} />}
 
-        <PrimaryButton label="Save changes" loading={saving} onPress={() => { void save(); }} />
+        <PrimaryButton label="Änderungen speichern" loading={saving} onPress={() => { void save(); }} />
 
-        <SecondaryButton label="Cancel changes" disabled={saving} onPress={() => { setBasket(originalBasket.current); setEditingBasket(false); setSavedOnce(true); setError(null); }} />
+        <SecondaryButton label="Änderungen verwerfen" disabled={saving} onPress={() => { setBasket(originalBasket.current); setEditingBasket(false); setSavedOnce(true); setError(null); }} />
 
       </>}
 
-      {basket.result.purchasedAt && <Text style={ui.body}>Purchased · {new Date(basket.result.purchasedAt).toLocaleDateString('en-GB')}</Text>}
+      {basket.result.purchasedAt && <Text style={ui.body}>Gekauft · {new Date(basket.result.purchasedAt).toLocaleDateString('de-DE')}</Text>}
 
-      <SecondaryButton label="Pantry & purchase history" onPress={()=>router.push('/pantry')} />
+      <SecondaryButton label="Vorräte und Einkaufsverlauf" onPress={()=>router.push('/pantry')} />
 
       <BasketResult result={basket.result} catalog={catalog.current} preferences={basket.preferences}
         onReplaceProduct={!saving && !basket.result.purchasedAt ? (currentId, product) => {
-          try { setBasket({ ...basket, result: replaceBasketProduct(basket.result, currentId, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Product replaced. Save the basket to keep this choice.'); }
-          catch (e) { setError(e instanceof Error ? e.message : 'Could not replace product.'); }
+          try { setBasket({ ...basket, result: replaceBasketProduct(basket.result, currentId, product), syncStatus: 'local' }); setSavedOnce(false); setNotice("Produkt ausgetauscht. Speichere den Warenkorb, um die Auswahl zu behalten."); }
+          catch (e) { setError(e instanceof Error ? e.message : "Das Produkt konnte nicht ausgetauscht werden."); }
         } : undefined}
         onAddReplacement={!saving && !basket.result.purchasedAt ? (requirement, product) => {
-          try { setBasket({ ...basket, result: addBasketReplacement(basket.result, requirement, product), syncStatus: 'local' }); setSavedOnce(false); setNotice('Category replacement added. Save the basket to keep this choice.'); }
-          catch (e) { setError(e instanceof Error ? e.message : 'Could not add replacement.'); }
+          try { setBasket({ ...basket, result: addBasketReplacement(basket.result, requirement, product), syncStatus: 'local' }); setSavedOnce(false); setNotice("Alternative hinzugefügt. Speichere den Warenkorb, um die Auswahl zu behalten."); }
+          catch (e) { setError(e instanceof Error ? e.message : "Die Alternative konnte nicht hinzugefügt werden."); }
         } : undefined}
-        onRemoveProduct={editingBasket && !saving ? id => {
+        onToggleProduct={!basket.result.purchasedAt && !saving ? id => {
 
-        try { setBasket({ ...basket, result: removeBasketProduct(basket.result, id), syncStatus: 'local' }); setSavedOnce(false); setNotice(null); }
+        try { setBasket({ ...basket, result: toggleBasketProduct(basket.result, id), syncStatus: 'local' }); setSavedOnce(false); setNotice(null); }
 
-        catch (e) { setError(e instanceof Error ? e.message : 'Could not remove product.'); }
+        catch (e) { setError(e instanceof Error ? e.message : "Die Produktauswahl konnte nicht aktualisiert werden."); }
 
       } : undefined} />
 
-      {!savedId && plan && !basket.result.purchasedAt && <SecondaryButton label="Back to meal review" disabled={saving} onPress={()=>{setBasket(null);setSavedOnce(false);setPlan({...plan,status:'review'});setNotice(null);}} />}
+      {!basket.result.purchasedAt && <BasketExtras result={basket.result} catalog={catalog.current} preferences={basket.preferences}
+        onAdd={product => {
+          try { setBasket({ ...basket, result: addBasketProduct(basket.result, product), syncStatus: 'local' }); setSavedOnce(false); setNotice(`${product.name} hinzugefügt. Speichere den Warenkorb, um das Produkt zu behalten.`); }
+          catch (e) { setError(e instanceof Error ? e.message : "Das Produkt konnte nicht hinzugefügt werden."); }
+        }} />}
+      {!savedId && plan && !basket.result.purchasedAt && <SecondaryButton label="Zurück zur Mahlzeitenübersicht" disabled={saving} onPress={()=>{setBasket(null);setSavedOnce(false);setPlan({...plan,status:'review'});setNotice(null);}} />}
 
       {notice && <Text style={ui.small} accessibilityLiveRegion="polite">{notice}</Text>}
 
       {!basket.result.purchasedAt && <>
 
-        <PrimaryButton label="Checkout" disabled={saving} onPress={()=>setCheckoutReview(true)} />
+        <PrimaryButton label="Einkauf abschließen" disabled={saving} onPress={()=>setCheckoutReview(true)} />
 
         {checkoutReview && <>
 
-          <Text style={ui.body}>Confirm that you bought {basket.result.items.reduce((n,i)=>n+i.packageCount,0)} packages. Estimated cost: {basket.result.estimatedTotalPrice===null?'incomplete':`€${basket.result.estimatedTotalPrice.toFixed(2)}`}. No payment is taken.</Text>
+          <Text style={ui.body}>Bestätige, dass du {basket.result.items.reduce((n,i)=>n+i.packageCount,0)}  Packungen gekauft hast. Geschätzte Kosten: {basket.result.estimatedTotalPrice===null?'unvollständig':`${formatEuro(basket.result.estimatedTotalPrice)}`}. Es wird keine Zahlung ausgelöst.</Text>
 
-          <Text style={ui.small}>Planned quantities will be reserved for these meals. Remaining quantities become available for future plans. Extras remain available until you remove them from your pantry. Check quantities and suitability before confirming.</Text>
+          <Text style={ui.small}>Geplante Mengen werden für diese Mahlzeiten reserviert. Restmengen stehen künftigen Plänen zur Verfügung. Extras bleiben verfügbar, bis du sie aus deinen Vorräten entfernst. Prüfe Mengen und Eignung vor der Bestätigung.</Text>
 
-          {basket.result.status!=='generated' && <Text style={ui.small}>This basket has incomplete meal coverage. Checkout records only the products in this basket.</Text>}
+          {basket.result.status!=='generated' && <Text style={ui.small}>Dieser Warenkorb deckt die Mahlzeiten nicht vollständig ab. Beim Abschließen werden nur die enthaltenen Produkte erfasst.</Text>}
 
-          <PrimaryButton label="Confirm purchased" loading={saving} onPress={()=>{if(saveLock.current)return;saveLock.current=true;setSaving(true);void checkoutBasket(basket).then(b=>{setBasket(b);clear(b.id);setEditingBasket(false);setSavedOnce(true);setCheckoutReview(false);setNotice('Purchase recorded. Your available leftovers are in Pantry.');}).catch(e=>setError(e.message)).finally(()=>{saveLock.current=false;setSaving(false);});}} />
+          <PrimaryButton label="Einkauf bestätigen" loading={saving} onPress={()=>{if(saveLock.current)return;saveLock.current=true;setSaving(true);void checkoutBasket(basket).then(b=>{setBasket(b);clear(b.id);setEditingBasket(false);setSavedOnce(true);setCheckoutReview(false);setNotice("Einkauf erfasst. Deine verfügbaren Restmengen findest du unter Vorräte.");}).catch(e=>setError(e.message)).finally(()=>{saveLock.current=false;setSaving(false);});}} />
 
-          <SecondaryButton label="Cancel checkout" disabled={saving} onPress={()=>setCheckoutReview(false)} />
+          <SecondaryButton label="Abschließen abbrechen" disabled={saving} onPress={()=>setCheckoutReview(false)} />
 
         </>}
 
       </>}
 
-      {!basket.result.purchasedAt && (!!basket.result.items.length || !!basket.result.mealPlan?.items.length) && <PrimaryButton label={savedOnce ? basket.syncStatus === 'synced' ? 'Basket saved' : 'Retry cloud save' : basket.result.engineVersion==='2' ? 'Save meal plan & basket' : 'Save basket'}
+      {!basket.result.purchasedAt && (!!basket.result.items.length || !!basket.result.mealPlan?.items.length) && <PrimaryButton label={savedOnce ? basket.syncStatus === 'synced' ? "Warenkorb gespeichert" : "Erneut in der Cloud speichern" : basket.result.engineVersion==='2' ? "Speiseplan und Warenkorb speichern" : "Warenkorb speichern"}
 
         disabled={savedOnce && (basket.syncStatus === 'synced' || !basket.ownerId)} loading={saving} onPress={() => { void save(); }} />}
 
-      <SecondaryButton label="View saved baskets" disabled={saving} onPress={() => router.dismissTo('/basket')} />
+      {!basket.result.purchasedAt && <>
+        <SecondaryButton label="Warenkorb löschen" disabled={saving || activeBusy} onPress={() => setDeleteReview(true)} />
+        {deleteReview && <>
+          <Text style={ui.body}>Diesen angefangenen Warenkorb löschen? Dein Wochenplan bleibt erhalten.</Text>
+          <PrimaryButton label="Warenkorb endgültig löschen" disabled={saving || activeBusy} onPress={() => {
+            if (saveLock.current) return;
+            saveLock.current = true; setSaving(true); setError(null);
+            void basketOwner(basket.ownerId).then(owner => {
+              if (owner !== basket.ownerId) throw Error("Dein Konto hat sich geändert. Öffne den Warenkorb erneut, bevor du ihn löschst.");
+              return discard(basket);
+            }).then(() => { generation.current++; setBasket(null); router.dismissTo('/basket'); })
+              .catch(e => setError(e instanceof Error ? e.message : "Der Warenkorb konnte nicht gelöscht werden."))
+              .finally(() => { saveLock.current = false; if (mounted.current) setSaving(false); });
+          }} />
+          <SecondaryButton label="Warenkorb behalten" disabled={saving} onPress={() => setDeleteReview(false)} />
+        </>}
+      </>}
 
-      <SecondaryButton label="Edit preferences" disabled={flow.disabled || saving} onPress={() => flow.edit()} />
+      <ShareBasket key={basket.id} basket={basket} />
+
+      <SecondaryButton label="Gespeicherte Warenkörbe ansehen" disabled={saving} onPress={() => router.dismissTo('/basket')} />
+
+      <SecondaryButton label="Einstellungen bearbeiten" disabled={flow.disabled || saving} onPress={() => flow.edit()} />
 
     </>}
 

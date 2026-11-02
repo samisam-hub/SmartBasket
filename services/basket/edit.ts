@@ -7,7 +7,7 @@ export function removeBasketProduct(original: BasketGenerationResult, productId:
   if (result.items.length === original.items.length) return result;
   result.removedProductIds = [...new Set([...(original.removedProductIds ?? []), productId])];
   result.removedIngredientKeys = [...new Set([...(original.removedIngredientKeys ?? []), ...original.items.filter(i => i.product.id === productId && i.ingredientKey && !result.items.some(j => j.ingredientKey === i.ingredientKey)).map(i => i.ingredientKey!)])];
-  if (result.engineVersion === '1' && !result.items.length) throw Error('Keep at least one product in this older basket, or delete the basket instead.');
+  if (result.engineVersion === '1' && !result.items.length) throw Error("Behalte mindestens ein Produkt in diesem älteren Warenkorb oder lösche den Warenkorb.");
   return recalculateBasket(result, productId);
 }
 
@@ -25,8 +25,8 @@ export function recalculateBasket(original: BasketGenerationResult, productId?: 
     result.adjustedMealNutrition = result.mealPlan.items.map(i => ({ itemId: i.id, nutrition: mealNutrition(i, ratios) }));
     result.exclusions.unmatchedIngredients = Object.values(ratios).filter(n => n === 0).length;
     result.matchingDiagnostics = result.matchingDiagnostics?.map(d => ({ ...d,
-      selectedProductIds: d.selectedProductIds.filter(id => id !== productId),
-      unresolvedReason: ratios[d.ingredientKey] === 0 ? 'removed_or_unmatched' : d.unresolvedReason }));
+      selectedProductIds: items.filter(i => i.ingredientKey === d.ingredientKey).map(i => i.product.id),
+      unresolvedReason: ratios[d.ingredientKey] === 0 ? 'removed_or_unmatched' : null }));
   } else {
     result.totalCalories = sum('totalCalories'); result.totalProtein = sum('totalProtein');
     result.totalCarbohydrates = sum('totalCarbohydrates'); result.totalFat = sum('totalFat');
@@ -47,6 +47,28 @@ export function recalculateBasket(original: BasketGenerationResult, productId?: 
   result.categoryCoverage = result.categoryCoverage.map(c => ({ ...c, represented: items.some(i => i.group === c.group), amount: items.filter(i => i.group === c.group).reduce((n, i) => n + (i.totalWeight ?? 0), 0) }));
   result.status = items.length ? 'partial' : 'empty'; result.score = 0; result.objective = 0;
   result.warnings = result.warnings.filter(w => !['budget_exceeded', 'unknown_total', 'nutrition_gap', 'manual_edit'].includes(w.code) && !(productId && w.productIds?.includes(productId)));
-  if (productId) result.warnings.push({ code: 'manual_edit', message: 'Products were removed. Totals cover the remaining products; planned meals may need missing ingredients.' });
+  if (productId) result.warnings.push({ code: 'manual_edit', message: "Produkte wurden abgewählt. Summen beziehen sich auf die verbleibenden Produkte; für geplante Mahlzeiten können Zutaten fehlen." });
   return result;
+}
+
+/** Unchecked rows stay available to restore, but never enter totals or checkout. */
+export function toggleBasketProduct(original: BasketGenerationResult, productId: string): BasketGenerationResult {
+  if (original.purchasedAt) throw Error("Bereits eingekaufte Warenkörbe können nicht bearbeitet werden.");
+  const selected = original.items.find(i => i.product.id === productId);
+  if (selected) {
+    const result = removeBasketProduct(original, productId);
+    result.excludedItems = [...(original.excludedItems ?? []), structuredClone(selected)];
+    return result;
+  }
+  const excluded = original.excludedItems?.find(i => i.product.id === productId);
+  if (!excluded) return original;
+  if (excluded.ingredientKey && original.items.some(i => i.ingredientKey === excluded.ingredientKey))
+    throw Error("Wähle zuerst die Alternative für diese Zutat ab, bevor du dieses Produkt wieder auswählst.");
+  if (original.items.length >= (original.engineVersion === '2' ? 64 : 24)) throw Error("Dieser Warenkorb hat seine maximale Produktanzahl erreicht.");
+  const result = structuredClone(original);
+  result.items.push(structuredClone(excluded));
+  result.excludedItems = result.excludedItems?.filter(i => i.product.id !== productId);
+  result.removedProductIds = result.removedProductIds?.filter(id => id !== productId);
+  result.removedIngredientKeys = result.removedIngredientKeys?.filter(key => key !== excluded.ingredientKey);
+  return recalculateBasket(result);
 }

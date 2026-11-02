@@ -1,5 +1,6 @@
 import type { Purchase } from '../types/pantry';
-import { planNutrition } from './meals/planner';
+import { choicesNutrition } from './meals/planner';
+import { planDays } from './meals/weekPlan';
 import { splitNutrition } from './meals/portions';
 
 /** Reused pantry quantities committed at checkout, not unconfirmed plan previews. */
@@ -19,7 +20,7 @@ export function wastePrevention(purchases: Purchase[]) {
 }
 
 export function formatPreventedWaste({ grams, millilitres }: ReturnType<typeof wastePrevention>) {
-  const format = (n: number) => n.toLocaleString('en-GB', { maximumFractionDigits: 2 });
+  const format = (n: number) => n.toLocaleString('de-DE', { maximumFractionDigits: 2 });
   const parts: string[] = [];
   if (grams > 0) parts.push(grams >= 1000 ? `${format(grams / 1000)} kg` : `${format(grams)} g`);
   if (millilitres > 0) parts.push(millilitres >= 1000 ? `${format(millilitres / 1000)} L` : `${format(millilitres)} ml`);
@@ -57,8 +58,9 @@ export function shoppingImpact(purchases: Purchase[], now = new Date()) {
   for (const purchase of completed) {
     const plan = purchase.basket.result.mealPlan;
     if (!plan || plan.status !== 'confirmed') continue;
-    for (let day = 0; day < plan.planningDays; day++) {
-      const nutrition = planNutrition({ ...plan, items: plan.items.filter(item => item.dayIndex === day) });
+    // Every day the plan covers counts, including one where nothing was planned.
+    for (const day of planDays(plan)) {
+      const nutrition = choicesNutrition(day.items);
       for (const person of splitNutrition(plan, nutrition)) {
         if (person.calorieTarget && Number.isFinite(person.calorieTarget) && person.calorieTarget > 0) {
           calorieDays++;

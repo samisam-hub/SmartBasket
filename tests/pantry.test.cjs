@@ -15,8 +15,8 @@ test('purchase reserves meals, retains leftovers and future plans consume stock 
  assert.ok(next.knownPriceSubtotal<=base.knownPriceSubtotal);
  const other=newSavedBasket(next,p,null);other.id='second';
  const final=checkoutPantry(state,other,'2026-09-09T00:00:00Z');assert.equal(final.version,2);
- assert.throws(()=>checkoutPantry({version:0,lots:[]},other,'2026-09-09'),/pantry changed/);
- assert.throws(()=>checkoutPantry(state,{...b,result:{...b.result,purchasedAt:'done'}},'now'),/already purchased/);
+ assert.throws(()=>checkoutPantry({version:0,lots:[]},other,'2026-09-09'),/Vorräte haben sich geändert/);
+ assert.throws(()=>checkoutPantry(state,{...b,result:{...b.result,purchasedAt:'done'}},'now'),/bereits als eingekauft/);
  const wrong=state.lots.map(l=>({...l,unit:l.unit==='g'?'ml':'g'}));
  assert.equal(basketFromMealPlan(plan,p,fullCatalog,wrong).pantryUsed.length,0);
 });

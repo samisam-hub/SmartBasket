@@ -13,6 +13,6 @@ export async function basketOwner(preferred: string | null): Promise<string | nu
   const { data, error } = await client.auth.getSession();
   if (error) return preferred;
   const owner = data.session?.user.id ?? preferred;
-  if (preferred && owner !== preferred) throw Error('Your saved preferences belong to another session. Reopen the app before continuing.');
+  if (preferred && owner !== preferred) throw Error("Deine gespeicherten Einstellungen gehören zu einer anderen Sitzung. Öffne die App erneut, bevor du fortfährst.");
   return owner;
 }

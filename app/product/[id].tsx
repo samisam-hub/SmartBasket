@@ -1,3 +1,4 @@
+import { germanLabel, formatNumber } from '../../lib/german';
 import {StateIllustration,failureIllustration} from '@/components/BrandAssets';
 import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
@@ -12,7 +13,7 @@ import { allergenConflicts, dietaryFields, dietaryNames, estimatedPrice, hasDisc
 import { usePreferences } from "@/context/PreferencesContext";
 import { categoryLabels, type Product } from "@/types/product";
 import { colors, ui } from "@/lib/theme";
-const displayList = (values: string[]) => values.join(", ").replace(/_/g, " ");
+const displayList = (values: string[]) => values.map(germanLabel).join(", ").replace(/_/g, " ");
 export default function ProductDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { saved } = usePreferences();
@@ -26,55 +27,55 @@ export default function ProductDetails() {
     void getProductRepository().get(id, controller.signal).then(p => {
       if (!controller.signal.aborted) setProduct(p);
     }).catch(cause => {
-      if (!controller.signal.aborted) { setFailureKind(failureIllustration(cause)); setError("Product could not be loaded. Check your connection and retry."); }
+      if (!controller.signal.aborted) { setFailureKind(failureIllustration(cause)); setError("Das Produkt konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut."); }
     }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [id, revision]);
   const risk = product ? allergenConflicts(product, saved) : null;
   return <Screen top={false} bottom>
-    {loading ? <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading product details" /> : error ? <>
-      <StateIllustration kind={failureKind} /><ErrorMessage message={error} /><TextButton label="Retry" onPress={() => setRevision(v => v + 1)} />
-    </> : !product ? <EmptyState illustration="dataError" title="Product not found" description="This item may no longer be in the catalog. Go back to browse other products." /> : <>
+    {loading ? <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Produktdetails werden geladen" /> : error ? <>
+      <StateIllustration kind={failureKind} /><ErrorMessage message={error} /><TextButton label="Erneut versuchen" onPress={() => setRevision(v => v + 1)} />
+    </> : !product ? <EmptyState illustration="dataError" title="Produkt nicht gefunden" description="Dieser Artikel ist möglicherweise nicht mehr im Katalog. Gehe zurück, um andere Produkte zu entdecken." /> : <>
       <ProductImage uri={product.displayImageUrl} width={product.imageWidth} height={product.imageHeight} name={product.name} large />
       <View style={ui.stack}>
-        <Text style={ui.caption}>{product.brand ?? "Brand not provided"} · {categoryLabels[product.category]}</Text>
+        <Text style={ui.caption}>{product.brand ?? "Marke nicht angegeben"} · {categoryLabels[product.category]}</Text>
         <Text style={ui.heading}>{product.name}</Text>
-        <Text style={ui.body}>{product.quantityLabel ?? (product.packageSize && product.packageUnit ? `${product.packageSize} ${product.packageUnit}` : "Package size not provided")}</Text>
+        <Text style={ui.body}>{product.quantityLabel ?? (product.packageSize && product.packageUnit ? `${product.packageSize} ${product.packageUnit}` : "Packungsgröße nicht angegeben")}</Text>
         <Text style={[ui.subheading, { color: colors.primary }]}>{estimatedPrice(product)}</Text>
-        {product.priceEstimate !== null && <Text style={ui.caption}>{product.priceEstimateVersion==='synthetic-category-demo-2'?'Low-confidence category demo price. Package quantity is unverified.':product.priceEstimateSource==='synthetic_mvp'?'Synthetic development estimate based on product type and package size.':'Estimated package price.'} Not a current supermarket offer.</Text>}
+        {product.priceEstimate !== null && <Text style={ui.caption}>{product.priceEstimateVersion==='synthetic-category-demo-2'?"Unsicherer Demo-Preis der Kategorie. Die Packungsmenge ist unbestätigt.":product.priceEstimateSource==='synthetic_mvp'?"Für die Entwicklung geschätzter Wert anhand von Produkttyp und Packungsgröße.":"Geschätzter Packungspreis."}  Kein aktuelles Supermarktangebot.</Text>}
       </View>
-      {product.source === "demo" && <InfoCard title="Fictional demo product">This fallback item uses illustrative nutrition and pricing, not imported product data.</InfoCard>}
+      {product.source === "demo" && <InfoCard title="Fiktives Demo-Produkt">Dieses Beispielprodukt verwendet beispielhafte Nährwerte und Preise statt importierter Produktdaten.</InfoCard>}
       <AddProductButton product={product} />
-      {risk && (!!risk.contains.length || !!risk.traces.length) && <InfoCard title="Allergen warning">
-        {risk.contains.length ? `Contains allergens you selected: ${displayList(risk.contains)}. ` : ""}
-        {risk.traces.length ? `May contain allergens you selected: ${displayList(risk.traces)}.` : ""}
+      {risk && (!!risk.contains.length || !!risk.traces.length) && <InfoCard title="Allergenhinweis">
+        {risk.contains.length ? `Enthält von dir ausgewählte Allergene: ${displayList(risk.contains)}. ` : ""}
+        {risk.traces.length ? `Kann von dir ausgewählte Allergene enthalten: ${displayList(risk.traces)}.` : ""}
       </InfoCard>}
       {hasDiscoveryPreferences(saved) && <Text style={ui.small}>
-        {matchesPreferences(product, saved) ? "Matches your saved dietary preferences with no listed allergen conflicts. This is not a guarantee of allergy suitability." : "A match to all your saved preferences is not established: source information may conflict or be incomplete."}
+        {matchesPreferences(product, saved) ? "Passt zu deinen gespeicherten Ernährungseinstellungen; keine aufgeführten Allergenkonflikte. Dies garantiert keine Eignung bei Allergien." : "Die Übereinstimmung mit allen Einstellungen ist nicht bestätigt. Quellenangaben können widersprüchlich oder unvollständig sein."}
       </Text>}
-      <SectionCard title={`Nutrition per ${product.nutritionBasis === "100ml" ? "100 ml" : "100 g"} · as sold`}>
+      <SectionCard title={`Nährwerte je ${product.nutritionBasis === "100ml" ? "100 ml" : "100 g"} · im Verkaufszustand`}>
         <ProductEstimateNotice product={product} />
         {([
-          ["Calories", product.caloriesPer100g, "kcal"], ["Protein", product.proteinPer100g, "g"],
-          ["Carbohydrates", product.carbohydratesPer100g, "g"], ["Fat", product.fatPer100g, "g"],
-          ["Fiber", product.fiberPer100g, "g"], ["Sugars", product.sugarsPer100g, "g"], ["Salt", product.saltPer100g, "g"],
-        ] as const).map(([label, value, unit]) => <PreferenceRow key={label} label={label} value={value === null ? "Not provided" : `${value} ${unit}`} />)}
-        {product.nutritionGrade && <PreferenceRow label="Nutrition grade (Nutri-Score)" value={product.nutritionGrade.toUpperCase()} />}
+          ["Kalorien", product.caloriesPer100g, "kcal"], ["Eiweiß", product.proteinPer100g, "g"],
+          ["Kohlenhydrate", product.carbohydratesPer100g, "g"], ["Fett", product.fatPer100g, "g"],
+          ["Ballaststoffe", product.fiberPer100g, "g"], ["Zucker", product.sugarsPer100g, "g"], ["Salz", product.saltPer100g, "g"],
+        ] as const).map(([label, value, unit]) => <PreferenceRow key={label} label={label} value={value === null ? "Nicht angegeben" : `${formatNumber(value, 3)} ${unit}`} />)}
+        {product.nutritionGrade && <PreferenceRow label="Nährwertbewertung (Nutri-Score)" value={product.nutritionGrade.toUpperCase()} />}
       </SectionCard>
-      <SectionCard title="Ingredients"><Text style={ui.body}>{product.ingredientsText ?? "Ingredients not provided by the source."}</Text></SectionCard>
-      <SectionCard title="Allergens">
-        <PreferenceRow label="Contains (reported)" value={product.allergens.length ? displayList(product.allergens) : "None listed; not verified allergen-free"} />
-        <PreferenceRow label="May contain (reported)" value={product.mayContainAllergens.length ? displayList(product.mayContainAllergens) : "No trace information listed"} />
-        <Text style={ui.small}>Source data may be incomplete. Always check ingredients and cross-contact information on the current package. Lactose-free does not mean milk-free.</Text>
+      <SectionCard title="Zutaten"><Text style={ui.body}>{product.ingredientsText ?? "Die Quelle enthält keine Zutatenangaben."}</Text></SectionCard>
+      <SectionCard title="Allergene">
+        <PreferenceRow label="Enthält laut Angabe" value={product.allergens.length ? displayList(product.allergens) : "Keine aufgeführt; Allergenfreiheit nicht bestätigt"} />
+        <PreferenceRow label="Kann laut Angabe enthalten" value={product.mayContainAllergens.length ? displayList(product.mayContainAllergens) : "Keine Spurenhinweise aufgeführt"} />
+        <Text style={ui.small}>Quellenangaben können unvollständig sein. Prüfe Zutaten und Spurenhinweise auf der aktuellen Verpackung. Laktosefrei bedeutet nicht milchfrei.</Text>
       </SectionCard>
-      <SectionCard title="Dietary information">
+      <SectionCard title="Ernährungsangaben">
         {dietaryFields.map(field => <PreferenceRow key={field} label={dietaryNames[field]}
-          value={product[field] === null ? "Unknown" : product[field] ? "Reported by source" : "Not indicated as suitable"} />)}
-        {!!product.labels.filter(l => !l.startsWith('smartbasket:demo:')).length && <Text style={ui.small}>Source labels: {product.labels.filter(l => !l.startsWith('smartbasket:demo:')).join(", ")}</Text>}
+          value={product[field] === null ? "Unbekannt" : product[field] ? "Laut Quellenangabe" : "Nicht als geeignet ausgewiesen"} />)}
+        {!!product.labels.filter(l => !l.startsWith('smartbasket:demo:')).length && <Text style={ui.small}>Kennzeichnungen der Quelle: {product.labels.filter(l => !l.startsWith('smartbasket:demo:')).join(", ")}</Text>}
       </SectionCard>
       <CatalogAttribution sources={[product.source]} />
-      {product.sourceUrl && <TextButton label="View product on source website" onPress={() => openCatalogLink(product.sourceUrl!)} />}
-      <Text style={ui.caption}>Catalog updated {new Date(product.updatedAt).toLocaleDateString()}{product.barcode ? ` · Barcode ${product.barcode}` : ""}</Text>
+      {product.sourceUrl && <TextButton label="Produkt auf der Quellwebsite ansehen" onPress={() => openCatalogLink(product.sourceUrl!)} />}
+      <Text style={ui.caption}>Katalog aktualisiert {new Date(product.updatedAt).toLocaleDateString('de-DE')}{product.barcode ? ` · Strichcode ${product.barcode}` : ""}</Text>
     </>}
   </Screen>;
 }

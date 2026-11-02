@@ -8,12 +8,12 @@ const {ingredients,meals}=require('../data/meals.ts');
 const {skuSafety}=require('../services/meals/skuSafety.ts');
 const rice=(patch={})=>product(1,{name:'Basmati Reis',quantityLabel:'500 g',...patch});
 test('package normalization preserves units, multipacks/counts and refuses conflicting/serving guesses',()=>{
- for(const [q,size,unit] of [['500 g',500,'g'],['1 kg',1000,'g'],['1 L',1000,'ml'],['75 cl',750,'ml'],['250 ml',250,'ml'],['6 eggs',6,'piece'],['10.0 pcs',10,'piece'],['2 x 400 g',800,'g'],['4*125g',500,'g']]){
+ for(const [q,size,unit] of [['500 g',500,'g'],['1 kg',1000,'g'],['1 L',1000,'ml'],['75 cl',750,'ml'],['250 ml',250,'ml'],["6 Eier",6,'piece'],['10.0 pcs',10,'piece'],['2 x 400 g',800,'g'],['4*125g',500,'g']]){
   const p=normalizePackage({quantity:q});assert.equal(p.packageSize,size,q);assert.equal(p.packageUnit,unit,q);
  }
  assert.equal(normalizePackage({quantity:'unknown',name:'Product 750 ml'}).packageSize,750);
- assert.equal(normalizePackage({quantity:'6 eggs',servingText:'1 egg (55 g)'}).packageMassPerUnit,55);
- assert.equal(normalizePackage({quantity:'6 eggs',servingText:'55 g'}).packageMassPerUnit,null);
+ assert.equal(normalizePackage({quantity:"6 Eier",servingText:'1 egg (55 g)'}).packageMassPerUnit,55);
+ assert.equal(normalizePackage({quantity:"6 Eier",servingText:'55 g'}).packageMassPerUnit,null);
  assert.equal(normalizePackage({quantity:'400 g, drained weight 240 g'}).packageDrainedWeight,240);
  assert.equal(normalizePackage({quantity:'500 g',size:600,unit:'g'}).packageSizeStatus,'conflicting');
  assert.equal(normalizePackage({quantity:'1 serving 50 g'}).packageSizeStatus,'unknown');
@@ -31,7 +31,7 @@ test('product identity remains visible without package eligibility; quantity lab
  const unknown=diagnoseMatches('rice',[rice({packageSize:null,quantityLabel:null})],prefs());assert.equal(unknown.candidates.length,1);assert.equal(unknown.candidates[0].packageIssue,'package_size_unknown');
  assert.equal(unknown.candidates[0].optimizationProduct,null);
  assert.equal(matchProducts('rice',[rice({packageSize:null,packageUnit:null,quantityLabel:'1 kg'})],prefs())[0].packageSize,1000);
- assert.equal(diagnoseMatches('olive_oil',[product(2,{name:'Olive oil',category:'other',packageSize:750,packageUnit:'ml',quantityLabel:'750 ml',caloriesPer100g:884,proteinPer100g:0,carbohydratesPer100g:0,fatPer100g:100})],prefs()).candidates[0].packageIssue,'unit_conversion_unknown');
+ assert.equal(diagnoseMatches('olive_oil',[product(2,{name:"Olivenöl",category:'other',packageSize:750,packageUnit:'ml',quantityLabel:'750 ml',caloriesPer100g:884,proteinPer100g:0,carbohydratesPer100g:0,fatPer100g:100})],prefs()).candidates[0].packageIssue,'unit_conversion_unknown');
 });
 test('unknown lifestyle is confidence, known conflicts and allergen uncertainty remain exclusions',()=>{
  const p=prefs({dietaryPreferences:['lactose_free']}),r=rice({lactoseFree:null});

@@ -5,8 +5,14 @@ const {mealImageSource}=require('../lib/meal-images.ts');
 const {compatibleMeal}=require('../services/meals/planner.ts');
 const {prefs}=require('./basket-fixtures.cjs');
 test('approved illustrations match ingredients, never legacy rice tofu snapshots',()=>{
-  assert.equal(meals.length,32);
-  for(const meal of meals)assert.ok(mealImageSource(meal),`Missing illustration: ${meal.id}`);
+  const originalMeals = meals.filter(meal => !meal.preparation);
+  assert.equal(originalMeals.length,34);
+  for(const meal of originalMeals)assert.ok(mealImageSource(meal),`Missing illustration: ${meal.id}`);
+  const approvedPrepared = new Set(['de-gemuseomelett-mit-brot','de-hahnchen-mit-reis-und-gemuse','de-ofenlachs-mit-kartoffeln-und-brokkoli','de-spiegelei-auf-brot']);
+  for(const meal of meals.filter(meal => meal.preparation)) {
+    if(approvedPrepared.has(meal.id)) assert.ok(mealImageSource(meal),`Missing illustration: ${meal.id}`);
+    else assert.equal(mealImageSource(meal),null);
+  }
   const tofu=meals.find(m=>m.id==='tofu-teriyaki-noodles');
   assert.equal(mealImageSource({...tofu,id:'tofu-stirfry'}),null);
   assert.equal(mealImageSource({...tofu,ingredients:tofu.ingredients.filter(i=>i.ingredientKey!=='teriyaki')}),null);

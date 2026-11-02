@@ -16,6 +16,7 @@ Module._load=function(request,parent,isMain){
  if(request==='@/context/AuthContext')return {AuthProvider:pass,useAuth:()=>state};
  if(request==='@/context/PreferencesContext')return {PreferencesProvider:pass};
  if(request==='@/context/ProfileContext')return {ProfileProvider:pass};
+ if(request==='@/context/WeekPlanContext')return {WeekPlanProvider:pass};
  if(request==='@/lib/theme')return {colors:{}};
  return original.call(this,request,parent,isMain);
 };

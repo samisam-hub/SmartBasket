@@ -21,7 +21,7 @@ function fixture(overrides={}){
   stop:async()=>{if(!live)return null;live=false;events.push('stop');return `clip-${started}`;},
   discard:async uri=>events.push(`discard:${uri}`),level:()=>clock-origin<600?-20:-90,isRecording:()=>live,
  };
- const ports={recorder,now:()=>clock,wait:async(ms,signal)=>{if(signal.aborted)throw Error('Stopped');clock+=ms;},
+ const ports={recorder,now:()=>clock,wait:async(ms,signal)=>{if(signal.aborted)throw Error("Beendet");clock+=ms;},
   transcribe:async uri=>{events.push(`transcribe:${uri}`);return `wish-${started}`;},
   reply:async text=>{events.push(`reply:${text}`);return {text:'Which days?',language:'en'};},
   speak:async()=>{assert.equal(live,false);events.push('speak');},

@@ -8,7 +8,7 @@ const photoSize = 68;
 // One bundled 4×4 photo sheet; row-major order matches the catalog categories.
 export function CategoryButton({ category, selected, onPress, label }: { category: ProductCategory | 'all'; selected: boolean; onPress: () => void; label?: string }) {
   const index = category === 'all' ? 0 : categories.indexOf(category);
-  return <Pressable accessibilityRole="button" accessibilityLabel={label ?? (category === 'all' ? 'All products' : categoryLabels[category])}
+  return <Pressable accessibilityRole="button" accessibilityLabel={label ?? (category === 'all' ? "Alle Produkte" : categoryLabels[category])}
     accessibilityState={{ selected }} onPress={onPress}
     style={({ pressed }) => ({ width: 104, minHeight: 114, borderRadius: 16, borderWidth: 1,
       borderColor: selected ? colors.primary : colors.border, backgroundColor: selected && category !== 'all' ? colors.primary : colors.surface,
@@ -19,6 +19,6 @@ export function CategoryButton({ category, selected, onPress, label }: { categor
         { position: 'absolute', width: photoSize * 4, height: photoSize * 4, left: -(index % 4) * photoSize, top: -Math.floor(index / 4) * photoSize }} />
       }
     </View>
-    <Text style={[ui.caption, { color: selected && category !== 'all' ? colors.onPrimary : colors.primary, textAlign: 'center', fontWeight: '600' }]}>{label ?? (category === 'all' ? 'All' : categoryLabels[category])}</Text>
+    <Text style={[ui.caption, { color: selected && category !== 'all' ? colors.onPrimary : colors.primary, textAlign: 'center', fontWeight: '600' }]}>{label ?? (category === 'all' ? "Alle" : categoryLabels[category])}</Text>
   </Pressable>;
 }

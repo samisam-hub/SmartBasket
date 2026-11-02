@@ -9,7 +9,7 @@ function NativeImage(props) { return React.createElement(props.testID==='product
 NativeImage.getSize = (...args) => lookupSize(...args);
 const originalLoad = Module._load;
 Module._load = function(request, parent, isMain) {
-  if (request === "react-native") return { PixelRatio: { get: () => 3 }, View: "View", Image: NativeImage, ActivityIndicator: "Spinner", StyleSheet: { create: v => v, absoluteFill: {} } };
+  if (request === "react-native") return { PixelRatio: { get: () => 3 }, View: "Ansehen", Image: NativeImage, ActivityIndicator: "Spinner", StyleSheet: { create: v => v, absoluteFill: {} } };
   if (request === "@expo/vector-icons/Feather") return { __esModule: true, default: props => React.createElement("Placeholder", props) };
   if (request.startsWith("@/")) request = path.resolve(path.dirname(require.resolve("../package.json")), request.slice(2));
   return originalLoad.call(this, request, parent, isMain);

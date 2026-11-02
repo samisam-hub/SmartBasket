@@ -5,10 +5,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography } from '../lib/theme';
 
 const destinations = [
-  { label: 'Home', path: '/', icon: 'home' },
-  { label: 'Basket', path: '/basket', icon: 'shopping-bag' },
-  { label: 'Products', path: '/products', icon: 'grid' },
-  { label: 'Profile', path: '/profile', icon: 'user' },
+  { label: "Startseite", path: '/', icon: 'home' },
+  { label: "Warenkorb", path: '/basket', icon: 'shopping-bag' },
+  { label: "Produkte", path: '/products', icon: 'grid' },
+  { label: "Profil", path: '/profile', icon: 'user' },
 ] as const;
 
 /** Stack screens share the same destinations as the existing tab navigator. */

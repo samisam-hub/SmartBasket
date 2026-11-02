@@ -15,14 +15,14 @@ export function BasketProductHeading({ name, subtitle, notes, report }: { name: 
       </View>
       <View>
         {!!report.length && <Pressable onPress={() => setReportExpanded(value => !value)}
-          accessibilityRole="button" accessibilityLabel={`Selection report for ${name}`}
-          accessibilityHint="Show or hide product matching and quantity adjustment details" accessibilityState={{ expanded: reportExpanded }}
+          accessibilityRole="button" accessibilityLabel={`Auswahlbericht für ${name}`}
+          accessibilityHint="Details zur Produktauswahl und Mengenanpassung ein- oder ausblenden" accessibilityState={{ expanded: reportExpanded }}
           style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <Feather name="file-text" size={20} color={colors.muted} />
         </Pressable>}
         {!!notes.length && <Pressable onPress={() => setExpanded(value => !value)}
-          accessibilityRole="button" accessibilityLabel={`Dietary information unverified for ${name}`}
-          accessibilityHint="Show or hide the product's dietary notes" accessibilityState={{ expanded }}
+          accessibilityRole="button" accessibilityLabel={`Ernährungsangaben unbestätigt für ${name}`}
+          accessibilityHint="Ernährungshinweise des Produkts ein- oder ausblenden" accessibilityState={{ expanded }}
           style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <Feather name="alert-triangle" size={20} color={colors.warning} />
         </Pressable>}

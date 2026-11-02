@@ -39,7 +39,7 @@ test('rename and delete survive offline restart, synchronize by owner and cannot
  const reopened=new BasketPersistence(storage,remote);assert.equal((await reopened.list(b.ownerId)).baskets[0].name,'Weekend groceries');
  offline=false;assert.equal((await reopened.list(b.ownerId)).baskets[0].name,'Weekend groceries');assert.equal(cloud.get(b.id).name,'Weekend groceries');
  offline=true;assert.ok((await reopened.remove(b.ownerId,b.id)).warning);assert.equal((await reopened.list(b.ownerId)).baskets.length,0);
- await assert.rejects(reopened.save(b),/deleted/);offline=false;assert.equal((await new BasketPersistence(storage,remote).list(b.ownerId)).baskets.length,0);assert.equal(cloud.size,0);
+ await assert.rejects(reopened.save(b),/gelöscht/);offline=false;assert.equal((await new BasketPersistence(storage,remote).list(b.ownerId)).baskets.length,0);assert.equal(cloud.size,0);
  assert.equal(storage.data.get(`smartbasket.baskets.v1:${b.ownerId}:${b.id}`),'');
 });
 test('another device deletion clears cached synced baskets; failed action writes do not alter cloud',async()=>{
@@ -48,4 +48,15 @@ test('another device deletion clears cached synced baskets; failed action writes
  assert.equal((await p.list(b.ownerId)).baskets.length,1);cloud=[];assert.equal((await p.list(b.ownerId)).baskets.length,0);
  await p.save(b);const fail=new BasketPersistence({...storage,setItem:async()=>{throw Error('disk full');}},remote);
  await assert.rejects(fail.rename(b.ownerId,b.id,'New'),/disk full/);await assert.rejects(fail.remove(b.ownerId,b.id),/disk full/);assert.equal(writes,0);
+});
+
+test('discarding an unsaved draft persists deletion across restarts and prevents stale saves', async () => {
+ const storage=memory(), b=draft(), persistence=new BasketPersistence(storage,null);
+ await persistence.discard(b);
+ const restarted=new BasketPersistence(storage,null);
+ assert.equal(await restarted.isDeleted(b.ownerId,b.id),true);
+ assert.equal(await restarted.isDeleted('another-owner',b.id),false);
+ await assert.rejects(restarted.save(b),/gelöscht/);
+ assert.deepEqual((await restarted.list(b.ownerId)).baskets,[]);
+ await assert.rejects(restarted.discard({...b,result:{...b.result,purchasedAt:new Date().toISOString()}}),/noch nicht abgeschlossen/);
 });

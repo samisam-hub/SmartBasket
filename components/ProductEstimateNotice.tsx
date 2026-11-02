@@ -6,5 +6,5 @@ export function ProductEstimateNotice({ product }: { product: Product }) {
   if (!fields.length) return null;
   const nutrition = fields.some(field => field.endsWith('100g'));
   const quantity = fields.includes('package_size');
-  return <Text style={ui.caption}>Demo estimate: {[nutrition ? 'some nutrition values' : '', quantity ? 'package size' : ''].filter(Boolean).join(' and ')}. Not verified manufacturer data.</Text>;
+  return <Text style={ui.caption}>Demo-Schätzung: {[nutrition ? "einige Nährwerte" : '', quantity ? "Packungsgröße" : ''].filter(Boolean).join(' und ')}. Keine bestätigten Herstellerangaben.</Text>;
 }

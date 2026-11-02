@@ -9,13 +9,13 @@ const {optimizePackages}=require('../services/meals/packageOptimizer.ts');
 const blank=(patch={})=>product(1,{priceEstimate:null,priceKind:'unavailable',...patch});
 test('synthetic prices scale with declared packages and preserve input/unknown units',()=>{
  for(const [name,category,quantityLabel,packageSize,packageUnit,expected] of [
- ['Chicken breast','meat','500 g',500,'g',6],['Rice','grains','1 kg',1000,'g',3],['Broccoli','vegetables','500 g',500,'g',1.5],
- ['Eggs','eggs','6 eggs',6,'piece',1.92],['Olive oil','other','500 ml',500,'ml',5],['Almond milk','dairy-alternatives','1 L',1000,'ml',2]]){
+ ["Hähnchenbrust",'meat','500 g',500,'g',6],['Rice','grains','1 kg',1000,'g',3],["Brokkoli",'vegetables','500 g',500,'g',1.5],
+ ["Eier",'eggs',"6 Eier",6,'piece',1.92],["Olivenöl",'other','500 ml',500,'ml',5],['Almond milk','dairy-alternatives','1 L',1000,'ml',2]]){
  const p=blank({name,category,quantityLabel,packageSize,packageUnit}),r=estimatePackagePrice(p);
  assert.equal(r.priceEstimate,expected);assert.equal(r.currency,'EUR');assert.equal(r.priceEstimateSource,'synthetic_mvp');assert.equal(p.priceEstimate,null);
  }
  const small=blank({name:'Rice',quantityLabel:'500 g'});assert.equal(estimatePackagePrice(small).priceEstimate,1.5);
- for(const patch of [{packageSize:null,quantityLabel:null},{packageSize:1000,quantityLabel:'500g'},{quantityLabel:'1 serving 50g'},{category:'other',name:'Unknown'},{packageUnit:'piece',quantityLabel:'6 pcs',packageSize:6}])assert.equal(estimatePackagePrice(blank(patch)),null);
+ for(const patch of [{packageSize:null,quantityLabel:null},{packageSize:1000,quantityLabel:'500g'},{quantityLabel:'1 serving 50g'},{category:'other',name:"Unbekannt"},{packageUnit:'piece',quantityLabel:'6 pcs',packageSize:6}])assert.equal(estimatePackagePrice(blank(patch)),null);
  const real=blank({priceEstimate:3.99,priceEstimateSource:'future-provider'});assert.equal(withMissingPriceEstimate(real),real);
 });
 test('whole purchased packages are charged and missing ingredients do not erase selected-item totals',()=>{

@@ -5,6 +5,8 @@ import {
   type OnboardingStep,
   type PreferenceDraft,
 } from "@/types/preferences";
+import { activeSlotLabels } from "@/services/preference-domain";
+import { participantKind } from "@/services/profile-domain";
 import { ui } from "@/lib/theme";
 export function PreferenceSummary({
   preferences: p,
@@ -18,50 +20,59 @@ export function PreferenceSummary({
   return (
     <View style={ui.stack}>
       <PreferenceRow
-        label="Household"
-        value={`${p.householdSize} ${p.householdSize === 1 ? "person" : "people"}`}
+        label="Haushalt"
+        value={
+          p.participants?.length
+            ? p.participants
+                .map(
+                  (person) =>
+                    `${person.name || "Person"} (${participantKind(person) === "child" ? "Kind" : "Erwachsene Person"}, ${person.dailyCalories ?? "—"} kcal)`,
+                )
+                .join(", ")
+            : `${p.householdSize} ${p.householdSize === 1 ? "Person" : "Personen"}`
+        }
         onEdit={edit("household")}
       />
       <PreferenceRow
-        label="Planning period"
-        value={`${p.planningDays} days`}
+        label="Geplante Mahlzeiten"
+        value={activeSlotLabels(p).join(", ")}
+        onEdit={edit("meals")}
+      />
+      <PreferenceRow
+        label="Kalorien pro Person"
+        value={`${p.dailyCalories ?? "Nicht festgelegt"} kcal/Tag`}
         onEdit={edit("household")}
       />
       <PreferenceRow
-        label="Calories per person"
-        value={`${p.dailyCalories ?? "Not set"} kcal/day`}
-        onEdit={edit("goals")}
-      />
-      <PreferenceRow
-        label="Nutrition goal"
+        label="Ernährungsziel"
         value={labels[p.primaryGoal]}
         onEdit={edit("goals")}
       />
       <PreferenceRow
-        label="Protein per person"
+        label="Eiweiß pro Person"
         value={
           p.proteinMode === "automatic"
-            ? "Automatic"
-            : `${p.proteinTargetGrams ?? "Not set"} g/day`
+            ? "Automatisch"
+            : `${p.proteinTargetGrams ?? "Nicht festgelegt"} g/Tag`
         }
         onEdit={edit("goals")}
       />
       <PreferenceRow
-        label="Diet"
+        label="Ernährungsweise"
         value={p.dietaryPreferences.map((d) => labels[d]).join(", ")}
         onEdit={edit("diet")}
       />
       <PreferenceRow
-        label="Allergies & intolerances"
-        value={p.allergens.map((a) => labels[a]).join(", ") || "None selected"}
+        label="Allergien und Unverträglichkeiten"
+        value={p.allergens.map((a) => labels[a]).join(", ") || "Keine ausgewählt"}
         onEdit={edit("allergies")}
       />
       <PreferenceRow
-        label={`Total budget for ${p.planningDays} days`}
+        label={`Gesamtbudget für ${p.planningDays} Tage`}
         value={
           p.budgetEnabled
-            ? `€${p.weeklyBudgetEur ?? "Not set"}`
-            : "No budget limit"
+            ? `€${p.weeklyBudgetEur ?? "Nicht festgelegt"}`
+            : "Kein Budgetlimit"
         }
         onEdit={edit("budget")}
       />

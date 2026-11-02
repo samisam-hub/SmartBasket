@@ -1,9 +1,12 @@
+import { everydayIngredients } from './everyday-meals';
 import type { ProductCategory } from '../types/product';
 import { curatedIngredientProducts } from './curated-ingredient-products';
 export const legacyIngredientKeys: Record<string,string>={chicken:'chicken_breast',bread:'wholemeal_bread',oil:'olive_oil',tomatoes:'chopped_tomatoes'};
 export const canonicalIngredientKey=(key:string)=>legacyIngredientKeys[key]??key;
 export interface IngredientMapping {
   aliases:string[]; allowedCategories:ProductCategory[]; requiredKeywords:string[]; blockedKeywords:string[];
+  allowedPreparedKeywords?: string[];
+  drainedWeight?: boolean;
   preferredProductIds?:string[]; preferredBarcodes?:string[];
 }
 const mapping=(aliases:string[],allowedCategories:ProductCategory[],blockedKeywords:string[]=[],requiredKeywords:string[]=aliases):IngredientMapping=>({aliases,allowedCategories,blockedKeywords,requiredKeywords:[...requiredKeywords]});
@@ -48,6 +51,14 @@ export const ingredientMappings:Record<string,IngredientMapping>={
  yogurt:mapping(['greek yogurt','greek yoghurt','griechischer joghurt','joghurt griechischer art','joghurt nach griechischer art'],['dairy'],['honey','honig','fruit','frucht','vanille','vanilla']),
  cottage:mapping(['cottage cheese','hüttenkäse','körniger frischkäse'],['dairy'],['pineapple','ananas','fruit','frucht']),
 };
+for (const ingredient of everydayIngredients) {
+ ingredientMappings[ingredient.key] = mapping(ingredient.aliases, ingredient.categories, ingredient.exclude);
+}
+for (const key of ['kidney_beans','corn','jar_cherries','pickles']) ingredientMappings[key].drainedWeight = true;
+// These are ingredients sold in prepared form, not arbitrary complete meals.
+for (const [key, keywords] of Object.entries({ curry_powder: ['curry'], pizza_dough: ['pizza'], soup_noodles: ['soup'], applesauce: ['sauce'] })) {
+ ingredientMappings[key].allowedPreparedKeywords = keywords;
+}
 export const preparedFoodKeywords=['soup','suppe','sauce','salad','salat','sandwich','burger','nuggets','dessert','meal','pizza','seasoned','marinated','breaded','paniert','gewürzt','waffeln','waffles','curry','eintopf','cakes','cake','chips','crisps'];
 ingredientMappings.berries.aliases.push('framboises', 'myrtilles', 'fraises', 'raspberries');
 ingredientMappings.chicken_breast.blockedKeywords.push('kirschpaprika','paprika');
