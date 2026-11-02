@@ -114,6 +114,20 @@ test("incomplete numeric input survives restart and cannot be completed", async 
   assert.equal(b.getSnapshot().saved, null);
 });
 
+test("input the app will not accept is named, not reported as a device that cannot save", async () => {
+  const disk = new MemoryStorage();
+  const a = new PreferenceStore(disk, "test", null);
+  await a.initialize();
+  a.update({ dailyCalories: null });
+  assert.equal(await a.save(), false);
+  const message = a.getSnapshot().localError;
+  assert.ok(message.includes("1.000"), message);
+  assert.ok(!message.includes("Gerät"), message);
+  a.update({ dailyCalories: 2100 });
+  assert.equal(await a.save(), true);
+  assert.equal(a.getSnapshot().localError, null);
+});
+
 test("local-only completion persists, edits preserve saved Home values until saved", async () => {
   const disk = new MemoryStorage();
   const a = new PreferenceStore(disk, "test", null);

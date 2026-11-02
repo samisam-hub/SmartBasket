@@ -219,7 +219,8 @@ export class PreferenceStore {
     let values;
     try {
       values = normalizedValues(this.state.draft);
-    } catch {
+    } catch (error) {
+      this.publish({ localError: error instanceof Error ? error.message : t('valid.checkMarked') });
       return false;
     }
     this.publish({ saving: true, remoteError: null });

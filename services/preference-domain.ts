@@ -117,8 +117,9 @@ export function validatePreferences(value: PreferenceDraft): PreferenceErrors {
   return errors;
 }
 export function normalizedValues(draft: PreferenceDraft): PreferenceValues {
-  if (Object.keys(validatePreferences(draft)).length)
-    throw new Error(t('valid.checkMarked'));
+  // The caller shows this to somebody who pressed save, so it names what is in the way.
+  const problems = Object.values(validatePreferences(draft));
+  if (problems.length) throw new Error(problems.join(' '));
   return {
     ...draft,
     dailyCalories: draft.dailyCalories as number,

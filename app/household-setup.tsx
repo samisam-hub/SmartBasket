@@ -27,7 +27,7 @@ export default function HouseholdSetupScreen() {
   const next = async () => {
     setError(null);
     const ok = await store.save();
-    if (!ok) { setError(t('setup.saveFailed')); return; }
+    if (!ok) { setError(store.getSnapshot().localError ?? t('setup.saveFailed')); return; }
     router.replace('/plan/taste');
   };
   return <Screen bottom>

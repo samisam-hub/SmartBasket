@@ -5,7 +5,7 @@ import { PersonForm } from '@/components/PersonForm';
 import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SecondaryButton } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
 import { householdValues } from '@/services/preference-domain';
-import { newParticipant } from '@/services/profile-domain';
+import { isParticipant, newParticipant } from '@/services/profile-domain';
 import type { PlanParticipant } from '@/types/profile';
 import { ui } from '@/lib/theme';
 import { t } from '@/services/i18n';
@@ -25,6 +25,8 @@ export default function PersonScreen() {
   const [error, setError] = useState<string | null>(null);
   const save = () => {
     if (!person.name.trim()) { setError(t('person.needsName')); return; }
+    // Caught here, where the field is, instead of as a failed save two screens later.
+    if (!isParticipant(person)) { setError(t('valid.participants')); return; }
     const next = existing
       ? people.map(other => other.id === person.id ? person : other)
       : [...people, person];
