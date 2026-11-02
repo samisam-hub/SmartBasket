@@ -125,6 +125,8 @@ export const de = {
   'person.weight': 'Gewicht (kg)',
   'person.basedOn': 'Gerechnet mit {details}.',
   'person.typicalValues': 'typischen Werten für Erwachsene mit sitzender Arbeit',
+  'person.typicalChild': 'der üblichen Menge für dieses Alter',
+  'person.needsHintChild': 'Alter, Geschlecht und Aktivität schärfen den Vorschlag. Ohne Angabe rechnen wir mit der üblichen Menge für ein Schulkind.',
   'person.ageValue': '{count} Jahren',
   'person.heightValue': '{count} cm',
   'person.weightValue': '{count} kg',

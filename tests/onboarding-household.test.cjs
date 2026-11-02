@@ -69,6 +69,20 @@ test("the calorie suggestion follows the taps a person made and stays inside the
   }
 });
 
+test("the amounts are the ones people actually eat, not a starvation floor", () => {
+  // A desk job is PAL 1.4, not the textbook 1.2: a 35-year-old woman maintains on about 1,900 kcal.
+  const woman = estimateCalories({ sex: "female", age: 35, activityLevel: "low" });
+  assert.ok(woman >= 1800 && woman <= 2000, `${woman}`);
+  const man = estimateCalories({ sex: "male", age: 35, activityLevel: "low" });
+  assert.ok(man >= 2100 && man <= 2400, `${man}`);
+  // Children follow the reference amounts for their age; the adult formula reads far too low.
+  const five = estimateCalories({ kind: "child", age: 5 });
+  assert.ok(five >= 1300 && five <= 1600, `${five}`);
+  const twelve = estimateCalories({ kind: "child", age: 12 });
+  assert.ok(twelve >= 1900 && twelve <= 2300, `${twelve}`);
+  assert.ok(estimateCalories({ kind: "child", age: 12, activityLevel: "high" }) > twelve);
+});
+
 test("height and weight count towards the suggestion; without them a desk job is assumed", () => {
   // Nothing stated: a grown-up at a desk, not an averagely active one.
   const plain = estimateCalories({});

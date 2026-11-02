@@ -119,6 +119,8 @@ export const en: Record<TranslationKey, Phrase> = {
   'person.weight': 'Weight (kg)',
   'person.basedOn': 'Based on {details}.',
   'person.typicalValues': 'typical values for an adult at a desk',
+  'person.typicalChild': 'the usual amount for this age',
+  'person.needsHintChild': 'Age, sex and activity sharpen the suggestion. Leave them blank and we use the usual amount for a school child.',
   'person.ageValue': '{count} years',
   'person.heightValue': '{count} cm',
   'person.weightValue': '{count} kg',

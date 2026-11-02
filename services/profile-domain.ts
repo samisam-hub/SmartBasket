@@ -20,28 +20,39 @@ export function validateProfile(p:PersonalProfile):Record<string,string>{
  if(!Array.isArray(p.intolerances)||p.intolerances.some(x=>!['lactose','gluten'].includes(x))||new Set(p.intolerances).size!==p.intolerances.length)e.intolerances=t('valid.intolerances');
  return e;
 }
-/** Harris-Benedict-style activity factors for the Mifflin-St Jeor result; "normal" is the default choice. */
-export const activityFactors:Record<typeof activities[number],number>={low:1.2,light:1.375,moderate:1.55,high:1.725,very_high:1.9};
+/** PAL values for the Mifflin-St Jeor result. "Mostly sitting" means a desk job with the usual
+ *  walking around it, which is PAL 1.4 — the textbook 1.2 describes lying still all day and sets
+ *  the amounts for shopping too low for somebody who is not trying to lose weight. */
+export const activityFactors:Record<typeof activities[number],number>={low:1.4,light:1.5,moderate:1.6,high:1.75,very_high:1.9};
 // Development reference bodies, used only when height and weight are unknown. They are population
 // starting points, not measurements of this person, and the result is shown as an editable suggestion.
 const referenceAdult={female:{heightCm:165,weightKg:65},male:{heightCm:178,weightKg:78},other:{heightCm:172,weightKg:72}};
-const referenceChild=[{maxAge:3,heightCm:95,weightKg:14},{maxAge:6,heightCm:115,weightKg:21},
- {maxAge:9,heightCm:133,weightKg:29},{maxAge:12,heightCm:148,weightKg:40},{maxAge:120,heightCm:165,weightKg:55}];
+// Mifflin-St Jeor is an adult formula and reads far too low for a growing child, so children
+// follow the published reference amounts by age instead: the middle of the two sexes, at the
+// everyday activity of a child, which is what referenceActivity assumes below.
+const referenceChild=[{maxAge:3,kcal:1100},{maxAge:6,kcal:1450},{maxAge:9,kcal:1750},
+ {maxAge:12,kcal:2050},{maxAge:14,kcal:2350},{maxAge:120,kcal:2650}];
 // Nothing stated means a grown-up at a desk: age 35, sedentary, a build between the two references.
 const referenceAge={adult:35,child:8};
 const referenceActivity={adult:'low',child:'moderate'} as const;
+/** Suggestions are shown in steps of 50 kcal and stay inside the range the app stores. */
+const round=(kcal:number)=>Math.min(5000,Math.max(1000,Math.round(kcal/50)*50));
 export const participantKind=(p:Pick<PlanParticipant,'kind'>):ParticipantKind=>p.kind??'adult';
 /** Mifflin-St Jeor basal rate times an activity factor, rounded to 50 kcal and clamped to the stored 1,000-5,000 range.
  *  A suggestion for shopping amounts, never a personalized nutrition prescription. */
 export function estimateCalories(p:{kind?:ParticipantKind;age?:number|null;sex?:PersonalProfile['sex'];activityLevel?:typeof activities[number]|null;heightCm?:number|null;weightKg?:number|null}):number {
  const kind=participantKind(p),age=p.age??referenceAge[kind];
- const body=kind==='child'?referenceChild.find(b=>age<=b.maxAge)!:referenceAdult[p.sex==='female'?'female':p.sex==='male'?'male':'other'];
+ const activity=activityFactors[p.activityLevel??referenceActivity[kind]];
+ if(kind==='child'){
+  const reference=referenceChild.find(b=>age<=b.maxAge)!.kcal*(p.sex==='male'?1.05:p.sex==='female'?0.95:1);
+  return round(reference*activity/activityFactors[referenceActivity.child]);
+ }
+ const body=referenceAdult[p.sex==='female'?'female':p.sex==='male'?'male':'other'];
  const heightCm=p.heightCm??body.heightCm,weightKg=p.weightKg??body.weightKg;
  // Mifflin-St Jeor offsets: +5 male, -161 female; an unstated sex uses the midpoint of the two.
  const offset=p.sex==='male'?5:p.sex==='female'?-161:-78;
  const basal=10*weightKg+6.25*heightCm-5*age+offset;
- const estimate=basal*activityFactors[p.activityLevel??referenceActivity[kind]];
- return Math.min(5000,Math.max(1000,Math.round(estimate/50)*50));
+ return round(basal*activity);
 }
 export const estimateProtein=(calories:number,goal:Goal):number=>Math.max(1,Math.round(calories*proteinPercent[goal]/4));
 /** Targets follow from the taps the person made; both stay editable afterwards. */
