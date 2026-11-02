@@ -8,7 +8,7 @@ test('approved illustrations match ingredients, never legacy rice tofu snapshots
   const originalMeals = meals.filter(meal => !meal.preparation);
   assert.equal(originalMeals.length,34);
   for(const meal of originalMeals)assert.ok(mealImageSource(meal),`Missing illustration: ${meal.id}`);
-  const approvedPrepared = new Set(['de-gemuseomelett-mit-brot','de-hahnchen-mit-reis-und-gemuse','de-ofenlachs-mit-kartoffeln-und-brokkoli','de-spiegelei-auf-brot']);
+  const approvedPrepared = new Set(['de-gemuseomelett-mit-brot','de-hahnchen-mit-reis-und-gemuse','de-ofenlachs-mit-kartoffeln-und-brokkoli','de-spiegelei-auf-brot','borschtsch-rind-ohne-bohnen','pirozhki-kartoffeln-pilze-gebraten','pirozhki-kohl-karotten-gebraten','kotlety-kartoffelpueree-rahmsauce','af-qabeli-palau-lamm','de-weihnachtsente-blaukraut-kartoffelknoedel','de-herbstliches-hirschgulasch']);
   for(const meal of meals.filter(meal => meal.preparation)) {
     if(approvedPrepared.has(meal.id)) assert.ok(mealImageSource(meal),`Missing illustration: ${meal.id}`);
     else assert.equal(mealImageSource(meal),null);
