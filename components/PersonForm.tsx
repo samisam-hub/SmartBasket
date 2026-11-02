@@ -4,7 +4,7 @@ import { AvatarPicker } from './Avatar';
 import { NumberInput } from './NumberInput';
 import { OptionalNumber } from './ProfileFields';
 import { Dropdown, SectionCard, SelectionChip, TextInput } from './ui';
-import { estimateCalories, participantKind, patchParticipant } from '../services/profile-domain';
+import { estimateCalories, followsSuggestion, participantKind, patchParticipant } from '../services/profile-domain';
 import { allergens, diets, type Diet, type Allergen, type Goal } from '../types/preferences';
 import { onboardingActivities, participantKinds, sexes, type PlanParticipant } from '../types/profile';
 import { spacing, ui } from '../lib/theme';
@@ -12,18 +12,18 @@ import { spacing, ui } from '../lib/theme';
 const activityChoices = Object.keys(onboardingActivities) as (keyof typeof onboardingActivities)[];
 const activityChoice = (person: PlanParticipant) =>
   activityChoices.find(choice => onboardingActivities[choice] === person.activityLevel);
-/** The details the suggestion actually used, named in the order they are asked for. A child's
- *  amount follows the reference values for that age, so measurements are neither asked nor named. */
+/** The details the suggestion actually used, named in the order they are asked for. */
 function suggestionBasis(person: PlanParticipant): string {
-  const choice = activityChoice(person), child = participantKind(person) === 'child';
+  const choice = activityChoice(person);
   const given = [
     person.age === null ? null : t('person.ageValue', { count: person.age }),
     person.sex === null ? null : term(person.sex),
     choice ? term(choice) : null,
-    child || person.heightCm == null ? null : t('person.heightValue', { count: person.heightCm }),
-    child || person.weightKg == null ? null : t('person.weightValue', { count: person.weightKg }),
+    person.heightCm == null ? null : t('person.heightValue', { count: person.heightCm }),
+    person.weightKg == null ? null : t('person.weightValue', { count: person.weightKg }),
   ].filter((detail): detail is string => detail !== null);
-  return given.length ? given.join(', ') : t(child ? 'person.typicalChild' : 'person.typicalValues');
+  return given.length ? given.join(', ')
+    : t(participantKind(person) === 'child' ? 'person.typicalChild' : 'person.typicalValues');
 }
 
 /** Everything about one person on one page: who they are, what they need, what they avoid.
@@ -61,16 +61,15 @@ export function PersonForm({ person, goal, onChange }: {
         placeholder={t('dropdown.none')}
         onChange={value => patch({ activityLevel: value === null ? null
           : onboardingActivities[value as keyof typeof onboardingActivities] })} />
-      {participantKind(person) === 'adult' && <>
-        <OptionalNumber label={t('person.height')} value={person.heightCm ?? null}
-          onChange={heightCm => patch({ heightCm })} />
-        <OptionalNumber label={t('person.weight')} value={person.weightKg ?? null}
-          onChange={weightKg => patch({ weightKg })} />
-      </>}
+      <OptionalNumber label={t('person.height')} value={person.heightCm ?? null}
+        onChange={heightCm => patch({ heightCm })} />
+      <OptionalNumber label={t('person.weight')} value={person.weightKg ?? null}
+        onChange={weightKg => patch({ weightKg })} />
       <NumberInput label={t('person.calories')} value={person.dailyCalories}
-        hint={t(person.dailyCalories === estimateCalories(person) ? 'person.ourSuggestion' : 'person.yourNumber')}
-        onChange={dailyCalories => patch({
-          dailyCalories: dailyCalories === null ? estimateCalories(person) : dailyCalories })} />
+        hint={t(followsSuggestion(person) ? 'person.ourSuggestion' : 'person.yourNumber')}
+        onChange={dailyCalories => patch(dailyCalories === null
+          ? { dailyCalories: estimateCalories(person), caloriesEdited: false }
+          : { dailyCalories, caloriesEdited: true })} />
       {/* What the suggestion rests on, so an unexpected number can be traced to a missing detail. */}
       <Text style={ui.small}>{t('person.basedOn', { details: suggestionBasis(person) })}</Text>
     </SectionCard>

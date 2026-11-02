@@ -105,9 +105,17 @@ test("details move the suggestion along; a corrected target is kept", () => {
   const corrected = patchParticipant(child, { dailyCalories: 1800 }, "maintain");
   assert.equal(corrected.dailyCalories, 1800);
   assert.equal(corrected.proteinTarget, estimateProtein(1800, "maintain"));
-  // Further detail taps must not overwrite the number the person entered.
+  // Further detail taps must not overwrite the number the person entered, not even when that
+  // number happens to match what we would have suggested.
   const stillCorrected = patchParticipant(corrected, { activityLevel: "high" }, "maintain");
   assert.equal(stillCorrected.dailyCalories, 1800);
+  const matching = patchParticipant(child, { dailyCalories: estimateCalories(child) }, "maintain");
+  assert.equal(patchParticipant(matching, { activityLevel: "high" }, "maintain").dailyCalories,
+    matching.dailyCalories);
+  // Clearing the field hands it back to us.
+  const back = patchParticipant(matching, { dailyCalories: estimateCalories(matching), caloriesEdited: false }, "maintain");
+  assert.equal(patchParticipant(back, { activityLevel: "high" }, "maintain").dailyCalories,
+    estimateCalories({ ...back, activityLevel: "high" }));
   // The goal only changes the protein share, never the calorie suggestion.
   assert.equal(
     patchParticipant(person, { age: 30 }, "build_muscle").proteinTarget,

@@ -28,4 +28,7 @@ export interface PlanParticipant {
  /** Measurements sharpen the calorie suggestion; without them typical values stand in. */
  heightCm?:number|null;
  weightKg?:number|null;
+ /** Set once somebody typed an amount of their own, so the suggestion stops following details
+  *  even when the two happen to agree. Absent on people saved before this was recorded. */
+ caloriesEdited?:boolean;
 }

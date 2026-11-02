@@ -27,11 +27,14 @@ export const activityFactors:Record<typeof activities[number],number>={low:1.4,l
 // Development reference bodies, used only when height and weight are unknown. They are population
 // starting points, not measurements of this person, and the result is shown as an editable suggestion.
 const referenceAdult={female:{heightCm:165,weightKg:65},male:{heightCm:178,weightKg:78},other:{heightCm:172,weightKg:72}};
-// Mifflin-St Jeor is an adult formula and reads far too low for a growing child, so children
-// follow the published reference amounts by age instead: the middle of the two sexes, at the
-// everyday activity of a child, which is what referenceActivity assumes below.
-const referenceChild=[{maxAge:3,kcal:1100},{maxAge:6,kcal:1450},{maxAge:9,kcal:1750},
- {maxAge:12,kcal:2050},{maxAge:14,kcal:2350},{maxAge:120,kcal:2650}];
+const referenceChild=[{maxAge:3,heightCm:95,weightKg:14},{maxAge:6,heightCm:115,weightKg:21},
+ {maxAge:9,heightCm:133,weightKg:29},{maxAge:12,heightCm:148,weightKg:40},{maxAge:120,heightCm:165,weightKg:55}];
+/** Schofield basal rate from weight and height: the counterpart of Mifflin-St Jeor for children,
+ *  whose growth the adult formula does not account for. Bands are the published ones. */
+const childBasal=(sex:'male'|'female',age:number,kg:number,cm:number):number =>
+ age<3?(sex==='male'?0.167*kg+15.174*cm-617.6:16.252*kg+10.232*cm-413.5)
+ :age<10?(sex==='male'?19.59*kg+1.303*cm+414.9:16.97*kg+1.618*cm+371.2)
+ :(sex==='male'?16.25*kg+1.372*cm+515.5:8.365*kg+4.65*cm+200);
 // Nothing stated means a grown-up at a desk: age 35, sedentary, a build between the two references.
 const referenceAge={adult:35,child:8};
 const referenceActivity={adult:'low',child:'moderate'} as const;
@@ -44,8 +47,12 @@ export function estimateCalories(p:{kind?:ParticipantKind;age?:number|null;sex?:
  const kind=participantKind(p),age=p.age??referenceAge[kind];
  const activity=activityFactors[p.activityLevel??referenceActivity[kind]];
  if(kind==='child'){
-  const reference=referenceChild.find(b=>age<=b.maxAge)!.kcal*(p.sex==='male'?1.05:p.sex==='female'?0.95:1);
-  return round(reference*activity/activityFactors[referenceActivity.child]);
+  const body=referenceChild.find(b=>age<=b.maxAge)!;
+  const heightCm=p.heightCm??body.heightCm,weightKg=p.weightKg??body.weightKg;
+  // An unstated sex sits between the two equations, the same midpoint the adult formula uses.
+  const basal=p.sex==='male'||p.sex==='female'?childBasal(p.sex,age,weightKg,heightCm)
+   :(childBasal('male',age,weightKg,heightCm)+childBasal('female',age,weightKg,heightCm))/2;
+  return round(basal*activity);
  }
  const body=referenceAdult[p.sex==='female'?'female':p.sex==='male'?'male':'other'];
  const heightCm=p.heightCm??body.heightCm,weightKg=p.weightKg??body.weightKg;
@@ -60,12 +67,17 @@ export function estimatedTargets(p:PlanParticipant,goal:Goal):{dailyCalories:num
  const dailyCalories=estimateCalories(p);
  return {dailyCalories,proteinTarget:estimateProtein(dailyCalories,goal)};
 }
+/** Whether the amount on file is still ours. People saved before the flag existed are read by
+ *  comparing the number with the suggestion, which is how it was decided back then. */
+export const followsSuggestion=(p:PlanParticipant):boolean =>
+ p.caloriesEdited===undefined?p.dailyCalories===estimateCalories(p):!p.caloriesEdited;
 /** Detail taps move the suggestion along; a target the person corrected by hand stays as it is. */
 export function patchParticipant(person:PlanParticipant,patch:Partial<PlanParticipant>,goal:Goal):PlanParticipant {
  const next={...person,...patch};
- const followsSuggestion=patch.dailyCalories===undefined&&person.dailyCalories===estimateCalories(person);
- const dailyCalories=followsSuggestion?estimateCalories(next):next.dailyCalories;
- return {...next,dailyCalories,proteinTarget:dailyCalories===null?null:estimateProtein(dailyCalories,goal)};
+ const edited=patch.caloriesEdited??(patch.dailyCalories!==undefined||!followsSuggestion(person));
+ const dailyCalories=edited?next.dailyCalories:estimateCalories(next);
+ return {...next,caloriesEdited:edited,dailyCalories,
+  proteinTarget:dailyCalories===null?null:estimateProtein(dailyCalories,goal)};
 }
 export function newParticipant(kind:ParticipantKind,id:string,name:string,goal:Goal):PlanParticipant {
  const base:PlanParticipant={id,name,kind,age:null,sex:null,activityLevel:null,dailyCalories:null,proteinTarget:null,
@@ -86,7 +98,8 @@ export function isParticipant(p:PlanParticipant):boolean {
  Array.isArray(p.allergens)&&p.allergens.every(x=>allergens.includes(x))&&Array.isArray(p.intolerances)&&p.intolerances.every(x=>['lactose','gluten'].includes(x))&&typeof p.isCurrentUser==='boolean'&&
  (p.kind===undefined||participantKinds.includes(p.kind))&&(p.activityLevel===undefined||p.activityLevel===null||activities.includes(p.activityLevel))&&
  (p.avatarUri===undefined||p.avatarUri===null||(typeof p.avatarUri==='string'&&p.avatarUri.length>0&&p.avatarUri.length<=200000))&&
- range(p.heightCm??null,50,250)&&range(p.weightKg??null,10,500);
+ range(p.heightCm??null,50,250)&&range(p.weightKg??null,10,500)&&
+ (p.caloriesEdited===undefined||typeof p.caloriesEdited==='boolean');
 }
 /** One shared menu must meet everybody's restrictions; each person's defaults remain distinct. */
 export function participantPreferences(base:UserPreferences,participants:PlanParticipant[]):UserPreferences {
