@@ -132,6 +132,12 @@ export class WeekPlanStore {
     this.publish({ attendanceRules: rules });
     this.persist(this.state.plan);
   };
+  /** "Nobody eats out" is an answer too: it clears the routines instead of leaving them half set. */
+  clearAttendanceRules = () => {
+    if (!this.state.ready || !this.readable || !this.state.attendanceRules.length) return;
+    this.publish({ attendanceRules: [] });
+    this.persist(this.state.plan);
+  };
   canCopyPreviousWeek = (weekStart: string, preferences: UserPreferences) => {
     if (!this.state.ready || !this.readable || this.plans[weekStart]?.days.length) return false;
     const previous = this.plans[addDays(weekStart, -7)];

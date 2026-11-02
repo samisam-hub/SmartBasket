@@ -17,6 +17,8 @@ export default function PlanWeekScreen() {
   const [copyError, setCopyError] = useState<string | null>(null);
   const [personId, setPersonId] = useState<string | null>(null);
   const [routineSlot, setRoutineSlot] = useState<MealSlot>('lunch');
+  // Nobody eating out regularly is the common case, so the routines stay folded away until asked for.
+  const [routine, setRoutine] = useState<boolean | null>(null);
   // The month on screen; it follows the week being planned until somebody pages away from it.
   const [month, setMonth] = useState<string | null>(null);
   const { saved } = usePreferences();
@@ -37,6 +39,8 @@ export default function PlanWeekScreen() {
   };
   const chosen = store.plannedDays();
   const chosenDates = chosen.map(day => day.date);
+  const hasMeals = !!plan?.items.length;
+  const showRoutine = routine ?? !!attendanceRules.length;
   return <Screen bottom>
     <ScreenHeader title={t('week.title')} subtitle={t('week.pickOnCalendar')} />
     <ErrorMessage message={copyError ?? error} />
@@ -55,6 +59,13 @@ export default function PlanWeekScreen() {
     </SectionCard>
     {!!saved.participants?.length && <SectionCard title={t('week.routine')}>
       <Text style={ui.small}>{t('week.routineNote')}</Text>
+      <View style={ui.wrap}>
+        <SelectionChip label={t('week.nobodyOut')} selected={!showRoutine}
+          onPress={() => { store.clearAttendanceRules(); setRoutine(false); }} />
+        <SelectionChip label={t('week.somebodyOut')} selected={showRoutine}
+          onPress={() => setRoutine(true)} />
+      </View>
+      {showRoutine && <>
       <Text style={ui.subheading}>{t('week.who')}</Text>
       <View style={ui.wrap}>{saved.participants.map(person => <SelectionChip key={person.id}
         label={person.name || t('household.person')} selected={selectedPerson === person.id}
@@ -69,13 +80,17 @@ export default function PlanWeekScreen() {
           onPress={() => { try { store.toggleAttendanceRule({ personId: selectedPerson!, slot: routineSlot, weekday }, saved);
             setCopyError(null); } catch (e) { setCopyError(e instanceof Error ? e.message : t('week.routineFailed')); } }} />)}</View>
       <Text style={ui.small}>{t('week.routineExplain')}</Text>
+      </>}
     </SectionCard>}
     {chosen.length > 0 && <SectionCard title={t('week.yourWeek')}>
       {chosen.map(day => <Text key={day.date} style={ui.small}>{planDateLabel(day.date)}: {day.slots.join(', ')}</Text>)}
     </SectionCard>}
-    {!!chosen.length && <PrimaryButton label={t('week.createList')}
-      onPress={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />}
-    <SecondaryButton label={t(chosen.length ? 'week.toTaste' : 'week.pickOne')} disabled={!chosen.length}
-      onPress={() => router.push('/plan/taste')} />
+    {/* The list can only be written once meals are chosen; until then the way on is the taste run. */}
+    {hasMeals
+      ? <><PrimaryButton label={t('week.createList')}
+          onPress={() => router.push({ pathname: '/basket-setup', params: { week: '1' } })} />
+        <SecondaryButton label={t('week.toTaste')} onPress={() => router.push('/plan/taste')} /></>
+      : <PrimaryButton label={t(chosen.length ? 'week.toTaste' : 'week.pickOne')} disabled={!chosen.length}
+          onPress={() => router.push('/plan/taste')} />}
   </Screen>;
 }

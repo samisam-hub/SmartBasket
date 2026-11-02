@@ -45,7 +45,9 @@ test('week → taste → automatic plan → editable day or basket, without sele
   await setup();
   let screen;
   await act(() => { screen = create(React.createElement(Week)); });
-  await act(() => button(screen, 'SecondaryButton', 'Weiter: Was mögt ihr?').props.onPress());
+  // Ohne gewaehlte Gerichte fuehrt der Hauptweg zum Geschmack, nicht zur Einkaufsliste.
+  assert.equal(button(screen, 'PrimaryButton', 'Einkaufsliste erstellen'), undefined);
+  await act(() => button(screen, 'PrimaryButton', 'Weiter: Was mögt ihr?').props.onPress());
   assert.equal(routes.pop(), '/plan/taste');
   await act(() => screen.update(React.createElement(Taste)));
   // The run starts on the first pass by itself; there is no menu of slots to come back to.

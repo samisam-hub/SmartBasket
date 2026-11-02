@@ -337,6 +337,8 @@ export const en: Record<TranslationKey, Phrase> = {
   'week.copyNote': 'Days, meals and who eats along are copied as an editable draft for this week.',
   'week.slotsNote': 'Every day you pick starts with {slots}. You can drop single meals on the day itself.',
   'week.routine': 'Regularly eating out',
+  'week.nobodyOut': 'Nobody',
+  'week.somebodyOut': 'Someone does',
   'week.routineNote': 'Set the meals regularly eaten at school or at work. New days and meals follow it; single days stay adjustable.',
   'week.who': 'Who?',
   'week.whichMeal': 'Which meal?',

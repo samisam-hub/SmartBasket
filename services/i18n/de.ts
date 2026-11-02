@@ -341,6 +341,8 @@ export const de = {
   'week.copyNote': 'Tage, Mahlzeiten und Anwesenheit werden als bearbeitbarer Entwurf für diese Woche übernommen.',
   'week.slotsNote': 'Jeder ausgewählte Tag beginnt mit {slots}. Einzelne Mahlzeiten kannst du am jeweiligen Tag abwählen.',
   'week.routine': 'Regelmäßig auswärts essen',
+  'week.nobodyOut': 'Niemand',
+  'week.somebodyOut': 'Jemand schon',
   'week.routineNote': 'Lege regelmäßige Mahlzeiten in Schule oder Arbeit fest. Neue Tage und Mahlzeiten übernehmen diese Vorgabe; einzelne Tage bleiben anpassbar.',
   'week.who': 'Wer?',
   'week.whichMeal': 'Welche Mahlzeit?',
