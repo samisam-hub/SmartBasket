@@ -102,6 +102,31 @@ export class PreferenceStore {
         }),
       );
   }
+  /** True while the settings stored on this device could not be read and are therefore left
+   *  untouched. Nothing is written until somebody decides to start fresh here. */
+  storageBroken = () => !this.storageReadable;
+  /** Overwrites the unreadable copy with what is on screen, the one way out of a broken store. */
+  startFresh = async (): Promise<boolean> => {
+    this.storageReadable = true;
+    try {
+      await this.persist();
+      this.publish({ localError: null });
+      return true;
+    } catch (error) {
+      this.publish({ localError: this.writeMessage(error) });
+      return false;
+    }
+  };
+  /** Out of room, an unreadable store and a plain failure each need a different answer. */
+  private writeMessage(error: unknown): string {
+    if (!this.storageReadable) return t('store.prefs.storeBroken');
+    const name = error instanceof Error ? error.name : '';
+    const text = error instanceof Error ? error.message : String(error);
+    return name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+      /quota|storage is full|no space/i.test(text)
+      ? t('store.prefs.noRoom')
+      : t('store.prefs.saveFailed');
+  }
   retryLocal = async () => {
     try {
       await this.persist();
@@ -243,12 +268,8 @@ export class PreferenceStore {
     };
     try {
       await this.persist(completion);
-    } catch {
-      this.publish({
-        saving: false,
-        localError:
-          t('store.prefs.saveFailed'),
-      });
+    } catch (error) {
+      this.publish({ saving: false, localError: this.writeMessage(error) });
       return false;
     }
     this.publish({ ...completion, localError: null });

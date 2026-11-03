@@ -5,7 +5,7 @@ import { HouseholdList } from '@/components/HouseholdList';
 import { AvatarPicker } from '@/components/Avatar';
 import { IntroArt } from '@/components/IntroArt';
 import { NumberInput } from '@/components/NumberInput';
-import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SectionCard, SelectionChip, TextButton, TextInput } from '@/components/ui';
+import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SectionCard, SecondaryButton, SelectionChip, TextButton, TextInput } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
 import { ui, spacing } from '@/lib/theme';
 import { t } from '@/services/i18n';
@@ -26,9 +26,16 @@ export default function HouseholdSetupScreen() {
   const budget = draft.budgetEnabled && draft.weeklyBudgetEur !== null;
   const next = async () => {
     setError(null);
+    // The button stays pressable: a missing budget is said out loud rather than shown as a dead end.
+    if (draft.budgetEnabled && !budget) { setError(t('setup.budgetMissing')); return; }
     const ok = await store.save();
     if (!ok) { setError(store.getSnapshot().localError ?? t('setup.saveFailed')); return; }
     router.replace('/plan/taste');
+  };
+  const startFresh = async () => {
+    setError(null);
+    if (await store.startFresh()) await next();
+    else setError(store.getSnapshot().localError ?? t('setup.saveFailed'));
   };
   return <Screen bottom>
     <ScreenHeader eyebrow={t('setup.eyebrow')} title={t('setup.title')} subtitle={t('setup.subtitle')} />
@@ -57,10 +64,12 @@ export default function HouseholdSetupScreen() {
         onChange={weeklyBudgetEur => store.update({ weeklyBudgetEur })} />}
     </SectionCard>
     <ErrorMessage message={error ?? store.getSnapshot().localError} />
-    <PrimaryButton label={t('setup.next')} loading={saving}
-      disabled={saving || (draft.budgetEnabled && !budget)} onPress={() => { void next(); }} />
+    <PrimaryButton label={t('setup.next')} loading={saving} disabled={saving}
+      onPress={() => { void next(); }} />
     {draft.budgetEnabled && !budget &&
       <Text style={ui.small}>{t('setup.budgetMissing')}</Text>}
+    {store.storageBroken() &&
+      <SecondaryButton label={t('store.prefs.startFresh')} onPress={() => { void startFresh(); }} />}
     <TextButton label={t('setup.backToIntro')} onPress={() => router.replace('/intro')} />
   </Screen>;
 }

@@ -114,6 +114,31 @@ test("incomplete numeric input survives restart and cannot be completed", async 
   assert.equal(b.getSnapshot().saved, null);
 });
 
+test("a device out of room says so, and an unreadable store can be started fresh", async () => {
+  const full = new MemoryStorage();
+  full.setItem = async () => { const error = new Error("exceeded the quota"); error.name = "QuotaExceededError"; throw error; };
+  const a = new PreferenceStore(full, "test", null);
+  await a.initialize();
+  assert.equal(await a.save(), false);
+  assert.match(a.getSnapshot().localError, /room|Platz/);
+
+  // A stored copy that cannot be read is never overwritten by itself; starting fresh does it.
+  const broken = new MemoryStorage();
+  broken.data.set("test", "{not json");
+  const b = new PreferenceStore(broken, "test", null);
+  await b.initialize();
+  assert.equal(b.storageBroken(), true);
+  assert.equal(await b.save(), false);
+  assert.match(b.getSnapshot().localError, /read|lesbar/);
+  assert.equal(await b.startFresh(), true);
+  assert.equal(b.storageBroken(), false);
+  assert.equal(await b.save(), true);
+  assert.equal(b.getSnapshot().localError, null);
+  const c = new PreferenceStore(broken, "test", null);
+  await c.initialize();
+  assert.equal(c.storageBroken(), false);
+});
+
 test("input the app will not accept is named, not reported as a device that cannot save", async () => {
   const disk = new MemoryStorage();
   const a = new PreferenceStore(disk, "test", null);

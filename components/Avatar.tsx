@@ -19,7 +19,9 @@ export function Avatar({ name, id, uri, size = 56 }: { name: string; id: string;
 /** Pictures are kept with the household rather than on the device's camera roll, so they travel
  *  with an account and survive a reinstall. That only works while they stay small: the picker is
  *  asked for a square, and anything still too large to carry is refused rather than half saved. */
-const MAX_DATA_URI = 180_000;
+// A whole household's pictures share one device store with the plans, so each one stays well
+// under a tenth of a megabyte: more than enough for a thumbnail, little enough to fit several.
+const MAX_DATA_URI = 90_000;
 export function AvatarPicker({ name, id, uri, onChange, size = 72 }: {
   name: string;
   id: string;
@@ -36,7 +38,7 @@ export function AvatarPicker({ name, id, uri, onChange, size = 72 }: {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) { setError(t('avatar.needsPermission')); return; }
       const picked = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.4, base64: true,
+        mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.3, base64: true,
       });
       if (picked.canceled) return;
       const asset = picked.assets[0];
