@@ -17,8 +17,9 @@ import { View } from 'react-native';
 import { ScreenNavigation } from '@/components/ScreenNavigation';
 import { ActiveBasketProvider } from '@/context/ActiveBasketContext';
 import { ActiveBasketShortcut } from '@/components/ActiveBasketShortcut';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 export default function RootLayout() {
- return <AuthProvider><AuthenticatedLayout /></AuthProvider>;
+ return <ErrorBoundary><AuthProvider><AuthenticatedLayout /></AuthProvider></ErrorBoundary>;
 }
 function AuthenticatedLayout(){
  const {session,ready}=useAuth();

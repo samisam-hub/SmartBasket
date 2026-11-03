@@ -10,6 +10,8 @@ Module._load=function(request,parent,isMain){
  if(request==='@/context/ActiveBasketContext')return {ActiveBasketProvider:pass};
  if(request==='@/components/ActiveBasketShortcut')return {ActiveBasketShortcut:()=>null};
  if(request==='@/components/ScreenNavigation')return {ScreenNavigation:()=>null};
+ // Die Fehlergrenze reicht die Kinder durch, solange nichts schiefgeht.
+ if(request==='@/components/ErrorBoundary')return {ErrorBoundary:({children})=>children};
  if(request==='expo-router')return {Stack};
  if(request==='expo-status-bar')return {StatusBar:()=>null};
  if(request==='react-native-safe-area-context')return {SafeAreaProvider:pass};
