@@ -4,7 +4,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { categories, type ProductCategory } from '../types/product';
 import { colors, ui } from '../lib/theme';
 
-const photos = require('../assets/categories/grocery-categories.jpg');
+const photos = require('../assets/categories/grocery-categories.webp');
 const photoSize = 68;
 // One bundled 4×4 photo sheet; row-major order matches the catalog categories.
 export function CategoryButton({ category, selected, onPress, label }: { category: ProductCategory | 'all'; selected: boolean; onPress: () => void; label?: string }) {

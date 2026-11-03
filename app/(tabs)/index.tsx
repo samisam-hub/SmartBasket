@@ -93,7 +93,7 @@ export default function HomeScreen() {
         <Text style={[ui.small,{fontWeight:'700',color:colors.ink}]}>{tile.title}</Text>
         <Text style={ui.caption}>{tile.subtitle}</Text>
         <View accessible={false} style={{ width: 72, height: 72, overflow: 'hidden', alignSelf: 'flex-end', borderRadius: 10 }}>
-          <Image source={require('../../assets/categories/grocery-categories.jpg')} resizeMode="stretch" style={{position:'absolute',width:288,height:288,left:-(tile.photo%4)*72,top:-Math.floor(tile.photo/4)*72}} />
+          <Image source={require('../../assets/categories/grocery-categories.webp')} resizeMode="stretch" style={{position:'absolute',width:288,height:288,left:-(tile.photo%4)*72,top:-Math.floor(tile.photo/4)*72}} />
         </View>
       </Pressable>)}
     </View>
