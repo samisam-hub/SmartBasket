@@ -24,14 +24,19 @@ const passOrder: { key: TastePass['key']; slots: MealSlot[] }[] = [
   { key: 'main', slots: ['lunch', 'dinner'] },
   { key: 'snack', slots: ['snack'] },
 ];
-export function tastePasses(preferences: UserPreferences, planned: MealSlot[], ratings: MealRatings = {}): TastePass[] {
+/** A handful per meal is enough to tell what a household likes; a run through everything on the
+ *  menu is a chore nobody finishes. Only the dishes actually shown are struck off for later passes. */
+export const PER_PASS = 5;
+export function tastePasses(preferences: UserPreferences, planned: MealSlot[], ratings: MealRatings = {},
+  perPass: number = PER_PASS): TastePass[] {
   const seen = new Set<string>();
   return passOrder
     .map(pass => ({ ...pass, slots: pass.slots.filter(slot => planned.includes(slot)) }))
     .filter(pass => pass.slots.length)
     .map(pass => {
       const dishes = meals.filter(meal =>
-        !seen.has(meal.id) && pass.slots.some(slot => fitsSlot(meal, slot)) && compatibleMeal(meal, preferences));
+        !seen.has(meal.id) && pass.slots.some(slot => fitsSlot(meal, slot)) && compatibleMeal(meal, preferences))
+        .slice(0, perPass);
       for (const meal of dishes) seen.add(meal.id);
       return { ...pass, meals: dishes.filter(meal => ratings[meal.id] === undefined) };
     })

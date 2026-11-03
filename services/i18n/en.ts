@@ -264,7 +264,7 @@ export const en: Record<TranslationKey, Phrase> = {
   'account.createHint': 'Choose your email address and a password. We send one confirmation email. Your guest settings and saved baskets stay with your account.',
   'account.signInHint': 'Welcome back. Sign in with your email address and password.',
   'account.keepHint': 'Your SmartBasket data stays with your account.',
-  'account.noService': 'Account features need an internet connection and a configured cloud connection.',
+  'account.noService': 'Not available here: an account needs an internet connection and a cloud connection set up for this build. Everything else works without one.',
   'account.email': 'Email address',
   'account.password': 'Password',
   'account.code': 'Email confirmation code',

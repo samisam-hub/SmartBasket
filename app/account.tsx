@@ -39,11 +39,11 @@ export default function AccountScreen(){
   <ScreenHeader eyebrow={t('account.eyebrow')} title={t(mode==='create'?'account.createTitle':mode==='signin'?'account.signInTitle':mode==='forgot'?'account.forgotTitle':mode==='password'?'account.passwordTitle':'account.verifyTitle')} />
   <Text style={ui.small}>{t(mode==='create'?'account.createHint':mode==='signin'?'account.signInHint':'account.keepHint')}</Text>
   <ErrorMessage message={error} />{message&&<Text style={ui.body}>{message}</Text>}
-  {!service&&<Text>{t('account.noService')}</Text>}
   {mode!=='password'&&<TextInput label={t('account.email')} editable={!busy&&!waiting} autoCapitalize="none" autoComplete="email" keyboardType="email-address" value={email} onChangeText={setEmail} error={email?emailError(email)??undefined:undefined} />}
   {(mode==='create'||mode==='signin'||mode==='password')&&<TextInput label={t('account.password')} editable={!busy} secureTextEntry autoComplete={mode==='signin'?'current-password':'new-password'} value={password} onChangeText={setPassword} error={mode!=='signin'&&password?passwordError(password)??undefined:undefined} />}
   {waiting&&showCode&&<TextInput label={t('account.code')} editable={!busy} value={token} keyboardType="number-pad" onChangeText={setToken} />}
   {(mode!=='recovery-code'||showCode)&&<PrimaryButton label={t(mode==='create'?'account.createAction':mode==='signin'?'account.signInAction':mode==='forgot'?'account.sendReset':mode==='password'?'account.savePassword':showCode?'account.confirmEmail':'account.confirmed')} loading={busy} disabled={!service} onPress={()=>{void run();}} />}
+  {!service&&<Text style={ui.small}>{t('account.noService')}</Text>}
   {mode==='verify'&&<SecondaryButton label={t('account.resend')} disabled={busy||!service} onPress={()=>{void (async()=>{
     setBusy(true);setError(null);
     try{const to=await service!.resendConfirmation(accountRedirect('register'));setMessage(t('account.resentTo',{email:to}));}

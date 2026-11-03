@@ -268,7 +268,7 @@ export const de = {
   'account.createHint': 'Wähle deine E-Mail-Adresse und dein Passwort. Wir senden eine Bestätigungs-E-Mail. Deine Gast-Einstellungen und gespeicherten Warenkörbe bleiben mit deinem Konto erhalten.',
   'account.signInHint': 'Willkommen zurück. Melde dich mit E-Mail-Adresse und Passwort an.',
   'account.keepHint': 'Deine SmartBasket-Daten bleiben mit deinem Konto verbunden.',
-  'account.noService': 'Kontofunktionen benötigen eine Internetverbindung und eine eingerichtete Cloud-Verbindung.',
+  'account.noService': 'Hier nicht verfügbar: Ein Konto braucht eine Internetverbindung und eine für diesen Build eingerichtete Cloud-Verbindung. Alles andere funktioniert ohne.',
   'account.email': 'E-Mail-Adresse',
   'account.password': 'Passwort',
   'account.code': 'E-Mail-Bestätigungscode',

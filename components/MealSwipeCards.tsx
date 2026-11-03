@@ -25,7 +25,7 @@ const SPAN = 320;
 /** Screen 4: one card at a time. Right takes it and the meal is done; left shows the next card.
  *  The two round buttons do exactly the same and move the card the same way, so a tap is as
  *  legible as a swipe: in both cases the card visibly leaves in the direction of the decision. */
-export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore, busy, mode = 'choice' }: {
+export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore, busy, eyebrow, mode = 'choice' }: {
   suggestions: MealSuggestion[];
   /** No compatible meal is left to show, so only the honest ways out remain. */
   exhausted: boolean;
@@ -33,6 +33,9 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
   onNext: () => void;
   onMore: () => void;
   busy?: boolean;
+  /** What meal this card is about — "Breakfast" — above the picture, so a dish is never judged
+   *  without knowing which meal it is meant for. */
+  eyebrow?: string;
   /** 'taste' asks whether a meal is liked at all; 'choice' picks one for a slot. */
   mode?: 'choice' | 'taste';
 }) {
@@ -110,9 +113,9 @@ export function MealSwipeCards({ suggestions, exhausted, onTake, onNext, onMore,
           { opacity: offset.interpolate({ inputRange: [-threshold, 0], outputRange: [1, 0], extrapolate: 'clamp' }) }]}>
           <Text style={styles.stampNextText}>{t(mode === 'taste' ? 'swipe.stampNo' : 'swipe.stampSkip')}</Text>
         </Animated.View>
-        <Text style={ui.eyebrow}>{mode === 'taste' ? t('swipe.eyebrowTaste')
+        <Text style={ui.eyebrow}>{eyebrow ?? (mode === 'taste' ? t('swipe.eyebrowTaste')
           : suggestions.length > 1 ? t('swipe.eyebrowCount', { position: 1, total: suggestions.length })
-          : t('swipe.eyebrowLast')}</Text>
+          : t('swipe.eyebrowLast'))}</Text>
         <Text style={ui.subheading}>{contentName(current.meal.name)}</Text>
         <MealImage meal={current.meal} />
         <Text style={ui.small}>{mealLine(current.meal)}</Text>

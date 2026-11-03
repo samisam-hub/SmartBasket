@@ -78,7 +78,7 @@ export default function MealTasteScreen() {
         </SectionCard>
       : <>
           <Text style={ui.small}>{t('taste.progress', { done: total - left + 1, total })}</Text>
-          <MealSwipeCards mode="taste" busy={busy} exhausted={false}
+          <MealSwipeCards mode="taste" busy={busy} exhausted={false} eyebrow={t(`taste.pass.${pass.key}`)}
             suggestions={pass.meals.slice(0, 2).map(meal => ({ meal, servings: 1 }))}
             onTake={() => rate(true)} onNext={() => rate(false)} onMore={() => {}} />
           {!!history.length && <TextButton label={t('taste.undo')} disabled={busy} onPress={() => {

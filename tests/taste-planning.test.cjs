@@ -112,6 +112,19 @@ test('one run shows every dish once, in meal order, and skips what is already ra
   assert.deepEqual(resumed, shown.filter(id => id !== first && id !== second));
 });
 
+test('a run asks about five dishes per meal, not the whole menu', () => {
+  const { tastePasses, PER_PASS } = require('../services/meals/taste.ts');
+  const p = prefs({ householdSize: 2 });
+  const passes = tastePasses(p, ['breakfast', 'lunch', 'dinner', 'snack']);
+  assert.equal(PER_PASS, 5);
+  for (const pass of passes) assert.ok(pass.meals.length <= PER_PASS, `${pass.key}: ${pass.meals.length}`);
+  const shown = passes.flatMap(pass => pass.meals.map(meal => meal.id));
+  assert.ok(shown.length <= passes.length * PER_PASS);
+  // Rating one does not pull an extra dish in behind it: five per meal stays five.
+  const resumed = tastePasses(p, ['breakfast', 'lunch', 'dinner', 'snack'], { [shown[0]]: true });
+  assert.deepEqual(resumed.flatMap(pass => pass.meals.map(meal => meal.id)), shown.slice(1));
+});
+
 test('the dishes offered already respect the household: no lactose where it is avoided', () => {
   const { tastePasses } = require('../services/meals/taste.ts');
   const { compatibleMeal } = require('../services/meals/planner.ts');
@@ -120,7 +133,9 @@ test('the dishes offered already respect the household: no lactose where it is a
   const offered = tastePasses(lactoseFree, slots).flatMap(pass => pass.meals);
   assert.ok(offered.length, 'a lactose-free household still has dishes to rate');
   for (const meal of offered) assert.ok(compatibleMeal(meal, lactoseFree), `${meal.name} fits the household`);
-  // And fewer than a household with no restriction at all.
-  const all = tastePasses(prefs({}), slots).flatMap(pass => pass.meals);
+  // And fewer than a household with no restriction at all, counted without the five-per-meal cap.
+  const unrestricted = tastePasses(lactoseFree, slots, {}, 999).flatMap(pass => pass.meals);
+  const all = tastePasses(prefs({}), slots, {}, 999).flatMap(pass => pass.meals);
+  assert.ok(unrestricted.length < all.length, 'a restriction takes dishes out before the first card');
   assert.ok(offered.length < all.length, 'a restriction takes dishes out before the first card');
 });
