@@ -78,7 +78,10 @@ const plural = (phrase: Phrase, params: Params | undefined): string => {
   if (typeof phrase === 'string') return phrase;
   const count = params?.count;
   if (typeof count !== 'number') throw Error(`A counted phrase needs a count: ${phrase.other}`);
-  return new Intl.PluralRules(intlLocale()).select(count) === 'one' ? phrase.one : phrase.other;
+  // Hermes on Android ships only part of Intl, and PluralRules is not in it: asking for it
+  // closed the app. German and English share the same rule anyway — exactly one is "one",
+  // everything else, zero included, is "other" — so the rule is written out here.
+  return count === 1 ? phrase.one : phrase.other;
 };
 const fill = (text: string, params: Params | undefined, key: string): string =>
   text.replace(/\{(\w+)\}/g, (_match, name: string) => {

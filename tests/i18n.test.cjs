@@ -81,6 +81,30 @@ test('counts and names are filled in, and a missing one is a bug rather than a b
   assert.equal(i18n.term('some_future_code'), 'some_future_code');
 });
 
+test('counted phrases pick a form without Intl.PluralRules, which Android does not have', async () => {
+  assert.equal(i18n.t('week.chosen', { count: 1 }), '1 Tag gewählt');
+  assert.equal(i18n.t('week.chosen', { count: 0 }), '0 Tage gewählt');
+  assert.equal(i18n.t('week.chosen', { count: 7 }), '7 Tage gewählt');
+  await inLocale('en', () => {
+    assert.equal(i18n.t('summary.people', { count: 1 }), '1 person');
+    assert.equal(i18n.t('summary.people', { count: 4 }), '4 people');
+  });
+  // Hermes on Android ships only part of Intl. Reaching for PluralRules closed the app on the
+  // home screen, so nothing may ask for it again; DateTimeFormat and NumberFormat are there.
+  const fs = require('node:fs'), path = require('node:path');
+  const offenders = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (/\.tsx?$/.test(entry.name) && fs.readFileSync(full, 'utf8').includes('Intl.PluralRules'))
+        offenders.push(full);
+    }
+  };
+  for (const root of ['app', 'components', 'services', 'hooks', 'context']) walk(root);
+  assert.deepEqual(offenders, [], 'Intl.PluralRules is missing on Android');
+});
+
 test('numbers, money and dates follow the locale; the catalogue stays in euro', async () => {
   assert.equal(i18n.formatNumber(1234.5, 1), '1.234,5');
   assert.equal(i18n.formatDecimal(12.5), '12,50');
