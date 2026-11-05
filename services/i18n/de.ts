@@ -444,6 +444,7 @@ export const de = {
   'swipe.labelLike': 'Mögen wir',
   'swipe.labelTake': 'Dieses Gericht wählen',
   'swipe.more': 'Zwei andere zeigen',
+  'swipe.perPortion': 'etwa {price} pro Portion',
   'swipe.mealLine': '{count} Zutaten · {tags}',
   'swipe.noTags': 'keine Ernährungsangaben',
   'list.name': 'Einkaufsliste',

@@ -440,6 +440,7 @@ export const en: Record<TranslationKey, Phrase> = {
   'swipe.labelLike': 'We like it',
   'swipe.labelTake': 'Choose this meal',
   'swipe.more': 'Show two others',
+  'swipe.perPortion': 'about {price} a portion',
   'swipe.mealLine': '{count} ingredients · {tags}',
   'swipe.noTags': 'no dietary tags',
   'list.name': 'Shopping list',

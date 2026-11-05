@@ -1,4 +1,5 @@
-import { slotLabel, t } from '@/services/i18n';
+import { formatMoney, slotLabel, t } from '@/services/i18n';
+import { mealCostPerServing } from '@/services/pricing/ingredientCost';
 import { contentName } from '@/services/i18n/content';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
@@ -42,6 +43,8 @@ export default function PlanDayScreen() {
 
             {t('day.forPeople', { people: item.participantIds.map(id => people.find(person => person.id === id)?.name || t('household.person')).join(', ') })}
           </Text>}
+          {mealCostPerServing(item.meal) !== null &&
+            <Text style={ui.small}>{t('swipe.perPortion', { price: formatMoney(mealCostPerServing(item.meal)!) })}</Text>}
           <MealImage meal={item.meal} compact />
           {people.length > 1 && <>
             <Text style={ui.caption}>{t('day.whoEats')}</Text>

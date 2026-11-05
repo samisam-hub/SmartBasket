@@ -1,5 +1,6 @@
 import { contentName } from '../services/i18n/content';
-import { t , term } from '../services/i18n';
+import { formatMoney, t , term } from '../services/i18n';
+import { mealCostPerServing } from '../services/pricing/ingredientCost';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, PanResponder, Text, View } from 'react-native';
 import type { Meal } from '../types/meal';
@@ -144,5 +145,10 @@ const styles = {
   stampTakeText: { color: colors.successText, fontWeight: '800' as const, fontSize: 16, letterSpacing: 1 },
   stampNextText: { color: colors.muted, fontWeight: '800' as const, fontSize: 16, letterSpacing: 1 },
 };
-const mealLine = (meal: Meal) => t('swipe.mealLine', { count: meal.ingredients.length,
-  tags: meal.dietaryTags.length ? meal.dietaryTags.map(term).join(', ') : t('swipe.noTags') });
+const mealLine = (meal: Meal) => {
+  const portion = mealCostPerServing(meal);
+  return [t('swipe.mealLine', { count: meal.ingredients.length,
+    tags: meal.dietaryTags.length ? meal.dietaryTags.map(term).join(', ') : t('swipe.noTags') }),
+    portion === null ? null : t('swipe.perPortion', { price: formatMoney(portion) })]
+    .filter(Boolean).join(' · ');
+};

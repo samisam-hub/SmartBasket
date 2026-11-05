@@ -169,22 +169,36 @@ const priced = (ingredientKey, estimatedPrice, source = "catalog") =>
   ({ ingredientKey, estimatedPrice, product: { id: `p-${ingredientKey}-${source}`, source }, packageCount: 1,
     packageAmount: 100, quantityUnit: "g" });
 
-test("a line carries what its packages cost together, so a budget still works", () => {
+test("a line is priced by the amount it asks for, at average supermarket prices", () => {
   const lines = shoppingLines(result({
     ingredientRequirements: [
-      { ingredientKey: "cherry_tomatoes", ingredientName: "Cherry tomatoes", requiredQuantity: 500, unit: "g" },
-      { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 40, unit: "ml" },
-      { ingredientKey: "salt", ingredientName: "Salt", requiredQuantity: 5, unit: "g" },
+      { ingredientKey: "chicken_breast", ingredientName: "Hähnchenbrust", requiredQuantity: 300, unit: "g" },
+      { ingredientKey: "olive_oil", ingredientName: "Olivenöl", requiredQuantity: 40, unit: "ml" },
+      { ingredientKey: "moon_cheese", ingredientName: "Moon cheese", requiredQuantity: 100, unit: "g" },
     ],
-    items: [priced("cherry_tomatoes", 1.2), priced("cherry_tomatoes", 0.8), priced("olive_oil", 3.5),
-      priced("salt", null)],
+    items: [priced("chicken_breast", 7.2), priced("olive_oil", null)],
   }));
-  assert.deepEqual(lines.map((l) => l.estimate), [2, 3.5, null], "two packages of one ingredient add up");
-  // The sum is what the week costs about; an unpriced line keeps it honest rather than hiding it.
-  assert.deepEqual(listEstimate(lines), { total: 5.5, complete: false });
-  assert.deepEqual(listEstimate(lines.slice(0, 2)), { total: 5.5, complete: true });
-  assert.deepEqual(listEstimate(lines.slice(0, 2), 1), { total: 5.5, complete: false },
+  // Ten euro a kilo for chicken, ten a litre for oil: the amount on the line is what is charged,
+  // not whatever package the catalogue happened to pick.
+  assert.deepEqual(lines.map((l) => l.estimate), [3, 0.4, null]);
+  assert.deepEqual(listEstimate(lines), { total: 3.4, complete: false });
+  assert.deepEqual(listEstimate(lines.slice(0, 2)), { total: 3.4, complete: true });
+  assert.deepEqual(listEstimate(lines.slice(0, 2), 1), { total: 3.4, complete: false },
     "something typed by hand has no price either");
+});
+
+test("a dish knows what one portion of it costs", () => {
+  const { mealCostPerServing, ingredientCost } = require("../services/pricing/ingredientCost.ts");
+  assert.equal(ingredientCost("butter", 25), 0.23, "to the cent, not to the tenth of one");
+  assert.equal(ingredientCost("moon_cheese", 100), null);
+  const dish = { servings: 2, ingredients: [
+    { ingredientKey: "chicken_breast", quantity: 300 },
+    { ingredientKey: "rice", quantity: 160 },
+  ] };
+  // (3.00 + 0.40) for two portions.
+  assert.equal(mealCostPerServing(dish), 1.7);
+  assert.equal(mealCostPerServing({ servings: 1, ingredients: [{ ingredientKey: "moon_cheese", quantity: 10 }] }), null,
+    "one unpriced ingredient leaves the dish without a figure rather than a wrong one");
 });
 
 test("a list built from the fictional catalogue is marked as such", () => {
@@ -193,4 +207,20 @@ test("a list built from the fictional catalogue is marked as such", () => {
   assert.equal(fromDemoCatalogue(demo), true);
   assert.equal(fromDemoCatalogue(real), false);
   assert.equal(fromDemoCatalogue({ result: { items: [] } }), false);
+});
+
+test("every ingredient the app plans with carries a price", () => {
+  const { ingredients, meals } = require("../data/meals.ts");
+  const { ingredientPrices } = require("../data/ingredient-prices.ts");
+  const { mealCostPerServing } = require("../services/pricing/ingredientCost.ts");
+  // A new ingredient without a price would quietly leave lines and dishes unpriced.
+  assert.deepEqual(Object.keys(ingredients).filter((key) => !(key in ingredientPrices)), []);
+  assert.deepEqual(Object.keys(ingredientPrices).filter((key) => !(key in ingredients)), [],
+    "a price for an ingredient nobody cooks with is dead weight");
+  const unpriced = meals.filter((meal) => mealCostPerServing(meal) === null);
+  assert.deepEqual(unpriced.map((meal) => meal.name), []);
+  // Portions stay inside what a home-cooked meal plausibly costs.
+  const costs = meals.map((meal) => mealCostPerServing(meal));
+  assert.ok(Math.min(...costs) >= 0.15, `cheapest ${Math.min(...costs)}`);
+  assert.ok(Math.max(...costs) <= 9, `dearest ${Math.max(...costs)}`);
 });

@@ -4,6 +4,7 @@ import { categories, type ProductCategory } from '../types/product';
 import type { BasketGenerationResult, SavedBasket } from '../types/basket';
 import type { CustomItem } from './basket/custom-items';
 import { formatQuantity, type UnitSystem } from './units';
+import { ingredientCost } from './pricing/ingredientCost';
 
 /** Which list the shopping tab opens on.
  *
@@ -55,27 +56,21 @@ export function listEstimate(lines: ShoppingLine[], extras: number = 0):
 export function shoppingLines(result: BasketGenerationResult): ShoppingLine[] {
   const category = (ingredientKey: string): ProductCategory =>
     ingredientMappings[canonicalIngredientKey(ingredientKey)]?.allowedCategories[0] ?? 'other';
-  // What the packages for one ingredient cost together; an ingredient nobody priced stays open.
-  const priced = new Map<string, number | null>();
-  for (const item of result.items) {
-    if (!item.ingredientKey) continue;
-    const before = priced.get(item.ingredientKey);
-    priced.set(item.ingredientKey, item.estimatedPrice === null || before === null
-      ? null : (before ?? 0) + item.estimatedPrice);
-  }
   if (result.ingredientRequirements?.length)
     return result.ingredientRequirements
       .filter(line => Number.isFinite(line.requiredQuantity) && line.requiredQuantity > 0)
       .map(line => ({ key: line.ingredientKey, name: line.ingredientName,
         amount: line.requiredQuantity, unit: line.unit, category: category(line.ingredientKey),
-        estimate: priced.get(line.ingredientKey) ?? null }));
+        estimate: ingredientCost(line.ingredientKey, line.requiredQuantity) }));
   return result.items.map(item => ({
     key: item.ingredientKey ?? item.product.id,
     name: item.product.name,
     amount: item.purchasedQuantity ?? item.packageCount * item.packageAmount,
     unit: item.quantityUnit,
     category: item.ingredientKey ? category(item.ingredientKey) : item.product.category ?? 'other',
-    estimate: item.estimatedPrice,
+    estimate: item.ingredientKey
+      ? ingredientCost(item.ingredientKey, item.purchasedQuantity ?? item.packageCount * item.packageAmount)
+      : item.estimatedPrice,
   }));
 }
 /** Grouped the way a shop is walked, in the catalog's own category order. "Other" is a category
