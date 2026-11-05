@@ -58,6 +58,9 @@ interface SlotContext {
   used: Set<string>;
   repeat: (mealId: string) => number;
   sameDay: (mealId: string) => boolean;
+  /** Whether the household said they like this one. A liking is weighed against the rest rather
+   *  than put above it, or one favourite would fill every day of the week. */
+  liked: (mealId: string) => boolean;
   availability: IngredientAvailability;
 }
 export type IngredientAvailability = Map<string, { available: boolean; cost: number | null }>;
@@ -96,7 +99,8 @@ function scoredCandidates(options: Meal[], c: SlotContext): { meal: Meal; servin
     const knownCost=meal.ingredients.reduce((sum,l)=>sum+(c.availability.get(l.ingredientKey)?.cost??0)*l.quantity*servings,0);
     const unavailable=meal.ingredients.filter(l=>!c.availability.get(l.ingredientKey)?.available).length;
     const score=w.calories*Math.abs(calories-calorieGoal)/calorieGoal+w.protein*Math.abs(protein-proteinGoal)/proteinGoal+
-      w.repetition*repeat+w.sameDay*sameDay-w.reuse*reuse+w.simplicity*meal.ingredients.length+w.unavailable*unavailable+
+      w.repetition*repeat*(repeat+1)/2+w.sameDay*sameDay-w.reuse*reuse-w.liked*(c.liked(meal.id)?1:0)+
+      w.simplicity*meal.ingredients.length+w.unavailable*unavailable+
       (c.budgetPerSlot ? w.budget*knownCost/c.budgetPerSlot:0);
     return {meal,servings,score};
   })).sort((a,b)=>a.score-b.score||a.meal.id.localeCompare(b.meal.id)||a.servings-b.servings);
@@ -150,11 +154,12 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
     used:new Set(plan.items.flatMap(item=>item.meal.ingredients.map(l=>l.ingredientKey))),
     repeat:id=>plan.items.filter(item=>item.meal.id===id).length,
     sameDay:id=>planned.some(item=>item.meal.id===id),
+    liked:id=>ratings[id]===true||!!p.preferredMealIds?.includes(id),
     availability:availability ?? ingredientAvailability(catalog,p),
   })) if (!best.has(candidate.meal.id)) best.set(candidate.meal.id,{meal:candidate.meal,servings:candidate.servings});
-  return [...best.values()].sort((a, b) =>
-    Number(!!(ratings[b.meal.id] === true || p.preferredMealIds?.includes(b.meal.id))) -
-    Number(!!(ratings[a.meal.id] === true || p.preferredMealIds?.includes(a.meal.id)))).slice(0,SUGGESTIONS_PER_SLOT);
+  // Order is the score's to decide: a favourite already scores better, and a favourite served
+  // twice this week scores worse than something else the household has not had yet.
+  return [...best.values()].slice(0,SUGGESTIONS_PER_SLOT);
 }
 export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): MealPlan {
   if (!isSaved(p) || !p.onboardingCompleted) throw Error(t('planner.completeSettings'));
@@ -178,6 +183,7 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
       used:new Set(plan.items.flatMap(i=>i.meal.ingredients.map(l=>l.ingredientKey))),
       repeat:id=>plan.items.filter(i=>i.meal.id===id).length,
       sameDay:id=>plan.items.some(i=>i.dayIndex===day&&i.meal.id===id),
+      liked:id=>!!p.preferredMealIds?.includes(id),
       availability,
     });
     const chosen=candidates[0]; plan.items.push({id:`day-${day}-${slot}`,dayIndex:day,mealSlot:slot,meal:chosen.meal,servings:chosen.servings});

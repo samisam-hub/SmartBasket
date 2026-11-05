@@ -126,7 +126,14 @@ test("details move the suggestion along; a corrected target is kept", () => {
 test("the household list drives size and per-person calories, and every person stays valid", () => {
   const people = [adult({ dailyCalories: 2000, proteinTarget: 100 }),
     { ...newParticipant("child", "person-2", "Kid", "maintain"), dailyCalories: 1500, proteinTarget: 75 }];
-  assert.deepEqual(householdValues(people), { householdSize: 2, dailyCalories: 1750 });
+  assert.deepEqual(householdValues(people),
+    { householdSize: 2, dailyCalories: 1750, dietaryPreferences: ["none"], allergens: [] });
+  // What one person avoids, the shared menu avoids: a dish is cooked once for everybody.
+  const [grown, child] = people;
+  assert.deepEqual(householdValues([{ ...grown, dietaryPreferences: ["lactose_free"] }, child]).dietaryPreferences,
+    ["lactose_free"]);
+  assert.deepEqual(householdValues([{ ...grown, allergens: ["milk"] }, { ...child, intolerances: ["gluten"] }]),
+    { householdSize: 2, dailyCalories: 1750, dietaryPreferences: ["gluten_free"], allergens: ["milk", "wheat"] });
   assert.ok(people.every(isParticipant));
   assert.ok(validParticipantList(people));
   assert.equal(validParticipantList([]), false);

@@ -70,6 +70,27 @@ test('one action fills the week, respects attendance, preserves decisions and re
   assert.deepEqual(store.getSnapshot().plan.items.filter(item => item.date === monday), plan.items);
 });
 
+test('a week varies: no dish three times, and no two days with the same meals', async () => {
+  const { tastePasses } = require('../services/meals/taste.ts');
+  const p = prefs({ householdSize: 2 }), store = await week(p);
+  for (const day of ['2026-10-20','2026-10-21','2026-10-22','2026-10-23','2026-10-24','2026-10-25'])
+    store.toggleDay(day, p);
+  // A household that liked three dishes per meal must not be served one of them every day.
+  for (const pass of tastePasses(p, ['breakfast', 'lunch', 'dinner', 'snack']))
+    pass.meals.forEach((meal, index) => store.rateMeal(meal.id, index < 3));
+  store.generate(p, fullCatalog);
+  const items = store.getSnapshot().plan.items;
+  const counts = new Map();
+  for (const item of items) counts.set(item.meal.id, (counts.get(item.meal.id) ?? 0) + 1);
+  const often = [...counts].filter(([, count]) => count > 2);
+  assert.deepEqual(often, [], 'a favourite may come back, three times in a week is a rut');
+  const days = [...new Set(items.map(item => item.date))].sort();
+  const combination = (date) => items.filter(item => item.date === date).map(item => item.meal.id).sort().join('+');
+  for (let i = 1; i < days.length; i++)
+    assert.notEqual(combination(days[i]), combination(days[i - 1]), `${days[i]} repeats the day before`);
+  assert.ok(counts.size >= days.length, 'a week of meals is not three dishes on rotation');
+});
+
 test('an exhausted pool stays visibly open rather than filling with rejected meals', async () => {
   const p = prefs(), store = await week(p);
   for (const meal of meals) store.rateMeal(meal.id, false);
@@ -93,36 +114,25 @@ test('old caches without ratings still load; corrupt ratings cannot overwrite st
   assert.equal(device.data.get('bad'), corrupt);
 });
 
-test('one run shows every dish once, in meal order, and skips what is already rated', () => {
-  const { tastePasses } = require('../services/meals/taste.ts');
+test('one run asks about each meal of the day in turn, five dishes each, and skips what is rated', () => {
+  const { tastePasses, PER_PASS } = require('../services/meals/taste.ts');
   const p = prefs({ householdSize: 2 });
   const slots = ['breakfast', 'lunch', 'dinner', 'snack'];
   const passes = tastePasses(p, slots);
-  assert.deepEqual(passes.map(pass => pass.key), ['breakfast', 'main', 'snack'], 'breakfast, then the main meals, then snacks');
-  // Three quarters of the recipes fit both lunch and dinner; asking twice showed the same dish again.
+  assert.equal(PER_PASS, 5);
+  assert.deepEqual(passes.map(pass => pass.key), slots, 'breakfast, lunch, dinner, then snacks');
+  // Five per meal is the run; the menu itself holds fewer snacks than that.
+  for (const pass of passes) assert.ok(pass.meals.length <= PER_PASS, `${pass.key}: ${pass.meals.length}`);
+  assert.deepEqual(passes.filter(pass => pass.key !== 'snack').map(pass => pass.meals.length), [5, 5, 5]);
   const shown = passes.flatMap(pass => pass.meals.map(meal => meal.id));
   assert.equal(new Set(shown).size, shown.length, 'no dish is asked about twice');
-  const lunchAndDinner = passes.find(pass => pass.key === 'main');
-  assert.deepEqual(lunchAndDinner.slots, ['lunch', 'dinner']);
   // A household that only plans breakfast is not asked about dinner.
   assert.deepEqual(tastePasses(p, ['breakfast']).map(pass => pass.key), ['breakfast']);
-  // What was answered before is not asked again, and nothing else is dropped.
-  const [first, second] = shown;
-  const resumed = tastePasses(p, slots, { [first]: true, [second]: false }).flatMap(pass => pass.meals.map(meal => meal.id));
-  assert.deepEqual(resumed, shown.filter(id => id !== first && id !== second));
-});
-
-test('a run asks about five dishes per meal, not the whole menu', () => {
-  const { tastePasses, PER_PASS } = require('../services/meals/taste.ts');
-  const p = prefs({ householdSize: 2 });
-  const passes = tastePasses(p, ['breakfast', 'lunch', 'dinner', 'snack']);
-  assert.equal(PER_PASS, 5);
-  for (const pass of passes) assert.ok(pass.meals.length <= PER_PASS, `${pass.key}: ${pass.meals.length}`);
-  const shown = passes.flatMap(pass => pass.meals.map(meal => meal.id));
-  assert.ok(shown.length <= passes.length * PER_PASS);
-  // Rating one does not pull an extra dish in behind it: five per meal stays five.
-  const resumed = tastePasses(p, ['breakfast', 'lunch', 'dinner', 'snack'], { [shown[0]]: true });
-  assert.deepEqual(resumed.flatMap(pass => pass.meals.map(meal => meal.id)), shown.slice(1));
+  // Rated dishes drop out and the next ones take their place, so planning again asks something new.
+  const answered = Object.fromEntries(shown.map(id => [id, true]));
+  const next = tastePasses(p, slots, answered).flatMap(pass => pass.meals.map(meal => meal.id));
+  assert.ok(next.length, 'there is more on the menu than one run');
+  assert.deepEqual(next.filter(id => shown.includes(id)), [], 'nothing already rated comes back');
 });
 
 test('the dishes offered already respect the household: no lactose where it is avoided', () => {

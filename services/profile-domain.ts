@@ -1,6 +1,6 @@
 import { t } from './i18n';
 import { activities,participantKinds,sexes,type ParticipantKind,type PersonalProfile,type PlanParticipant } from '../types/profile';
-import { allergens,diets,goals,defaultDraft,type Goal,type UserPreferences,type Diet } from '../types/preferences';
+import { allergens,diets,goals,defaultDraft,type Allergen,type Goal,type UserPreferences,type Diet } from '../types/preferences';
 import { validatePreferences } from './preference-domain';
 import { proteinPercent } from './basket/nutritionTargets';
 const range=(v:number|null,min:number,max:number,integer=false)=>v===null||(Number.isFinite(v)&&v>=min&&v<=max&&(!integer||Number.isInteger(v)));
@@ -101,17 +101,24 @@ export function isParticipant(p:PlanParticipant):boolean {
  range(p.heightCm??null,50,250)&&range(p.weightKg??null,10,500)&&
  (p.caloriesEdited===undefined||typeof p.caloriesEdited==='boolean');
 }
-/** One shared menu must meet everybody's restrictions; each person's defaults remain distinct. */
-export function participantPreferences(base:UserPreferences,participants:PlanParticipant[]):UserPreferences {
- if(!participants.length||participants.length>10||!participants.every(isParticipant)||new Set(participants.map(p=>p.id)).size!==participants.length||participants.filter(p=>p.isCurrentUser).length>1)throw Error(t('valid.people'));
+/** What one shared menu has to meet: the strictest way of eating anybody follows, and everybody's
+ *  allergies together. Gluten intolerance is a strict avoidance requirement, not a diagnosis. */
+export function householdDiets(participants:PlanParticipant[]):{dietaryPreferences:Diet[];allergens:Allergen[]} {
  const all=new Set(participants.flatMap(p=>p.dietaryPreferences)),merged:Diet[]=[];
  const strict=(['vegan','vegetarian','pescatarian'] as Diet[]).find(d=>all.has(d));if(strict)merged.push(strict);
  if(all.has('lactose_free')||participants.some(p=>p.intolerances.includes('lactose')))merged.push('lactose_free');
  if(all.has('gluten_free')||participants.some(p=>p.intolerances.includes('gluten')))merged.push('gluten_free');
+ // Anything else somebody follows — a diabetes diet, say — holds for the shared menu too; only
+ // the vegan/vegetarian/pescatarian family collapses into its strictest member.
+ for(const diet of all)if(diet!=='none'&&!merged.includes(diet)&&!['vegan','vegetarian','pescatarian'].includes(diet))merged.push(diet);
  const allergySet=new Set(participants.flatMap(p=>p.allergens));
- // Gluten intolerance is a strict avoidance requirement, not an inferred diagnosis.
  if(participants.some(p=>p.intolerances.includes('gluten')))allergySet.add('wheat');
+ return {dietaryPreferences:merged.length?merged:['none'],allergens:[...allergySet]};
+}
+/** One shared menu must meet everybody's restrictions; each person's defaults remain distinct. */
+export function participantPreferences(base:UserPreferences,participants:PlanParticipant[]):UserPreferences {
+ if(!participants.length||participants.length>10||!participants.every(isParticipant)||new Set(participants.map(p=>p.id)).size!==participants.length||participants.filter(p=>p.isCurrentUser).length>1)throw Error(t('valid.people'));
  return {...base,householdSize:participants.length,dailyCalories:Math.round(participants.reduce((s,p)=>s+p.dailyCalories!,0)/participants.length),
  proteinMode:'manual',proteinTargetGrams:Math.round(participants.reduce((s,p)=>s+p.proteinTarget!,0)/participants.length),
- dietaryPreferences:merged.length?merged:['none'],allergens:[...allergySet],participants:structuredClone(participants)};
+ ...householdDiets(participants),participants:structuredClone(participants)};
 }

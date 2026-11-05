@@ -1,4 +1,4 @@
-import { t } from '@/services/i18n';
+import { slotLabel, t } from '@/services/i18n';
 import { useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { Text } from 'react-native';
@@ -26,6 +26,7 @@ export default function MealTasteScreen() {
   const [history, setHistory] = useState<{ id: string; previous: boolean | null }[]>([]);
   const [skipped, setSkipped] = useState(false);
   const pending = useRef(false);
+  const run = useRef<ReturnType<typeof tastePasses> | null>(null);
   if (!ready) return <Screen><Text>{t('taste.loading')}</Text></Screen>;
   if (!saved) return <Screen>
     <ErrorMessage message={error} />
@@ -37,12 +38,15 @@ export default function MealTasteScreen() {
   const slots = planned
     ? mealSlots.filter(slot => plan!.days.some(day => day.slots.includes(slot)))
     : activeSlots(saved);
-  // Everything the household could be asked, and what is left of it after earlier answers.
-  const all = tastePasses(saved, slots);
-  const open = tastePasses(saved, slots, mealRatings);
-  const total = all.reduce((count, pass) => count + pass.meals.length, 0);
-  const left = open.reduce((count, pass) => count + pass.meals.length, 0);
-  const pass = open[0];
+  // The dishes of this run are chosen once: rating one must not pull another in behind it, or the
+  // run would never end. A later planning round starts again here and gets the next ones.
+  run.current ??= tastePasses(saved, slots, mealRatings);
+  const asked = run.current;
+  const openPasses = asked.map(pass => ({ ...pass, meals: pass.meals.filter(meal => mealRatings[meal.id] === undefined) }))
+    .filter(pass => pass.meals.length);
+  const total = asked.reduce((count, pass) => count + pass.meals.length, 0);
+  const left = openPasses.reduce((count, pass) => count + pass.meals.length, 0);
+  const pass = openPasses[0];
   const rate = (rating: boolean) => {
     if (!pass || pending.current) return;
     const current = pass.meals[0];
@@ -68,7 +72,7 @@ export default function MealTasteScreen() {
   const done = !pass || skipped;
   return <Screen bottom>
     <ScreenHeader eyebrow={t('taste.eyebrow')}
-      title={done ? t('taste.allDone') : t('taste.titleSlot', { slot: t(`taste.pass.${pass.key}`) })}
+      title={done ? t('taste.allDone') : t('taste.titleSlot', { slot: slotLabel(pass.key) })}
       subtitle={done ? undefined : t('taste.subtitle', { next: t(planned ? 'taste.nextPlan' : 'taste.nextDays') })} />
     <ErrorMessage message={message ?? error} />
     {done
@@ -78,7 +82,10 @@ export default function MealTasteScreen() {
         </SectionCard>
       : <>
           <Text style={ui.small}>{t('taste.progress', { done: total - left + 1, total })}</Text>
-          <MealSwipeCards mode="taste" busy={busy} exhausted={false} eyebrow={t(`taste.pass.${pass.key}`)}
+          {/* Somebody who has rated before may not want to rate again for every new week. */}
+          {liked > 0 && <TextButton label={t('taste.useLast', { count: liked })} disabled={busy}
+            onPress={() => setSkipped(true)} />}
+          <MealSwipeCards mode="taste" busy={busy} exhausted={false} eyebrow={slotLabel(pass.key)}
             suggestions={pass.meals.slice(0, 2).map(meal => ({ meal, servings: 1 }))}
             onTake={() => rate(true)} onNext={() => rate(false)} onMore={() => {}} />
           {!!history.length && <TextButton label={t('taste.undo')} disabled={busy} onPress={() => {

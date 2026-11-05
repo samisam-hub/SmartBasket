@@ -3,7 +3,9 @@ import { Pressable, Text, View } from 'react-native';
 import type { WeekPlan } from '../types/meal';
 import { itemsInSlot, planDateLabel, sortSlots } from '../services/meals/weekPlan';
 import { contentName } from '../services/i18n/content';
-import { slotLabel, t } from '../services/i18n';
+import { formatMoney, slotLabel, t } from '../services/i18n';
+import { choicesCost } from '../services/pricing/ingredientCost';
+import { isCook } from '../services/meals/choices';
 import { colors, radii, spacing, typography, ui } from '../lib/theme';
 
 /** The week as a filled calendar: one row per planned day, the meals of that day beside the date,
@@ -17,12 +19,15 @@ export function PlannedWeek({ plan, onOpenDay, busy }: {
   return <View style={styles.grid}>
     {plan.days.map((day, index) => {
       const label = planDateLabel(day.date);
+      // What the day's meals cost together, so a week can be read without opening the list.
+      const cost = choicesCost(plan.items.filter(item => item.date === day.date && isCook(item)));
       return <Pressable key={day.date} accessibilityRole="button" disabled={busy}
         accessibilityLabel={t('planned.editDay', { day: label })}
         onPress={() => onOpenDay(day.date)}
         style={({ pressed }) => [styles.row, index > 0 && styles.divided, pressed && { backgroundColor: colors.pale }]}>
         <View style={styles.date}>
           <Text style={styles.dateText}>{label}</Text>
+          {cost !== null && <Text style={ui.small}>{t('planned.dayCost', { price: formatMoney(cost) })}</Text>}
         </View>
         <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
           {sortSlots(day.slots).map(slot => {

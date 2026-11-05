@@ -13,7 +13,7 @@ import {
 } from "../types/preferences";
 import { mealSlots } from "../types/meal";
 import type { PlanParticipant } from "../types/profile";
-import { isParticipant } from "./profile-domain";
+import { householdDiets, isParticipant } from "./profile-domain";
 import { isUnitSystem } from "./units";
 
 export function toggleDiet(current: Diet[], selected: Diet): Diet[] {
@@ -30,12 +30,16 @@ export function toggleDiet(current: Diet[], selected: Diet): Diet[] {
   return next.length ? next : ["none"];
 }
 /** The household is a list of people; the saved size and per-person calories follow from it. */
-export function householdValues(participants: PlanParticipant[]): Pick<PreferenceValues, "householdSize" | "dailyCalories"> {
+export function householdValues(participants: PlanParticipant[]):
+  Pick<PreferenceValues, "householdSize" | "dailyCalories" | "dietaryPreferences" | "allergens"> {
   return {
     householdSize: participants.length,
     dailyCalories: Math.round(
       participants.reduce((sum, p) => sum + (p.dailyCalories ?? 0), 0) / participants.length,
     ),
+    // One person eating lactose-free makes the whole shared menu lactose-free: a dish is cooked
+    // once, and somebody who cannot eat it is not served it.
+    ...householdDiets(participants),
   };
 }
 export function validParticipantList(value: unknown): value is PlanParticipant[] {
