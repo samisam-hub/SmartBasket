@@ -163,3 +163,34 @@ test("a list with nothing added has no empty section", () => {
   const text = shoppingListText({ name: "List", groups, extras: [], ticked: [], system: "metric" });
   assert.doesNotMatch(text, /VON DIR ERGÄNZT/);
 });
+
+const { fromDemoCatalogue, listEstimate } = require("../services/shopping-list.ts");
+const priced = (ingredientKey, estimatedPrice, source = "catalog") =>
+  ({ ingredientKey, estimatedPrice, product: { id: `p-${ingredientKey}-${source}`, source }, packageCount: 1,
+    packageAmount: 100, quantityUnit: "g" });
+
+test("a line carries what its packages cost together, so a budget still works", () => {
+  const lines = shoppingLines(result({
+    ingredientRequirements: [
+      { ingredientKey: "cherry_tomatoes", ingredientName: "Cherry tomatoes", requiredQuantity: 500, unit: "g" },
+      { ingredientKey: "olive_oil", ingredientName: "Olive oil", requiredQuantity: 40, unit: "ml" },
+      { ingredientKey: "salt", ingredientName: "Salt", requiredQuantity: 5, unit: "g" },
+    ],
+    items: [priced("cherry_tomatoes", 1.2), priced("cherry_tomatoes", 0.8), priced("olive_oil", 3.5),
+      priced("salt", null)],
+  }));
+  assert.deepEqual(lines.map((l) => l.estimate), [2, 3.5, null], "two packages of one ingredient add up");
+  // The sum is what the week costs about; an unpriced line keeps it honest rather than hiding it.
+  assert.deepEqual(listEstimate(lines), { total: 5.5, complete: false });
+  assert.deepEqual(listEstimate(lines.slice(0, 2)), { total: 5.5, complete: true });
+  assert.deepEqual(listEstimate(lines.slice(0, 2), 1), { total: 5.5, complete: false },
+    "something typed by hand has no price either");
+});
+
+test("a list built from the fictional catalogue is marked as such", () => {
+  const demo = { result: { items: [priced("salt", 1, "demo")] } };
+  const real = { result: { items: [priced("salt", 1)] } };
+  assert.equal(fromDemoCatalogue(demo), true);
+  assert.equal(fromDemoCatalogue(real), false);
+  assert.equal(fromDemoCatalogue({ result: { items: [] } }), false);
+});

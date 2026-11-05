@@ -1,4 +1,4 @@
-import { categoryLabel, t } from '../services/i18n';
+import { categoryLabel, formatMoney, t } from '../services/i18n';
 import { canonicalIngredientKey, ingredientMappings } from '../data/ingredient-mappings';
 import { categories, type ProductCategory } from '../types/product';
 import type { BasketGenerationResult, SavedBasket } from '../types/basket';
@@ -22,13 +22,29 @@ export function openingList(baskets: SavedBasket[], active: SavedBasket | null):
  *  the same name rather than inventing a second one that can drift from it. */
 export const listName = (basket: SavedBasket | null): string => basket?.name.trim() || t('list.name');
 
-/** One line of the shopping list: a thing to buy and how much of it. */
+/** A list built from the fictional merchant catalogue is a demonstration, not somebody's
+ *  shopping. It stays out of the tab unless the merchant demo is deliberately on. */
+export const fromDemoCatalogue = (basket: SavedBasket): boolean =>
+  basket.result.items.some(item => item.product.source === 'demo');
+/** One line of the shopping list: a thing to buy, how much of it, and what it costs about.
+ *
+ *  The estimate is the sum over the packages the engine picked for this ingredient, so it is a
+ *  usual supermarket price rather than an offer from one shop — enough to keep a weekly budget
+ *  honest without naming a product. */
 export interface ShoppingLine {
   key: string;
   name: string;
   amount: number;
   unit: 'g' | 'ml';
   category: ProductCategory;
+  estimate: number | null;
+}
+/** What the whole list costs about, and whether anything in it carries no price at all. */
+export function listEstimate(lines: ShoppingLine[], extras: number = 0):
+  { total: number; complete: boolean } {
+  const priced = lines.filter(line => line.estimate !== null);
+  return { total: priced.reduce((sum, line) => sum + (line.estimate ?? 0), 0),
+    complete: priced.length === lines.length && !extras };
 }
 /** What the week needs, as ingredients rather than packages.
  *
@@ -39,17 +55,27 @@ export interface ShoppingLine {
 export function shoppingLines(result: BasketGenerationResult): ShoppingLine[] {
   const category = (ingredientKey: string): ProductCategory =>
     ingredientMappings[canonicalIngredientKey(ingredientKey)]?.allowedCategories[0] ?? 'other';
+  // What the packages for one ingredient cost together; an ingredient nobody priced stays open.
+  const priced = new Map<string, number | null>();
+  for (const item of result.items) {
+    if (!item.ingredientKey) continue;
+    const before = priced.get(item.ingredientKey);
+    priced.set(item.ingredientKey, item.estimatedPrice === null || before === null
+      ? null : (before ?? 0) + item.estimatedPrice);
+  }
   if (result.ingredientRequirements?.length)
     return result.ingredientRequirements
       .filter(line => Number.isFinite(line.requiredQuantity) && line.requiredQuantity > 0)
       .map(line => ({ key: line.ingredientKey, name: line.ingredientName,
-        amount: line.requiredQuantity, unit: line.unit, category: category(line.ingredientKey) }));
+        amount: line.requiredQuantity, unit: line.unit, category: category(line.ingredientKey),
+        estimate: priced.get(line.ingredientKey) ?? null }));
   return result.items.map(item => ({
     key: item.ingredientKey ?? item.product.id,
     name: item.product.name,
     amount: item.purchasedQuantity ?? item.packageCount * item.packageAmount,
     unit: item.quantityUnit,
     category: item.ingredientKey ? category(item.ingredientKey) : item.product.category ?? 'other',
+    estimate: item.estimatedPrice,
   }));
 }
 /** Grouped the way a shop is walked, in the catalog's own category order. "Other" is a category
@@ -84,8 +110,12 @@ export function shoppingListText({ name, groups, extras, ticked, system }: {
     .filter(group => group.lines.length)
     .map(group => [group.label.toUpperCase(),
       ...group.lines.map(line => mark(line.key, `${line.name} — ${formatQuantity(line, system)}`))].join('\n'));
+  // The estimate travels with the list: whoever shops knows what to expect at the till.
+  const estimate = listEstimate(groups.flatMap(group => group.lines), extras.length);
   if (extras.length)
     blocks.push([t('list.addedByYou').toUpperCase(),
       ...extras.map(item => mark(item.id, item.note ? `${item.name} — ${item.note}` : item.name))].join('\n'));
+  blocks.push(t(estimate.complete ? 'list.estimate' : 'list.estimateFrom',
+    { price: formatMoney(estimate.total) }));
   return [name, '', ...blocks].join('\n\n').trimEnd();
 }

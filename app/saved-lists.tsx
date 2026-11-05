@@ -7,6 +7,7 @@ import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { EmptyState, PrimaryButton, Screen, ScreenHeader, SecondaryButton, SectionCard, TextInput, ErrorMessage } from '@/components/ui';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
 import { basketRoute, useMerchantDemo } from '@/services/merchant-demo';
+import { fromDemoCatalogue } from '@/services/shopping-list';
 import { usePreferences } from '@/context/PreferencesContext';
 import { basketOwner, basketPersistence } from '@/services/baskets';
 import { hasSavedWork } from '@/services/saved-work';
@@ -36,12 +37,12 @@ export default function SavedListsScreen() {
       try {
         const owner = await basketOwner(saved?.userId ?? null);
         const response = await basketPersistence().list(owner);
-        if (active) { setBaskets(response.baskets); setWarning(response.warning); }
+        if (active) { setBaskets(response.baskets.filter(b => demo || !fromDemoCatalogue(b))); setWarning(response.warning); }
       } catch (e) { if (active) setWarning(e instanceof Error ? e.message : t('lists.loadFailed')); }
       finally { if (active) setLoading(false); }
     })();
     return () => { active = false; };
-  }, [ready, saved, retry]));
+  }, [ready, saved, retry, demo]));
   return <Screen>
     <ScreenHeader eyebrow={t('lists.eyebrow')} title={t('lists.title')} />
     <PrimaryButton label={t('lists.create')} onPress={flow.create} disabled={flow.disabled} />

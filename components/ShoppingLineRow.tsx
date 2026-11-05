@@ -2,21 +2,24 @@ import Feather from '@expo/vector-icons/Feather';
 import { Pressable, Text, View } from 'react-native';
 import { formatQuantity, type Quantity, type UnitSystem } from '../services/units';
 import { colors, radii, spacing, typography, ui } from '../lib/theme';
-import { t } from '../services/i18n';
+import { formatMoney, t } from '../services/i18n';
 
 /** One line of the shopping list. The tick is the whole point of the row, so it gets the biggest
  *  target; a line the household added itself can also be taken off again. */
-export function ShoppingLineRow({ name, quantity, note, system, ticked, onTick, onRemove }: {
+export function ShoppingLineRow({ name, quantity, note, price, system, ticked, onTick, onRemove }: {
   name: string;
   /** Missing on a line the household typed: it said what it wanted, not how the app measures it. */
   quantity?: Quantity;
   note?: string | null;
+  /** About what this costs at usual supermarket prices; absent when nothing priced it. */
+  price?: number | null;
   system: UnitSystem;
   ticked: boolean;
   onTick: () => void;
   onRemove?: () => void;
 }) {
   const amount = quantity ? formatQuantity(quantity, system) : note?.trim() || null;
+  const estimate = typeof price === 'number' ? t('row.estimate', { price: formatMoney(price) }) : null;
   return <View style={[styles.row, ticked && styles.done]}>
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: ticked }}
       accessibilityLabel={t('row.state', { name, amount: amount ? `, ${amount}` : '',
@@ -27,7 +30,7 @@ export function ShoppingLineRow({ name, quantity, note, system, ticked, onTick, 
       </View>
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         <Text numberOfLines={2} style={[styles.name, ticked && styles.nameDone]}>{name}</Text>
-        {amount && <Text numberOfLines={1} style={ui.small}>{amount}</Text>}
+        {amount && <Text numberOfLines={1} style={ui.small}>{amount}{estimate ? ` · ${estimate}` : ''}</Text>}
       </View>
     </Pressable>
     {onRemove && <Pressable accessibilityRole="button" accessibilityLabel={t('row.remove', { name })}

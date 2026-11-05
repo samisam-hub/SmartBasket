@@ -5,12 +5,14 @@ import { router, useSegments } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Pressable, Text } from 'react-native';
 import { useActiveBasket } from '../context/ActiveBasketContext';
-import { basketRoute } from '../services/merchant-demo';
+import { basketRoute, useMerchantDemo } from '../services/merchant-demo';
+import { fromDemoCatalogue } from '../services/shopping-list';
 import { colors, ui } from '../lib/theme';
 export function ActiveBasketShortcut() {
   const { active } = useActiveBasket();
+  const { demo } = useMerchantDemo();
   const insets = useSafeAreaInsets(), segments = useSegments();
-  if (!active) return null;
+  if (!active || (!demo && fromDemoCatalogue(active))) return null;
   return <Pressable accessibilityRole="button" accessibilityLabel={t('shortcut.openBasket', { basket: basketDisplayName(active) })}
     onPress={() => router.push(basketRoute(active.id))}
     style={{ minHeight: 48, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 8 + (segments[0] === '(tabs)' ? insets.bottom : 0), flexDirection: 'row', gap: 12, alignItems: 'center', backgroundColor: colors.primary }}>
