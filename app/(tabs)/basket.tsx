@@ -1,6 +1,6 @@
 import { formatDate, t } from '@/services/i18n';
 import { useCallback, useEffect, useState } from 'react';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator, Share, Text, View } from 'react-native';
 import { EmptyState, IconButton, PrimaryButton, Screen, SecondaryButton, SectionCard, TextButton, TextInput, ErrorMessage } from '@/components/ui';
@@ -20,6 +20,7 @@ import type { SavedBasket } from '@/types/basket';
 /** The shopping tab: the list the household is buying, opened on the one that matters. */
 export default function ShoppingListScreen() {
   const flow = useBasketFlow(), { saved, ready } = usePreferences();
+  const { list } = useLocalSearchParams<{ list?: string }>();
   const { active } = useActiveBasket();
   const [baskets, setBaskets] = useState<SavedBasket[]>([]), [loading, setLoading] = useState(true);
   const [warning, setWarning] = useState<string | null>(null), [retry, setRetry] = useState(0);
@@ -44,7 +45,9 @@ export default function ShoppingListScreen() {
     return () => { alive = false; };
   }, [ready, saved, retry]));
 
-  const basket = openingList(baskets, active);
+  // Opened from a saved list or straight after creating one, that list is the one to show.
+  const asked = baskets.find(saved => saved.id === list) ?? null;
+  const basket = asked ?? openingList(baskets, active);
   const lines = basket ? shoppingLines(basket.result) : [];
   const groups = groupedLines(lines);
   const system = unitSystemOf(saved);

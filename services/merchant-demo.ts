@@ -12,6 +12,11 @@ const listeners = new Set<() => void>();
 const publish = () => listeners.forEach(listener => listener());
 
 export const merchantDemoEnabled = () => enabled;
+/** Where a saved list opens: the merchant demo shows the products behind it, everybody else the
+ *  list itself. Keeping the decision here means no screen has to remember it. */
+export const basketRoute = (id: string) => merchantDemoEnabled()
+  ? { pathname: '/basket-setup' as const, params: { savedId: id } }
+  : { pathname: '/basket' as const, params: { list: id } };
 /** Anything other than the one stored value means off: a half-written flag never opens the demo. */
 export async function loadMerchantDemo(): Promise<boolean> {
   try {

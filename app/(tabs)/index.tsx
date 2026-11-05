@@ -8,7 +8,7 @@ import { WastePrevention } from '@/components/WastePrevention';
 import { ErrorMessage, FloatingButton, PrimaryButton, SecondaryButton, Screen, SectionCard, TextButton } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
 import { quickStart } from '@/services/quick-start';
-import { useMerchantDemo } from '@/services/merchant-demo';
+import { basketRoute, useMerchantDemo } from '@/services/merchant-demo';
 import { useProfile } from '@/context/ProfileContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
 import { primeBasketCatalog } from '@/hooks/useBasketCatalog';
@@ -36,7 +36,7 @@ export default function HomeScreen() {
   const flow = useBasketFlow();
   const { active } = useActiveBasket();
   const { demo } = useMerchantDemo();
-  const openCart = () => active ? router.push({ pathname: '/basket-setup', params: { savedId: active.id } }) : router.navigate('/basket');
+  const openCart = () => active ? router.push(basketRoute(active.id)) : router.navigate('/basket');
   // Which day the week is showing. Null until the plan has loaded, so it can open on a real day.
   const weekStart = week.plan?.weekStart ?? currentWeekStart();
   const [picked, setPicked] = useState<string | null>(null);

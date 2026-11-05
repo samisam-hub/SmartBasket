@@ -6,6 +6,7 @@ import { SavedBasketPreview } from '@/components/SavedBasketPreview';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { EmptyState, PrimaryButton, Screen, ScreenHeader, SecondaryButton, SectionCard, TextInput, ErrorMessage } from '@/components/ui';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
+import { basketRoute, useMerchantDemo } from '@/services/merchant-demo';
 import { usePreferences } from '@/context/PreferencesContext';
 import { basketOwner, basketPersistence } from '@/services/baskets';
 import { hasSavedWork } from '@/services/saved-work';
@@ -14,6 +15,7 @@ import type { SavedBasket } from '@/types/basket';
 export default function SavedListsScreen() {
   const { clear } = useActiveBasket();
   const flow = useBasketFlow(), { saved, ready } = usePreferences();
+  const { demo } = useMerchantDemo();
   const [baskets, setBaskets] = useState<SavedBasket[]>([]), [loading, setLoading] = useState(true);
   const [warning, setWarning] = useState<string | null>(null), [retry, setRetry] = useState(0);
   const [action,setAction]=useState<{id:string;kind:'rename'|'delete'}|null>(null),[name,setName]=useState(''),[busy,setBusy]=useState(false),[actionError,setActionError]=useState<string|null>(null);
@@ -48,10 +50,11 @@ export default function SavedListsScreen() {
     {warning && <><Text style={ui.small}>{warning}</Text><SecondaryButton label={t('lists.reload')} onPress={() => setRetry(n => n + 1)} /></>}
     {!loading && !baskets.length && <EmptyState illustration="emptyBasket" title={t('lists.emptyTitle')} description={t('lists.emptyBody')} />}
     {baskets.map(b => {
-      const open = () => router.push({ pathname: '/basket-setup', params: { savedId: b.id } });
+      const open = () => router.push(basketRoute(b.id));
       return <SectionCard key={b.id}>
       <SavedBasketPreview basket={b} onOpen={open} />
-      {b.result.purchasedAt ? <Text style={ui.small}>{t('lists.purchased', { date: formatDate(b.result.purchasedAt) })}</Text> : <SecondaryButton label={t('lists.edit')} disabled={busy} onPress={() => router.push({ pathname: '/basket-setup', params: { savedId: b.id, edit: '1' } })} />}
+      {b.result.purchasedAt ? <Text style={ui.small}>{t('lists.purchased', { date: formatDate(b.result.purchasedAt) })}</Text>
+        : demo ? <SecondaryButton label={t('lists.edit')} disabled={busy} onPress={() => router.push({ pathname: '/basket-setup', params: { savedId: b.id, edit: '1' } })} /> : null}
       {action?.id===b.id?<>
         {action.kind==='rename'?<TextInput label={t('lists.nameField')} value={name} onChangeText={setName} maxLength={120} editable={!busy} />:<Text style={ui.body}>{t('lists.deleteBody', { name: b.name })}</Text>}
         <ErrorMessage message={actionError} />

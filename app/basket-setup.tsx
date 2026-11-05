@@ -51,6 +51,7 @@ import {isSaved} from '@/services/preference-domain';
 import { removeBasketProduct, toggleBasketProduct } from '@/services/basket/edit';
 
 import { useActiveBasket } from '@/context/ActiveBasketContext';
+import { merchantDemoEnabled } from '@/services/merchant-demo';
 import { useWeekPlan } from '@/context/WeekPlanContext';
 
 import { addBasketProduct } from '@/services/basket/add-product';
@@ -191,6 +192,16 @@ export default function BasketSetupScreen() {
 
         }
 
+        // What somebody asked for is a shopping list. The product cards behind it — brands,
+        // packages, prices from the catalogue — are the merchant view and stay in the merchant
+        // demo. Otherwise the list is saved and the shopping tab opens on it.
+        if (!controller.signal.aborted && next && !merchantDemoEnabled()) {
+          const stored = savedId ? next : (await basketPersistence().save(next)).basket;
+          remember(stored);
+          router.replace({ pathname: '/basket', params: { list: stored.id } });
+          return;
+        }
+
         if (!controller.signal.aborted) setBasket(next);
 
       } catch (e) { if (!controller.signal.aborted) setError(e instanceof Error ? e.message : t('setup.basket.loadFailed')); }
@@ -201,7 +212,7 @@ export default function BasketSetupScreen() {
 
     return () => controller.abort();
 
-  }, [ready, basePreferences, savedId, retry,participants,edit,week,weekPlan.store]);
+  }, [ready, basePreferences, savedId, retry,participants,edit,week,weekPlan.store,remember]);
 
   const confirmPlan=()=>{
 
