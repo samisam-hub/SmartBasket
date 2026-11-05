@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { PrimaryButton } from './ui';
 import { t } from '../services/i18n';
+import { buildLabel } from '../lib/build-info';
 import { colors, spacing, ui } from '../lib/theme';
 
 /** A screen that fails to render used to close the app without a word: in a release build an
@@ -27,6 +28,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { message:
     return <View style={{ flex: 1, backgroundColor: colors.background, padding: spacing.lg, gap: spacing.md }}>
       <Text accessibilityRole="header" style={ui.title}>{t('crash.title')}</Text>
       <Text style={ui.body}>{t('crash.body')}</Text>
+      <Text style={ui.small}>{t('crash.build', { build: buildLabel() })}</Text>
       <ScrollView style={{ maxHeight: 220 }}>
         <Text style={ui.small} selectable>{this.state.message}</Text>
       </ScrollView>

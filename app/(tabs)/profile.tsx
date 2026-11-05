@@ -16,6 +16,7 @@ import {
   SelectionChip,
   TextButton,
 } from "@/components/ui";
+import { buildLabel } from "@/lib/build-info";
 import { PersistenceStatus } from "@/components/PersistenceStatus";
 import { PreferenceSummary } from "@/components/PreferenceSummary";
 import { usePreferences } from "@/context/PreferencesContext";
@@ -144,6 +145,8 @@ export default function ProfileScreen() {
         />
       </SectionCard>
       <InfoCard title={t('profile.about')}>{t('profile.aboutBody')}</InfoCard>
+      {/* Named here too, so a report can say which build it came from without an error first. */}
+      <Text style={ui.small}>{t('crash.build', { build: buildLabel() })}</Text>
     </Screen>
   );
 }

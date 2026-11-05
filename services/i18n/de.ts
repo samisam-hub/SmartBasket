@@ -270,6 +270,7 @@ export const de = {
   'account.keepHint': 'Deine SmartBasket-Daten bleiben mit deinem Konto verbunden.',
   'crash.title': 'Dieser Bildschirm ließ sich nicht anzeigen',
   'crash.body': 'Deine Eingaben sind nicht verloren, sie liegen auf diesem Gerät. Schick uns bitte die Zeilen unten, sie sagen, was schiefging.',
+  'crash.build': 'Build {build}',
   'crash.again': 'Nochmal versuchen',
   'account.noService': 'Hier nicht verfügbar: Ein Konto braucht eine Internetverbindung und eine für diesen Build eingerichtete Cloud-Verbindung. Alles andere funktioniert ohne.',
   'account.email': 'E-Mail-Adresse',

@@ -266,6 +266,7 @@ export const en: Record<TranslationKey, Phrase> = {
   'account.keepHint': 'Your SmartBasket data stays with your account.',
   'crash.title': 'That screen could not be shown',
   'crash.body': 'Nothing you entered is lost; it is saved on this device. Please send us the lines below, they say what went wrong.',
+  'crash.build': 'Build {build}',
   'crash.again': 'Try again',
   'account.noService': 'Not available here: an account needs an internet connection and a cloud connection set up for this build. Everything else works without one.',
   'account.email': 'Email address',
