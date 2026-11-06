@@ -8,11 +8,9 @@ test('approved illustrations match ingredients, never legacy rice tofu snapshots
   const originalMeals = meals.filter(meal => !meal.preparation);
   assert.equal(originalMeals.length,34);
   for(const meal of originalMeals)assert.ok(mealImageSource(meal),`Missing illustration: ${meal.id}`);
-  const approvedPrepared = new Set(['de-gemuseomelett-mit-brot','de-hahnchen-mit-reis-und-gemuse','de-ofenlachs-mit-kartoffeln-und-brokkoli','de-spiegelei-auf-brot','borschtsch-rind-ohne-bohnen','pirozhki-kartoffeln-pilze-gebraten','pirozhki-kohl-karotten-gebraten','kotlety-kartoffelpueree-rahmsauce','af-qabeli-palau-lamm','de-weihnachtsente-blaukraut-kartoffelknoedel','de-herbstliches-hirschgulasch','de-kasebrot-mit-gurke','de-hummusbrot-mit-gurke','de-brotzeit-mit-aufschnitt-und-gewurzgurken','de-wurstbrot-lunchbox-mit-gurke-und-apfel']);
-  for(const meal of meals.filter(meal => meal.preparation)) {
-    if(approvedPrepared.has(meal.id)) assert.ok(mealImageSource(meal),`Missing illustration: ${meal.id}`);
-    else assert.equal(mealImageSource(meal),null);
-  }
+  for(const meal of meals) assert.ok(mealImageSource(meal),`Missing illustration: ${meal.id}`);
+  const bread = meals.find(meal => meal.id === 'de-marmeladenbrot');
+  assert.equal(mealImageSource({...bread,ingredients:bread.ingredients.filter(i=>i.ingredientKey!=='jam')}),null);
   const tofu=meals.find(m=>m.id==='tofu-teriyaki-noodles');
   assert.equal(mealImageSource({...tofu,id:'tofu-stirfry'}),null);
   assert.equal(mealImageSource({...tofu,ingredients:tofu.ingredients.filter(i=>i.ingredientKey!=='teriyaki')}),null);
@@ -26,4 +24,20 @@ test('noodle recipe counts sauce volume and nutrition and excludes wheat/soy res
   assert.equal(compatibleMeal(meal,prefs({allergens:['wheat']})),false);
   assert.equal(compatibleMeal(meal,prefs({allergens:['soy']})),false);
   assert.equal(meal.dietaryTags.includes('gluten_free'),false);
+});
+
+test('new everyday illustrations use distinct, compact offline JPEG assets',()=>{
+  const fs = require('node:fs');
+  const { everydayMealImages } = require('../lib/everyday-meal-images.ts');
+  const sources = Object.values(everydayMealImages).map(entry => entry.source);
+  assert.equal(new Set(sources).size, sources.length);
+  let totalBytes = 0;
+  for (const source of sources) {
+    const bytes = fs.readFileSync(source);
+    assert.equal(bytes.readUInt16BE(0), 0xffd8, source);
+    assert.equal(bytes.readUInt16BE(bytes.length - 2), 0xffd9, source);
+    assert.ok(bytes.length < 180 * 1024, `Oversized meal illustration: ${source}`);
+    totalBytes += bytes.length;
+  }
+  assert.ok(totalBytes < 6 * 1024 * 1024, `New illustrations add ${totalBytes} bytes`);
 });
