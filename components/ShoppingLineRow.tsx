@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { editableQuantity, quantityFromInput, type Quantity, type UnitSystem } from '../services/units';
-import { colors, radii, spacing, typography, ui } from '../lib/theme';
+import { colors, radii, spacing, typography } from '../lib/theme';
 import { formatMoney, t } from '../services/i18n';
 
 /** One line of the shopping list, read like a row of a spreadsheet: tick, what to buy, how much,
@@ -54,8 +54,10 @@ export function ShoppingLineRow({ name, quantity, note, price, system, ticked, o
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: ticked }} accessibilityLabel={name}
       onPress={onTick} style={styles.nameCell}>
       <Text numberOfLines={1} style={[styles.name, ticked && styles.nameDone]}>{name}</Text>
-      {!!note?.trim() && <Text numberOfLines={1} style={ui.small}>{note.trim()}</Text>}
     </Pressable>
+    {/* A line somebody typed has no amount to compute with, so what they wrote stands where the
+      * amount stands on every other line: one row, same columns. */}
+    {!field && <Text numberOfLines={1} style={[styles.own, ticked && styles.nameDone]}>{note?.trim() ?? ''}</Text>}
     {field && <View style={styles.amountCell}>
       <TextInput value={typed} onChangeText={setTyped} onFocus={() => { editing.current = true; }}
         onBlur={commit} onSubmitEditing={commit} keyboardType="decimal-pad" maxLength={6}
@@ -114,6 +116,7 @@ const styles = {
   price: { ...typography.small, color: colors.ink, textAlign: 'right' as const, width: 62,
     paddingRight: spacing.sm },
   remove: { width: 32, minHeight: 44, alignItems: 'center' as const, justifyContent: 'center' as const },
+  own: { ...typography.small, color: colors.muted, textAlign: 'right' as const, width: 92 },
   draft: { borderStyle: 'dashed' as const },
   boxEmpty: { borderColor: colors.border, opacity: 0.6 },
   field: { paddingVertical: 4, paddingRight: 4 },

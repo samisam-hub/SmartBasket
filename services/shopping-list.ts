@@ -1,6 +1,6 @@
-import { categoryLabel, formatMoney, t } from '../services/i18n';
+import { formatMoney, t } from '../services/i18n';
 import { canonicalIngredientKey, ingredientMappings } from '../data/ingredient-mappings';
-import { categories, type ProductCategory } from '../types/product';
+import type { ProductCategory } from '../types/product';
 import type { BasketGenerationResult, SavedBasket } from '../types/basket';
 import type { CustomItem } from './basket/custom-items';
 import { formatQuantity, type UnitSystem } from './units';
@@ -95,15 +95,36 @@ export function withAmount(line: ShoppingLine, amount: number): ShoppingLine {
 /** Grouped the way a shop is walked, in the catalog's own category order. "Other" is a category
  *  of that list like any other and already sits last in it, so anything unrecognised lands there
  *  rather than being dropped or given a group of its own. */
-export function groupedLines(lines: ShoppingLine[]): { key: ProductCategory; label: string; lines: ShoppingLine[] }[] {
-  const groups = new Map<ProductCategory, ShoppingLine[]>();
+export const shelves = ['produce', 'meat_fish', 'dairy_eggs', 'bread', 'pantry', 'drinks', 'other'] as const;
+export type Shelf = (typeof shelves)[number];
+/** The aisles of a shop, not the drawers of a database. Fifteen headings for sixteen lines is a
+ *  table of contents, not a list: fruit and vegetables are picked up in one corner, meat and fish
+ *  at one counter, and everything dry and keepable is the pantry. */
+const shelfOf: Record<ProductCategory, Shelf> = {
+  fruit: 'produce', vegetables: 'produce', potatoes: 'produce',
+  meat: 'meat_fish', fish: 'meat_fish',
+  dairy: 'dairy_eggs', 'dairy-alternatives': 'dairy_eggs', eggs: 'dairy_eggs',
+  bread: 'bread',
+  grains: 'pantry', pasta: 'pantry', legumes: 'pantry', breakfast: 'pantry', snacks: 'pantry',
+  beverages: 'drinks',
+  other: 'other',
+};
+/** Oil, vinegar, spices and the like are filed as "other" in the catalogue because they fit no
+ *  food group, but in a shop they are the pantry shelf, next to the flour. */
+const pantryIngredients = new Set(['olive_oil', 'pepper', 'cinnamon', 'curry_powder', 'paprika_powder',
+  'italian_herbs', 'broth', 'mustard', 'vinegar', 'teriyaki', 'coconut_milk', 'honey', 'jam',
+  'breadcrumbs', 'dark_chocolate']);
+export function groupedLines(lines: ShoppingLine[]): { key: Shelf; label: string; lines: ShoppingLine[] }[] {
+  const groups = new Map<Shelf, ShoppingLine[]>();
   for (const line of lines) {
-    const group = groups.get(line.category) ?? [];
-    if (!group.length) groups.set(line.category, group);
+    const shelf = pantryIngredients.has(canonicalIngredientKey(line.key)) ? 'pantry'
+      : shelfOf[line.category] ?? 'other';
+    const group = groups.get(shelf) ?? [];
+    if (!group.length) groups.set(shelf, group);
     group.push(line);
   }
-  return categories.filter(key => groups.has(key))
-    .map(key => ({ key, label: categoryLabel(key), lines: groups.get(key)! }));
+  return shelves.filter(key => groups.has(key))
+    .map(key => ({ key, label: t(`shelf.${key}`), lines: groups.get(key)! }));
 }
 
 /** The whole list as one piece of text, for the share sheet.
