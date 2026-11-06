@@ -451,6 +451,7 @@ export const en: Record<TranslationKey, Phrase> = {
   'shelf.pantry': 'Pantry',
   'shelf.drinks': 'Drinks',
   'shelf.other': 'Everything else',
+  'unit.tins': { one: 'tin', other: 'tins' },
   'list.name': 'Shopping list',
   'list.estimate': 'Estimated total: about {price} for whole packs at usual supermarket prices.',
   'list.estimateFrom': 'Estimated total: about {price} for whole packs, without the items nobody priced.',

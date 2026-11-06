@@ -261,3 +261,47 @@ test("a corrected amount is kept per list, and setting it back drops the correct
       return loadLineAmounts(storage, "other-list").then((empty) => assert.deepEqual(empty, {}));
     });
 });
+
+const { groupedLines: shelvesOf, tinSize } = require("../services/shopping-list.ts");
+const { editableQuantity, formatQuantity, quantityFromInput } = require("../services/units.ts");
+const i18n = require("../services/i18n/index.ts");
+
+const line = (key, amount, category) => ({ key, name: key, amount, unit: "g", category,
+  estimate: null, purchase: null });
+
+test("tinned goods sit in the pantry, not with the fresh food", () => {
+  const groups = shelvesOf([
+    line("chopped_tomatoes", 858, "vegetables"),
+    line("fresh_tomato", 500, "vegetables"),
+    line("tuna", 300, "fish"),
+    line("corn", 285, "vegetables"),
+  ]);
+  const shelfFor = key => groups.find(group => group.lines.some(l => l.key === key)).key;
+  assert.equal(shelfFor("chopped_tomatoes"), "pantry", "a tin keeps for two years");
+  assert.equal(shelfFor("corn"), "pantry");
+  assert.equal(shelfFor("tuna"), "pantry", "tinned fish is an aisle, not the fish counter");
+  assert.equal(shelfFor("fresh_tomato"), "produce", "the fresh ones stay where they are");
+});
+
+test("what is only sold in tins is counted in tins", async () => {
+  await i18n.setLocale("en");
+  try {
+  assert.equal(tinSize("chopped_tomatoes"), 400);
+  assert.equal(tinSize("fresh_tomato"), null, "fresh tomatoes are weighed");
+  assert.equal(tinSize("oats"), null);
+  // 858 g of chopped tomatoes is three tins, because nobody buys two and a bit.
+  assert.deepEqual(editableQuantity({ amount: 858, unit: "g" }, "metric", 400), { value: 3, label: "tins" });
+  assert.deepEqual(editableQuantity({ amount: 800, unit: "g" }, "metric", 400), { value: 2, label: "tins" },
+    "an exact two tins is two, not three");
+  assert.equal(editableQuantity({ amount: 400, unit: "g" }, "metric", 400).label, "tin", "one tin is singular");
+  assert.equal(formatQuantity({ amount: 858, unit: "g" }, "metric", 400), "3 tins");
+  assert.equal(formatQuantity({ amount: 858, unit: "g" }, "us", 400), "3 tins", "a tin is a tin in ounces too");
+  // Typing a number of tins reads back as what is inside them.
+  assert.equal(quantityFromInput(2, "g", "metric", 400), 800);
+  assert.equal(quantityFromInput(2, "g", "us", 400), 800);
+  assert.equal(quantityFromInput(0, "g", "metric", 400), 400, "a line on the list is at least one tin");
+  assert.equal(quantityFromInput(500, "g", "metric", null), 500, "everything else is unchanged");
+  await i18n.setLocale("de");
+  assert.equal(formatQuantity({ amount: 858, unit: "g" }, "metric", 400), "3 Dosen", "and in German");
+  } finally { i18n.resetLocale(); }
+});

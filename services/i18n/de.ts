@@ -455,6 +455,7 @@ export const de = {
   'shelf.pantry': 'Vorrat',
   'shelf.drinks': 'Getränke',
   'shelf.other': 'Sonstiges',
+  'unit.tins': { one: 'Dose', other: 'Dosen' },
   'list.name': 'Einkaufsliste',
   'list.estimate': 'Geschätzte Summe: etwa {price} für ganze Packungen zu üblichen Supermarktpreisen.',
   'list.estimateFrom': 'Geschätzte Summe: etwa {price} für ganze Packungen, ohne die Posten ohne Preis.',

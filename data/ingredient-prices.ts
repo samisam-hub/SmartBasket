@@ -223,3 +223,9 @@ export const ingredientPacks: Record<string, number> = {
   pizza_dough: 400,
   flammkuchen_dough: 260,
 };
+
+/** Ingredients a shop only sells sealed in a tin, so a household counts them in tins and not in
+ *  grams: half a tin of chopped tomatoes is not something anybody buys. The tin's content is the
+ *  pack size above, drained where the label gives a drained weight. */
+export const cannedIngredients = new Set(['chopped_tomatoes', 'corn', 'kidney_beans', 'chickpeas',
+  'tuna', 'coconut_milk']);

@@ -13,7 +13,7 @@ import { usePreferences } from '@/context/PreferencesContext';
 import { hasSavedWork } from '@/services/saved-work';
 import { basketOwner, basketPersistence } from '@/services/baskets';
 import { addCustomItem, customItemError, loadCustomItems, removeCustomItem, saveCustomItems, type CustomItem } from '@/services/basket/custom-items';
-import { fromDemoCatalogue, groupedLines, listEstimate, listName, listPurchase, openingList, shoppingLines, shoppingListText, withAmount } from '@/services/shopping-list';
+import { fromDemoCatalogue, groupedLines, listEstimate, listName, listPurchase, openingList, shoppingLines, shoppingListText, tinSize, withAmount } from '@/services/shopping-list';
 import { loadLineAmounts, saveLineAmounts, withLineAmount, type LineAmounts } from '@/services/basket/line-amounts';
 import { unitSystemOf } from '@/services/units';
 import { colors, spacing, ui } from '@/lib/theme';
@@ -136,6 +136,7 @@ export default function ShoppingListScreen() {
     {groups.map(group => <View key={group.key} style={{ gap: spacing.xs }}>
       <Text style={ui.eyebrow}>{group.label.toUpperCase()}</Text>
       {group.lines.map(line => <ShoppingLineRow key={line.key} name={line.name} quantity={line}
+        tin={tinSize(line.key)}
         price={line.purchase?.cost ?? line.estimate} system={system} ticked={ticked.includes(line.key)}
         onTick={() => toggle(line.key)} onAmount={next => setAmount(line, next)} />)}
     </View>)}

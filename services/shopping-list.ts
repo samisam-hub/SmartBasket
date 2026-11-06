@@ -5,6 +5,7 @@ import type { BasketGenerationResult, SavedBasket } from '../types/basket';
 import type { CustomItem } from './basket/custom-items';
 import { formatQuantity, type UnitSystem } from './units';
 import { ingredientCost, packCost } from './pricing/ingredientCost';
+import { cannedIngredients, ingredientPacks } from '../data/ingredient-prices';
 
 /** Which list the shopping tab opens on.
  *
@@ -110,10 +111,18 @@ const shelfOf: Record<ProductCategory, Shelf> = {
   other: 'other',
 };
 /** Oil, vinegar, spices and the like are filed as "other" in the catalogue because they fit no
- *  food group, but in a shop they are the pantry shelf, next to the flour. */
+ *  food group, but in a shop they are the pantry shelf, next to the flour. Tinned goods belong
+ *  there too, whatever the food group says: a tin of tomatoes keeps for two years and is nowhere
+ *  near the fresh ones, and tinned tuna is in the same aisle rather than at the fish counter. */
 const pantryIngredients = new Set(['olive_oil', 'pepper', 'cinnamon', 'curry_powder', 'paprika_powder',
   'italian_herbs', 'broth', 'mustard', 'vinegar', 'teriyaki', 'coconut_milk', 'honey', 'jam',
-  'breadcrumbs', 'dark_chocolate']);
+  'breadcrumbs', 'dark_chocolate', ...cannedIngredients]);
+/** How much is in one tin of this, when it is something sold only by the tin. Everything else
+ *  has no tin size and stays in grams and millilitres. */
+export function tinSize(key: string): number | null {
+  const canonical = cannedIngredients.has(key) ? key : canonicalIngredientKey(key);
+  return cannedIngredients.has(canonical) ? ingredientPacks[canonical] ?? null : null;
+}
 export function groupedLines(lines: ShoppingLine[]): { key: Shelf; label: string; lines: ShoppingLine[] }[] {
   const groups = new Map<Shelf, ShoppingLine[]>();
   for (const line of lines) {
@@ -144,7 +153,7 @@ export function shoppingListText({ name, groups, extras, ticked, system }: {
   const blocks = groups
     .filter(group => group.lines.length)
     .map(group => [group.label.toUpperCase(),
-      ...group.lines.map(line => mark(line.key, `${line.name} — ${formatQuantity(line, system)}`))].join('\n'));
+      ...group.lines.map(line => mark(line.key, `${line.name} — ${formatQuantity(line, system, tinSize(line.key))}`))].join('\n'));
   // The estimate travels with the list: whoever shops knows what to expect at the till.
   const estimate = listPurchase(groups.flatMap(group => group.lines), extras.length);
   if (extras.length)

@@ -10,10 +10,13 @@ import { formatMoney, t } from '../services/i18n';
  *  shift the names. The amount is a field, not a label — a household knows better than the plan
  *  whether it wants a kilo of potatoes this week, and correcting it here beats cooking around it.
  *  A line the household typed itself has no amount to compute with and keeps its own note. */
-export function ShoppingLineRow({ name, quantity, note, price, system, ticked, onTick, onAmount, onRemove }: {
+export function ShoppingLineRow({ name, quantity, tin, note, price, system, ticked, onTick, onAmount, onRemove }: {
   name: string;
   /** Missing on a line the household typed: it said what it wanted, not how the app measures it. */
   quantity?: Quantity;
+  /** How much is in one tin, when this is something sold only by the tin: then the amount is
+   *  counted and typed in tins rather than in grams. */
+  tin?: number | null;
   note?: string | null;
   /** About what this costs at usual supermarket prices; absent when nothing priced it. */
   price?: number | null;
@@ -24,7 +27,7 @@ export function ShoppingLineRow({ name, quantity, note, price, system, ticked, o
   onAmount?: (amount: number) => void;
   onRemove?: () => void;
 }) {
-  const field = quantity ? editableQuantity(quantity, system) : null;
+  const field = quantity ? editableQuantity(quantity, system, tin) : null;
   const [typed, setTyped] = useState(field ? String(field.value) : '');
   // An amount changed elsewhere — a fresh list, a correction undone — is shown; typing is not
   // interrupted, so the field only follows while it is not being edited.
@@ -41,7 +44,7 @@ export function ShoppingLineRow({ name, quantity, note, price, system, ticked, o
     const value = Number(typed.trim().replace(',', '.'));
     if (!Number.isFinite(value) || value <= 0) { setTyped(String(field.value)); return; }
     shown.current = value;
-    onAmount(quantityFromInput(value, quantity.unit, system));
+    onAmount(quantityFromInput(value, quantity.unit, system, tin));
   };
   return <View style={[styles.row, ticked && styles.done]}>
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: ticked }} accessibilityLabel={name}
@@ -114,8 +117,8 @@ const styles = {
   amountCell: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 2, flexGrow: 0, flexShrink: 0 },
   amount: { ...typography.small, color: colors.ink, textAlign: 'right' as const, width: 52, flexGrow: 0,
     paddingVertical: 4, paddingHorizontal: 4, borderRadius: radii.small, borderWidth: 1, borderColor: colors.border },
-  unit: { ...typography.small, color: colors.muted, width: 22 },
-  price: { ...typography.small, color: colors.ink, textAlign: 'right' as const, width: 56 },
+  unit: { ...typography.small, color: colors.muted, width: 34 },
+  price: { ...typography.small, color: colors.ink, textAlign: 'right' as const, width: 54 },
   remove: { width: 32, minHeight: 44, alignItems: 'center' as const, justifyContent: 'center' as const },
   own: { ...typography.small, color: colors.muted, textAlign: 'right' as const, width: 86 },
   draft: { borderStyle: 'dashed' as const },
