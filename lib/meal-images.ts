@@ -1,9 +1,11 @@
 import type { ImageSourcePropType } from 'react-native';
 import type { Meal } from '../types/meal';
 import { mealOptionImages } from './meal-option-images';
+import { everydayMealImages } from './everyday-meal-images';
 
 /** Approved AI serving illustrations, bundled for offline use; never product photos. */
 const images: Record<string, { source: ImageSourcePropType; ingredients: string[] }> = {
+  ...everydayMealImages,
   'sunny-side-toast': { source: require('../assets/meals/sunny-side-toast.png'), ingredients: ['eggs', 'sourdough_bread', 'cherry_tomatoes', 'spinach', 'olive_oil'] },
   'oat-berries': { source: require('../assets/meals/oat-berries.png'), ingredients: ['oats', 'berries', 'banana'] },
   'salmon-rice': { source: require('../assets/meals/salmon-rice.png'), ingredients: ['salmon', 'rice', 'broccoli', 'olive_oil'] },

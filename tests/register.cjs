@@ -1,4 +1,4 @@
-require.extensions['.png'] = (module, filename) => { module.exports = filename; };
+for (const extension of ['.png', '.jpg']) require.extensions[extension] = (module, filename) => { module.exports = filename; };
 const fs = require("node:fs");
 const ts = require("typescript");
 require.extensions[".ts"] = (module, filename) => {
