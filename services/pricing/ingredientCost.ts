@@ -1,4 +1,4 @@
-import { ingredientPrices } from '../../data/ingredient-prices';
+import { ingredientPacks, ingredientPrices } from '../../data/ingredient-prices';
 import { canonicalIngredientKey } from '../../data/ingredient-mappings';
 import type { Meal } from '../../types/meal';
 
@@ -9,6 +9,16 @@ export function ingredientCost(key: string, amount: number): number | null {
   const rate = ingredientPrices[key] ?? ingredientPrices[canonicalIngredientKey(key)];
   if (rate === undefined || !Number.isFinite(amount) || amount <= 0) return null;
   return Math.round(rate * amount / 10) / 100;
+}
+/** What this ingredient costs to actually buy: whole packages, because a shop sells no half ones.
+ *  240 g of chickpeas is one 240 g tin; 300 g of butter is two 250 g blocks and 200 g left over. */
+export function packCost(key: string, amount: number): { packs: number; amount: number; cost: number } | null {
+  const canonical = ingredientPrices[key] !== undefined ? key : canonicalIngredientKey(key);
+  const pack = ingredientPacks[canonical];
+  if (pack === undefined || !Number.isFinite(amount) || amount <= 0) return null;
+  const packs = Math.ceil(amount / pack), bought = packs * pack;
+  const cost = ingredientCost(canonical, bought);
+  return cost === null ? null : { packs, amount: bought, cost };
 }
 /** What a set of chosen meals costs together: each dish's portion price times the portions of it.
  *  A dish without a price leaves the sum without one too, rather than quietly counting as free. */

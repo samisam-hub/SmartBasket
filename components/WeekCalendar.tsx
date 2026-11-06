@@ -86,6 +86,7 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
           style={({ pressed }) => [styles.pill, chosen && styles.pillOn,
             !chosen && weekday === today && styles.pillToday, pressed && { opacity: 0.7 }]}>
           <Text style={[styles.pillText, chosen && styles.pillTextOn]}>{weekdayShort()[index]}</Text>
+          <Text style={[styles.pillDate, chosen && styles.pillTextOn]}>{Number(weekday.slice(8))}</Text>
           {/* The dot keeps the state of a day readable while the strip stays plain. */}
           <View style={[styles.dot, state === 'open' && styles.dotOpen, state === 'done' && styles.dotDone,
             chosen && state !== 'unplanned' && styles.dotOn]} />
@@ -153,6 +154,7 @@ const styles = {
   pillOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   pillToday: { borderColor: colors.primary },
   pillText: { ...typography.caption, fontWeight: '700' as const, color: colors.ink },
+  pillDate: { ...typography.caption, color: colors.muted },
   pillTextOn: { color: colors.onPrimary },
   dot: { width: 5, height: 5, borderRadius: radii.pill, backgroundColor: 'transparent' as const },
   dotOpen: { backgroundColor: colors.orange },

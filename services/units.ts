@@ -24,6 +24,19 @@ const round = (value: number) => {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 };
 export interface Quantity { amount: number; unit: 'g' | 'ml' }
+/** The number and unit somebody types a quantity in. One unit per system, so editing is
+ *  reversible: grams and millilitres here, ounces and fluid ounces there — no jumping to pounds
+ *  halfway through, which would turn 500 into 1.1 under the typing finger. */
+export function editableQuantity({ amount, unit }: Quantity, system: UnitSystem): { value: number; label: string } {
+  if (system === 'metric') return { value: Math.round(amount), label: unit };
+  const value = unit === 'g' ? amount / GRAMS_PER_OUNCE : amount / ML_PER_FLUID_OUNCE;
+  return { value: Math.round(value * 10) / 10, label: unit === 'g' ? 'oz' : 'fl oz' };
+}
+/** The same number read back into grams or millilitres, which is what everything else counts in. */
+export function quantityFromInput(value: number, unit: 'g' | 'ml', system: UnitSystem): number {
+  if (system === 'metric') return value;
+  return unit === 'g' ? value * GRAMS_PER_OUNCE : value * ML_PER_FLUID_OUNCE;
+}
 /** The same quantity, written the way the household reads it. */
 export function formatQuantity({ amount, unit }: Quantity, system: UnitSystem): string {
   if (!Number.isFinite(amount) || amount < 0) return `— ${unit}`;

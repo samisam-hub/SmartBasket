@@ -6,13 +6,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Pressable, Text } from 'react-native';
 import { useActiveBasket } from '../context/ActiveBasketContext';
 import { basketRoute, useMerchantDemo } from '../services/merchant-demo';
-import { fromDemoCatalogue, listEstimate, shoppingLines } from '../services/shopping-list';
+import { listEstimate, shoppingLines } from '../services/shopping-list';
 import { colors, ui } from '../lib/theme';
 export function ActiveBasketShortcut() {
   const { active } = useActiveBasket();
   const { demo } = useMerchantDemo();
   const insets = useSafeAreaInsets(), segments = useSegments();
-  if (!active || (!demo && fromDemoCatalogue(active))) return null;
+  // The bar belongs to the merchant view: a household has the shopping tab for its list.
+  if (!active || !demo) return null;
   const lines = shoppingLines(active.result), priced = listEstimate(lines);
   const total = lines.length ? priced.total : null;
   return <Pressable accessibilityRole="button" accessibilityLabel={t('shortcut.openBasket', { basket: basketDisplayName(active) })}

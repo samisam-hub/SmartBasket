@@ -224,3 +224,40 @@ test("every ingredient the app plans with carries a price", () => {
   assert.ok(Math.min(...costs) >= 0.15, `cheapest ${Math.min(...costs)}`);
   assert.ok(Math.max(...costs) <= 9, `dearest ${Math.max(...costs)}`);
 });
+
+test("a list says what the till will ask for, and an amount can be corrected", () => {
+  const { listPurchase, withAmount } = require("../services/shopping-list.ts");
+  const { packCost } = require("../services/pricing/ingredientCost.ts");
+  // Nobody sells 300 g of butter: two 250 g blocks is what the shop charges for.
+  assert.deepEqual(packCost("butter", 300), { packs: 2, amount: 500, cost: 4.5 });
+  assert.equal(packCost("moon_cheese", 100), null);
+  const lines = shoppingLines(result({ ingredientRequirements: [
+    { ingredientKey: "butter", ingredientName: "Butter", requiredQuantity: 300, unit: "g" },
+    { ingredientKey: "rice", ingredientName: "Reis", requiredQuantity: 260, unit: "g" },
+  ] }));
+  assert.deepEqual(lines.map((l) => l.purchase.cost), [4.5, 2.5]);
+  assert.deepEqual(listPurchase(lines), { total: 7, complete: true });
+  assert.ok(listPurchase(lines).total > listEstimate(lines).total, "packages cost more than what is cooked");
+  // A corrected amount is priced again, by the kilo and by the package.
+  const kilo = withAmount(lines[0], 1000);
+  assert.equal(kilo.amount, 1000);
+  assert.equal(kilo.estimate, 9);
+  assert.deepEqual(kilo.purchase, { packs: 4, amount: 1000, cost: 9 });
+});
+
+test("a corrected amount is kept per list, and setting it back drops the correction", () => {
+  const { withLineAmount, validAmount, loadLineAmounts, saveLineAmounts } = require("../services/basket/line-amounts.ts");
+  assert.equal(validAmount(0), false);
+  assert.equal(validAmount("500"), false);
+  assert.deepEqual(withLineAmount({}, "butter", 1000, 300), { butter: 1000 });
+  assert.deepEqual(withLineAmount({ butter: 1000 }, "butter", 300, 300), {}, "back to the plan is no correction");
+  assert.deepEqual(withLineAmount({ butter: 1000 }, "butter", -5, 300), {}, "a nonsense amount is not stored");
+  const store = new Map();
+  const storage = { getItem: async (k) => store.get(k) ?? null, setItem: async (k, v) => { store.set(k, v); } };
+  return saveLineAmounts(storage, "list-1", { butter: 1000, broken: Number.NaN })
+    .then(() => loadLineAmounts(storage, "list-1"))
+    .then((loaded) => {
+      assert.deepEqual(loaded, { butter: 1000 }, "an unreadable entry drops only itself");
+      return loadLineAmounts(storage, "other-list").then((empty) => assert.deepEqual(empty, {}));
+    });
+});

@@ -4,7 +4,7 @@ import { categories, type ProductCategory } from '../types/product';
 import type { BasketGenerationResult, SavedBasket } from '../types/basket';
 import type { CustomItem } from './basket/custom-items';
 import { formatQuantity, type UnitSystem } from './units';
-import { ingredientCost } from './pricing/ingredientCost';
+import { ingredientCost, packCost } from './pricing/ingredientCost';
 
 /** Which list the shopping tab opens on.
  *
@@ -38,13 +38,24 @@ export interface ShoppingLine {
   amount: number;
   unit: 'g' | 'ml';
   category: ProductCategory;
+  /** What the amount on this line costs, by the kilo. */
   estimate: number | null;
+  /** What buying it costs in whole packages, which is what the till asks for. */
+  purchase: { packs: number; amount: number; cost: number } | null;
 }
 /** What the whole list costs about, and whether anything in it carries no price at all. */
 export function listEstimate(lines: ShoppingLine[], extras: number = 0):
   { total: number; complete: boolean } {
   const priced = lines.filter(line => line.estimate !== null);
-  return { total: priced.reduce((sum, line) => sum + (line.estimate ?? 0), 0),
+  return { total: Math.round(priced.reduce((sum, line) => sum + (line.estimate ?? 0), 0) * 100) / 100,
+    complete: priced.length === lines.length && !extras };
+}
+/** What the shop will charge: every line in whole packages. Higher than what the meals use up,
+ *  because nobody sells 64 g of parsley, and that difference is the point of showing it. */
+export function listPurchase(lines: ShoppingLine[], extras: number = 0):
+  { total: number; complete: boolean } {
+  const priced = lines.filter(line => line.purchase !== null);
+  return { total: Math.round(priced.reduce((sum, line) => sum + (line.purchase?.cost ?? 0), 0) * 100) / 100,
     complete: priced.length === lines.length && !extras };
 }
 /** What the week needs, as ingredients rather than packages.
@@ -61,7 +72,8 @@ export function shoppingLines(result: BasketGenerationResult): ShoppingLine[] {
       .filter(line => Number.isFinite(line.requiredQuantity) && line.requiredQuantity > 0)
       .map(line => ({ key: line.ingredientKey, name: line.ingredientName,
         amount: line.requiredQuantity, unit: line.unit, category: category(line.ingredientKey),
-        estimate: ingredientCost(line.ingredientKey, line.requiredQuantity) }));
+        estimate: ingredientCost(line.ingredientKey, line.requiredQuantity),
+        purchase: packCost(line.ingredientKey, line.requiredQuantity) }));
   return result.items.map(item => ({
     key: item.ingredientKey ?? item.product.id,
     name: item.product.name,
@@ -71,7 +83,14 @@ export function shoppingLines(result: BasketGenerationResult): ShoppingLine[] {
     estimate: item.ingredientKey
       ? ingredientCost(item.ingredientKey, item.purchasedQuantity ?? item.packageCount * item.packageAmount)
       : item.estimatedPrice,
+    purchase: item.ingredientKey
+      ? packCost(item.ingredientKey, item.purchasedQuantity ?? item.packageCount * item.packageAmount)
+      : null,
   }));
+}
+/** The same line with an amount somebody corrected by hand, priced again for that amount. */
+export function withAmount(line: ShoppingLine, amount: number): ShoppingLine {
+  return { ...line, amount, estimate: ingredientCost(line.key, amount), purchase: packCost(line.key, amount) };
 }
 /** Grouped the way a shop is walked, in the catalog's own category order. "Other" is a category
  *  of that list like any other and already sits last in it, so anything unrecognised lands there
@@ -106,7 +125,7 @@ export function shoppingListText({ name, groups, extras, ticked, system }: {
     .map(group => [group.label.toUpperCase(),
       ...group.lines.map(line => mark(line.key, `${line.name} — ${formatQuantity(line, system)}`))].join('\n'));
   // The estimate travels with the list: whoever shops knows what to expect at the till.
-  const estimate = listEstimate(groups.flatMap(group => group.lines), extras.length);
+  const estimate = listPurchase(groups.flatMap(group => group.lines), extras.length);
   if (extras.length)
     blocks.push([t('list.addedByYou').toUpperCase(),
       ...extras.map(item => mark(item.id, item.note ? `${item.name} — ${item.note}` : item.name))].join('\n'));
