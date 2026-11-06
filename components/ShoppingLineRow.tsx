@@ -5,8 +5,9 @@ import { editableQuantity, quantityFromInput, type Quantity, type UnitSystem } f
 import { colors, radii, spacing, typography } from '../lib/theme';
 import { formatMoney, t } from '../services/i18n';
 
-/** One line of the shopping list, read like a row of a spreadsheet: tick, what to buy, how much,
- *  what it costs. The amount is a field, not a label — a household knows better than the plan
+/** One line of the shopping list, read like a row of a spreadsheet: what to buy, how much, what
+ *  it costs, and the tick at the end, where a thumb reaches it and where ticking one off does not
+ *  shift the names. The amount is a field, not a label — a household knows better than the plan
  *  whether it wants a kilo of potatoes this week, and correcting it here beats cooking around it.
  *  A line the household typed itself has no amount to compute with and keeps its own note. */
 export function ShoppingLineRow({ name, quantity, note, price, system, ticked, onTick, onAmount, onRemove }: {
@@ -43,14 +44,6 @@ export function ShoppingLineRow({ name, quantity, note, price, system, ticked, o
     onAmount(quantityFromInput(value, quantity.unit, system));
   };
   return <View style={[styles.row, ticked && styles.done]}>
-    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: ticked }}
-      accessibilityLabel={t('row.state', { name, amount: field ? `, ${field.value} ${field.label}` : '',
-        state: t(ticked ? 'row.inTrolley' : 'row.toBuy') })}
-      onPress={onTick} style={({ pressed }) => [styles.tick, pressed && { opacity: 0.6 }]}>
-      <View style={[styles.box, ticked && styles.boxOn]}>
-        {ticked && <Feather name="check" size={16} color={colors.onPrimary} />}
-      </View>
-    </Pressable>
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: ticked }} accessibilityLabel={name}
       onPress={onTick} style={styles.nameCell}>
       <Text numberOfLines={1} style={[styles.name, ticked && styles.nameDone]}>{name}</Text>
@@ -72,6 +65,14 @@ export function ShoppingLineRow({ name, quantity, note, price, system, ticked, o
       onPress={onRemove} style={({ pressed }) => [styles.remove, pressed && { opacity: 0.6 }]}>
       <Feather name="x" size={16} color={colors.muted} />
     </Pressable>}
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: ticked }}
+      accessibilityLabel={t('row.state', { name, amount: field ? `, ${field.value} ${field.label}` : '',
+        state: t(ticked ? 'row.inTrolley' : 'row.toBuy') })}
+      onPress={onTick} style={({ pressed }) => [styles.tick, pressed && { opacity: 0.6 }]}>
+      <View style={[styles.box, ticked && styles.boxOn]}>
+        {ticked && <Feather name="check" size={16} color={colors.onPrimary} />}
+      </View>
+    </Pressable>
   </View>;
 }
 /** The empty row at the end of the list: the same shape as every line above it, so adding
@@ -85,7 +86,6 @@ export function ShoppingDraftRow({ name, amount, onName, onAmount, onAdd }: {
   onAdd: () => void;
 }) {
   return <View style={[styles.row, styles.draft]}>
-    <View style={styles.tick}><View style={[styles.box, styles.boxEmpty]} /></View>
     <TextInput value={name} onChangeText={onName} onSubmitEditing={onAdd} returnKeyType="done"
       placeholder={t('basket.addWhat')} placeholderTextColor={colors.muted} maxLength={80}
       accessibilityLabel={t('basket.addWhat')} style={[styles.name, styles.nameCell, styles.field]} />
@@ -93,8 +93,10 @@ export function ShoppingDraftRow({ name, amount, onName, onAmount, onAdd }: {
       placeholder={t('basket.addAmount')} placeholderTextColor={colors.muted} maxLength={40}
       accessibilityLabel={t('basket.addAmount')} style={[styles.amount, styles.draftAmount]} />
     <Pressable accessibilityRole="button" accessibilityLabel={t('basket.add')} onPress={onAdd}
-      style={({ pressed }) => [styles.remove, pressed && { opacity: 0.6 }]}>
-      <Feather name="plus" size={18} color={colors.primary} />
+      style={({ pressed }) => [styles.tick, pressed && { opacity: 0.6 }]}>
+      <View style={[styles.box, styles.boxEmpty]}>
+        <Feather name="plus" size={16} color={colors.primary} />
+      </View>
     </Pressable>
   </View>;
 }
@@ -102,23 +104,22 @@ const styles = {
   row: { flexDirection: 'row' as const, alignItems: 'center' as const, backgroundColor: colors.surface,
     borderRadius: radii.medium, borderWidth: 1, borderColor: colors.border, minHeight: 48, gap: 4 },
   done: { backgroundColor: colors.pale },
-  tick: { paddingLeft: spacing.sm, paddingRight: spacing.xs, paddingVertical: spacing.sm },
+  tick: { paddingLeft: spacing.xs, paddingRight: spacing.sm, paddingVertical: spacing.sm },
   box: { width: 24, height: 24, borderRadius: 7, borderWidth: 2, borderColor: colors.border,
     alignItems: 'center' as const, justifyContent: 'center' as const, backgroundColor: colors.surface },
   boxOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-  nameCell: { flex: 1, minWidth: 0, paddingVertical: spacing.sm },
+  nameCell: { flex: 1, minWidth: 0, paddingVertical: spacing.sm, paddingLeft: spacing.sm },
   name: { ...typography.body, fontWeight: '600' as const, color: colors.ink },
   nameDone: { color: colors.muted, textDecorationLine: 'line-through' as const },
   amountCell: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 2, flexGrow: 0, flexShrink: 0 },
-  amount: { ...typography.small, color: colors.ink, textAlign: 'right' as const, width: 58, flexGrow: 0,
+  amount: { ...typography.small, color: colors.ink, textAlign: 'right' as const, width: 52, flexGrow: 0,
     paddingVertical: 4, paddingHorizontal: 4, borderRadius: radii.small, borderWidth: 1, borderColor: colors.border },
-  unit: { ...typography.small, color: colors.muted, width: 30 },
-  price: { ...typography.small, color: colors.ink, textAlign: 'right' as const, width: 62,
-    paddingRight: spacing.sm },
+  unit: { ...typography.small, color: colors.muted, width: 22 },
+  price: { ...typography.small, color: colors.ink, textAlign: 'right' as const, width: 56 },
   remove: { width: 32, minHeight: 44, alignItems: 'center' as const, justifyContent: 'center' as const },
-  own: { ...typography.small, color: colors.muted, textAlign: 'right' as const, width: 92 },
+  own: { ...typography.small, color: colors.muted, textAlign: 'right' as const, width: 86 },
   draft: { borderStyle: 'dashed' as const },
   boxEmpty: { borderColor: colors.border, opacity: 0.6 },
-  field: { paddingVertical: 4, paddingRight: 4 },
+  field: { paddingVertical: 4, paddingRight: 4, paddingLeft: spacing.sm },
   draftAmount: { width: 96, textAlign: 'left' as const, borderWidth: 0 },
 };
