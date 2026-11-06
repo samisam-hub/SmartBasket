@@ -72,6 +72,30 @@ export function ShoppingLineRow({ name, quantity, note, price, system, ticked, o
     </Pressable>}
   </View>;
 }
+/** The empty row at the end of the list: the same shape as every line above it, so adding
+ *  something reads as writing the next line rather than filling in a form. What goes where is
+ *  said inside the fields; there is nothing else to look at. */
+export function ShoppingDraftRow({ name, amount, onName, onAmount, onAdd }: {
+  name: string;
+  amount: string;
+  onName: (text: string) => void;
+  onAmount: (text: string) => void;
+  onAdd: () => void;
+}) {
+  return <View style={[styles.row, styles.draft]}>
+    <View style={styles.tick}><View style={[styles.box, styles.boxEmpty]} /></View>
+    <TextInput value={name} onChangeText={onName} onSubmitEditing={onAdd} returnKeyType="done"
+      placeholder={t('basket.addWhat')} placeholderTextColor={colors.muted} maxLength={80}
+      accessibilityLabel={t('basket.addWhat')} style={[styles.name, styles.nameCell, styles.field]} />
+    <TextInput value={amount} onChangeText={onAmount} onSubmitEditing={onAdd} returnKeyType="done"
+      placeholder={t('basket.addAmount')} placeholderTextColor={colors.muted} maxLength={40}
+      accessibilityLabel={t('basket.addAmount')} style={[styles.amount, styles.draftAmount]} />
+    <Pressable accessibilityRole="button" accessibilityLabel={t('basket.add')} onPress={onAdd}
+      style={({ pressed }) => [styles.remove, pressed && { opacity: 0.6 }]}>
+      <Feather name="plus" size={18} color={colors.primary} />
+    </Pressable>
+  </View>;
+}
 const styles = {
   row: { flexDirection: 'row' as const, alignItems: 'center' as const, backgroundColor: colors.surface,
     borderRadius: radii.medium, borderWidth: 1, borderColor: colors.border, minHeight: 48, gap: 4 },
@@ -90,4 +114,8 @@ const styles = {
   price: { ...typography.small, color: colors.ink, textAlign: 'right' as const, width: 62,
     paddingRight: spacing.sm },
   remove: { width: 32, minHeight: 44, alignItems: 'center' as const, justifyContent: 'center' as const },
+  draft: { borderStyle: 'dashed' as const },
+  boxEmpty: { borderColor: colors.border, opacity: 0.6 },
+  field: { paddingVertical: 4, paddingRight: 4 },
+  draftAmount: { width: 96, textAlign: 'left' as const, borderWidth: 0 },
 };

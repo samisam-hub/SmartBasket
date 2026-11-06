@@ -3,8 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator, Share, Text, View } from 'react-native';
-import { EmptyState, IconButton, PrimaryButton, Screen, SecondaryButton, SectionCard, SelectionChip, TextButton, TextInput, ErrorMessage } from '@/components/ui';
-import { ShoppingLineRow } from '@/components/ShoppingLineRow';
+import { EmptyState, IconButton, PrimaryButton, Screen, SecondaryButton, SelectionChip, TextButton, ErrorMessage } from '@/components/ui';
+import { ShoppingDraftRow, ShoppingLineRow } from '@/components/ShoppingLineRow';
 import { useActiveBasket } from '@/context/ActiveBasketContext';
 import { useBasketFlow } from '@/hooks/useBasketFlow';
 import { useMerchantDemo } from '@/services/merchant-demo';
@@ -145,13 +145,10 @@ export default function ShoppingListScreen() {
         system={system} ticked={ticked.includes(item.id)} onTick={() => toggle(item.id)}
         onRemove={() => keep(removeCustomItem(extras, item.id))} />)}
     </View>}
-    <SectionCard title={t('basket.addTitle')}>
-      <TextInput label={t('basket.addWhat')} value={typed} onChangeText={text => { setTyped(text); setAddError(null); }} maxLength={80} />
-      <TextInput label={t('basket.addAmount')} value={note} onChangeText={setNote} maxLength={40} />
-      <ErrorMessage message={addError} />
-      <PrimaryButton label={t('basket.add')} onPress={add} />
-      <Text style={ui.small}>{t('basket.addNote')}</Text>
-    </SectionCard>
+    {/* The next line of the list, empty and ready: no card, no labels, no second button. */}
+    <ShoppingDraftRow name={typed} amount={note} onAdd={add}
+      onName={text => { setTyped(text); setAddError(null); }} onAmount={setNote} />
+    <ErrorMessage message={addError} />
     <TextButton label={t('basket.allLists', { count: baskets.length })} onPress={() => router.push('/saved-lists')} />
   </Screen>;
 }
