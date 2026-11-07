@@ -5,7 +5,7 @@ const freeLabels: Record<Allergen, string[]> = {
   milk: ['milk free', 'dairy free', 'no milk'], eggs: ['egg free', 'eggs free', 'no eggs'],
   fish: ['fish free', 'no fish'], shellfish: ['shellfish free'], peanuts: ['peanut free', 'peanuts free'],
   tree_nuts: ['tree nut free', 'tree nuts free', 'nut free', 'nuts free'], soy: ['soy free', 'soya free'],
-  wheat: ['wheat free'], sesame: ['sesame free'], mustard: ['mustard free'], celery: ['celery free'],
+  wheat: ['wheat free'], sesame: ['sesame free'], mustard: ['mustard free'], celery: ['celery free'], sulfites: ['sulfite free', 'sulphite free'],
 };
 export function exclusionReason(p: Product, preferences: UserPreferences): string | null {
   if (p.source === 'demo') return 'fictional_product';

@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 2,
+  "locale": "de-DE",
+  "title": "Internationale Familiengerichte",
+  "status": "active-estimated-recipes",
+  "timeBasis": {
+    "servings": 4,
+    "description": "Geschätzte Zeiten für vier Portionen; aktive Zeit ist Teil der Gesamtzeit. Geh-, Schmor- und Ruhezeiten sind enthalten. Mengen beziehen sich auf essbare Roh-/Trockenware. Salz, Pfeffer und Wasser sind Grundvorräte; Wasser steht bei Bedarf in der Anleitung. Nährwerte sind redaktionelle Schätzungen, bei gebratenen Pirozhki einschließlich geschätzter Ölaufnahme."
+  },
+  "meals": [
+    {
+      "id": "borschtsch-rind-ohne-bohnen",
+      "name": "Borschtsch mit Rindfleisch (ohne Kidneybohnen)",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 35,
+      "totalMinutes": 150,
+      "method": "cook",
+      "ingredients": [
+        "Rindergulasch (roh, ohne Knochen)",
+        "Rote Bete (roh)",
+        "Weißkohl (frisch)",
+        "Kartoffeln",
+        "Karotten",
+        "Zwiebel",
+        "Tomatenmark",
+        "Branntweinessig",
+        "Sonnenblumenöl",
+        "Knoblauch (frisch)",
+        "Frischer Dill",
+        "Schmand 24 %"
+      ],
+      "preparationNote": "Rindfleisch würfeln, mit 1,5 l Wasser und Salz aufkochen, abschäumen und etwa 90 Minuten sanft köcheln lassen. Rote Bete und Karotten raspeln, Zwiebel würfeln und in Öl anschwitzen; Tomatenmark und Essig zugeben. Kartoffelwürfel und fein geschnittenen Weißkohl in die Fleischbrühe geben, nach 10 Minuten das angeschwitzte Gemüse zugeben und weitere 20–30 Minuten garen, bis Fleisch und Gemüse weich sind. Knoblauch und Dill zugeben, mit Salz und Pfeffer abschmecken und mit Schmand servieren. Keine Bohnen verwenden; die Gesamtzeit enthält das Schmoren des Rindfleischs.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "beef_stew",
+          "quantity": 600
+        },
+        {
+          "ingredientKey": "beetroot",
+          "quantity": 400
+        },
+        {
+          "ingredientKey": "white_cabbage",
+          "quantity": 300
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 400
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 150
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 150
+        },
+        {
+          "ingredientKey": "tomato_paste",
+          "quantity": 40
+        },
+        {
+          "ingredientKey": "vinegar",
+          "quantity": 15
+        },
+        {
+          "ingredientKey": "sunflower_oil",
+          "quantity": 20
+        },
+        {
+          "ingredientKey": "garlic",
+          "quantity": 10
+        },
+        {
+          "ingredientKey": "dill",
+          "quantity": 10
+        },
+        {
+          "ingredientKey": "sour_cream",
+          "quantity": 80
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
+    },
+    {
+      "id": "pirozhki-kartoffeln-pilze-gebraten",
+      "name": "Gebratene Pirozhki mit Kartoffeln und Pilzen",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 50,
+      "totalMinutes": 120,
+      "method": "cook",
+      "ingredients": [
+        "Weizenmehl Type 405",
+        "Trockenhefe",
+        "Zucker",
+        "Sonnenblumenöl",
+        "Kartoffeln",
+        "Champignons",
+        "Zwiebel"
+      ],
+      "preparationNote": "Für etwa 12 Pirozhki (3 pro Portion): Mehl, Trockenhefe, Zucker, Salz, 250 ml lauwarmes Wasser und 20 g Öl zu einem weichen Teig kneten. Zugedeckt etwa 60 Minuten gehen lassen; währenddessen die Füllung zubereiten und abkühlen lassen. Kartoffeln schälen, weich kochen und zerstampfen. Fein gehackte Pilze und Zwiebel in etwas Öl braten, bis die Flüssigkeit verdampft ist, unter die Kartoffeln mischen und würzen. Teig in 12 Stücke teilen, flach drücken, füllen und die Ränder fest verschließen. 10 Minuten ruhen lassen, dann portionsweise in einer Pfanne in heißem Sonnenblumenöl bei mittlerer Hitze von beiden Seiten goldbraun braten, bis der Teig durchgegart ist. Gesamtzeit enthält Gehzeit und mehrere Bratdurchgänge. Die 80 g Öl umfassen 20 g im Teig sowie geschätzte 60 g für Füllung und aufgenommenes Bratöl; je nach Pfanne zusätzliches Bratöl bereithalten.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "flour",
+          "quantity": 400
+        },
+        {
+          "ingredientKey": "dry_yeast",
+          "quantity": 7
+        },
+        {
+          "ingredientKey": "sugar",
+          "quantity": 10
+        },
+        {
+          "ingredientKey": "sunflower_oil",
+          "quantity": 80
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 500
+        },
+        {
+          "ingredientKey": "mushrooms",
+          "quantity": 300
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 150
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
+    },
+    {
+      "id": "pirozhki-kohl-karotten-gebraten",
+      "name": "Gebratene Pirozhki mit Kohl und Karotten",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 50,
+      "totalMinutes": 120,
+      "method": "cook",
+      "ingredients": [
+        "Weizenmehl Type 405",
+        "Trockenhefe",
+        "Zucker",
+        "Sonnenblumenöl",
+        "Weißkohl (frisch)",
+        "Karotten",
+        "Zwiebel"
+      ],
+      "preparationNote": "Für etwa 12 Pirozhki (3 pro Portion): Mehl, Trockenhefe, Zucker, Salz, 250 ml lauwarmes Wasser und 20 g Öl zu einem weichen Teig kneten. Zugedeckt etwa 60 Minuten gehen lassen; währenddessen die Füllung zubereiten und abkühlen lassen. Weißkohl fein schneiden, Karotten raspeln und Zwiebel würfeln. In etwas Öl etwa 20 Minuten weich dünsten; überschüssige Flüssigkeit verdampfen lassen und würzen. Teig in 12 Stücke teilen, flach drücken, füllen und die Ränder fest verschließen. 10 Minuten ruhen lassen, dann portionsweise in einer Pfanne in heißem Sonnenblumenöl bei mittlerer Hitze von beiden Seiten goldbraun braten, bis der Teig durchgegart ist. Gesamtzeit enthält Gehzeit und mehrere Bratdurchgänge. Die 80 g Öl umfassen 20 g im Teig sowie geschätzte 60 g für Füllung und aufgenommenes Bratöl; je nach Pfanne zusätzliches Bratöl bereithalten.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "flour",
+          "quantity": 400
+        },
+        {
+          "ingredientKey": "dry_yeast",
+          "quantity": 7
+        },
+        {
+          "ingredientKey": "sugar",
+          "quantity": 10
+        },
+        {
+          "ingredientKey": "sunflower_oil",
+          "quantity": 80
+        },
+        {
+          "ingredientKey": "white_cabbage",
+          "quantity": 600
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 200
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 150
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
+    },
+    {
+      "id": "kotlety-kartoffelpueree-rahmsauce",
+      "name": "Kotlety mit Kartoffelpüree und Rahmsauce",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 40,
+      "totalMinutes": 55,
+      "method": "cook",
+      "ingredients": [
+        "Rinderhackfleisch roh",
+        "Weizenbrötchen frisch",
+        "Vollmilch 3,5 %",
+        "Eier (essbarer Anteil)",
+        "Zwiebel",
+        "Kartoffeln",
+        "Butter",
+        "Schlagsahne 30 %",
+        "Weizenmehl Type 405",
+        "Sonnenblumenöl",
+        "Gemüsebrühe Pulver"
+      ],
+      "preparationNote": "Brötchen in 100 ml Milch einweichen. Mit Rinderhack, Ei, der Hälfte der fein gehackten Zwiebel, Salz und Pfeffer vermengen und 8 Kotlety formen. In Öl von beiden Seiten braten und vollständig durchgaren. Parallel Kartoffeln schälen, etwa 20 Minuten weich kochen, abgießen und mit 150 ml warmer Milch und 30 g Butter stampfen. Für die Sauce übrige Zwiebel im Bratensatz mit 10 g Butter anschwitzen, Mehl einrühren, mit 200 ml Wasser und dem Brühepulver ablöschen, Sahne zugeben und einige Minuten köcheln lassen. Je Portion 2 Kotlety mit Püree und Sauce servieren.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "mince",
+          "quantity": 600
+        },
+        {
+          "ingredientKey": "bread_roll",
+          "quantity": 80
+        },
+        {
+          "ingredientKey": "milk",
+          "quantity": 250
+        },
+        {
+          "ingredientKey": "eggs",
+          "quantity": 50
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 150
+        },
+        {
+          "ingredientKey": "potatoes",
+          "quantity": 800
+        },
+        {
+          "ingredientKey": "butter",
+          "quantity": 40
+        },
+        {
+          "ingredientKey": "cream",
+          "quantity": 100
+        },
+        {
+          "ingredientKey": "flour",
+          "quantity": 15
+        },
+        {
+          "ingredientKey": "sunflower_oil",
+          "quantity": 20
+        },
+        {
+          "ingredientKey": "broth",
+          "quantity": 5
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
+    },
+    {
+      "id": "af-qabeli-palau-lamm",
+      "name": "Qabeli Palau – afghanischer Pulao mit Lamm",
+      "mealSlots": [
+        "lunch",
+        "dinner"
+      ],
+      "activeMinutes": 40,
+      "totalMinutes": 150,
+      "method": "cook",
+      "ingredients": [
+        "Lammfleisch zum Schmoren (roh, ohne Knochen)",
+        "Basmatireis (trocken)",
+        "Karotten",
+        "Rosinen",
+        "Zwiebel",
+        "Sonnenblumenöl",
+        "Zucker",
+        "Kreuzkümmel (gemahlen)",
+        "Kardamom (gemahlen)"
+      ],
+      "preparationNote": "Basmatireis waschen und 30 Minuten in Wasser einweichen. Lamm würfeln, in der Hälfte des Öls anbraten, Zwiebel zugeben, mit Salz, Pfeffer und der Hälfte von Kreuzkümmel und Kardamom würzen. Mit etwa 700 ml Wasser bedeckt 75–90 Minuten sanft schmoren, bis das Fleisch zart ist. Parallel Karotten in feine Stifte schneiden, im übrigen Öl braten, Rosinen und Zucker kurz mitbraten und beiseitestellen. Reis abgießen, in frischem Salzwasser etwa 5–7 Minuten vorkochen und abgießen. Fleisch mit Reis in einem schweren Topf schichten, etwa 200 ml abgeseihte Fleischbrühe und übrige Gewürze zugeben; Karotten und Rosinen darauf verteilen. Dicht zugedeckt bei kleinster Hitze 20–25 Minuten dämpfen, anschließend 10 Minuten ruhen lassen. Gesamtzeit enthält Einweichen, Schmoren, Dämpfen und Ruhen; mehrere Schritte laufen parallel.",
+      "recipeServings": 4,
+      "amounts": [
+        {
+          "ingredientKey": "lamb_stew",
+          "quantity": 600
+        },
+        {
+          "ingredientKey": "basmati_rice",
+          "quantity": 320
+        },
+        {
+          "ingredientKey": "carrots",
+          "quantity": 300
+        },
+        {
+          "ingredientKey": "raisins",
+          "quantity": 80
+        },
+        {
+          "ingredientKey": "onion",
+          "quantity": 200
+        },
+        {
+          "ingredientKey": "sunflower_oil",
+          "quantity": 40
+        },
+        {
+          "ingredientKey": "sugar",
+          "quantity": 15
+        },
+        {
+          "ingredientKey": "cumin",
+          "quantity": 3
+        },
+        {
+          "ingredientKey": "cardamom",
+          "quantity": 1
+        }
+      ],
+      "nutritionSource": "curated-development-estimate"
+    }
+  ]
+}

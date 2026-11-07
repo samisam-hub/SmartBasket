@@ -28,6 +28,7 @@ export const allergens = [
   "sesame",
   "mustard",
   "celery",
+  "sulfites",
 ] as const;
 export const steps = [
   "welcome",

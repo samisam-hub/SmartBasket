@@ -30,6 +30,7 @@ export const en: Record<TranslationKey, Phrase> = {
   'term.sesame': 'Sesame',
   'term.mustard': 'Mustard',
   'term.celery': 'Celery',
+  'term.sulfites': 'Sulphites',
   'term.breakfast': 'Breakfast',
   'term.lunch': 'Lunch',
   'term.dinner': 'Dinner',

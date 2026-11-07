@@ -32,6 +32,7 @@ export const de = {
   'term.sesame': 'Sesam',
   'term.mustard': 'Senf',
   'term.celery': 'Sellerie',
+  'term.sulfites': 'Sulfite',
   'term.breakfast': 'Frühstück',
   'term.lunch': 'Mittagessen',
   'term.dinner': 'Abendessen',

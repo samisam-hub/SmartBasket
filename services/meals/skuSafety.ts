@@ -3,8 +3,8 @@ import type { UserPreferences, Allergen } from '../../types/preferences';
 import { allergenConflicts, highSugar, requiredDiet, sugarsUnknown } from '../catalog/discovery';
 const terms:Record<Allergen,RegExp>={milk:/\b(milk|milch|lait|caseinate|casein|whey|molke)\b/i,eggs:/\b(egg|eggs|ei|eier|oeuf)\b/i,fish:/\b(fish|fisch|salmon|lachs|tuna|thunfisch)\b/i,
  shellfish:/\b(shrimp|prawn|crab|garnelen|krabben|shellfish)\b/i,peanuts:/\b(peanut|peanuts|erdnuss|erdnüsse)\b/i,tree_nuts:/\b(almond|hazelnut|walnut|mandel|haselnuss|walnuss|cashew)\b/i,
- soy:/\b(soy|soya|soja|soybeans)\b/i,wheat:/\b(wheat|weizen|gluten)\b/i,sesame:/\b(sesame|sesam)\b/i,mustard:/\b(mustard|senf)\b/i,celery:/\b(celery|sellerie)\b/i};
-const free:Record<Allergen,string[]>={milk:['milk free','dairy free'],eggs:['egg free','eggs free'],fish:['fish free'],shellfish:['shellfish free'],peanuts:['peanut free','peanuts free'],tree_nuts:['nut free','nuts free','tree nut free'],soy:['soy free','soya free'],wheat:['wheat free'],sesame:['sesame free'],mustard:['mustard free'],celery:['celery free']};
+ soy:/\b(soy|soya|soja|soybeans)\b/i,wheat:/\b(wheat|weizen|gluten)\b/i,sesame:/\b(sesame|sesam)\b/i,mustard:/\b(mustard|senf)\b/i,celery:/\b(celery|sellerie)\b/i,sulfites:/\b(sulfites?|sulphites?|sulfit|sulfite|schwefeldioxid|sulphur dioxide|sulfur dioxide|e\s*22[0-8])\b/i};
+const free:Record<Allergen,string[]>={milk:['milk free','dairy free'],eggs:['egg free','eggs free'],fish:['fish free'],shellfish:['shellfish free'],peanuts:['peanut free','peanuts free'],tree_nuts:['nut free','nuts free','tree nut free'],soy:['soy free','soya free'],wheat:['wheat free'],sesame:['sesame free'],mustard:['mustard free'],celery:['celery free'],sulfites:['sulfite free','sulphite free']};
 /** Lifestyle uncertainty is a warning, never a claim of verified suitability. Allergies stay strict. */
 export function skuSafety(p:Product,preferences:UserPreferences):{rejection:string|null;unknownDiet:string[]} {
  const no=(rejection:string)=>({rejection,unknownDiet:[]});

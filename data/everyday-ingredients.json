@@ -2101,6 +2101,337 @@
         "eggs",
         "celery"
       ]
+    },
+    {
+      "key": "duck_breast",
+      "name": "Entenbrust mit Haut (roh, ohne Knochen)",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Entenbrust",
+        "Entenbrustfilet",
+        "duck breast"
+      ],
+      "exclude": [
+        "ohne haut",
+        "skinless",
+        "geräuchert",
+        "smoked",
+        "gegart",
+        "cooked",
+        "mariniert",
+        "marinated",
+        "gewürzt",
+        "sauce"
+      ],
+      "nutritionPer100": {
+        "calories": 202,
+        "protein": 19,
+        "carbohydrates": 0,
+        "fat": 14
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "venison_stew",
+      "name": "Hirschgulasch (roh, ohne Knochen)",
+      "unit": "g",
+      "group": "protein",
+      "categories": [
+        "meat"
+      ],
+      "aliases": [
+        "Hirschgulasch",
+        "Hirschragout",
+        "Hirschfleisch",
+        "diced venison",
+        "venison stewing meat"
+      ],
+      "exclude": [
+        "gegart",
+        "gekocht",
+        "cooked",
+        "mariniert",
+        "marinated",
+        "gewürzt",
+        "sauce",
+        "fertiggericht",
+        "schwein",
+        "pork",
+        "wildschwein",
+        "rehgulasch",
+        "mischung"
+      ],
+      "nutritionPer100": {
+        "calories": 114,
+        "protein": 22,
+        "carbohydrates": 0,
+        "fat": 3
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "red_cabbage",
+      "name": "Rotkohl / Blaukraut (frisch)",
+      "unit": "g",
+      "group": "vegetables",
+      "categories": [
+        "vegetables"
+      ],
+      "aliases": [
+        "Rotkohl",
+        "Blaukraut",
+        "Rotkraut",
+        "red cabbage"
+      ],
+      "exclude": [
+        "glas",
+        "dose",
+        "gekocht",
+        "gegart",
+        "eingelegt",
+        "salat",
+        "apfelrotkohl",
+        "apfelrotkraut",
+        "tafelfertig"
+      ],
+      "nutritionPer100": {
+        "calories": 31,
+        "protein": 1.4,
+        "carbohydrates": 7,
+        "fat": 0.2
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "potato_starch",
+      "name": "Kartoffelstärke",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other",
+        "grains"
+      ],
+      "aliases": [
+        "Kartoffelstärke",
+        "Kartoffelmehl",
+        "potato starch"
+      ],
+      "exclude": [
+        "mischung",
+        "mix",
+        "mais",
+        "corn"
+      ],
+      "nutritionPer100": {
+        "calories": 350,
+        "protein": 0.1,
+        "carbohydrates": 86,
+        "fat": 0
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "bay_leaf",
+      "name": "Lorbeerblätter (getrocknet)",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Lorbeerblätter",
+        "Lorbeerblatt",
+        "bay leaves",
+        "bay leaf"
+      ],
+      "exclude": [
+        "mischung",
+        "mix"
+      ],
+      "nutritionPer100": {
+        "calories": 313,
+        "protein": 8,
+        "carbohydrates": 75,
+        "fat": 8
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "cloves",
+      "name": "Gewürznelken (ganz)",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Gewürznelken",
+        "Nelken ganz",
+        "whole cloves"
+      ],
+      "exclude": [
+        "gemahlen",
+        "ground",
+        "mischung",
+        "mix"
+      ],
+      "nutritionPer100": {
+        "calories": 274,
+        "protein": 6,
+        "carbohydrates": 66,
+        "fat": 13
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "juniper",
+      "name": "Wacholderbeeren (getrocknet)",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Wacholderbeeren",
+        "juniper berries"
+      ],
+      "exclude": [
+        "mischung",
+        "mix",
+        "gin"
+      ],
+      "nutritionPer100": {
+        "calories": 300,
+        "protein": 5,
+        "carbohydrates": 50,
+        "fat": 10
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "lingonberry_preserve",
+      "name": "Wildpreiselbeeren im Glas (gezuckert)",
+      "unit": "g",
+      "group": "precise",
+      "categories": [
+        "fruit",
+        "other"
+      ],
+      "aliases": [
+        "Wildpreiselbeeren",
+        "Preiselbeerkompott",
+        "Preiselbeeren im Glas",
+        "lingonberry preserve"
+      ],
+      "exclude": [
+        "saft",
+        "juice",
+        "getrocknet",
+        "dried",
+        "pulver",
+        "powder"
+      ],
+      "nutritionPer100": {
+        "calories": 180,
+        "protein": 0.2,
+        "carbohydrates": 44,
+        "fat": 0.1
+      },
+      "diets": [
+        "vegan",
+        "vegetarian",
+        "pescatarian",
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": []
+    },
+    {
+      "key": "red_wine",
+      "name": "Rotwein (trocken)",
+      "unit": "ml",
+      "group": "precise",
+      "categories": [
+        "other"
+      ],
+      "aliases": [
+        "Rotwein",
+        "red wine",
+        "Spätburgunder",
+        "Cabernet Sauvignon",
+        "Merlot"
+      ],
+      "exclude": [
+        "alkoholfrei",
+        "alcohol free",
+        "essig",
+        "vinegar",
+        "sauce",
+        "glühwein",
+        "mulled",
+        "weißwein",
+        "white wine"
+      ],
+      "nutritionPer100": {
+        "calories": 83,
+        "protein": 0.1,
+        "carbohydrates": 2.6,
+        "fat": 0
+      },
+      "diets": [
+        "lactose_free",
+        "gluten_free"
+      ],
+      "allergens": [
+        "sulfites"
+      ]
     }
   ]
 }
