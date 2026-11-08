@@ -1,5 +1,6 @@
-import { formatEuro } from '../lib/german';
+import { formatMoney, t } from '../services/i18n';
 import { basketDisplayName } from '../services/basket/naming';
+import { listEstimate, shoppingLines } from '../services/shopping-list';
 import { Pressable, Text, View } from 'react-native';
 import { planNutrition } from '../services/meals/planner';
 import { plannedDayCount } from '../services/meals/weekPlan';
@@ -9,6 +10,11 @@ import { colors, ui } from '../lib/theme';
 import { basketPrice } from './BasketResult';
 import { BasketMealPreview } from './BasketMealPreview';
 
+/** The same sum the shopping list shows: average prices for the amounts, not catalogue packages. */
+const listPrice = (b: SavedBasket): number | null => {
+  const lines = shoppingLines(b.result);
+  return lines.length ? listEstimate(lines).total : null;
+};
 export function SavedBasketPreview({ basket: b, onOpen, minimal = false }: { basket: SavedBasket; onOpen: () => void; minimal?: boolean }) {
   const date = new Date(b.createdAt);
   const suffix = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -17,10 +23,10 @@ export function SavedBasketPreview({ basket: b, onOpen, minimal = false }: { bas
   if (minimal && b.result.mealPlan?.items.length) {
     const plan = b.result.mealPlan;
     return <>
-      <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Öffnen ${title}`} style={{ gap: 8 }}>
+      <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={t('preview.open', { title })} style={{ gap: 8 }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
           <Text style={[ui.subheading, { flexGrow: 1 }]}>{title}</Text>
-          <Text style={[ui.body, { fontWeight: '700' }]}>{b.result.estimatedTotalPrice === null ? "Preis nicht verfügbar" : `${formatEuro(b.result.estimatedTotalPrice)}`}</Text>
+          <Text style={[ui.body, { fontWeight: '700' }]}>{listPrice(b) === null ? t('preview.noPrice') : `${formatMoney(listPrice(b)!)}`}</Text>
         </View>
       </Pressable>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
@@ -36,10 +42,10 @@ export function SavedBasketPreview({ basket: b, onOpen, minimal = false }: { bas
     </>;
   }
   return <>
-    <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Öffnen ${title}`} style={{ gap: 8 }}>
+    <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={t('preview.open', { title })} style={{ gap: 8 }}>
       <Text style={ui.subheading}>{title}</Text>
-      {!minimal && <Text style={ui.small}>{b.result.items.length}  Produkte · {b.syncStatus === 'synced' ? "Synchronisiert" : "Auf diesem Gerät"}</Text>}
-      <Text style={ui.body}>{minimal && b.result.estimatedTotalPrice !== null ? `${formatEuro(b.result.estimatedTotalPrice)}` : basketPrice(b.result.estimatedTotalPrice)}</Text>
+      {!minimal && <Text style={ui.small}>{b.result.items.length}  Produkte · {b.syncStatus === 'synced' ? "Synchronisiert" : t('preview.onThisDevice')}</Text>}
+      <Text style={ui.body}>{minimal && listPrice(b) !== null ? `${formatMoney(listPrice(b)!)}` : basketPrice(listPrice(b))}</Text>
     </Pressable>
     {b.result.mealPlan && <BasketMealPreview plan={b.result.mealPlan} onOpen={onOpen} showMealSlot={!minimal} />}
   </>;

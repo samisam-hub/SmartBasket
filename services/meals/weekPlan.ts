@@ -1,3 +1,4 @@
+import { intlLocale, t } from '../i18n';
 import type {
   AnyMealPlan,
   AnyMealPlanItem,
@@ -27,25 +28,51 @@ export const isPlanDate = (date: unknown): date is string =>
   typeof date === 'string' && parsePlanDate(date) !== null;
 export function addDays(date: string, days: number): string {
   const parsed = parsePlanDate(date);
-  if (!parsed) throw Error("Ungültiges Plandatum");
+  if (!parsed) throw Error(t('plan.invalidDate'));
   return planDate(new Date(parsed.getTime() + days * 86400000));
 }
 /** The Monday on or before the given day; weeks in the calendar always start on Monday. */
 export function weekStartOf(date: string): string {
   const parsed = parsePlanDate(date);
-  if (!parsed) throw Error("Ungültiges Plandatum");
+  if (!parsed) throw Error(t('plan.invalidDate'));
   return addDays(date, -((parsed.getUTCDay() + 6) % 7));
 }
 export const isWeekStart = (date: unknown): date is string =>
   isPlanDate(date) && weekStartOf(date) === date;
 export const weekDates = (weekStart: string): string[] =>
   Array.from({ length: DAYS_PER_WEEK }, (_, offset) => addDays(weekStart, offset));
+/** The first day of the month a day belongs to, and the month before or after it. */
+export const monthStartOf = (date: string): string => `${date.slice(0, 7)}-01`;
+export function addMonths(monthStart: string, months: number): string {
+  const parsed = parsePlanDate(monthStart);
+  if (!parsed) throw Error(t('plan.invalidDate'));
+  return planDate(new Date(Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth() + months, 1)));
+}
+/** A month as whole weeks, Monday first: the days before and after it fill the grid. */
+export function monthGrid(monthStart: string): string[] {
+  const parsed = parsePlanDate(monthStart);
+  if (!parsed) throw Error(t('plan.invalidDate'));
+  const start = weekStartOf(monthStart);
+  const next = addMonths(monthStart, 1);
+  const weeks = Math.ceil((Number(new Date(next).getTime() - new Date(start).getTime()) / 86400000) / DAYS_PER_WEEK);
+  return Array.from({ length: weeks * DAYS_PER_WEEK }, (_, offset) => addDays(start, offset));
+}
+const monthFormats = new Map<string, Intl.DateTimeFormat>();
+export function monthLabel(monthStart: string): string {
+  const tag = intlLocale();
+  let format = monthFormats.get(tag);
+  if (!format) {
+    format = new Intl.DateTimeFormat(tag, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    monthFormats.set(tag, format);
+  }
+  return format.format(parsePlanDate(monthStart) ?? new Date(NaN));
+}
 export const inWeek = (weekStart: string, date: string): boolean =>
   isPlanDate(date) && date >= weekStart && date < addDays(weekStart, DAYS_PER_WEEK);
 
 /** A fresh week nobody has filled in yet: the days are chosen on the calendar screen. */
 export function emptyWeekPlan(weekStart: string, preferences: UserPreferences): WeekPlan {
-  if (!isWeekStart(weekStart)) throw Error("Eine Woche beginnt am Montag.");
+  if (!isWeekStart(weekStart)) throw Error(t('plan.weekStartsMonday'));
   return {
     version: '2', weekStart, days: [], status: 'review', items: [], warnings: [],
     householdSize: preferences.householdSize, targetCalories: 0, targetProtein: 0,
@@ -86,20 +113,33 @@ export const plannedDayCount = (plan: AnyMealPlan): number =>
 /** Items of either plan shape, where only the choice itself matters. */
 export const planChoices = (plan: AnyMealPlan): MealChoice[] => plan.items;
 // Plan dates are stored as calendar days, so the label is formatted in UTC as well.
-const dayFormat = new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
-export const planDateLabel = (date: string): string => dayFormat.format(parsePlanDate(date) ?? new Date(NaN));
+const dayFormats = new Map<string, Intl.DateTimeFormat>();
+const dayFormat = () => {
+  const tag = intlLocale();
+  let format = dayFormats.get(tag);
+  if (!format) {
+    format = new Intl.DateTimeFormat(tag, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+    dayFormats.set(tag, format);
+  }
+  return format;
+};
+export const planDateLabel = (date: string): string => dayFormat().format(parsePlanDate(date) ?? new Date(NaN));
+/** Monday first, the way a week is shown. */
+export const weekdayShort = (): string[] =>
+  ['weekday.mon', 'weekday.tue', 'weekday.wed', 'weekday.thu', 'weekday.fri', 'weekday.sat', 'weekday.sun']
+    .map(key => t(key as Parameters<typeof t>[0]));
 export interface PlanDay { key: string; label: string; date: string | null; items: AnyMealPlanItem[] }
 /** Every day a plan covers, in order, including days with nothing planned on them. */
 export function planDays(plan: AnyMealPlan): PlanDay[] {
   if (isWeekPlanShape(plan)) return plannedDates(plan).map(date =>
     ({ key: date, label: planDateLabel(date), date, items: itemsOn(plan, date) }));
   return Array.from({ length: plan.planningDays }, (_, index) =>
-    ({ key: `day-${index}`, label: `Tag ${index + 1}`, date: null,
+    ({ key: `day-${index}`, label: t('plan.dayNumber', { number: index + 1 }), date: null,
       items: plan.items.filter(item => item.dayIndex === index) }));
 }
 export const itemDayLabel = (plan: AnyMealPlan, item: AnyMealPlanItem): string =>
   isWeekPlanShape(plan) && 'date' in item ? planDateLabel(item.date)
-    : `Tag ${('dayIndex' in item ? item.dayIndex : 0) + 1}`;
+    : t('plan.dayNumber', { number: ('dayIndex' in item ? item.dayIndex : 0) + 1 });
 /** How much of a person's day a week actually covers: the shares of the slots the household
  *  chose to eat at home. A day nobody planned, and a slot they dropped, are not counted as a gap. */
 export const plannedSlotShare = (plan: WeekPlan): number =>

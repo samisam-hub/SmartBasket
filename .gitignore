@@ -27,3 +27,8 @@ apk-artifact/
 
 supabase/.temp/
 
+
+# Renderte Pruefbilder, nur lokal
+ui-en/
+dist/
+preview/

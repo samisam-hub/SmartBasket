@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import type { PantryLot, PantryState, PantryUse } from '../types/pantry';
 import type { SavedBasket } from '../types/basket';
 import type { IngredientRequirement } from '../types/meal';
@@ -18,12 +19,12 @@ export function allocatePantry(requirement: IngredientRequirement, lots: PantryL
 }
 
 export function checkoutPantry(state: PantryState, basket: SavedBasket, purchasedAt: string): PantryState {
-  if (basket.result.purchasedAt) throw Error("Dieser Warenkorb wurde bereits als eingekauft erfasst.");
+  if (basket.result.purchasedAt) throw Error(t('pantry.alreadyBought'));
   const lots = structuredClone(state.lots);
   for (const use of basket.result.pantryUsed ?? []) {
     const lot = lots.find(l => l.id === use.lotId);
     if (!lot || lot.unit !== use.unit || !Number.isFinite(use.quantity) || use.quantity <= 0 || lot.quantity + .001 < use.quantity)
-      throw Error("Deine Vorräte haben sich geändert. Aktualisiere den Warenkorb vor dem Abschließen.");
+      throw Error(t('pantry.refreshBasket'));
     lot.quantity = Math.max(0, lot.quantity - use.quantity);
   }
   for (const item of basket.result.items) {

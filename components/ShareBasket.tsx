@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import { useState } from 'react';
 import { Platform, Share, Text } from 'react-native';
 import type { SavedBasket } from '../types/basket';
@@ -14,15 +15,15 @@ export function ShareBasket({ basket }: { basket: SavedBasket }) {
     setSharing(true); setCopy(false);
     try {
       if (Platform.OS === 'web') {
-        if (typeof navigator !== 'undefined' && navigator.share) await navigator.share({ title: "Warenkorb", text });
+        if (typeof navigator !== 'undefined' && navigator.share) await navigator.share({ title: t('share.basket'), text });
         else setCopy(true);
-      } else await Share.share({ title: "Warenkorb", message: text });
+      } else await Share.share({ title: t('share.basket'), message: text });
     } catch (e) {
       if (!(e instanceof Error && e.name === 'AbortError')) setCopy(true);
     } finally { setSharing(false); }
   };
   return <>
-    <SecondaryButton label="Warenkorb teilen" disabled={sharing || !basket.result.items.length} onPress={() => { void share(); }} />
-    {copy && <><Text style={ui.small}>Markiere und kopiere deine ausgewählten Produkte:</Text><Text selectable style={ui.body}>{text}</Text></>}
+    <SecondaryButton label={t('share.title')} disabled={sharing || !basket.result.items.length} onPress={() => { void share(); }} />
+    {copy && <><Text style={ui.small}>{t('share.copyHint')}</Text><Text selectable style={ui.body}>{text}</Text></>}
   </>;
 }

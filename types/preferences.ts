@@ -1,4 +1,5 @@
 import { mealSlots, type MealSlot } from "./meal";
+import type { UnitSystem } from "../services/units";
 export const goals = [
   "maintain",
   "lose_weight",
@@ -62,6 +63,10 @@ export interface PreferenceValues {
   participants?: import("./profile").PlanParticipant[];
   /** Absent before the meal standard existed; slotDefaultsOf falls back to the default. */
   slotDefaults?: SlotDefaults;
+  /** What this household calls itself, and the picture beside that name. Both optional: a
+   *  household that never names itself is shown by the people on it. */
+  householdName?: string;
+  householdAvatarUri?: string | null;
   householdSize: number;
   planningDays: number;
   dailyCalories: number;
@@ -73,44 +78,23 @@ export interface PreferenceValues {
   budgetEnabled: boolean;
   /** Total EUR for the selected planning period; legacy column name retained. */
   weeklyBudgetEur: number | null;
+  /** Which units the shopping list is written in. Absent in everything saved before the question
+   *  existed, which reads as metric, so no stored preference changes meaning. */
+  unitSystem?: UnitSystem;
+  /** Meals somebody said they like while setting up. It nudges suggestions and nothing else;
+   *  absent and empty both mean "no preference", never "eats nothing". */
+  preferredMealIds?: string[];
 }
 export type PreferenceDraft = Omit<PreferenceValues, "dailyCalories"> & {
   dailyCalories: number | null;
 };
 export interface UserPreferences extends PreferenceValues {
-  preferredMealIds?: string[];
   id: string | null;
   userId: string | null;
   onboardingCompleted: boolean;
   createdAt: string;
   updatedAt: string;
 }
-export const labels: Record<Goal | Diet | Allergen, string> = {
-  maintain: "Gewicht halten",
-  lose_weight: "Abnehmen",
-  build_muscle: "Muskeln aufbauen",
-  high_protein: "Eiweißreich",
-  balanced: "Ausgewogene Ernährung",
-  none: "Keine Einschränkung",
-  vegetarian: "Vegetarisch",
-  vegan: "Vegan",
-  pescatarian: "Pescetarisch",
-  lactose_free: "Laktosefrei",
-  gluten_free: "Glutenfrei",
-  diabetes: "Diabetesbewusst",
-  milk: "Milch",
-  eggs: "Eier",
-  fish: "Fisch",
-  shellfish: "Krebstiere und Weichtiere",
-  peanuts: "Erdnüsse",
-  tree_nuts: "Schalenfrüchte",
-  soy: "Soja",
-  wheat: "Weizen",
-  sesame: "Sesam",
-  mustard: "Senf",
-  celery: "Sellerie",
-  sulfites: "Schwefeldioxid und Sulfite",
-};
 export const defaultDraft: PreferenceDraft = {
   householdSize: 1,
   planningDays: 7,
@@ -122,5 +106,6 @@ export const defaultDraft: PreferenceDraft = {
   allergens: [],
   budgetEnabled: true,
   weeklyBudgetEur: 70,
+  unitSystem: "metric",
 };
 export type PreferenceErrors = Partial<Record<keyof PreferenceValues, string>>;

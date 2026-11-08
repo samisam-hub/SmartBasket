@@ -4,8 +4,7 @@ import type { UserPreferences } from '../../types/preferences';
 import { packagePrice, planPackage } from './quantityPlanner';
 export const weights = Object.freeze({ calories: 8, protein: 5, budget: 4, category: 3, diversity: 1.5, repetition: 0.6, extras: 2, quality: 0.08, unknownPrices: 0.02 });
 export const limits = Object.freeze({ maxItems: 24, candidatesPerGroup: 14, iterations: 1600, refinementPasses: 12, maxCalorieShare: 0.35, maxExtrasShare: 0.1, maxBreakfastShare: 0.25 });
-export const groupLabels: Record<BasketGroup, string> = { protein: "Eiweißquellen", vegetables: "Gemüse", fruit: "Obst", staples: "Kohlenhydratquellen", breakfast: "Frühstück", dairy: "Milchprodukte / Alternativen", extras: "Snacks / Extras" };
-export const groups = Object.keys(groupLabels) as BasketGroup[];
+export const groups: BasketGroup[] = ['protein', 'vegetables', 'fruit', 'staples', 'breakfast', 'dairy', 'extras'];
 export const requiredGroups: BasketGroup[] = ['protein', 'vegetables', 'fruit', 'staples'];
 export function groupOf(p: Product): BasketGroup {
   // Do not let preserves/juice/oily prepared vegetables satisfy produce coverage.

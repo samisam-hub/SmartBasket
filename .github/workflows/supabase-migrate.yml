@@ -1,0 +1,114 @@
+name: Apply Supabase migrations
+
+# Manual only. Applying a migration changes the production database, so nothing here runs on a push.
+# Start with mode "list": it only reads the remote migration history and prints what a push would do.
+# Run mode "push" once that list shows exactly the migrations you expect to be missing.
+#
+# A migration applied by hand in the SQL editor is not recorded in the remote history, so the
+# list shows it as missing and a push would try to apply it again. Mark those as done first:
+#   supabase migration repair --status applied <version> --project-ref <ref>
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'list = read the remote history only; push = apply the missing migrations'
+        type: choice
+        options: [list, push]
+        default: list
+
+permissions:
+  contents: read
+
+# Two pushes at once would race for the migration history table.
+concurrency:
+  group: supabase-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CI: '1'
+      # The CLI picks the database password up from the environment; it is never passed as an argument.
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      # The project is identified by the same public URL the APK is built with.
+      SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+      SUPABASE_CLI_VERSION: '2.119.0'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node 24
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+
+      - name: Resolve project and check configuration
+        run: |
+          set -euo pipefail
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing repository secret: $name"
+              exit 1
+            fi
+          done
+          if [[ -z "${SUPABASE_URL:-}" ]]; then
+            echo "::error::Missing repository variable: EXPO_PUBLIC_SUPABASE_URL"
+            exit 1
+          fi
+          ref=${SUPABASE_URL#https://}
+          ref=${ref%%.*}
+          if [[ ! "$ref" =~ ^[a-z0-9]{16,32}$ ]]; then
+            echo "::error::Cannot read a project ref out of EXPO_PUBLIC_SUPABASE_URL"
+            exit 1
+          fi
+          echo "PROJECT_REF=$ref" >> "$GITHUB_ENV"
+          echo "Project $ref, $(ls supabase/migrations/*.sql | wc -l) migrations in the repository."
+
+      - name: Remote migration history
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" migration list --project-ref "$PROJECT_REF" \
+            | tee migration-list-before.txt
+
+      - name: Preview what a push would apply
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" db push --project-ref "$PROJECT_REF" \
+            --dry-run --skip-vault | tee migration-dry-run.txt
+
+      - name: Apply the missing migrations
+        if: inputs.mode == 'push'
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" db push --project-ref "$PROJECT_REF" --skip-vault
+
+      - name: Migration history afterwards
+        if: inputs.mode == 'push'
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" migration list --project-ref "$PROJECT_REF" \
+            | tee migration-list-after.txt
+
+      - name: Report
+        if: always()
+        run: |
+          {
+            printf '### Supabase migrations — mode `%s`\n\n' "${{ inputs.mode }}"
+            if [[ -s migration-list-before.txt ]]; then
+              printf '#### History before\n\n```\n'; cat migration-list-before.txt; printf '```\n\n'
+            fi
+            if [[ -s migration-dry-run.txt ]]; then
+              printf '#### A push would apply\n\n```\n'; cat migration-dry-run.txt; printf '```\n\n'
+            fi
+            if [[ -s migration-list-after.txt ]]; then
+              printf '#### History after\n\n```\n'; cat migration-list-after.txt; printf '```\n\n'
+            fi
+            if [[ "${{ inputs.mode }}" == 'list' ]]; then
+              printf 'Nothing was changed. Run this workflow again with mode **push** to apply what the preview lists.\n'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

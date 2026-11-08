@@ -11,7 +11,7 @@ let store, failWrites = false, routeParams = {};
 const stub = name => { function Stub(props) { return React.createElement(name, props, props.children); } return Stub; };
 const original = Module._load;
 Module._load = function(request, parent, isMain) {
-  if (request === 'react-native') return { Text: 'Text', View: "Ansehen" };
+  if (request === 'react-native') return { Text: 'Text', View: "Ansehen", Pressable: 'Pressable' };
   if (request === 'expo-router') return { router: { push: to => routes.push(to), replace: to => routes.push(to) }, useLocalSearchParams: () => routeParams };
   if (request === '@/components/ui') return Object.fromEntries(['ErrorMessage','PrimaryButton','Screen','ScreenHeader','SecondaryButton','SectionCard','SelectionChip','TextButton'].map(n => [n, stub(n)]));
   if (request === '@/context/PreferencesContext') return { usePreferences: () => ({ saved: preferences }) };
@@ -19,10 +19,11 @@ Module._load = function(request, parent, isMain) {
   if (request === '@/context/AuthContext') return { useAuth: () => ({ session: null }) };
   if (request === '@/lib/supabase') return { getSupabaseClient: () => null };
   if (request === '@/components/MealImage') return { MealImage: stub('MealImage') };
+  if (request === '@expo/vector-icons/Feather') return { __esModule: true, default: stub('Feather') };
   if (request === '@/hooks/useBasketCatalog') return { useBasketCatalog: () => ({ products: fullCatalog, loading: false, error: null }) };
   if (request === '@/components/MealSwipeCards') return { MealSwipeCards: stub('MealSwipeCards') };
   if (request === '@/components/WeekCalendar') return { currentWeekStart: () => '2026-10-19' };
-  if (request === '@/lib/theme') return { ui: {} };
+  if (request === '@/lib/theme' || request === '../lib/theme') return { ui: {}, colors: {}, radii: {}, spacing: {}, typography: { small: {} } };
   if (request.startsWith('@/')) request = path.resolve(path.dirname(require.resolve('../package.json')), request.slice(2));
   return original.call(this, request, parent, isMain);
 };
@@ -44,10 +45,12 @@ test('week → taste → automatic plan → editable day or basket, without sele
   await setup();
   let screen;
   await act(() => { screen = create(React.createElement(Week)); });
+  // Ohne gewaehlte Gerichte fuehrt der Hauptweg zum Geschmack, nicht zur Einkaufsliste.
+  assert.equal(button(screen, 'PrimaryButton', 'Einkaufsliste erstellen'), undefined);
   await act(() => button(screen, 'PrimaryButton', 'Weiter: Was mögt ihr?').props.onPress());
   assert.equal(routes.pop(), '/plan/taste');
   await act(() => screen.update(React.createElement(Taste)));
-  await act(() => button(screen, 'SecondaryButton', 'Frühstück wischen').props.onPress());
+  // The run starts on the first pass by itself; there is no menu of slots to come back to.
   let card = screen.root.findByType('MealSwipeCards');
   const first = card.props.suggestions[0].meal.id;
   assert.equal(card.props.mode, 'taste');
@@ -65,7 +68,9 @@ test('week → taste → automatic plan → editable day or basket, without sele
   assert.equal(store.getSnapshot().plan.items.length, 3);
   assert.equal(store.getSnapshot().plan.items.find(item => item.mealSlot === 'breakfast').meal.id, first);
   await act(() => screen.update(React.createElement(Overview)));
-  await act(() => screen.root.findAllByType('SecondaryButton').find(node => node.props.label.endsWith('bearbeiten')).props.onPress());
+  // The week is a filled calendar now: the day row itself opens the day.
+  await act(() => screen.root.findAll(node => typeof node.props.accessibilityLabel === 'string'
+    && node.props.accessibilityLabel.includes('bearbeiten'))[0].props.onPress());
   assert.deepEqual(routes.pop(), { pathname: '/plan/[date]', params: { date: '2026-10-19', returnTo: 'week' } });
   const basket = button(screen, 'PrimaryButton', 'Weiter zur Einkaufsliste');
   assert.equal(basket.props.disabled, false);
@@ -77,7 +82,6 @@ test('week → taste → automatic plan → editable day or basket, without sele
 test('a failed local save keeps the user on taste with an error instead of claiming a saved plan', async () => {
   await setup(); failWrites = true;
   let screen; await act(() => { screen = create(React.createElement(Taste)); });
-  await act(() => button(screen, 'SecondaryButton', 'Frühstück wischen').props.onPress());
   await act(() => screen.root.findByType('MealSwipeCards').props.onTake());
   await act(async () => { button(screen, 'PrimaryButton', 'Wochenplan erstellen').props.onPress(); await new Promise(resolve => setImmediate(resolve)); });
   assert.deepEqual(routes, []);

@@ -1,3 +1,4 @@
+import { formatMoney, t } from '../services/i18n';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import Feather from '@expo/vector-icons/Feather';
@@ -5,6 +6,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Text, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { usePreferences } from '../context/PreferencesContext';
+import { hasSavedWork } from '../services/saved-work';
 import { loadPantry } from '../services/pantry';
 import { shoppingImpact } from '../services/waste-prevention';
 import { SectionCard } from './ui';
@@ -12,30 +15,30 @@ import { colors, ui } from '../lib/theme';
 
 export function WastePrevention() {
   const { session, ready } = useAuth();
+  const { saved } = usePreferences();
   const owner = session?.user.id ?? null;
   const [result, setResult] = useState<{ owner: string | null; value: ReturnType<typeof shoppingImpact> } | null>(null);
   const [error, setError] = useState(false);
   useFocusEffect(useCallback(() => {
+    if (!hasSavedWork(saved)) { setResult(null); setError(false); return; }
     let active = true;
     setResult(null); setError(false);
     if (ready) void loadPantry(owner).then(({ purchases }) => {
       if (active) setResult({ owner, value: shoppingImpact(purchases) });
     }).catch(() => { if (active) setError(true); });
     return () => { active = false; };
-  }, [owner, ready]));
+  }, [owner, ready, saved]));
   const impact = result?.owner === owner ? result.value : null;
-  return <SectionCard title="Deine Übersicht" compact pale>
-    {error ? <Text style={ui.small}>Deine Übersicht konnte nicht geladen werden.</Text> : !impact ? <Text style={ui.small}>Deine Übersicht wird geladen …</Text> : !impact.shops ? <Text style={ui.body}>Hier beginnt dein erster Einkauf. Schließe einen Einkauf ab, um deine Übersicht zu starten.</Text> : <>
+  return <SectionCard title={t('waste.title')} compact pale>
+    {error ? <Text style={ui.small}>{t('waste.overviewFailed')}</Text> : !impact ? <Text style={ui.small}>{t('waste.overviewLoading')}</Text> : !impact.shops ? <Text style={ui.body}>{t('waste.firstShop')}</Text> : <>
       <View style={{ flexDirection: 'row', gap: 4, alignItems: 'stretch' }}>
         {[
-          { amount: String(impact.days), label: `${impact.days === 1 ? "Tag" : "Tage"} mit SmartBasket`, icon: 'sun' as const, display: `${impact.days === 1 ? "Tag" : "Tage"}
-App-Nutzung` },
-          { amount: String(impact.shops), label: `${impact.shops === 1 ? "Einkauf" : "Einkäufe"} abgeschlossen`, icon: 'shopping-bag' as const, display: `${impact.shops === 1 ? "Einkauf" : "Einkäufe"}\nabgeschlossen` },
-          { amount: impact.calorieTargetsMet === null ? '—' : `${impact.calorieTargetsMet}%`, label: "Kalorienziele erreicht", icon: 'target' as const, display: "Kalorienziele erreicht", detail: "Bestätigte Plantage pro Person, die höchstens 10 % vom Kalorienziel abweichen. Geplante Nährwerte, keine erfasste Nahrungsaufnahme." },
-          { amount: impact.proteinTargetsMet === null ? '—' : `${impact.proteinTargetsMet}%`, label: "Durchschnittliche Eiweißversorgung", icon: 'bar-chart-2' as const, display: 'Eiweiß\nversorgung', detail: "Durchschnittlich geplantes Eiweiß im Verhältnis zum täglichen Eiweißziel jeder Person an bestätigten Plantagen. Kann über 100 % liegen. Geplante Nährwerte, keine erfasste Nahrungsaufnahme." },
-          { amount: `~€${impact.euros.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, label: `Vorräte wiederverwendet${impact.unpriced ? ' (teilweise)' : ''}`, icon: 'refresh-cw' as const, display: `Vorräte
-${impact.unpriced ? 'teilweise' : 'verwendet'}` },
-          { amount: impact.savedBudgetPercent === null ? '—' : `${impact.savedBudgetPercent}%`, label: "Gespartes Budget", display: "Gespartes Budget", icon: 'percent' as const, detail: "Budget abzüglich geschätzter Kosten im Verhältnis zum Budget abgeschlossener Einkäufe mit vollständigen Preisen. Ein negativer Wert bedeutet eine Budgetüberschreitung." },
+          { amount: String(impact.days), label: t('waste.daysWith', { count: impact.days }), icon: 'sun' as const, display: t('waste.daysShortUse', { count: impact.days }) },
+          { amount: String(impact.shops), label: t('waste.shopsDone', { count: impact.shops }), icon: 'shopping-bag' as const, display: t('waste.shopsShort', { count: impact.shops }) },
+          { amount: impact.calorieTargetsMet === null ? '—' : `${impact.calorieTargetsMet}%`, label: t('waste.calorieTargets'), icon: 'target' as const, display: t('waste.calorieTargets'), detail: t('waste.calorieTargetsNote') },
+          { amount: impact.proteinTargetsMet === null ? '—' : `${impact.proteinTargetsMet}%`, label: t('waste.proteinAverage'), icon: 'bar-chart-2' as const, display: t('waste.proteinShort'), detail: t('waste.proteinNote') },
+          { amount: `~${formatMoney(impact.euros)}`, label: t('waste.pantryReused', { partly: impact.unpriced ? t('waste.partial') : '' }), icon: 'refresh-cw' as const, display: t(impact.unpriced ? 'waste.pantryShortPartly' : 'waste.pantryShortUsed') },
+          { amount: impact.savedBudgetPercent === null ? '—' : `${impact.savedBudgetPercent}%`, label: t('waste.savedBudget'), display: t('waste.savedBudget'), icon: 'percent' as const, detail: t('waste.savedBudgetNote') },
         ].map(stat => <View key={stat.label} accessible accessibilityLabel={`${stat.amount} ${stat.label}. ${stat.detail ?? ''}`} style={{ flex: 1, minWidth: 0, alignItems: 'center', gap: 4 }}>
           {stat.icon === 'percent'
             ? <MaterialCommunityIcons name="piggy-bank-outline" size={23} color={colors.primary} />

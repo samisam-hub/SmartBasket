@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import { useCallback, useEffect, useRef, useState } from "react";
 import {Assets} from '../lib/assets';
 import { ActivityIndicator, Image, PixelRatio, StyleSheet, View } from "react-native";
@@ -38,8 +39,8 @@ function ImageFrame({ uri, width, height, name, large = false, fill = false }: P
       <Image source={{ uri }} style={{ width: "100%", height: "100%", maxWidth: actual.width / density,
         maxHeight: actual.height / density, opacity: loading ? 0 : 1 }} resizeMode="contain" resizeMethod="resize" accessibilityLabel={name}
         onLoad={onLoad} onError={onError} />
-      {loading && <ActivityIndicator style={StyleSheet.absoluteFill} color={colors.primary} accessibilityLabel="Produktbild wird geladen" />}
-    </> : <Image source={Assets.states.productPlaceholder} resizeMode="contain" style={{width:"100%",height:"100%"}} accessibilityLabel="Produktbild nicht verfügbar" testID="product-placeholder" />}
+      {loading && <ActivityIndicator style={StyleSheet.absoluteFill} color={colors.primary} accessibilityLabel={t('image.loading')} />}
+    </> : <Image source={Assets.states.productPlaceholder} resizeMode="contain" style={{width:"100%",height:"100%"}} accessibilityLabel={t('image.unavailable')} testID="product-placeholder" />}
   </View>;
 }
 const styles = StyleSheet.create({

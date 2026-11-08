@@ -10,18 +10,36 @@ const stub = (name) => {
 };
 const pushed = [];
 const animatedView = stub("Animated.View");
+// Every animation the card starts, so a test can see which way it moved and how long it took.
+const animations = [];
+class AnimatedValue {
+  constructor(value) { this.value = value; }
+  setValue(value) { this.value = value; }
+  interpolate() { return this; }
+}
+// Animations finish at once, so a decision that waits for the card to leave still lands in one act().
+const animate = (kind) => (value, config) => ({
+  start: (done) => {
+    animations.push({ kind, to: config.toValue, duration: config.duration });
+    if (typeof config.toValue === "number") value.setValue(config.toValue);
+    done?.({ finished: true });
+  },
+});
 const original = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === "react-native")
-    return { Text: "Text", View: "Ansehen", Pressable: "Pressable",
-      Animated: { View: animatedView, Value: class { constructor(v) { this.value = v; } setValue(v) { this.value = v; } } },
+    return { Text: "Text", View: "View", Pressable: "Pressable",
+      Animated: { View: animatedView, Value: AnimatedValue, timing: animate("timing"), spring: animate("spring") },
+      Easing: { out: (easing) => easing, quad: (t) => t },
       PanResponder: { create: (config) => ({ panHandlers: config }) } };
   if (request === "expo-router") return { router: { push: (to) => pushed.push(to), replace: (to) => pushed.push(to) } };
   if (request === "./ui" || request === "@/components/ui")
     return Object.fromEntries(["PrimaryButton", "SecondaryButton", "SectionCard", "SelectionChip", "TextButton",
+      "ChoiceButton", "IconButton", "FloatingButton",
       "Screen", "ScreenHeader", "ErrorMessage", "PreferenceRow"].map((name) => [name, stub(name)]));
   if (request === "./MealImage") return { MealImage: stub("MealImage") };
-  if (request === "../lib/theme") return { colors: {}, spacing: {}, ui: {} };
+  if (request === "@expo/vector-icons/Feather") return { __esModule: true, default: stub("Feather") };
+  if (request === "../lib/theme") return { colors: {}, spacing: {}, radii: {}, typography: {}, ui: {} };
   if (request.startsWith("@/")) request = path.resolve(path.dirname(require.resolve("../package.json")), request.slice(2));
   return original.call(this, request, parent, isMain);
 };
@@ -30,7 +48,7 @@ for (const extension of [".ts", ".tsx"]) require.extensions[extension] = (module
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText, filename);
 const { MealSwipeCards, swipeAction } = require("../components/MealSwipeCards.tsx");
-const { WeekCalendar, dayState, weekSummary } = require("../components/WeekCalendar.tsx");
+const { WeekCalendar, dayState, mealFacts, openingDate, weekSummary } = require("../components/WeekCalendar.tsx");
 const { startWeek, toggleDay, chooseMeal } = require("../services/meals/weekPlanDraft.ts");
 const { suggestMeals } = require("../services/meals/planner.ts");
 const { prefs } = require("./basket-fixtures.cjs");
@@ -58,10 +76,15 @@ test("one card at a time: right takes it, left moves on, and tapping does the sa
   const element = () => React.createElement(MealSwipeCards, { suggestions, exhausted: false,
     onTake: (s) => taken.push(s.meal.id), onNext: () => nexts.push(1), onMore: () => mores.push(1) });
   await act(() => { renderer = create(element()); });
-  // Only the first card is on screen.
-  const texts = renderer.root.findAllByType("Text").map((node) => node.props.children);
-  assert.ok(JSON.stringify(texts).includes("Meal A"));
-  assert.ok(!JSON.stringify(texts).includes("Meal B"));
+  // The card in hand is the first suggestion; the second one lies under it, so the deck looks like
+  // a deck and its picture is already loaded. It is covered, so assistive tech skips it.
+  const card = () => renderer.root.findAll((node) => node.props.testID === "meal-card")[0];
+  const inCard = JSON.stringify(card().findAllByType("Text").map((node) => node.props.children));
+  assert.ok(inCard.includes("Meal A"));
+  assert.ok(!inCard.includes("Meal B"), "the next card is not part of the card in hand");
+  const behind = renderer.root.findAll((node) => node.props.accessibilityElementsHidden === true)[0];
+  assert.ok(JSON.stringify(behind.findAllByType("Text").map((node) => node.props.children)).includes("Meal B"));
+  assert.equal(behind.props.importantForAccessibility, "no-hide-descendants");
   const button = (label) => renderer.root.findAll((node) => node.props.label === label)[0];
   await act(() => button("Dieses Gericht wählen").props.onPress());
   assert.deepEqual(taken, ["a"]);
@@ -70,7 +93,7 @@ test("one card at a time: right takes it, left moves on, and tapping does the sa
   await act(() => button("Zwei andere zeigen").props.onPress());
   assert.deepEqual(mores, [1]);
   // The same decisions through the gesture handlers.
-  const handlers = renderer.root.findByType(animatedView).props;
+  const handlers = renderer.root.findAll((node) => node.props.testID === "meal-card")[0].props;
   await act(() => handlers.onPanResponderRelease({}, { dx: 200, dy: 5 }));
   assert.deepEqual(taken, ["a", "a"]);
   await act(() => handlers.onPanResponderRelease({}, { dx: -200, dy: 5 }));
@@ -81,12 +104,46 @@ test("one card at a time: right takes it, left moves on, and tapping does the sa
   await act(() => renderer.unmount());
 });
 
+test("a decision is visible: the card leaves in the direction it was decided", async () => {
+  const taken = [], nexts = [];
+  const suggestions = [{ meal: { id: "a", name: "Meal A", ingredients: [], dietaryTags: [] }, servings: 2 },
+    { meal: { id: "b", name: "Meal B", ingredients: [], dietaryTags: [] }, servings: 2 }];
+  let renderer;
+  await act(() => { renderer = create(React.createElement(MealSwipeCards, { suggestions, exhausted: false,
+    onTake: (s) => taken.push(s.meal.id), onNext: () => nexts.push(1), onMore: () => {} })); });
+  const button = (label) => renderer.root.findAll((node) => node.props.label === label)[0];
+  const handlers = renderer.root.findAll((node) => node.props.testID === "meal-card")[0].props;
+  const since = (start) => animations.slice(start).filter((a) => a.kind === "timing" && a.to !== 1);
+
+  let mark = animations.length;
+  await act(() => button("Dieses Gericht wählen").props.onPress());
+  const take = since(mark);
+  assert.equal(take.length, 1, "taking a meal moves the card exactly once");
+  assert.ok(take[0].to > 0, "the card taken leaves to the right");
+  assert.ok(take[0].duration <= 250, `a decision must not feel like waiting, was ${take[0].duration}ms`);
+  assert.deepEqual(taken, ["a"], "the meal is taken once the card has left");
+
+  mark = animations.length;
+  await act(() => button("Nächsten Vorschlag zeigen").props.onPress());
+  const next = since(mark);
+  assert.equal(next.length, 1);
+  assert.ok(next[0].to < 0, "a skipped card leaves to the left");
+  assert.deepEqual(nexts, [1]);
+
+  // A nudge decides nothing, so the card springs back instead of leaving.
+  mark = animations.length;
+  await act(() => handlers.onPanResponderRelease({}, { dx: 10, dy: 2 }));
+  assert.deepEqual(since(mark), [], "an undecided card does not fly off");
+  assert.deepEqual(animations.slice(mark).map((a) => [a.kind, a.to]), [["spring", 0]]);
+  await act(() => renderer.unmount());
+});
+
 test("an exhausted slot says so instead of offering a repeat", async () => {
   let renderer;
   await act(() => { renderer = create(React.createElement(MealSwipeCards,
     { suggestions: [], exhausted: true, onTake: () => {}, onNext: () => {}, onMore: () => {} })); });
   const text = JSON.stringify(renderer.root.findAllByType("Text").map((node) => node.props.children));
-  assert.match(text, /Alle passenden Gerichte für diese Mahlzeit wurden angezeigt/);
+  assert.match(text, /Alle passenden Gerichte für diese Mahlzeit wurden gezeigt/);
   assert.deepEqual(renderer.root.findAll((node) => node.props.label === "Dieses Gericht wählen"), []);
   await act(() => renderer.unmount());
 });
@@ -94,74 +151,135 @@ test("an exhausted slot says so instead of offering a repeat", async () => {
 test("the calendar shows each day's state and only offers a basket once something is planned", async () => {
   let plan = startWeek(monday, preferences);
   assert.equal(dayState(plan, monday), "unplanned");
-  assert.match(weekSummary(plan), /Noch keine Mahlzeiten geplant/);
+  assert.match(weekSummary(plan), /Noch kein Tag geplant/);
   plan = toggleDay(plan, monday, preferences);
   assert.equal(dayState(plan, monday), "open");
-  assert.match(weekSummary(plan), /1 Tag geplant · 0 Mahlzeiten ausgewählt · 3 noch offen/);
+  assert.match(weekSummary(plan), /1 Tag geplant · 0 Gerichte gewählt · 3 noch offen/);
   for (const slot of ["breakfast", "lunch", "dinner"])
     plan = chooseMeal(plan, monday, slot, suggestion(plan, monday, slot), preferences);
   assert.equal(dayState(plan, monday), "done");
-  assert.match(weekSummary(plan), /bereit für den Warenkorb/);
+  assert.match(weekSummary(plan), /bereit für die Einkaufsliste/);
   assert.equal(dayState(plan, "2026-10-06"), "unplanned");
-  let renderer, baskets = 0, weeks = [];
+
+  let renderer, baskets = 0, weeks = [], picked = [];
+  let shown = monday;
   const render = (current) => React.createElement(WeekCalendar, { plan: current, weekStart: monday,
+    selected: shown, onSelect: (date) => { picked.push(date); shown = date; },
     onWeek: (start) => weeks.push(start), onBasket: () => { baskets++; } });
+  const labelled = (label) => renderer.root.findAll((node) => node.props.label === label);
+  const byLabel = (prefix) => renderer.root.findAll((node) =>
+    typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith(prefix));
+  const texts = () => JSON.stringify(renderer.root.findAllByType("Text").map((node) => node.props.children));
+
   // An empty week offers picking days, not a basket.
   await act(() => { renderer = create(render(startWeek(monday, preferences))); });
-  // findAll matches the stub component and the host element it renders, so count unique labels.
-  const labelled = (label) => renderer.root.findAll((node) => node.props.label === label);
-  assert.deepEqual(labelled("Warenkorb erstellen"), []);
-  assert.ok(labelled("Mahlzeiten planen").length > 0);
+  assert.deepEqual(labelled("Einkaufsliste erstellen"), []);
+  assert.ok(labelled("Tage wählen").length > 0);
+  assert.match(texts(), /Für diesen Tag ist nichts geplant/);
+
   await act(() => { renderer.update(render(plan)); });
-  const basket = labelled("Warenkorb erstellen")[0];
+  const basket = labelled("Einkaufsliste erstellen")[0];
   assert.ok(basket);
   await act(() => basket.props.onPress());
   assert.equal(baskets, 1);
+  // The day on screen shows its meals as cards, with what is actually recorded about them.
+  assert.match(texts(), /Frühstück · \d+ kcal pro Portion/);
+  assert.deepEqual(labelled("Diesen Tag planen"), [], "a planned day is not offered for planning again");
+
   // The arrows move whole weeks.
-  await act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === "Nächste Woche")[0].props.onPress());
-  await act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === "Vorherige Woche")[0].props.onPress());
+  await act(() => byLabel("Nächste Woche")[0].props.onPress());
+  await act(() => byLabel("Vorherige Woche")[0].props.onPress());
   assert.deepEqual(weeks, ["2026-10-12", "2026-09-28"]);
-  // A planned day opens that day; an unplanned one goes to the day picker.
+
+  // Tapping a weekday switches the day shown; it does not leave the calendar.
   pushed.length = 0;
-  const days = renderer.root.findAll((node) => typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith("Mo., 5. Okt."));
-  await act(() => days[0].props.onPress());
-  assert.deepEqual(pushed, [{ pathname: "/plan/[date]", params: { date: monday } }]);
+  await act(() => byLabel("Mi., 7. Okt.")[0].props.onPress());
+  assert.deepEqual(picked, ["2026-10-07"]);
+  assert.deepEqual(pushed, [], "picking a day navigates nowhere");
+  await act(() => { renderer.update(render(plan)); });
+  assert.match(texts(), /Für diesen Tag ist nichts geplant/, "an unplanned day says so and offers to plan it");
+  assert.ok(labelled("Diesen Tag planen").length > 0);
+
+  // Back on the planned day, a meal's menu opens its two answers.
+  shown = monday;
+  await act(() => { renderer.update(render(plan)); });
+  const options = renderer.root.findAll((node) =>
+    typeof node.props.label === "string" && node.props.label.startsWith("Optionen für"));
+  assert.ok(options.length, "every card carries a menu");
+  assert.deepEqual(labelled("Anderes wählen"), [], "the menu stays closed until it is asked for");
+  await act(() => options[0].props.onPress());
+  assert.ok(labelled("Anderes wählen").length > 0);
   pushed.length = 0;
-  const wednesday = renderer.root.findAll((node) => typeof node.props.accessibilityLabel === "string" && node.props.accessibilityLabel.startsWith("Mi., 7. Okt."));
-  await act(() => wednesday[0].props.onPress());
-  assert.deepEqual(pushed, ["/plan/week"]);
+  await act(() => labelled("Anderes wählen")[0].props.onPress());
+  assert.equal(pushed[0].pathname, "/plan/[date]/[slot]");
+  assert.equal(pushed[0].params.date, monday);
   await act(() => renderer.unmount());
 });
 
-test('an empty calendar offers copying the previous week when one exists', async () => {
+test("a planned day with an undecided meal offers that meal, and a week opens on a real day", async () => {
+  const preferences = prefs();
+  let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  plan = chooseMeal(plan, monday, "breakfast", suggestion(plan, monday, "breakfast"), preferences);
+  let renderer;
+  await act(() => { renderer = create(React.createElement(WeekCalendar, { plan, weekStart: monday,
+    selected: monday, onSelect: () => {}, onWeek: () => {}, onBasket: () => {} })); });
+  // What is still open is a line of its own, not a silent gap.
+  const open = renderer.root.findAll((node) => node.props.accessibilityLabel === "Mittagessen wählen");
+  assert.ok(open.length);
+  pushed.length = 0;
+  await act(() => open[0].props.onPress());
+  assert.deepEqual(pushed, [{ pathname: "/plan/[date]/[slot]", params: { date: monday, slot: "lunch" } }]);
+  await act(() => renderer.unmount());
+
+  // Today when it falls in the week, otherwise the first day that holds something.
+  assert.equal(openingDate(plan, monday, "2026-10-07"), "2026-10-07", "today wins");
+  assert.equal(openingDate(plan, monday, "2026-11-30"), monday, "otherwise the first planned day");
+  assert.equal(openingDate(null, monday, "2026-11-30"), monday, "and failing that the Monday");
+});
+
+test("an empty week offers taking the previous week's plan, after picking days", async () => {
   let copied = 0, renderer;
   await act(() => { renderer = create(React.createElement(WeekCalendar, {
-    plan: startWeek('2026-10-12', preferences), weekStart: '2026-10-12',
-    onWeek: () => {}, onBasket: () => {}, onCopyPrevious: () => { copied++; },
-  })); });
-  const copy = renderer.root.findAll(node => node.props.label === "Plan der Vorwoche übernehmen")[0];
-  assert.ok(copy);
-  const labels = renderer.root.findAll(node => typeof node.type === 'string' && node.props.label).map(node => node.props.label);
-  assert.ok(labels.indexOf("Mahlzeiten planen") < labels.indexOf("Plan der Vorwoche übernehmen"));
+    plan: startWeek("2026-10-12", preferences), weekStart: "2026-10-12", selected: "2026-10-12",
+    onSelect: () => {}, onWeek: () => {}, onBasket: () => {}, onCopyPrevious: () => { copied++; } })); });
+  const labels = renderer.root.findAll((node) => typeof node.type === "string" && node.props.label)
+    .map((node) => node.props.label);
+  assert.ok(labels.includes("Plan der Vorwoche übernehmen"));
+  assert.ok(labels.indexOf("Tage wählen") < labels.indexOf("Plan der Vorwoche übernehmen"),
+    "picking days comes first; copying is the shortcut");
   pushed.length = 0;
-  await act(() => renderer.root.findAll(node => node.props.label === "Mahlzeiten planen")[0].props.onPress());
-  assert.deepEqual(pushed, ['/plan/week']);
-  await act(() => copy.props.onPress());
+  await act(() => renderer.root.findAll((node) => node.props.label === "Tage wählen")[0].props.onPress());
+  assert.deepEqual(pushed, ["/plan/week"]);
+  await act(() => renderer.root.findAll((node) => node.props.label === "Plan der Vorwoche übernehmen")[0].props.onPress());
   assert.equal(copied, 1);
   await act(() => renderer.unmount());
 });
 
-test('the last taste card can still be rejected by button or swipe and never offers shuffle', async () => {
+test("the last taste card can still be rejected, by button or by swipe, and never offers a shuffle", async () => {
   let liked = 0, disliked = 0, screen;
   const plan = toggleDay(startWeek(monday, preferences), monday, preferences);
-  await act(() => { screen = create(React.createElement(MealSwipeCards, { mode: 'taste', suggestions: [suggestion(plan, monday, 'breakfast')],
-    exhausted: false, onTake: () => liked++, onNext: () => disliked++, onMore: () => assert.fail('taste cannot shuffle') })); });
-  const no = screen.root.findAllByType('SecondaryButton').find(n => n.props.label === 'Mögen wir nicht');
-  assert.equal(no.props.disabled, false);
+  await act(() => { screen = create(React.createElement(MealSwipeCards, { mode: "taste",
+    suggestions: [suggestion(plan, monday, "breakfast")], exhausted: false,
+    onTake: () => { liked++; }, onNext: () => { disliked++; },
+    onMore: () => assert.fail("taste cannot shuffle") })); });
+  const button = (label) => screen.root.findAll((node) => node.props.label === label)[0];
+  const no = button("Mögen wir nicht");
+  assert.equal(no.props.disabled, false, "the only card left can still be rejected");
   await act(() => no.props.onPress());
-  await act(() => screen.root.findByType('Animated.View').props.onPanResponderRelease({}, { dx: -120, dy: 0 }));
-  await act(() => screen.root.findByType('PrimaryButton').props.onPress());
-  assert.equal(disliked, 2); assert.equal(liked, 1);
-  assert.equal(screen.root.findAllByType('TextButton').length, 0);
+  const handlers = screen.root.findAll((node) => node.props.testID === "meal-card")[0].props;
+  await act(() => handlers.onPanResponderRelease({}, { dx: -200, dy: 0 }));
+  await act(() => button("Mögen wir").props.onPress());
+  assert.equal(disliked, 2);
+  assert.equal(liked, 1);
+  assert.deepEqual(screen.root.findAllByType("TextButton"), [], "taste never offers a shuffle");
   await act(() => screen.unmount());
+});
+
+test("a meal card says what is recorded and never invents a cooking time", () => {
+  const preferences = prefs();
+  let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  plan = chooseMeal(plan, monday, "dinner", suggestion(plan, monday, "dinner"), preferences);
+  const facts = mealFacts(plan.items[0]);
+  assert.match(facts, /^Abendessen · \d+ kcal pro Portion · [\d.]+ Portionen?$/);
+  assert.doesNotMatch(facts, /min|Min/, "the curated meals carry no cooking time");
 });

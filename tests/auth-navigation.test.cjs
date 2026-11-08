@@ -10,6 +10,8 @@ Module._load=function(request,parent,isMain){
  if(request==='@/context/ActiveBasketContext')return {ActiveBasketProvider:pass};
  if(request==='@/components/ActiveBasketShortcut')return {ActiveBasketShortcut:()=>null};
  if(request==='@/components/ScreenNavigation')return {ScreenNavigation:()=>null};
+ // Die Fehlergrenze reicht die Kinder durch, solange nichts schiefgeht.
+ if(request==='@/components/ErrorBoundary')return {ErrorBoundary:({children})=>children};
  if(request==='expo-router')return {Stack};
  if(request==='expo-status-bar')return {StatusBar:()=>null};
  if(request==='react-native-safe-area-context')return {SafeAreaProvider:pass};
@@ -18,6 +20,9 @@ Module._load=function(request,parent,isMain){
  if(request==='@/context/ProfileContext')return {ProfileProvider:pass};
  if(request==='@/context/WeekPlanContext')return {WeekPlanProvider:pass};
  if(request==='@/lib/theme')return {colors:{}};
+ if(request==='@react-native-async-storage/async-storage')return {__esModule:true,default:{getItem:async()=>null,setItem:async()=>{}}};
+ if(request==='@/services/i18n')return {initLocale:async()=>'de',t:key=>key};
+ if(request==='@/hooks/useLocale')return {useLocale:()=>'de'};
  return original.call(this,request,parent,isMain);
 };
 require.extensions['.tsx']=(module,file)=>module._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,file);

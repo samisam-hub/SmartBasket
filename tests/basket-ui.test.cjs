@@ -7,6 +7,7 @@ const {newSavedBasket}=require('../services/basket/persistence.ts');
 global.IS_REACT_ACT_ENVIRONMENT=true;
 let discards=0, dismissed=0;
 let params={},generated=0,saveCalls=0,resolveSave,load=async()=>catalog;
+const replaced=[];
 // The calendar's week arrives already decided; confirm() is what the screen asks it for.
 let weekConfirmations=0,weekPlan=null;
 const weekStore={initialize:async()=>{},confirm:()=>{weekConfirmations++;if(!weekPlan)throw Error("Plane mindestens eine Mahlzeit, bevor du einen Warenkorb erstellst.");return weekPlan;}};
@@ -20,7 +21,7 @@ Module._load=function(request,parent,isMain){
   if(request==='@/context/ActiveBasketContext')return {useActiveBasket:()=>({active:null,remember,clear:()=>{},discard:async()=>{discards++;},busy:false})};
   if(request==='@/services/pantry')return {loadPantry:async()=>({state:{version:0,lots:[]},purchases:[]})};
   if(request==='react-native')return {ActivityIndicator:'Spinner',Text:'Text'};
-  if(request==='expo-router')return {router:{dismissTo:()=>{dismissed++;}},useLocalSearchParams:()=>params};
+  if(request==='expo-router')return {router:{dismissTo:()=>{dismissed++;},replace:to=>{replaced.push(to);}},useLocalSearchParams:()=>params};
   if(request==='@/components/ui')return components;
   if(request==='@/components/MealPlanReview')return {MealPlanReview:props=>React.createElement('MealReview',props)};
   if(request==='@/services/meals/planner')return {generateMealPlan:(...args)=>{generated++;return require('../services/meals/planner.ts').generateMealPlan(...args);}};
@@ -45,8 +46,10 @@ for(const extension of ['.ts','.tsx'])require.extensions[extension]=(module,file
   module._compile(result.outputText,filename);
 };
 const Screen=require('../app/basket-setup.tsx').default;
+const {setMerchantDemo}=require('../services/merchant-demo.ts');
 const flush=()=>act(async()=>{await new Promise(resolve=>setTimeout(resolve,15));});
 test('actual screen requires meal confirmation, saves once on double tap, reopens a snapshot and aborts abandoned generation',async()=>{
+  await setMerchantDemo(true);
   let renderer;
   await act(()=>{renderer=create(React.createElement(Screen));});await flush();
   assert.equal(generated,1);assert.equal(renderer.root.findAllByType('Result').length,0);
@@ -71,8 +74,35 @@ test('actual screen requires meal confirmation, saves once on double tap, reopen
   await act(async()=>{resolveLoad(catalog);await Promise.resolve();});await flush();assert.equal(generated,1);
 });
 
-test('a week from the calendar goes straight to a basket, and an empty one says why',async()=>{
+test('without the merchant demo the week ends in a saved list, not in product cards', async () => {
+  await setMerchantDemo(false);
+  load = async () => catalog;
+  replaced.length = 0;
+  const before = saveCalls;
+  params = { week: '1' };
+  weekPlan = { version: '2', weekStart: '2026-10-05', status: 'confirmed', householdSize: prefs().householdSize,
+    targetCalories: 12000, targetProtein: 600, warnings: [], days: [{ date: '2026-10-05', slots: ['dinner'] }],
+    items: [{ id: '2026-10-05-dinner', date: '2026-10-05', mealSlot: 'dinner', servings: 1,
+      meal: { id: 'm1', name: 'Fixture meal', ingredients: [], dietaryTags: [], allergens: [] } }] };
   let renderer;
+  await act(() => { renderer = create(React.createElement(Screen)); });
+  await flush();
+  await act(async () => { resolveSave(); await Promise.resolve(); });
+  await flush();
+  // Nothing of the catalogue is shown: the list is saved and the shopping tab opens on it.
+  assert.equal(renderer.root.findAllByType('Result').length, 0, 'no product cards for a household');
+  assert.equal(saveCalls, before + 1, 'the list is saved without being asked for');
+  assert.equal(replaced.length, 1);
+  assert.equal(replaced[0].pathname, '/basket');
+  assert.ok(replaced[0].params.list, 'the tab is told which list to open');
+  await act(() => renderer.unmount());
+});
+
+test('a week from the calendar goes straight to a basket, and an empty one says why',async()=>{
+  await setMerchantDemo(true);
+  let renderer;
+  // Der Zaehler gehoert diesem Lauf, nicht den Tests davor.
+  weekConfirmations=0;
   load=async()=>catalog;
   const generatedBefore=generated;
   params={week:'1'};weekPlan=null;
@@ -115,6 +145,7 @@ test('a week from the calendar goes straight to a basket, and an empty one says 
 });
 
 test('unfinished basket deletion requires confirmation and keeps the meal plan', async () => {
+  await setMerchantDemo(true);
  params={savedId:saved.id}; discards=0; dismissed=0;
  let renderer;
  await act(()=>{renderer=create(React.createElement(Screen));}); await flush();

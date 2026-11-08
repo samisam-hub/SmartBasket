@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import { useState, type ReactNode } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, Text, View } from 'react-native';
@@ -15,14 +16,14 @@ export function BasketProductHeading({ name, subtitle, notes, report }: { name: 
       </View>
       <View>
         {!!report.length && <Pressable onPress={() => setReportExpanded(value => !value)}
-          accessibilityRole="button" accessibilityLabel={`Auswahlbericht für ${name}`}
-          accessibilityHint="Details zur Produktauswahl und Mengenanpassung ein- oder ausblenden" accessibilityState={{ expanded: reportExpanded }}
+          accessibilityRole="button" accessibilityLabel={t('heading.report', { product: name })}
+          accessibilityHint={t('heading.toggleDetails')} accessibilityState={{ expanded: reportExpanded }}
           style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <Feather name="file-text" size={20} color={colors.muted} />
         </Pressable>}
         {!!notes.length && <Pressable onPress={() => setExpanded(value => !value)}
-          accessibilityRole="button" accessibilityLabel={`Ernährungsangaben unbestätigt für ${name}`}
-          accessibilityHint="Ernährungshinweise des Produkts ein- oder ausblenden" accessibilityState={{ expanded }}
+          accessibilityRole="button" accessibilityLabel={t('heading.unverified', { product: name })}
+          accessibilityHint={t('heading.toggleNotes')} accessibilityState={{ expanded }}
           style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <Feather name="alert-triangle" size={20} color={colors.warning} />
         </Pressable>}

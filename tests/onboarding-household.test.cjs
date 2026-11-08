@@ -69,6 +69,34 @@ test("the calorie suggestion follows the taps a person made and stays inside the
   }
 });
 
+test("the amounts are the ones people actually eat, not a starvation floor", () => {
+  // A desk job is PAL 1.4, not the textbook 1.2: a 35-year-old woman maintains on about 1,900 kcal.
+  const woman = estimateCalories({ sex: "female", age: 35, activityLevel: "low" });
+  assert.ok(woman >= 1800 && woman <= 2000, `${woman}`);
+  const man = estimateCalories({ sex: "male", age: 35, activityLevel: "low" });
+  assert.ok(man >= 2100 && man <= 2400, `${man}`);
+  // Children follow the reference amounts for their age; the adult formula reads far too low.
+  const five = estimateCalories({ kind: "child", age: 5 });
+  assert.ok(five >= 1300 && five <= 1600, `${five}`);
+  const twelve = estimateCalories({ kind: "child", age: 12 });
+  assert.ok(twelve >= 1900 && twelve <= 2300, `${twelve}`);
+  assert.ok(estimateCalories({ kind: "child", age: 12, activityLevel: "high" }) > twelve);
+});
+
+test("height and weight count towards the suggestion; without them a desk job is assumed", () => {
+  // Nothing stated: a grown-up at a desk, not an averagely active one.
+  const plain = estimateCalories({});
+  assert.equal(plain, estimateCalories({ age: 35, activityLevel: "low" }));
+  const person = patchParticipant(adult(), { sex: "female", age: 35, activityLevel: "low" }, "maintain");
+  const small = patchParticipant(person, { heightCm: 160, weightKg: 55 }, "maintain");
+  const tall = patchParticipant(person, { heightCm: 185, weightKg: 95 }, "maintain");
+  assert.ok(small.dailyCalories < person.dailyCalories);
+  assert.ok(tall.dailyCalories > person.dailyCalories);
+  // Cleared again, the suggestion falls back to the typical body for those details.
+  const cleared = patchParticipant(tall, { heightCm: null, weightKg: null }, "maintain");
+  assert.equal(cleared.dailyCalories, person.dailyCalories);
+});
+
 test("details move the suggestion along; a corrected target is kept", () => {
   const person = adult();
   const child = patchParticipant(person, { kind: "child", age: 8 }, "maintain");
@@ -77,9 +105,17 @@ test("details move the suggestion along; a corrected target is kept", () => {
   const corrected = patchParticipant(child, { dailyCalories: 1800 }, "maintain");
   assert.equal(corrected.dailyCalories, 1800);
   assert.equal(corrected.proteinTarget, estimateProtein(1800, "maintain"));
-  // Further detail taps must not overwrite the number the person entered.
+  // Further detail taps must not overwrite the number the person entered, not even when that
+  // number happens to match what we would have suggested.
   const stillCorrected = patchParticipant(corrected, { activityLevel: "high" }, "maintain");
   assert.equal(stillCorrected.dailyCalories, 1800);
+  const matching = patchParticipant(child, { dailyCalories: estimateCalories(child) }, "maintain");
+  assert.equal(patchParticipant(matching, { activityLevel: "high" }, "maintain").dailyCalories,
+    matching.dailyCalories);
+  // Clearing the field hands it back to us.
+  const back = patchParticipant(matching, { dailyCalories: estimateCalories(matching), caloriesEdited: false }, "maintain");
+  assert.equal(patchParticipant(back, { activityLevel: "high" }, "maintain").dailyCalories,
+    estimateCalories({ ...back, activityLevel: "high" }));
   // The goal only changes the protein share, never the calorie suggestion.
   assert.equal(
     patchParticipant(person, { age: 30 }, "build_muscle").proteinTarget,
@@ -90,7 +126,14 @@ test("details move the suggestion along; a corrected target is kept", () => {
 test("the household list drives size and per-person calories, and every person stays valid", () => {
   const people = [adult({ dailyCalories: 2000, proteinTarget: 100 }),
     { ...newParticipant("child", "person-2", "Kid", "maintain"), dailyCalories: 1500, proteinTarget: 75 }];
-  assert.deepEqual(householdValues(people), { householdSize: 2, dailyCalories: 1750 });
+  assert.deepEqual(householdValues(people),
+    { householdSize: 2, dailyCalories: 1750, dietaryPreferences: ["none"], allergens: [] });
+  // What one person avoids, the shared menu avoids: a dish is cooked once for everybody.
+  const [grown, child] = people;
+  assert.deepEqual(householdValues([{ ...grown, dietaryPreferences: ["lactose_free"] }, child]).dietaryPreferences,
+    ["lactose_free"]);
+  assert.deepEqual(householdValues([{ ...grown, allergens: ["milk"] }, { ...child, intolerances: ["gluten"] }]),
+    { householdSize: 2, dailyCalories: 1750, dietaryPreferences: ["gluten_free"], allergens: ["milk", "wheat"] });
   assert.ok(people.every(isParticipant));
   assert.ok(validParticipantList(people));
   assert.equal(validParticipantList([]), false);

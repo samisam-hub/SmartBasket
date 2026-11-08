@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const {
   SUGGESTIONS_PER_SLOT,
   compatibleMeal,
+  ingredientAvailability,
   mealNutrition,
   suggestMeals,
 } = require("../services/meals/planner.ts");
@@ -149,4 +150,35 @@ test("suggestions need valid, completed preferences", () => {
     /Einstellungen/);
   // The catalog is optional: without it the suggestions still come, availability just scores 0.
   assert.equal(suggestMeals(plan, monday, "dinner", preferences).length, 2);
+});
+
+test("matching the catalog is done once per catalog and household, not once per card", () => {
+  const preferences = prefs({ householdSize: 2 });
+  const other = prefs({ householdSize: 2, diets: ["vegan"] });
+  // Every card used to rebuild this, which means matching every curated ingredient against up to
+  // 2,000 products again for each swipe.
+  const first = ingredientAvailability(fullCatalog, preferences);
+  assert.equal(ingredientAvailability(fullCatalog, preferences), first, "the same question is answered once");
+  assert.notEqual(ingredientAvailability(fullCatalog, other), first, "different preferences get their own answer");
+  assert.notEqual(ingredientAvailability([...fullCatalog], preferences), first, "a different catalog is matched again");
+  // The cached answer is the same answer: availability and prices still come from the catalog.
+  const oats = [...first.entries()].find(([, value]) => value.available);
+  assert.ok(oats, "the fixture catalog can deliver something");
+});
+
+test("suggesting a meal many times over does not get slower", () => {
+  const preferences = prefs({ householdSize: 2 });
+  const plan = week(preferences, fullDay());
+  // Both paths are timed in the same process, so a busy machine slows them equally and the ratio
+  // stays meaningful. A fresh array each call is what every card used to hand in.
+  const time = (catalog) => {
+    const started = process.hrtime.bigint();
+    for (let round = 0; round < 15; round++) suggestMeals(plan, monday, "dinner", preferences, catalog());
+    return Number(process.hrtime.bigint() - started);
+  };
+  suggestMeals(plan, monday, "dinner", preferences, fullCatalog);
+  const cold = time(() => [...fullCatalog]);
+  const warm = time(() => fullCatalog);
+  assert.ok(cold / warm > 5,
+    `reusing the catalog match should be far cheaper than redoing it, was ${(cold / warm).toFixed(1)}x`);
 });

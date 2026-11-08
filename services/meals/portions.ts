@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { AnyMealPlan } from '../../types/meal';
 import { plannedDayCount } from './weekPlan';
 
@@ -5,7 +6,7 @@ import { plannedDayCount } from './weekPlan';
 export function participantPortions(plan: AnyMealPlan) {
   const people = plan.participants?.length === plan.householdSize ? plan.participants :
     Array.from({ length: plan.householdSize }, (_, i) => ({
-      id: `person-${i}`, name: plan.householdSize === 1 ? "Du" : `Person ${i + 1}`,
+      id: `person-${i}`, name: plan.householdSize === 1 ? t('portions.you') : t('planSetup.numberedPerson', { number: i + 1 }),
       dailyCalories: plan.targetCalories / Math.max(1, plannedDayCount(plan)) / plan.householdSize,
       proteinTarget: plan.targetProtein / Math.max(1, plannedDayCount(plan)) / plan.householdSize,
     }));

@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import {
   defaultDraft,
   steps,
@@ -73,7 +74,7 @@ export class PreferenceStore {
     if (!this.storageReadable)
       return Promise.reject(
         new Error(
-          "Der lokale Speicher konnte nicht gelesen werden. Starte die App neu, um es erneut zu versuchen.",
+          t('store.prefs.unreadable'),
         ),
       );
     const { version, draft, saved, step, editing, pendingSync } = value;
@@ -97,9 +98,34 @@ export class PreferenceStore {
       .catch(() =>
         this.publish({
           localError:
-            "Änderungen konnten nicht auf diesem Gerät gespeichert werden. Gib Speicherplatz frei und versuche es vor dem Schließen erneut.",
+            t('store.prefs.writeFailed'),
         }),
       );
+  }
+  /** True while the settings stored on this device could not be read and are therefore left
+   *  untouched. Nothing is written until somebody decides to start fresh here. */
+  storageBroken = () => !this.storageReadable;
+  /** Overwrites the unreadable copy with what is on screen, the one way out of a broken store. */
+  startFresh = async (): Promise<boolean> => {
+    this.storageReadable = true;
+    try {
+      await this.persist();
+      this.publish({ localError: null });
+      return true;
+    } catch (error) {
+      this.publish({ localError: this.writeMessage(error) });
+      return false;
+    }
+  };
+  /** Out of room, an unreadable store and a plain failure each need a different answer. */
+  private writeMessage(error: unknown): string {
+    if (!this.storageReadable) return t('store.prefs.storeBroken');
+    const name = error instanceof Error ? error.name : '';
+    const text = error instanceof Error ? error.message : String(error);
+    return name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+      /quota|storage is full|no space/i.test(text)
+      ? t('store.prefs.noRoom')
+      : t('store.prefs.saveFailed');
   }
   retryLocal = async () => {
     try {
@@ -107,7 +133,7 @@ export class PreferenceStore {
       this.publish({ localError: null });
     } catch {
       this.publish({
-        localError: "Der lokale Speicher ist nicht verfügbar. Starte die App neu.",
+        localError: t('store.prefs.noStorage'),
       });
     }
   };
@@ -118,7 +144,7 @@ export class PreferenceStore {
       return true;
     } catch {
       this.publish({
-        localError: "Der Fortschritt konnte nicht gespeichert werden. Versuche es vor dem Verlassen erneut.",
+        localError: t('store.prefs.progressFailed'),
       });
       return false;
     }
@@ -140,7 +166,7 @@ export class PreferenceStore {
           typeof c.editing !== "boolean" ||
           typeof c.pendingSync !== "boolean"
         )
-          throw new Error("Ungültige lokale Daten");
+          throw new Error(t('store.prefs.invalidLocal'));
         this.publish({
           draft: c.draft,
           saved: c.saved,
@@ -153,7 +179,7 @@ export class PreferenceStore {
       this.storageReadable = false;
       this.publish({
         localError:
-          "Gespeicherte Einstellungen konnten nicht gelesen werden und wurden nicht überschrieben. Starte die App neu.",
+          t('store.prefs.savedUnreadable'),
       });
     }
     this.publish({ ready: true });
@@ -179,7 +205,7 @@ export class PreferenceStore {
     } catch {
       this.publish({
         remoteError:
-          "Cloud-Einstellungen konnten nicht geladen werden. Dein lokaler Fortschritt ist verfügbar. Prüfe deine Verbindung und die Cloud-Einrichtung.",
+          t('store.prefs.cloudFailed'),
       });
     }
   }
@@ -218,7 +244,8 @@ export class PreferenceStore {
     let values;
     try {
       values = normalizedValues(this.state.draft);
-    } catch {
+    } catch (error) {
+      this.publish({ localError: error instanceof Error ? error.message : t('valid.checkMarked') });
       return false;
     }
     this.publish({ saving: true, remoteError: null });
@@ -241,12 +268,8 @@ export class PreferenceStore {
     };
     try {
       await this.persist(completion);
-    } catch {
-      this.publish({
-        saving: false,
-        localError:
-          "Einstellungen konnten nicht auf diesem Gerät gespeichert werden. Versuche es erneut; deine Angaben sind noch vorhanden.",
-      });
+    } catch (error) {
+      this.publish({ saving: false, localError: this.writeMessage(error) });
       return false;
     }
     this.publish({ ...completion, localError: null });
@@ -265,7 +288,7 @@ export class PreferenceStore {
     } catch {
       this.publish({
         remoteError:
-          "Nur auf diesem Gerät gespeichert. Die Cloud-Synchronisierung ist fehlgeschlagen. Prüfe Verbindung, Gastanmeldung und Datenbankeinrichtung und versuche es erneut.",
+          t('store.prefs.localOnly'),
       });
     }
   }
@@ -291,7 +314,7 @@ export class PreferenceStore {
       } catch {
         this.publish({
           remoteError:
-            "Cloud-Einstellungen konnten nicht geladen werden. Dein lokaler Fortschritt bleibt verfügbar.",
+            t('store.prefs.cloudFailedLocalKept'),
         });
       } finally {
         this.publish({ saving: false });

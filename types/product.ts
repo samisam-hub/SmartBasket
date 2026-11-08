@@ -2,12 +2,6 @@ export const categories = ["fruit", "vegetables", "meat", "fish", "eggs", "dairy
   "dairy-alternatives", "bread", "grains", "pasta", "potatoes", "legumes",
   "breakfast", "snacks", "beverages", "other"] as const;
 export type ProductCategory = (typeof categories)[number];
-export const categoryLabels: Record<ProductCategory, string> = {
-  fruit: "Obst", vegetables: "Gemüse", meat: "Fleisch", fish: "Fisch", eggs: "Eier",
-  dairy: "Milchprodukte", "dairy-alternatives": "Milchalternativen", bread: "Brot",
-  grains: "Getreide", pasta: "Pasta", potatoes: "Kartoffeln", legumes: "Hülsenfrüchte",
-  breakfast: "Frühstück", snacks: "Snacks", beverages: "Getränke", other: "Sonstiges",
-};
 /** Provider-neutral product. Null means unknown, never zero/false by default. */
 export interface Product {
   readyMeal?: import('./meal').ReadyMealMetadata | null;

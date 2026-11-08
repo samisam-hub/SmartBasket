@@ -23,4 +23,12 @@ export interface PlanParticipant {
  /** Absent on participants saved before the calendar onboarding; those count as adults with unknown activity. */
  kind?:ParticipantKind;
  activityLevel?:typeof activities[number]|null;
+ /** A small picture, kept with the household rather than as a path into the device's gallery. */
+ avatarUri?:string|null;
+ /** Measurements sharpen the calorie suggestion; without them typical values stand in. */
+ heightCm?:number|null;
+ weightKg?:number|null;
+ /** Set once somebody typed an amount of their own, so the suggestion stops following details
+  *  even when the two happen to agree. Absent on people saved before this was recorded. */
+ caloriesEdited?:boolean;
 }

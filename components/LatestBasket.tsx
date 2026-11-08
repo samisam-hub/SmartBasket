@@ -1,3 +1,4 @@
+import { t } from '../services/i18n';
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { Text } from 'react-native';
@@ -23,15 +24,15 @@ export function LatestBasket() {
           setLatest([...response.baskets].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))[0] ?? null);
           setWarning(response.warning);
         }
-      } catch { if (active) setWarning("Dein letzter Warenkorb konnte nicht geladen werden. Versuche es im Bereich Warenkorb erneut."); }
+      } catch { if (active) setWarning(t('latest.loadFailed')); }
     })();
     return () => { active = false; };
   }, [ready, saved?.userId]));
   if (!latest) return warning ? <Text style={ui.small}>{warning}</Text> : null;
   const open = () => router.push({ pathname: '/basket-setup', params: { savedId: latest.id } });
-  return <SectionCard title="Dein letzter Warenkorb" compact>
+  return <SectionCard title={t('latest.title')} compact>
     <SavedBasketPreview basket={latest} onOpen={open} minimal />
-    <SecondaryButton label="Diesen Warenkorb wiederverwenden" onPress={open} />
+    <SecondaryButton label={t('latest.reuse')} onPress={open} />
     {warning && <Text style={ui.small}>{warning}</Text>}
   </SectionCard>;
 }

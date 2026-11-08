@@ -1,4 +1,5 @@
-import { germanSavedName } from '../../lib/legacy-display';
+import { formatNumber, t } from '../i18n';
+import { contentName } from '../../services/i18n/content';
 import type { BasketGenerationResult } from '../../types/basket';
 
 export interface ShoppingRow {
@@ -8,7 +9,7 @@ export interface ShoppingRow {
   quantity: string;
   missing: boolean;
 }
-const amount = (n: number) => n.toLocaleString('de-DE', { maximumFractionDigits: 1 });
+const amount = (n: number) => formatNumber(n, 1);
 const row = (id: string, name: string, quantity: string, missing = false): ShoppingRow =>
   ({ id, name, quantity, missing, signature: JSON.stringify([name, quantity, missing]) });
 
@@ -16,7 +17,7 @@ const row = (id: string, name: string, quantity: string, missing = false): Shopp
 export function shoppingRows(result: BasketGenerationResult): ShoppingRow[] {
   const products = result.items.map(item => row(`product:${item.product.id}`,
     `${item.product.name}${item.product.brand ? ` · ${item.product.brand}` : ''}`,
-    `${item.packageCount} × ${amount(item.packageAmount)} ${item.quantityUnit}${item.quantityAssumed ? " (geschätzte Packungsgröße)" : ''}`));
+    `${item.packageCount} × ${amount(item.packageAmount)} ${item.quantityUnit}${item.quantityAssumed ? t('rows.assumedPackage') : ''}`));
   const missing = (result.ingredientRequirements ?? []).flatMap(requirement => {
     const bought = result.items.filter(item => item.ingredientKey === requirement.ingredientKey)
       .reduce((sum, item) => sum + (item.plannedConsumptionQuantity ?? 0), 0);
@@ -24,8 +25,8 @@ export function shoppingRows(result: BasketGenerationResult): ShoppingRow[] {
       .reduce((sum, use) => sum + use.quantity, 0);
     if (bought + pantry >= requirement.minimumAcceptableQuantity - .001) return [];
     const needed = Math.max(0, requirement.requiredQuantity - bought - pantry);
-    return [row(`ingredient:${requirement.ingredientKey}`, germanSavedName(requirement.ingredientName),
-      `${amount(needed)} ${requirement.unit} noch benötigt`, true)];
+    return [row(`ingredient:${requirement.ingredientKey}`, contentName(requirement.ingredientName),
+      t('rows.stillNeeded', { amount: amount(needed), unit: requirement.unit }), true)];
   });
   return [...products, ...missing];
 }
@@ -35,9 +36,9 @@ export const rowChecked = (row: ShoppingRow, checked: Record<string, string>): b
 
 /** No account, allergy or nutrition data is included in the shared shopping text. */
 export function shoppingListText(name: string, rows: ShoppingRow[], checked: Record<string, string>): string {
-  const line = (row: ShoppingRow) => `${rowChecked(row, checked) ? '[x]' : '[ ]'} ${row.name.replace(/[\r\n]+/g, ' ')} — ${row.quantity}${row.missing ? " (passendes Produkt auswählen)" : ''}`;
+  const line = (row: ShoppingRow) => `${rowChecked(row, checked) ? '[x]' : '[ ]'} ${row.name.replace(/[\r\n]+/g, ' ')} — ${row.quantity}${row.missing ? t('rows.pickProduct') : ''}`;
   return [`SmartBasket · ${name.replace(/[\r\n]+/g, ' ')}`, '',
     ...rows.filter(row => !rowChecked(row, checked)).map(line),
-    ...(rows.some(row => rowChecked(row, checked)) ? ['', "Bereits eingepackt:", ...rows.filter(row => rowChecked(row, checked)).map(line)] : []),
+    ...(rows.some(row => rowChecked(row, checked)) ? ['', t('rows.alreadyPacked'), ...rows.filter(row => rowChecked(row, checked)).map(line)] : []),
   ].join('\n');
 }

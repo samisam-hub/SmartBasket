@@ -1,8 +1,8 @@
+import { formatMoney, formatNumber, slotLabel, t, term } from './i18n';
 import {
   allergens,
   diets,
   goals,
-  labels,
   slotDefaultsOf,
   type Diet,
   type PreferenceDraft,
@@ -13,7 +13,8 @@ import {
 } from "../types/preferences";
 import { mealSlots } from "../types/meal";
 import type { PlanParticipant } from "../types/profile";
-import { isParticipant } from "./profile-domain";
+import { householdDiets, isParticipant } from "./profile-domain";
+import { isUnitSystem } from "./units";
 
 export function toggleDiet(current: Diet[], selected: Diet): Diet[] {
   if (selected === "none") return ["none"];
@@ -29,12 +30,16 @@ export function toggleDiet(current: Diet[], selected: Diet): Diet[] {
   return next.length ? next : ["none"];
 }
 /** The household is a list of people; the saved size and per-person calories follow from it. */
-export function householdValues(participants: PlanParticipant[]): Pick<PreferenceValues, "householdSize" | "dailyCalories"> {
+export function householdValues(participants: PlanParticipant[]):
+  Pick<PreferenceValues, "householdSize" | "dailyCalories" | "dietaryPreferences" | "allergens"> {
   return {
     householdSize: participants.length,
     dailyCalories: Math.round(
       participants.reduce((sum, p) => sum + (p.dailyCalories ?? 0), 0) / participants.length,
     ),
+    // One person eating lactose-free makes the whole shared menu lactose-free: a dish is cooked
+    // once, and somebody who cannot eat it is not served it.
+    ...householdDiets(participants),
   };
 }
 export function validParticipantList(value: unknown): value is PlanParticipant[] {
@@ -57,29 +62,29 @@ const integerIn = (value: unknown, min: number, max: number) =>
 export function validatePreferences(value: PreferenceDraft): PreferenceErrors {
   const errors: PreferenceErrors = {};
   if (!integerIn(value.householdSize, 1, 10))
-    errors.householdSize = "Wähle zwischen 1 und 10 Personen.";
+    errors.householdSize = t('valid.household');
   if (value.participants !== undefined) {
     if (!validParticipantList(value.participants))
       errors.participants =
-        "Jede Person benötigt einen Namen und einen Kalorienwert von 1.000 bis 5.000 kcal.";
+        t('valid.participants');
     else if (value.participants.length !== value.householdSize)
-      errors.householdSize = "Die Haushaltsgröße muss zu den hinzugefügten Personen passen.";
+      errors.householdSize = t('valid.householdSize');
   }
   if (value.slotDefaults !== undefined && !validSlotDefaults(value.slotDefaults))
-    errors.slotDefaults = "Wähle mindestens eine Mahlzeit zum Planen.";
+    errors.slotDefaults = t('valid.oneSlot');
   if (![3, 5, 7, 14].includes(value.planningDays))
-    errors.planningDays = "Wähle 3, 5, 7 oder 14 Tage.";
+    errors.planningDays = t('valid.days');
   if (!integerIn(value.dailyCalories, 1000, 5000))
-    errors.dailyCalories = "Gib eine ganze Zahl von 1.000 bis 5.000 kcal ein.";
+    errors.dailyCalories = t('valid.calories');
   if (!goals.includes(value.primaryGoal))
-    errors.primaryGoal = "Wähle ein Ernährungsziel.";
+    errors.primaryGoal = t('valid.goal');
   if (!["automatic", "manual"].includes(value.proteinMode))
-    errors.proteinMode = "Wähle ein automatisches oder selbst festgelegtes Eiweißziel.";
+    errors.proteinMode = t('valid.proteinMode');
   if (
     value.proteinMode === "manual" &&
     !integerIn(value.proteinTargetGrams, 1, 500)
   )
-    errors.proteinTargetGrams = "Gib eine ganze Zahl von 1 bis 500 g pro Tag ein.";
+    errors.proteinTargetGrams = t('valid.proteinGrams');
   if (
     !Array.isArray(value.dietaryPreferences) ||
     !value.dietaryPreferences.length ||
@@ -92,15 +97,15 @@ export function validatePreferences(value: PreferenceDraft): PreferenceErrors {
       ["vegan", "vegetarian", "pescatarian"].includes(d),
     ).length > 1
   )
-    errors.dietaryPreferences = "Wähle miteinander vereinbare Ernährungseinstellungen.";
+    errors.dietaryPreferences = t('valid.diets');
   if (
     !Array.isArray(value.allergens) ||
     value.allergens.some((a) => !allergens.includes(a)) ||
     new Set(value.allergens).size !== value.allergens.length
   )
-    errors.allergens = "Wähle Allergene aus der Liste oder Keine.";
+    errors.allergens = t('valid.allergens');
   if (typeof value.budgetEnabled !== "boolean")
-    errors.budgetEnabled = "Wähle eine Budgetoption.";
+    errors.budgetEnabled = t('valid.budgetOption');
   if (
     value.budgetEnabled &&
     (typeof value.weeklyBudgetEur !== "number" ||
@@ -112,12 +117,13 @@ export function validatePreferences(value: PreferenceDraft): PreferenceErrors {
       ) > 0.00001)
   )
     errors.weeklyBudgetEur =
-      "Gib 0,01–10.000 € mit höchstens zwei Nachkommastellen ein.";
+      t('valid.budgetAmount');
   return errors;
 }
 export function normalizedValues(draft: PreferenceDraft): PreferenceValues {
-  if (Object.keys(validatePreferences(draft)).length)
-    throw new Error("Prüfe die markierten Einstellungen.");
+  // The caller shows this to somebody who pressed save, so it names what is in the way.
+  const problems = Object.values(validatePreferences(draft));
+  if (problems.length) throw new Error(problems.join(' '));
   return {
     ...draft,
     dailyCalories: draft.dailyCalories as number,
@@ -126,23 +132,17 @@ export function normalizedValues(draft: PreferenceDraft): PreferenceValues {
     weeklyBudgetEur: draft.budgetEnabled ? draft.weeklyBudgetEur : null,
   };
 }
-export const slotLabels: Record<(typeof mealSlots)[number], string> = {
-  breakfast: "Frühstück",
-  lunch: "Mittagessen",
-  dinner: "Abendessen",
-  snack: "Snack",
-};
 export const activeSlotLabels = (p: { slotDefaults?: SlotDefaults }): string[] =>
-  mealSlots.filter((slot) => slotDefaultsOf(p)[slot]).map((slot) => slotLabels[slot]);
+  mealSlots.filter((slot) => slotDefaultsOf(p)[slot]).map((slot) => slotLabel(slot));
 export function preferenceChips(p: UserPreferences): string[] {
   return [
-    `${p.planningDays} Tage`,
-    `${p.householdSize} ${p.householdSize === 1 ? "Person" : "Personen"}`,
+    t('summary.daysPlanned', { count: p.planningDays }),
+    t('summary.people', { count: p.householdSize }),
     `${activeSlotLabels(p).join(", ")}`,
-    `${p.dailyCalories.toLocaleString("de-DE")} kcal`,
-    labels[p.primaryGoal],
-    ...p.dietaryPreferences.filter((d) => d !== "none").map((d) => labels[d]),
-    p.budgetEnabled ? `€${p.weeklyBudgetEur} Budget` : "Kein Budgetlimit",
+    `${formatNumber(p.dailyCalories)} kcal`,
+    term(p.primaryGoal),
+    ...p.dietaryPreferences.filter((d) => d !== "none").map((d) => term(d)),
+    p.budgetEnabled ? t('summary.budgetAmount', { amount: formatMoney(p.weeklyBudgetEur ?? 0) }) : t('summary.noBudget'),
   ];
 }
 /** Check persisted input without coercing malformed data into valid preferences. */
@@ -164,7 +164,14 @@ export function isDraft(value: unknown): value is PreferenceDraft {
     typeof p.budgetEnabled === "boolean" &&
     (p.weeklyBudgetEur === null || typeof p.weeklyBudgetEur === "number") &&
     (p.participants === undefined || validParticipantList(p.participants)) &&
-    (p.slotDefaults === undefined || validSlotDefaults(p.slotDefaults))
+    (p.slotDefaults === undefined || validSlotDefaults(p.slotDefaults)) &&
+    (p.householdName === undefined || (typeof p.householdName === "string" && p.householdName.length <= 80)) &&
+    (p.householdAvatarUri === undefined || p.householdAvatarUri === null ||
+      (typeof p.householdAvatarUri === "string" && p.householdAvatarUri.length > 0 && p.householdAvatarUri.length <= 200000)) &&
+    // Absent means metric; anything else stored there is not a preference we can honour.
+    (p.unitSystem === undefined || isUnitSystem(p.unitSystem)) &&
+    (p.preferredMealIds === undefined ||
+      (Array.isArray(p.preferredMealIds) && p.preferredMealIds.every(id => typeof id === 'string')))
   );
 }
 export function isSaved(value: unknown): value is UserPreferences {

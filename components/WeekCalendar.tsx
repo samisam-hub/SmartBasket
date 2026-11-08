@@ -1,82 +1,174 @@
+import { slotLabel, t, term } from '../services/i18n';
+import Feather from '@expo/vector-icons/Feather';
+import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import type { WeekPlan } from '../types/meal';
+import type { AnyMealPlanItem, WeekPlan } from '../types/meal';
 import { openPlanSlots } from '../services/meals/validation';
-import { addDays, dayOf, itemsOn, planDate, planDateLabel, weekDates, weekStartOf } from '../services/meals/weekPlan';
-import { PrimaryButton, SectionCard, SecondaryButton } from './ui';
-import { colors, spacing, ui } from '../lib/theme';
+import { addDays, dayOf, itemsInSlot, itemsOn, planDate, planDateLabel, sortSlots, weekDates, weekStartOf, weekdayShort } from '../services/meals/weekPlan';
+import { MealImage } from './MealImage';
+import { IconButton, PrimaryButton, SecondaryButton, TextButton } from './ui';
+import { colors, radii, spacing, typography, ui } from '../lib/theme';
 
 export const todayPlanDate = (now: Date = new Date()) => planDate(now);
 export const currentWeekStart = (now: Date = new Date()) => weekStartOf(todayPlanDate(now));
-const weekdayNames = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 /** What one day of the calendar shows: nothing planned, meals still open, or all decided. */
 export function dayState(plan: WeekPlan | null, date: string): 'unplanned' | 'open' | 'done' {
   if (!plan || !dayOf(plan, date)) return 'unplanned';
   return openPlanSlots(plan).some(day => day.date === date) ? 'open' : 'done';
 }
 export function weekSummary(plan: WeekPlan | null): string {
-  if (!plan || !plan.days.length) return "Noch keine Mahlzeiten geplant. Plane für die Tage, an denen du Essen brauchst.";
+  if (!plan || !plan.days.length) return t('calendar.noDay');
   const open = openPlanSlots(plan).reduce((count, day) => count + day.slots.length, 0);
-  const meals = plan.items.length;
-  const days = `${plan.days.length} ${plan.days.length === 1 ? 'Tag' : 'Tage'}`;
-  if (open) return `${days} geplant · ${meals} ${meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'} ausgewählt · ${open} noch offen`;
-  return `${days} geplant · ${meals} ${meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'} ausgewählt · bereit für den Warenkorb`;
+  const parts = [t('calendar.days', { count: plan.days.length }), t('calendar.meals', { count: plan.items.length })];
+  parts.push(open ? t('calendar.openCount', { count: open }) : t('calendar.readyForList'));
+  return parts.join(' · ');
+}
+/** The day a week opens on: today when it is in this week, otherwise the first day with something
+ *  planned, and failing that the Monday it starts on. */
+export function openingDate(plan: WeekPlan | null, weekStart: string, today = todayPlanDate()): string {
+  const dates = weekDates(weekStart);
+  if (dates.includes(today)) return today;
+  return dates.find(date => dayState(plan, date) !== 'unplanned') ?? dates[0];
+}
+/** What a card says beside the name. The curated meals carry no cooking time, so this says what
+ *  is actually recorded: which meal of the day it is, and what one portion holds. */
+export function mealFacts(item: AnyMealPlanItem): string {
+  const parts = [slotLabel(item.mealSlot)];
+  if (item.meal.caloriesPerServing)
+    parts.push(t('calendar.kcalPerPortion', { calories: Math.round(item.meal.caloriesPerServing) }));
+  parts.push(t('calendar.portions', { count: Math.round(item.servings * 10) / 10 }));
+  return parts.join(' · ');
 }
 
-/** Screen 6: the week as the first thing the household sees, with every day reachable in one tap. */
-export function WeekCalendar({ plan, weekStart, onWeek, onBasket, onCopyPrevious, busy }: {
+/** Screen 6: the week as the first thing the household sees. The strip picks a day, the cards show
+ *  what that day holds, and each card carries the two answers a planned meal can still get. */
+export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBasket, onCopyPrevious, busy }: {
   plan: WeekPlan | null;
   weekStart: string;
+  selected: string;
+  onSelect: (date: string) => void;
   onWeek: (weekStart: string) => void;
   onBasket: () => void;
   onCopyPrevious?: () => void;
   busy?: boolean;
 }) {
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const today = todayPlanDate();
   const dates = weekDates(weekStart);
-  const ready = !!plan?.items.length;
-  return <SectionCard>
-    <Text style={ui.subheading}>{weekStart === currentWeekStart() ? "Deine aktuelle Woche" : "Deine ausgewählte Woche"}</Text>
-    <Text style={ui.body}>{weekStart === currentWeekStart() ? "Möchtest du für diese Woche einkaufen?" : "Möchtest du für die Mahlzeiten dieser Woche einkaufen?"}</Text>
-    <View style={[ui.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Vorherige Woche" disabled={busy}
-        onPress={() => onWeek(addDays(weekStart, -7))} style={{ padding: spacing.xs }}>
-        <Text style={[ui.body, { color: colors.primary }]}>‹</Text>
-      </Pressable>
-      <Text style={ui.subheading}>{planDateLabel(weekStart)} – {planDateLabel(addDays(weekStart, 6))}</Text>
-      <Pressable accessibilityRole="button" accessibilityLabel="Nächste Woche" disabled={busy}
-        onPress={() => onWeek(addDays(weekStart, 7))} style={{ padding: spacing.xs }}>
-        <Text style={[ui.body, { color: colors.primary }]}>›</Text>
-      </Pressable>
+  const date = dates.includes(selected) ? selected : dates[0];
+  const day = plan ? dayOf(plan, date) : null;
+  const items = plan ? itemsOn(plan, date) : [];
+  const people = plan?.participants ?? [];
+  const emptySlots = day ? sortSlots(day.slots).filter(slot => !itemsInSlot(plan!, date, slot).length) : [];
+  return <View style={ui.stack}>
+    <View style={ui.row}>
+      <Text accessibilityRole="header" style={[ui.title, { flex: 1 }]}>{t('calendar.title')}</Text>
+      <IconButton icon="sliders" label={t('calendar.pickDays')} disabled={busy}
+        onPress={() => router.push('/plan/week')} />
     </View>
-    <View style={[ui.row, { gap: spacing.xs }]}>
-      {dates.map((date, index) => {
-        const state = dayState(plan, date);
-        const meals = plan ? itemsOn(plan, date).length : 0;
-        return <Pressable key={date} accessibilityRole="button" disabled={busy}
-          accessibilityLabel={`${planDateLabel(date)}: ${state === 'unplanned' ? "nichts geplant" : `${meals} ${meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'}, ${state === 'open' ? "noch offen" : "alles ausgewählt"}`}`}
-          onPress={() => router.push(state === 'unplanned' ? '/plan/week' : { pathname: '/plan/[date]', params: { date } })}
-          style={({ pressed }) => ({ flex: 1, minWidth: 0, alignItems: 'center', gap: 4, paddingVertical: spacing.sm,
-            borderRadius: 12, opacity: pressed ? 0.7 : 1, borderWidth: date === today ? 2 : 1,
-            borderColor: date === today ? colors.primary : colors.border,
-            backgroundColor: state === 'unplanned' ? 'transparent' : state === 'open' ? colors.pale : colors.primary })}>
-          <Text style={[ui.caption, { color: state === 'done' ? colors.surface : colors.muted }]}>{weekdayNames[index]}</Text>
-          <Text style={[ui.small, { fontWeight: '700', color: state === 'done' ? colors.surface : colors.ink }]}>
-            {Number(date.slice(8, 10))}
-          </Text>
-          <Text style={[ui.caption, { color: state === 'done' ? colors.surface : colors.muted }]}>
-            {state === 'unplanned' ? '–' : `${meals}`}
-          </Text>
+    <View style={[ui.row, { gap: spacing.xs, alignItems: 'stretch' }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.prevWeek')} disabled={busy}
+        onPress={() => onWeek(addDays(weekStart, -7))} style={styles.arrow}>
+        <Feather name="chevron-left" size={18} color={colors.primary} />
+      </Pressable>
+      {dates.map((weekday, index) => {
+        const state = dayState(plan, weekday);
+        const chosen = weekday === date;
+        const count = plan ? itemsOn(plan, weekday).length : 0;
+        return <Pressable key={weekday} accessibilityRole="button" disabled={busy}
+          accessibilityState={{ selected: chosen }}
+          accessibilityLabel={state === 'unplanned'
+            ? t('calendar.dayNothing', { day: planDateLabel(weekday) })
+            : t('calendar.dayState', { day: planDateLabel(weekday), count,
+                state: t(state === 'open' ? 'calendar.stateOpen' : 'calendar.stateDone') })}
+          onPress={() => { setOpenMenu(null); onSelect(weekday); }}
+          style={({ pressed }) => [styles.pill, chosen && styles.pillOn,
+            !chosen && weekday === today && styles.pillToday, pressed && { opacity: 0.7 }]}>
+          <Text style={[styles.pillText, chosen && styles.pillTextOn]}>{weekdayShort()[index]}</Text>
+          <Text style={[styles.pillDate, chosen && styles.pillTextOn]}>{Number(weekday.slice(8))}</Text>
+          {/* The dot keeps the state of a day readable while the strip stays plain. */}
+          <View style={[styles.dot, state === 'open' && styles.dotOpen, state === 'done' && styles.dotDone,
+            chosen && state !== 'unplanned' && styles.dotOn]} />
         </Pressable>;
       })}
+      <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.nextWeek')} disabled={busy}
+        onPress={() => onWeek(addDays(weekStart, 7))} style={styles.arrow}>
+        <Feather name="chevron-right" size={18} color={colors.primary} />
+      </Pressable>
     </View>
+    <Text style={ui.small}>{planDateLabel(date)}</Text>
+    {!day && <View style={styles.empty}>
+      <Text style={ui.body}>{t('calendar.emptyDay')}</Text>
+      <PrimaryButton label={t('calendar.planThisDay')} disabled={busy} onPress={() => router.push('/plan/week')} />
+    </View>}
+    {items.map(item => {
+      const menu = openMenu === item.id;
+      const eating = item.participantIds?.map(id => people.find(person => person.id === id)?.name || t('calendar.person'));
+      return <View key={item.id} style={styles.card}>
+        <MealImage meal={item.meal} banner />
+        <View style={styles.cardBody}>
+          <View style={ui.row}>
+            <Text style={[styles.cardTitle, { flex: 1 }]}>{item.meal.name}</Text>
+            <IconButton icon="more-horizontal" label={t('calendar.options', { meal: item.meal.name })}
+              onPress={() => setOpenMenu(menu ? null : item.id)} />
+          </View>
+          {eating?.length && <Text style={[ui.caption, { color: colors.primary }]}>{t('calendar.eatingFor', { people: eating.join(', ') })}</Text>}
+          <Text style={ui.small}>{mealFacts(item)}</Text>
+          {!!item.meal.dietaryTags.filter(tag => tag !== 'none').length && <View style={ui.wrap}>
+            {item.meal.dietaryTags.filter(tag => tag !== 'none').map(tag =>
+              <Text key={tag} style={styles.tag}>{term(tag)}</Text>)}
+          </View>}
+          {menu && <View style={ui.stack}>
+            <TextButton label={t('calendar.chooseAnother')} onPress={() => router.push({ pathname: '/plan/[date]/[slot]',
+              params: { date, slot: item.mealSlot, ...(item.participantIds ? { for: item.participantIds.join(',') } : {}) } })} />
+            <TextButton label={t('calendar.openDay')} onPress={() => router.push({ pathname: '/plan/[date]', params: { date } })} />
+          </View>}
+        </View>
+      </View>;
+    })}
+    {emptySlots.map(slot => <Pressable key={slot} accessibilityRole="button"
+      accessibilityLabel={t('calendar.chooseSlot', { slot: slotLabel(slot) })} disabled={busy}
+      onPress={() => router.push({ pathname: '/plan/[date]/[slot]', params: { date, slot } })}
+      style={({ pressed }) => [styles.openSlot, pressed && { opacity: 0.7 }]}>
+      <Feather name="plus-circle" size={22} color={colors.primary} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={styles.cardTitle}>{slotLabel(slot)}</Text>
+        <Text style={ui.small}>{t('calendar.notChosen')}</Text>
+      </View>
+      <Feather name="chevron-right" size={22} color={colors.muted} />
+    </Pressable>)}
     <Text style={ui.small}>{weekSummary(plan)}</Text>
-    <PrimaryButton label="Mahlzeiten planen" disabled={busy}
-      onPress={() => router.push(!plan?.days.length ? '/plan/week' : openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} />
-    {onCopyPrevious && <SecondaryButton label="Plan der Vorwoche übernehmen" disabled={busy} onPress={onCopyPrevious} />}
-    {!!plan?.days.length && <SecondaryButton label="Tage ändern" disabled={busy} onPress={() => router.push('/plan/week')} />}
-    {plan?.days.length ? <SecondaryButton label={openPlanSlots(plan).length ? 'Vorlieben & Wochenplan' : 'Wochenplan ansehen'} disabled={busy}
-      onPress={() => router.push(openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} /> : null}
-    {ready && <PrimaryButton label="Warenkorb erstellen" disabled={busy} onPress={onBasket} />}
-  </SectionCard>;
+    <SecondaryButton label={t(plan?.days.length ? 'calendar.changeDays' : 'calendar.chooseDays')} disabled={busy}
+      onPress={() => router.push('/plan/week')} />
+    {onCopyPrevious && <SecondaryButton label={t('week.copyPrevious')} disabled={busy} onPress={onCopyPrevious} />}
+    {plan?.days.length ? <SecondaryButton label={t(openPlanSlots(plan).length ? 'calendar.tasteAndPlan' : 'calendar.viewPlan')}
+      disabled={busy} onPress={() => router.push(openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} /> : null}
+    {!!plan?.items.length && <PrimaryButton label={t('calendar.createList')} disabled={busy} onPress={onBasket} />}
+  </View>;
 }
+const styles = {
+  arrow: { justifyContent: 'center' as const, paddingHorizontal: 2 },
+  pill: { flex: 1, minWidth: 0, alignItems: 'center' as const, gap: 4, paddingVertical: spacing.sm,
+    borderRadius: radii.pill, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  pillOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  pillToday: { borderColor: colors.primary },
+  pillText: { ...typography.caption, fontWeight: '700' as const, color: colors.ink },
+  pillDate: { ...typography.caption, color: colors.muted },
+  pillTextOn: { color: colors.onPrimary },
+  dot: { width: 5, height: 5, borderRadius: radii.pill, backgroundColor: 'transparent' as const },
+  dotOpen: { backgroundColor: colors.orange },
+  dotDone: { backgroundColor: colors.primary },
+  dotOn: { backgroundColor: colors.onPrimary },
+  card: { backgroundColor: colors.surface, borderRadius: radii.large, borderWidth: 1,
+    borderColor: colors.border, overflow: 'hidden' as const },
+  cardBody: { padding: spacing.lg, gap: spacing.xs },
+  cardTitle: { ...typography.h3, color: colors.ink },
+  tag: { ...typography.caption, color: colors.primary, backgroundColor: colors.pale,
+    borderRadius: radii.pill, paddingHorizontal: spacing.sm, paddingVertical: 2, overflow: 'hidden' as const },
+  empty: { backgroundColor: colors.surface, borderRadius: radii.large, borderWidth: 1,
+    borderColor: colors.border, padding: spacing.lg, gap: spacing.md },
+  openSlot: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: spacing.md,
+    padding: spacing.lg, borderRadius: radii.large, borderWidth: 1, borderStyle: 'dashed' as const,
+    borderColor: colors.border, backgroundColor: colors.surface },
+};

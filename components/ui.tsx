@@ -1,6 +1,8 @@
+import { t } from '../services/i18n';
 import Feather from "@expo/vector-icons/Feather";
 import {StateIllustration,type IllustrationKind} from './BrandAssets';
-import type { ComponentProps, PropsWithChildren } from "react";
+import { useState } from "react";
+import type { ComponentProps, PropsWithChildren, ReactNode } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -22,13 +24,22 @@ type ButtonProps = {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
+  /** Sits in front of the label, for an action whose shape says what it does. */
+  icon?: Icon;
 };
 export function Screen({
   children,
   top = true,
   bottom = false,
   compact = false,
-}: PropsWithChildren<{ top?: boolean; bottom?: boolean; compact?: boolean }>) {
+  floating,
+}: PropsWithChildren<{
+  top?: boolean;
+  bottom?: boolean;
+  compact?: boolean;
+  /** Sits above the scrolling content and stays put, for the one action a screen is about. */
+  floating?: ReactNode;
+}>) {
   return (
     <SafeAreaView
       style={ui.page}
@@ -44,14 +55,41 @@ export function Screen({
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerStyle={[ui.content, compact && { padding: 16, gap: 12 }]}
+          contentContainerStyle={[ui.content, compact && { padding: 16, gap: 12 },
+            // Room to scroll the last row clear of the floating action instead of under it.
+            floating ? { paddingBottom: 108 } : null]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
           {children}
         </ScrollView>
+        {floating && <View style={styles.floating}>{floating}</View>}
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+/** A round action that floats over a screen, the way a plan invites one more meal. */
+export function FloatingButton({ icon, label, onPress, disabled }: {
+  icon: Icon;
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.floatingButton,
+        disabled && styles.disabled,
+        pressed && styles.choicePressed,
+      ]}
+    >
+      <Feather name={icon} size={28} color={colors.onPrimary} />
+    </Pressable>
   );
 }
 export function Button({
@@ -59,6 +97,7 @@ export function Button({
   onPress,
   disabled,
   loading,
+  icon,
   secondary = false,
   text = false,
 }: ButtonProps & { secondary?: boolean; text?: boolean }) {
@@ -78,6 +117,13 @@ export function Button({
     >
       {loading && (
         <ActivityIndicator
+          color={secondary || text ? colors.primary : colors.onPrimary}
+        />
+      )}
+      {icon && !loading && (
+        <Feather
+          name={icon}
+          size={18}
           color={secondary || text ? colors.primary : colors.onPrimary}
         />
       )}
@@ -123,6 +169,50 @@ export function IconButton({
     >
       <Feather name={icon} size={22} color={colors.primary} />
     </Pressable>
+  );
+}
+/** A large round decision button, the kind a card deck is swiped with: the icon carries the
+ *  meaning, the caption underneath says it in words, and the press target is a comfortable 64px.
+ *  "take" is the affirmative one, so it gets the filled treatment. */
+export function ChoiceButton({
+  icon,
+  label,
+  caption,
+  tone,
+  onPress,
+  disabled,
+}: {
+  icon: Icon;
+  label: string;
+  caption: string;
+  tone: "take" | "next";
+  onPress: () => void;
+  disabled?: boolean;
+}) {
+  const take = tone === "take";
+  return (
+    <View style={styles.choice}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled }}
+        disabled={disabled}
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.choiceButton,
+          take ? styles.choiceTake : styles.choiceNext,
+          disabled && styles.disabled,
+          pressed && styles.choicePressed,
+        ]}
+      >
+        <Feather
+          name={icon}
+          size={28}
+          color={take ? colors.onPrimary : colors.primary}
+        />
+      </Pressable>
+      <Text style={styles.choiceCaption}>{caption}</Text>
+    </View>
   );
 }
 export function ErrorMessage({ message }: { message?: string | null }) {
@@ -183,8 +273,8 @@ export function SearchInput({
         style={styles.searchText}
         value={value}
         onChangeText={onChangeText}
-        accessibilityLabel="Produkte suchen"
-        placeholder="Lebensmittel oder Marken suchen"
+        accessibilityLabel={t('ui.searchProducts')}
+        placeholder={t('ui.searchPlaceholder')}
         maxLength={120}
         placeholderTextColor={colors.muted}
         autoCorrect={false}
@@ -193,7 +283,7 @@ export function SearchInput({
       />
       {value ? (
         <IconButton
-          label="Suche löschen"
+          label={t('ui.clearSearch')}
           icon="x"
           onPress={() => onChangeText("")}
         />
@@ -228,7 +318,7 @@ export function NumberStepper({
           {value}
         </Text>
         <IconButton
-          label={`Erhöhen ${label}`}
+          label={t('ui.increase', { label })}
           icon="plus"
           disabled={value >= max}
           onPress={() => onChange(Math.min(max, value + 1))}
@@ -340,9 +430,42 @@ export function PreferenceRow({
         <Text style={styles.label}>{value}</Text>
       </View>
       {onEdit && (
-        <IconButton icon="edit-2" label={`Bearbeiten ${label}`} onPress={onEdit} />
+        <IconButton icon="edit-2" label={t('ui.edit', { label })} onPress={onEdit} />
       )}
     </View>
+  );
+}
+/** A settings line that leads somewhere: a tinted badge says what it is about, the value says
+ *  where it stands, and the chevron says the whole line is the button. */
+export function DetailRow({
+  icon,
+  title,
+  value,
+  onPress,
+}: {
+  icon: Icon;
+  title: string;
+  value: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${title}: ${value}`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.detailRow, pressed && styles.pressed]}
+    >
+      <View style={styles.badge}>
+        <Feather name={icon} size={20} color={colors.primary} />
+      </View>
+      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+        <Text style={styles.label}>{title}</Text>
+        <Text numberOfLines={1} style={ui.small}>
+          {value}
+        </Text>
+      </View>
+      <Feather name="chevron-right" size={22} color={colors.muted} />
+    </Pressable>
   );
 }
 export function ProgressIndicator({
@@ -360,7 +483,7 @@ export function ProgressIndicator({
     >
       <Text style={ui.caption}>
 
-        Schritt {current}  von {total}
+        {t('ui.step', { current, total })}
       </Text>
       <View style={styles.track}>
         <View
@@ -410,6 +533,14 @@ export function EmptyState({
   );
 }
 const styles = StyleSheet.create({
+  dropdown: { flexDirection: "row", alignItems: "center", gap: spacing.sm,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radii.medium,
+    backgroundColor: colors.surface, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, minHeight: 48 },
+  dropdownOpen: { borderColor: colors.primary },
+  dropdownList: { borderWidth: 1, borderColor: colors.border, borderRadius: radii.medium,
+    backgroundColor: colors.surface, overflow: "hidden" },
+  dropdownItem: { flexDirection: "row", alignItems: "center", gap: spacing.sm,
+    paddingHorizontal: spacing.lg, paddingVertical: spacing.md, minHeight: 44 },
   button: {
     minHeight: 56,
     padding: spacing.lg,
@@ -431,6 +562,53 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.5, backgroundColor: colors.disabled },
   pressed: { opacity: 0.72 },
+  choice: { alignItems: "center", gap: spacing.xs },
+  choiceButton: {
+    width: 64,
+    height: 64,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+  },
+  choiceTake: { backgroundColor: colors.primary, borderColor: colors.primary },
+  choiceNext: { backgroundColor: colors.surface, borderColor: colors.border },
+  // A press is felt as well as seen, because the card moves only after the button is released.
+  choicePressed: { opacity: 0.75, transform: [{ scale: 0.94 }] },
+  choiceCaption: { ...typography.caption, color: colors.muted, fontWeight: "600" },
+  floating: { position: "absolute", right: spacing.xl, bottom: spacing.xl },
+  floatingButton: {
+    width: 60,
+    height: 60,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    elevation: 4,
+    shadowColor: colors.ink,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.surface,
+    borderRadius: radii.large,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  badge: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.pale,
+  },
   iconButton: {
     minWidth: 48,
     minHeight: 48,
@@ -523,3 +701,68 @@ const styles = StyleSheet.create({
     backgroundColor: colors.pale,
   },
 });
+
+/** A choice that takes one line until it is opened, instead of a field of chips.
+ *
+ *  Built in the app rather than from a native picker: one control that behaves the same on a
+ *  phone and in a browser, reads its state out loud, and can hold several answers where the
+ *  question allows it. */
+export function Dropdown({ label, options, value, onChange, multiple = false, placeholder, disabled }: {
+  label: string;
+  options: { value: string; label: string }[];
+  /** One value, or the chosen values where `multiple` is set. Null means nothing chosen yet. */
+  value: string | string[] | null;
+  onChange: (value: string | null, values: string[]) => void;
+  multiple?: boolean;
+  placeholder?: string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const chosen = multiple ? (Array.isArray(value) ? value : []) : value === null ? [] : [value as string];
+  const shown = chosen.map(one => options.find(option => option.value === one)?.label ?? one);
+  const summary = shown.length ? shown.join(', ') : placeholder ?? t('dropdown.choose');
+  const pick = (option: string) => {
+    if (!multiple) { onChange(chosen[0] === option ? null : option, chosen[0] === option ? [] : [option]); setOpen(false); return; }
+    const next = chosen.includes(option) ? chosen.filter(one => one !== option) : [...chosen, option];
+    onChange(next[0] ?? null, next);
+  };
+  return (
+    <View style={{ gap: 6 }}>
+      <Text style={styles.label}>{label}</Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open, disabled }}
+        accessibilityLabel={t(open ? 'dropdown.close' : 'dropdown.open', { label })}
+        disabled={disabled}
+        onPress={() => setOpen(!open)}
+        style={({ pressed }) => [styles.dropdown, open && styles.dropdownOpen, pressed && { opacity: 0.8 }]}
+      >
+        <Text numberOfLines={2} style={[ui.body, { flex: 1, minWidth: 0, color: shown.length ? colors.ink : colors.muted }]}>
+          {summary}
+        </Text>
+        <Feather name={open ? 'chevron-up' : 'chevron-down'} size={20} color={colors.muted} />
+      </Pressable>
+      {open && (
+        <View style={styles.dropdownList}>
+          {options.map(option => {
+            const selected = chosen.includes(option.value);
+            return (
+              <Pressable
+                key={option.value}
+                accessibilityRole={multiple ? 'checkbox' : 'radio'}
+                accessibilityState={{ checked: selected, selected }}
+                onPress={() => pick(option.value)}
+                style={({ pressed }) => [styles.dropdownItem, pressed && { backgroundColor: colors.pale }]}
+              >
+                <Text style={[ui.body, { flex: 1, minWidth: 0, color: selected ? colors.primary : colors.ink }]}>
+                  {option.label}
+                </Text>
+                {selected && <Feather name="check" size={18} color={colors.primary} />}
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
+    </View>
+  );
+}

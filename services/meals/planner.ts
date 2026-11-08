@@ -1,4 +1,4 @@
-import { germanLabel } from '../../lib/german';
+import { t , term } from '../i18n';
 import type { MealRatings } from './taste';
 import { ingredients, meals, quickIndividualMealIds } from '../../data/meals';
 import { canonicalIngredientKey } from '../../data/ingredient-mappings';
@@ -12,7 +12,7 @@ import { mealWeights as w, slotCalorieShare } from './config';
 import { matchProducts, uniqueCatalog } from './matching';
 import { dayOf, itemsInSlot, itemsOn, planChoices } from './weekPlan';
 import { isCook } from './choices';
-export function compatibleMeal(meal: Meal, p: UserPreferences): boolean {
+export function compatibleMeal(meal: Meal, p: Pick<UserPreferences, 'dietaryPreferences' | 'allergens'>): boolean {
   if (!meal.ingredients.length || !Array.isArray(meal.allergens) || !Array.isArray(meal.dietaryTags)) return false;
   if (p.dietaryPreferences.some(d=>d!=='none'&&!meal.dietaryTags.includes(d)) || p.allergens.some(a=>meal.allergens.includes(a))) return false;
   return meal.ingredients.every(line=>{const def=ingredients[line.ingredientKey];
@@ -58,11 +58,28 @@ interface SlotContext {
   used: Set<string>;
   repeat: (mealId: string) => number;
   sameDay: (mealId: string) => boolean;
+  /** Whether the household said they like this one. A liking is weighed against the rest rather
+   *  than put above it, or one favourite would fill every day of the week. */
+  liked: (mealId: string) => boolean;
   availability: IngredientAvailability;
 }
 export type IngredientAvailability = Map<string, { available: boolean; cost: number | null }>;
-/** What the catalog can actually deliver for each curated ingredient, and at what unit price. */
+/** Matching every curated ingredient against a catalog of up to 2,000 products is the most
+ *  expensive part of a suggestion, and it depends on nothing but the catalog and the preferences.
+ *  Both are stable objects while a slot is being decided, so the result is kept per pair instead of
+ *  being rebuilt for every card. The map is only ever read, so sharing it is safe. */
+const availabilityCache = new WeakMap<Product[], WeakMap<UserPreferences, IngredientAvailability>>();
 export function ingredientAvailability(catalog: Product[], p: UserPreferences): IngredientAvailability {
+  let byPreferences = availabilityCache.get(catalog);
+  if (!byPreferences) availabilityCache.set(catalog, byPreferences = new WeakMap());
+  const known = byPreferences.get(p);
+  if (known) return known;
+  const computed = matchAvailability(catalog, p);
+  byPreferences.set(p, computed);
+  return computed;
+}
+/** What the catalog can actually deliver for each curated ingredient, and at what unit price. */
+function matchAvailability(catalog: Product[], p: UserPreferences): IngredientAvailability {
   const products=uniqueCatalog(catalog);
   return new Map(Object.keys(ingredients).map(key=>{
     const matches=matchProducts(key,products,p), priced=matches.filter(x=>packagePrice(x)!==null);
@@ -82,7 +99,8 @@ function scoredCandidates(options: Meal[], c: SlotContext): { meal: Meal; servin
     const knownCost=meal.ingredients.reduce((sum,l)=>sum+(c.availability.get(l.ingredientKey)?.cost??0)*l.quantity*servings,0);
     const unavailable=meal.ingredients.filter(l=>!c.availability.get(l.ingredientKey)?.available).length;
     const score=w.calories*Math.abs(calories-calorieGoal)/calorieGoal+w.protein*Math.abs(protein-proteinGoal)/proteinGoal+
-      w.repetition*repeat+w.sameDay*sameDay-w.reuse*reuse+w.simplicity*meal.ingredients.length+w.unavailable*unavailable+
+      w.repetition*repeat*(repeat+1)/2+w.sameDay*sameDay-w.reuse*reuse-w.liked*(c.liked(meal.id)?1:0)+
+      w.simplicity*meal.ingredients.length+w.unavailable*unavailable+
       (c.budgetPerSlot ? w.budget*knownCost/c.budgetPerSlot:0);
     return {meal,servings,score};
   })).sort((a,b)=>a.score-b.score||a.meal.id.localeCompare(b.meal.id)||a.servings-b.servings);
@@ -104,7 +122,7 @@ export function quickIndividualMeals(plan: WeekPlan, slot: MealSlot, p: UserPref
 export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: UserPreferences,
   catalog: Product[] = [], exclude: string[] = [], participantIds?: string[], ratings: MealRatings = {},
   availability?: IngredientAvailability): MealSuggestion[] {
-  if (!isSaved(p) || !p.onboardingCompleted) throw Error("Vervollständige deine Einstellungen, bevor du Mahlzeiten planst.");
+  if (!isSaved(p) || !p.onboardingCompleted) throw Error(t('planner.completeSettings'));
   const day=dayOf(plan,date);
   if (!day || !day.slots.includes(slot)) return [];
   const planned=itemsOn(plan,date);
@@ -136,14 +154,15 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
     used:new Set(plan.items.flatMap(item=>item.meal.ingredients.map(l=>l.ingredientKey))),
     repeat:id=>plan.items.filter(item=>item.meal.id===id).length,
     sameDay:id=>planned.some(item=>item.meal.id===id),
+    liked:id=>ratings[id]===true||!!p.preferredMealIds?.includes(id),
     availability:availability ?? ingredientAvailability(catalog,p),
   })) if (!best.has(candidate.meal.id)) best.set(candidate.meal.id,{meal:candidate.meal,servings:candidate.servings});
-  return [...best.values()].sort((a, b) =>
-    Number(!!(ratings[b.meal.id] === true || p.preferredMealIds?.includes(b.meal.id))) -
-    Number(!!(ratings[a.meal.id] === true || p.preferredMealIds?.includes(a.meal.id)))).slice(0,SUGGESTIONS_PER_SLOT);
+  // Order is the score's to decide: a favourite already scores better, and a favourite served
+  // twice this week scores worse than something else the household has not had yet.
+  return [...best.values()].slice(0,SUGGESTIONS_PER_SLOT);
 }
 export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): MealPlan {
-  if (!isSaved(p) || !p.onboardingCompleted) throw Error("Vervollständige deine Einstellungen, bevor du Mahlzeiten planst.");
+  if (!isSaved(p) || !p.onboardingCompleted) throw Error(t('planner.completeSettings'));
   const targets=nutritionTargets(p);
   const dailyCalories=targets.calorieTarget/(p.planningDays*p.householdSize);
   const plan: MealPlan={version:'1',snacksIncluded:true,planningDays:p.planningDays,householdSize:p.householdSize,targetCalories:targets.calorieTarget,targetProtein:targets.proteinTarget,status:'review',items:[],warnings:[],...(p.participants?{participants:structuredClone(p.participants)}:{})};
@@ -154,7 +173,7 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
     // Include each spoken meal wish once when compatible; keep the usual portion scoring.
     const wished=allOptions.filter(m=>p.preferredMealIds?.includes(m.id)&&!plan.items.some(i=>i.meal.id===m.id));
     const options=wished.length?wished:allOptions;
-    if(!options.length){plan.warnings.push({code:`missing_${day}_${slot}`,message:`Tag ${day+1}: kein passendes Gericht für ${germanLabel(slot)} verfügbar. Es wurde keine ungeeignete Alternative ausgewählt.`});continue;}
+    if(!options.length){plan.warnings.push({code:`missing_${day}_${slot}`,message:t('planner.noMealForSlot', { day: day+1, slot: term(slot) })});continue;}
     const prior=plan.items.filter(i=>i.dayIndex===day).reduce((n,i)=>{const x=mealNutrition(i);return {calories:n.calories+x.calories/p.householdSize,protein:n.protein+x.protein/p.householdSize};},{calories:0,protein:0});
     const candidates=scoredCandidates(options,{
       slot,householdSize:p.householdSize,dailyCalories,dailyProteinTarget:targets.dailyProteinTarget,
@@ -164,14 +183,15 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
       used:new Set(plan.items.flatMap(i=>i.meal.ingredients.map(l=>l.ingredientKey))),
       repeat:id=>plan.items.filter(i=>i.meal.id===id).length,
       sameDay:id=>plan.items.some(i=>i.dayIndex===day&&i.meal.id===id),
+      liked:id=>!!p.preferredMealIds?.includes(id),
       availability,
     });
     const chosen=candidates[0]; plan.items.push({id:`day-${day}-${slot}`,dayIndex:day,mealSlot:slot,meal:chosen.meal,servings:chosen.servings});
   }
   const order:MealSlot[]=['breakfast','lunch','dinner','snack'];
   plan.items.sort((a,b)=>a.dayIndex-b.dayIndex||order.indexOf(a.mealSlot)-order.indexOf(b.mealSlot));
-  if(compatible.length<6) plan.warnings.push({code:'limited_variety',message:"Es sind nur wenige passende Gerichte verfügbar; Wiederholungen können nötig sein."});
-  plan.warnings.push({code:'recipe_estimates',message:"Die Nährwerte beruhen auf zusammengestellten Zutatenschätzungen und Roh- bzw. Trockengewichten. Prüfe Verpackungsangaben und Zubereitungseignung."});
+  if(compatible.length<6) plan.warnings.push({code:'limited_variety',message:t('planner.fewMeals')});
+  plan.warnings.push({code:'recipe_estimates',message:t('planner.nutritionEstimates')});
   return plan;
 }
 export function replacementMeals(plan: MealPlan, itemId: string, preferences: UserPreferences): Meal[] {
@@ -180,7 +200,7 @@ export function replacementMeals(plan: MealPlan, itemId: string, preferences: Us
     fitsSlot(m,item.mealSlot)).sort((a,b)=>a.name.localeCompare(b.name));
 }
 export function replaceMeal(plan: MealPlan, itemId: string, mealId: string, p: UserPreferences): MealPlan {
-  const meal=replacementMeals(plan,itemId,p).find(m=>m.id===mealId);if(!meal)throw Error("Diese Alternative ist nicht geeignet.");
+  const meal=replacementMeals(plan,itemId,p).find(m=>m.id===mealId);if(!meal)throw Error(t('planner.unsuitableAlternative'));
   const previous=plan.items.find(i=>i.id===itemId)!;
   const updated=plan.items.map(i=>i.id===itemId?{id:i.id,dayIndex:i.dayIndex,mealSlot:i.mealSlot,meal,mealMode:'cook' as const,servings:plan.householdSize}:i);
   if (updated.some(i=>i.dayIndex===previous.dayIndex&&!isCook(i))) return {...plan,status:'review',items:updated};
