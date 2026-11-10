@@ -2,6 +2,7 @@ import { t , term } from '../i18n';
 import type { MealRatings } from './taste';
 import { ingredients, meals, quickIndividualMealIds } from '../../data/meals';
 import { canonicalIngredientKey } from '../../data/ingredient-mappings';
+import { isFestiveMeal } from '../../data/meal-families';
 import type { AnyMealPlan, Meal, MealChoice, MealPlan, MealSlot, Nutrition, WeekPlan } from '../../types/meal';
 import type { UserPreferences } from '../../types/preferences';
 import type { Product } from '../../types/product';
@@ -10,7 +11,7 @@ import { packagePrice } from '../basket/quantityPlanner';
 import { isSaved } from '../preference-domain';
 import { mealWeights as w, slotCalorieShare } from './config';
 import { matchProducts, uniqueCatalog } from './matching';
-import { dayOf, itemsInSlot, itemsOn, planChoices } from './weekPlan';
+import { dayOf, isWeekend, itemsInSlot, itemsOn, planChoices } from './weekPlan';
 import { isCook } from './choices';
 export function compatibleMeal(meal: Meal, p: Pick<UserPreferences, 'dietaryPreferences' | 'allergens'>): boolean {
   if (!meal.ingredients.length || !Array.isArray(meal.allergens) || !Array.isArray(meal.dietaryTags)) return false;
@@ -137,7 +138,11 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
     : dishes.length) return [];
   // Already shown, and anything else chosen for this day: no silent repetition within a day.
   const skip=new Set([...exclude,...planned.map(item=>item.meal.id)]);
-  const options=meals.filter(m=>fitsSlot(m,slot)&&!skip.has(m.id)&&ratings[m.id]!==false&&compatibleMeal(m,p));
+  // A roast belongs to a Saturday or a Sunday. On a working Wednesday it is not suggested at all,
+  // however much the household liked it: nobody braises venison between two shifts.
+  const weekend=isWeekend(date);
+  const options=meals.filter(m=>fitsSlot(m,slot)&&!skip.has(m.id)&&ratings[m.id]!==false&&
+    (weekend||!isFestiveMeal(m))&&compatibleMeal(m,p));
   const targets=nutritionTargets(p);
   const prior=planned.reduce((n,item)=>{const x=mealNutrition(item);
     return {calories:n.calories+x.calories/plan.householdSize,protein:n.protein+x.protein/plan.householdSize};},{calories:0,protein:0});
@@ -166,7 +171,8 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
   const targets=nutritionTargets(p);
   const dailyCalories=targets.calorieTarget/(p.planningDays*p.householdSize);
   const plan: MealPlan={version:'1',snacksIncluded:true,planningDays:p.planningDays,householdSize:p.householdSize,targetCalories:targets.calorieTarget,targetProtein:targets.proteinTarget,status:'review',items:[],warnings:[],...(p.participants?{participants:structuredClone(p.participants)}:{})};
-  const compatible=meals.filter(m=>compatibleMeal(m,p));
+  // This older plan shape counts days, not dates, so it cannot tell a Sunday from a Tuesday.
+  const compatible=meals.filter(m=>!isFestiveMeal(m)&&compatibleMeal(m,p));
   const availability=ingredientAvailability(catalog,p);
   for(let day=0;day<p.planningDays;day++) for(const slot of slots){
     const allOptions=compatible.filter(m=>fitsSlot(m,slot));

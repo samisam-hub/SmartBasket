@@ -1,5 +1,5 @@
 import { slotLabel, t } from '@/services/i18n';
-import { weekdayShort, inWeek, monthStartOf, planDateLabel, weekStartOf } from '@/services/meals/weekPlan';
+import { weekdayShort, inWeek, monthStartOf, planDate, planDateLabel, weekStartOf } from '@/services/meals/weekPlan';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
@@ -38,7 +38,11 @@ export default function PlanWeekScreen() {
     } catch (e) { setCopyError(e instanceof Error ? e.message : t('week.dayFailed')); }
   };
   const chosen = store.plannedDays();
-  const chosenDates = chosen.map(day => day.date);
+  // A day that has passed is history, not a choice: it stays in the plan and keeps its meals, but
+  // a new round of planning starts at today. Shown as a dot, so nobody wonders where it went.
+  const today = planDate(new Date());
+  const chosenDates = chosen.map(day => day.date).filter(date => date >= today);
+  const pastDates = chosen.map(day => day.date).filter(date => date < today);
   const hasMeals = !!plan?.items.length;
   const showRoutine = routine ?? !!attendanceRules.length;
   return <Screen bottom>
@@ -53,8 +57,9 @@ export default function PlanWeekScreen() {
     </SectionCard>}
     <SectionCard>
       <MonthCalendar month={month ?? monthStartOf(weekStart)} onMonth={setMonth}
-        selected={chosenDates} onSelect={open} />
-      <Text style={ui.small}>{t('week.chosen', { count: chosen.length })}</Text>
+        selected={chosenDates} onSelect={open} marks={pastDates} />
+      <Text style={ui.small}>{t('week.chosen', { count: chosenDates.length })}</Text>
+      {!!pastDates.length && <Text style={ui.small}>{t('week.pastDays', { count: pastDates.length })}</Text>}
       <Text style={ui.small}>{t('week.slotsNote', { slots: activeSlotLabels(saved).join(', ').toLowerCase() })}</Text>
     </SectionCard>
     {!!saved.participants?.length && <SectionCard title={t('week.routine')}>

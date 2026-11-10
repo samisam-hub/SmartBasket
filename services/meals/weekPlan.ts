@@ -67,6 +67,13 @@ export function monthLabel(monthStart: string): string {
   }
   return format.format(parsePlanDate(monthStart) ?? new Date(NaN));
 }
+/** Saturday and Sunday: the days a household has an afternoon for a roast. */
+export function isWeekend(date: string): boolean {
+  const parsed = parsePlanDate(date);
+  if (!parsed) return false;
+  const weekday = parsed.getUTCDay();
+  return weekday === 0 || weekday === 6;
+}
 export const inWeek = (weekStart: string, date: string): boolean =>
   isPlanDate(date) && date >= weekStart && date < addDays(weekStart, DAYS_PER_WEEK);
 

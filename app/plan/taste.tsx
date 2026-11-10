@@ -7,7 +7,7 @@ import { useWeekPlan } from '@/context/WeekPlanContext';
 import { useBasketCatalog } from '@/hooks/useBasketCatalog';
 import { MealSwipeCards } from '@/components/MealSwipeCards';
 import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SecondaryButton, SectionCard, TextButton } from '@/components/ui';
-import { tastePasses } from '@/services/meals/taste';
+import { festiveTasteCount, tastePasses, type TastePassKey } from '@/services/meals/taste';
 import { mealSlots } from '@/types/meal';
 import { activeSlots } from '@/types/preferences';
 import { ui } from '@/lib/theme';
@@ -25,6 +25,8 @@ export default function MealTasteScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [history, setHistory] = useState<{ id: string; previous: boolean | null }[]>([]);
   const [skipped, setSkipped] = useState(false);
+  // Festive dishes are shown only when somebody asks for them: they are for a Sunday, not a Tuesday.
+  const [festive, setFestive] = useState(false);
   const pending = useRef(false);
   const run = useRef<ReturnType<typeof tastePasses> | null>(null);
   if (!ready) return <Screen><Text>{t('taste.loading')}</Text></Screen>;
@@ -40,7 +42,7 @@ export default function MealTasteScreen() {
     : activeSlots(saved);
   // The dishes of this run are chosen once: rating one must not pull another in behind it, or the
   // run would never end. A later planning round starts again here and gets the next ones.
-  run.current ??= tastePasses(saved, slots, mealRatings);
+  run.current ??= tastePasses(saved, slots, mealRatings, undefined, festive);
   const asked = run.current;
   const openPasses = asked.map(pass => ({ ...pass, meals: pass.meals.filter(meal => mealRatings[meal.id] === undefined) }))
     .filter(pass => pass.meals.length);
@@ -69,10 +71,13 @@ export default function MealTasteScreen() {
     finally { pending.current = false; setBusy(false); }
   };
   const liked = Object.values(mealRatings).filter(Boolean).length;
+  // A pass has the name of its meal, except the festive one, which is about the occasion.
+  const passLabel = (key: TastePassKey) => key === 'festive' ? t('taste.festive') : slotLabel(key);
+  const festiveLeft = festiveTasteCount(saved, mealRatings);
   const done = !pass || skipped;
   return <Screen bottom>
     <ScreenHeader eyebrow={t('taste.eyebrow')}
-      title={done ? t('taste.allDone') : t('taste.titleSlot', { slot: slotLabel(pass.key) })}
+      title={done ? t('taste.allDone') : t('taste.titleSlot', { slot: passLabel(pass.key) })}
       subtitle={done ? undefined : t('taste.subtitle', { next: t(planned ? 'taste.nextPlan' : 'taste.nextDays') })} />
     <ErrorMessage message={message ?? error} />
     {done
@@ -85,7 +90,7 @@ export default function MealTasteScreen() {
           {/* Somebody who has rated before may not want to rate again for every new week. */}
           {liked > 0 && <TextButton label={t('taste.useLast', { count: liked })} disabled={busy}
             onPress={() => setSkipped(true)} />}
-          <MealSwipeCards mode="taste" busy={busy} exhausted={false} eyebrow={slotLabel(pass.key)}
+          <MealSwipeCards mode="taste" busy={busy} exhausted={false} eyebrow={passLabel(pass.key)}
             suggestions={pass.meals.slice(0, 2).map(meal => ({ meal, servings: 1 }))}
             onTake={() => rate(true)} onNext={() => rate(false)} onMore={() => {}} />
           {!!history.length && <TextButton label={t('taste.undo')} disabled={busy} onPress={() => {
@@ -93,6 +98,9 @@ export default function MealTasteScreen() {
             try { store.rateMeal(last.id, last.previous); setHistory(history.slice(0, -1)); }
             catch (e) { setMessage(e instanceof Error ? e.message : t('taste.undoFailed')); }
           }} />}
+          {/* A household plans a roast when it wants one, so it asks for those dishes itself. */}
+          {!festive && festiveLeft > 0 && <TextButton label={t('taste.showFestive', { count: festiveLeft })}
+            disabled={busy} onPress={() => { setFestive(true); run.current = null; }} />}
           <TextButton label={t('taste.skipRest')} disabled={busy} onPress={() => setSkipped(true)} />
         </>}
     <Text style={ui.small}>{t('taste.note')}</Text>

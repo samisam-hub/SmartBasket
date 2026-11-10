@@ -22,6 +22,7 @@ import { PreferenceSummary } from "@/components/PreferenceSummary";
 import { usePreferences } from "@/context/PreferencesContext";
 import { useBasketFlow } from "@/hooks/useBasketFlow";
 import { ui } from "@/lib/theme";
+import {supabaseConfigured} from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
 import { useState } from 'react';
@@ -69,6 +70,7 @@ export default function ProfileScreen() {
       <SectionCard title={auth.session?.user.is_anonymous||!auth.session?t('profile.guest'):p?.displayName||t('profile.yourAccount')}>
         <Text style={ui.body}>{auth.session?.user.email??t('profile.guestSession')}</Text>
         {auth.session?.user.is_anonymous||!auth.session?<><Text style={ui.small}>{t('profile.createAccountHint')}</Text><PrimaryButton label={t('profile.createAccount')} onPress={()=>router.push('/account')} /><TextButton label={t('profile.signIn')} onPress={()=>router.push({pathname:'/account',params:{mode:'signin'}})} /></>:<Text style={ui.small}>{t('profile.signedIn')}</Text>}
+        {!supabaseConfigured&&<Text style={ui.small}>{t('profile.noBackend')}</Text>}
         {auth.error&&<Text style={ui.small}>{auth.error}</Text>}
       </SectionCard>
       <SectionCard title={t('profile.personal')}><Text style={ui.body}>{p?`${p.displayName||t('profile.noName')} · ${p.sex ? term(p.sex) : t('profile.noSex')} · ${p.age??t('profile.noAge')}`:t('profile.personalEmpty')}</Text><TextButton label={t(personal.pending?'profile.personalResume':'profile.personalEdit')} onPress={()=>editPersonal(0)} /></SectionCard>
