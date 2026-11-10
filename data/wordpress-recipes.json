@@ -1,0 +1,30 @@
+{
+  "recipes": [
+    {
+      "id": "spinat-feta-fruehstuecksbroetchen",
+      "name": "Protein-Frühstücksbrötchen mit Spinat und Feta",
+      "url": "https://meal-prep.tech/protein-fruehstuecksbroetchen-spinat-feta/",
+      "image": "https://meal-prep.tech/wp-content/uploads/2026/11/spinat-feta-protein-fruehstuecksbroetchen-1024x683.webp",
+      "slot": "breakfast",
+      "yieldPieces": 12,
+      "servings": 6,
+      "ingredients": [
+        {"key":"oil","name":"Olivenöl","grams":14,"amount":1,"unit":"EL"},
+        {"key":"onion","name":"Zwiebeln","grams":80,"amount":1,"unit":"Stk."},
+        {"key":"ground_chicken","name":"Hähnchenhackfleisch","grams":450,"amount":450,"unit":"g"},
+        {"key":"salt","name":"Grobes Salz","grams":5,"amount":1,"unit":"TL"},
+        {"key":"garlic_powder","name":"Knoblauchpulver","grams":3,"amount":1,"unit":"TL"},
+        {"key":"pepper","name":"Schwarzer Pfeffer","grams":1,"amount":0.5,"unit":"TL"},
+        {"key":"eggs","name":"Eier","grams":300,"amount":6,"unit":"Stk."},
+        {"key":"spinach","name":"Babyspinat","grams":90,"amount":90,"unit":"g"},
+        {"key":"mozzarella","name":"Geriebener Mozzarella","grams":140,"amount":140,"unit":"g"},
+        {"key":"feta","name":"Feta","grams":110,"amount":110,"unit":"g"},
+        {"key":"almond_flour","name":"Gemahlene blanchierte Mandeln","grams":145,"amount":145,"unit":"g"},
+        {"key":"coconut_flour","name":"Kokosmehl","grams":40,"amount":40,"unit":"g"},
+        {"key":"baking_powder","name":"Backpulver","grams":8,"amount":2,"unit":"TL"}
+      ],
+      "allergens": ["milk", "eggs", "tree_nuts"],
+      "containsMeat": true
+    }
+  ]
+}

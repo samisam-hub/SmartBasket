@@ -7,6 +7,14 @@
  *  weight works out to, so a tin of chickpeas at €0.79 with 240 g drained reads as €3.30 a kilo. */
 export const ingredientPrices: Record<string, number> = {
   // Meat, fish, eggs and other protein
+  // Planning estimates for the WordPress breakfast recipe, in EUR/kg.
+  ground_chicken: 12,
+  salt: 2,
+  garlic_powder: 30,
+  feta: 12,
+  almond_flour: 18,
+  coconut_flour: 10,
+  baking_powder: 20,
   chicken_breast: 10.0,
   chicken_thigh: 7.5,
   turkey: 11.0,

@@ -1,3 +1,5 @@
+import * as wordpressCatalog from '../data/wordpress-recipes.json';
+import { canonicalIngredientKey } from '../data/ingredient-mappings';
 import type { ImageSourcePropType } from 'react-native';
 import type { Meal } from '../types/meal';
 import { mealOptionImages } from './meal-option-images';
@@ -6,6 +8,10 @@ import { everydayMealImages } from './everyday-meal-images';
 /** Approved AI serving illustrations, bundled for offline use; never product photos. */
 const images: Record<string, { source: ImageSourcePropType; ingredients: string[] }> = {
   ...everydayMealImages,
+  ...Object.fromEntries(wordpressCatalog.recipes.map(recipe => [recipe.id, {
+    source: { uri: recipe.image },
+    ingredients: recipe.ingredients.map(line => canonicalIngredientKey(line.key)).filter(key => key !== 'pepper'),
+  }])),
   'sunny-side-toast': { source: require('../assets/meals/sunny-side-toast.webp'), ingredients: ['eggs', 'sourdough_bread', 'cherry_tomatoes', 'spinach', 'olive_oil'] },
   'oat-berries': { source: require('../assets/meals/oat-berries.webp'), ingredients: ['oats', 'berries', 'banana'] },
   'salmon-rice': { source: require('../assets/meals/salmon-rice.webp'), ingredients: ['salmon', 'rice', 'broccoli', 'olive_oil'] },
