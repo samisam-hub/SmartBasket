@@ -15,6 +15,7 @@ import { mealSlots } from "../types/meal";
 import type { PlanParticipant } from "../types/profile";
 import { householdDiets, isParticipant } from "./profile-domain";
 import { isUnitSystem } from "./units";
+import { isSustainabilityLevel } from './meals/sustainability';
 
 export function toggleDiet(current: Diet[], selected: Diet): Diet[] {
   if (selected === "none") return ["none"];
@@ -170,6 +171,7 @@ export function isDraft(value: unknown): value is PreferenceDraft {
       (typeof p.householdAvatarUri === "string" && p.householdAvatarUri.length > 0 && p.householdAvatarUri.length <= 200000)) &&
     // Absent means metric; anything else stored there is not a preference we can honour.
     (p.unitSystem === undefined || isUnitSystem(p.unitSystem)) &&
+    (p.sustainability === undefined || isSustainabilityLevel(p.sustainability)) &&
     (p.preferredMealIds === undefined ||
       (Array.isArray(p.preferredMealIds) && p.preferredMealIds.every(id => typeof id === 'string')))
   );

@@ -8,6 +8,7 @@ import { NumberInput } from '@/components/NumberInput';
 import { ErrorMessage, PrimaryButton, Screen, ScreenHeader, SectionCard, SecondaryButton, SelectionChip, TextButton, TextInput } from '@/components/ui';
 import { usePreferences } from '@/context/PreferencesContext';
 import { ui, spacing } from '@/lib/theme';
+import { DEFAULT_SUSTAINABILITY, sustainabilityLevels } from '@/services/meals/sustainability';
 import { t } from '@/services/i18n';
 
 /** Der Haushalt, wie er steht: alle Personen, die Möglichkeit, eine weitere hinzuzufügen, und —
@@ -62,6 +63,15 @@ export default function HouseholdSetupScreen() {
       {draft.budgetEnabled && <NumberInput label={t('setup.budgetField')} value={draft.weeklyBudgetEur}
         hint={t('setup.budgetHint')}
         onChange={weeklyBudgetEur => store.update({ weeklyBudgetEur })} />}
+    </SectionCard>
+    <SectionCard title={t('setup.care')}>
+      <Text style={ui.small}>{t('setup.careBody')}</Text>
+      <View style={ui.wrap}>
+        {sustainabilityLevels.map(level => <SelectionChip key={level} label={t(`care.${level}`)}
+          selected={(draft.sustainability ?? DEFAULT_SUSTAINABILITY) === level}
+          onPress={() => store.update({ sustainability: level })} />)}
+      </View>
+      <Text style={ui.small}>{t(`careHint.${draft.sustainability ?? DEFAULT_SUSTAINABILITY}`)}</Text>
     </SectionCard>
     <ErrorMessage message={error ?? store.getSnapshot().localError} />
     <PrimaryButton label={t('setup.next')} loading={saving} disabled={saving}

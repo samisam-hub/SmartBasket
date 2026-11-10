@@ -3,6 +3,8 @@ import type { MealRatings } from './taste';
 import { ingredients, meals, quickIndividualMealIds } from '../../data/meals';
 import { canonicalIngredientKey } from '../../data/ingredient-mappings';
 import { isFestiveMeal } from '../../data/meal-families';
+import { DEFAULT_SUSTAINABILITY, hasMeat, hasRedMeat, leftoverUse, meatFreeDays, openPacks,
+  redMeatDishes, reheatsWell, sustainabilityWeights, type OpenPacks } from './sustainability';
 import type { AnyMealPlan, Meal, MealChoice, MealPlan, MealSlot, Nutrition, WeekPlan } from '../../types/meal';
 import type { UserPreferences } from '../../types/preferences';
 import type { Product } from '../../types/product';
@@ -63,6 +65,15 @@ interface SlotContext {
    *  than put above it, or one favourite would fill every day of the week. */
   liked: (mealId: string) => boolean;
   availability: IngredientAvailability;
+  /** How hard this plan leans on using things up, scaled to the size of the household. */
+  care: ReturnType<typeof sustainabilityWeights>;
+  /** Grams of already-open packs this dish would finish on this day. */
+  leftover: (meal: Meal, servings: number) => number;
+  /** The same dish on the day before or after: cook once, eat twice. */
+  adjacent: (mealId: string) => boolean;
+  /** Red meat already planned this week, and whether the week still owes a meat-free day. */
+  redMeatSoFar: number;
+  meatFreeShort: boolean;
 }
 export type IngredientAvailability = Map<string, { available: boolean; cost: number | null }>;
 /** Matching every curated ingredient against a catalog of up to 2,000 products is the most
@@ -99,10 +110,22 @@ function scoredCandidates(options: Meal[], c: SlotContext): { meal: Meal; servin
     const reuse=meal.ingredients.filter(l=>c.used.has(l.ingredientKey)).length;
     const knownCost=meal.ingredients.reduce((sum,l)=>sum+(c.availability.get(l.ingredientKey)?.cost??0)*l.quantity*servings,0);
     const unavailable=meal.ingredients.filter(l=>!c.availability.get(l.ingredientKey)?.available).length;
+    // Cooking the same pot twice is thrift, not monotony — but only for a dish that is as good
+    // the next day, only on the next day, and only a second time. A third helping of the same
+    // thing pays the full repetition penalty, however well it reheats.
+    const twice=repeat===1&&c.adjacent(meal.id)&&reheatsWell(meal)?c.care.repeatRelief:0;
+    // What the dish would finish off, what a second red-meat dish costs, and what a week still
+    // owes in meat-free days. All three are nudges in the score, never bans.
+    const leftover=c.care.leftover?c.leftover(meal,servings):0;
+    const redMeat=c.care.redMeat&&c.redMeatSoFar>0&&hasRedMeat(meal)?1:0;
+    const meaty=c.care.meatFree&&c.meatFreeShort&&hasMeat(meal)?1:0;
     const score=w.calories*Math.abs(calories-calorieGoal)/calorieGoal+w.protein*Math.abs(protein-proteinGoal)/proteinGoal+
-      w.repetition*repeat*(repeat+1)/2+w.sameDay*sameDay-w.reuse*reuse-w.liked*(c.liked(meal.id)?1:0)+
+      w.repetition*repeat*(repeat+1)/2*(1-twice)+w.sameDay*sameDay-w.reuse*reuse-w.liked*(c.liked(meal.id)?1:0)+
       w.simplicity*meal.ingredients.length+w.unavailable*unavailable+
-      (c.budgetPerSlot ? w.budget*knownCost/c.budgetPerSlot:0);
+      (c.budgetPerSlot ? w.budget*knownCost/c.budgetPerSlot:0)
+      // Thrift decides between equals: what a dish can gain by using up an open pack stays under
+      // what the household's own liking is worth.
+      -Math.min(c.care.leftover*leftover/100,c.care.leftoverCap)+c.care.redMeat*redMeat+c.care.meatFree*meaty;
     return {meal,servings,score};
   })).sort((a,b)=>a.score-b.score||a.meal.id.localeCompare(b.meal.id)||a.servings-b.servings);
 }
@@ -149,6 +172,8 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
   // The remaining calories of the day are only dinner's to take once the other chosen slots are decided.
   const decided=day.slots.filter(other=>other!==slot).every(other=>planned.some(item=>item.mealSlot===other));
   const dayShare=day.slots.reduce((share,chosen)=>share+slotCalorieShare[chosen],0);
+  const care=sustainabilityWeights(p.sustainability ?? DEFAULT_SUSTAINABILITY,plan.householdSize);
+  const open: OpenPacks=care.leftover?openPacks(plan):{amount:new Map(),lastUsed:new Map()};
   const best=new Map<string,MealSuggestion>();
   for (const candidate of scoredCandidates(options,{
     slot,householdSize:plan.householdSize,dailyCalories:p.dailyCalories,dailyProteinTarget:targets.dailyProteinTarget,
@@ -161,6 +186,20 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
     sameDay:id=>planned.some(item=>item.meal.id===id),
     liked:id=>ratings[id]===true||!!p.preferredMealIds?.includes(id),
     availability:availability ?? ingredientAvailability(catalog,p),
+    care,
+    leftover:(meal,servings)=>leftoverUse(meal,servings,date,open),
+    adjacent:id=>{
+      const neighbours=plan.items.filter(item=>
+        Math.abs(Date.parse(`${item.date}T00:00:00Z`)-Date.parse(`${date}T00:00:00Z`))===86400000);
+      if(!neighbours.some(item=>item.meal.id===id))return false;
+      // One repeated dish between two days, never a repeated day: cooking a whole day twice over
+      // is not thrift, it is monotony, and the household notices that long before the bin does.
+      return !planned.some(item=>neighbours.some(other=>other.meal.id===item.meal.id));
+    },
+    redMeatSoFar:redMeatDishes(plan.items),
+    // A week that still owes meat-free days leans away from meat, until it has them.
+    meatFreeShort:meatFreeDays(plan)<Math.min(care.meatFreeDays,plan.days.length)&&
+      !planned.some(item=>hasMeat(item.meal)),
   })) if (!best.has(candidate.meal.id)) best.set(candidate.meal.id,{meal:candidate.meal,servings:candidate.servings});
   // Order is the score's to decide: a favourite already scores better, and a favourite served
   // twice this week scores worse than something else the household has not had yet.
@@ -182,6 +221,8 @@ export function generateMealPlan(p: UserPreferences, catalog: Product[] = []): M
     if(!options.length){plan.warnings.push({code:`missing_${day}_${slot}`,message:t('planner.noMealForSlot', { day: day+1, slot: term(slot) })});continue;}
     const prior=plan.items.filter(i=>i.dayIndex===day).reduce((n,i)=>{const x=mealNutrition(i);return {calories:n.calories+x.calories/p.householdSize,protein:n.protein+x.protein/p.householdSize};},{calories:0,protein:0});
     const candidates=scoredCandidates(options,{
+      care:sustainabilityWeights('off',p.householdSize),leftover:()=>0,adjacent:()=>false,
+      redMeatSoFar:0,meatFreeShort:false,
       slot,householdSize:p.householdSize,dailyCalories,dailyProteinTarget:targets.dailyProteinTarget,
       dayCalories:dailyCalories,dayProtein:targets.dailyProteinTarget,
       budgetPerSlot:targets.budgetTarget?targets.budgetTarget/(p.planningDays*4):null,

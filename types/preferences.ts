@@ -1,4 +1,5 @@
 import { mealSlots, type MealSlot } from "./meal";
+import type { SustainabilityLevel } from "../services/meals/sustainability";
 import type { UnitSystem } from "../services/units";
 export const goals = [
   "maintain",
@@ -84,6 +85,9 @@ export interface PreferenceValues {
   /** Meals somebody said they like while setting up. It nudges suggestions and nothing else;
    *  absent and empty both mean "no preference", never "eats nothing". */
   preferredMealIds?: string[];
+  /** How hard the plan leans on using things up instead of on variety. Absent means the sensible
+   *  middle, which is what a household gets without being asked. */
+  sustainability?: SustainabilityLevel;
 }
 export type PreferenceDraft = Omit<PreferenceValues, "dailyCalories"> & {
   dailyCalories: number | null;
@@ -107,5 +111,6 @@ export const defaultDraft: PreferenceDraft = {
   budgetEnabled: true,
   weeklyBudgetEur: 70,
   unitSystem: "metric",
+  sustainability: "balanced",
 };
 export type PreferenceErrors = Partial<Record<keyof PreferenceValues, string>>;
