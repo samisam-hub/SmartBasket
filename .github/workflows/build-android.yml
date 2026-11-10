@@ -20,11 +20,13 @@ jobs:
       CI: '1'
       EXPO_NO_TELEMETRY: '1'
       ANDROID_VERSION_CODE: ${{ github.run_number }}
-      # Public client configuration is embedded by Metro into the APK.
-      # Empty variables intentionally keep the app in local-only mode.
-      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
-      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+      # Public client configuration is embedded by Metro into the APK. It is read from a
+      # repository variable, and from a secret of the same name when somebody put it there
+      # instead: both places are easy to confuse, and a silently account-less build is worse
+      # than a redundant lookup. Empty values keep the app in local-only mode on purpose.
+      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL || secrets.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || secrets.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY || secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -39,6 +41,19 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Which build this is, in one line: with an account connection, or local only. No value is
+      # printed, only whether one is there — a build without it has no accounts and no sign-in,
+      # and that has to be visible here rather than discovered on a phone.
+      - name: Say whether this build can reach an account
+        run: |
+          if [ -n "$EXPO_PUBLIC_SUPABASE_URL" ] && \
+             { [ -n "$EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY" ] || [ -n "$EXPO_PUBLIC_SUPABASE_ANON_KEY" ]; }; then
+            echo "Accounts: configured (${EXPO_PUBLIC_SUPABASE_URL%%.*}….supabase.co)"
+          else
+            echo "::warning title=No account connection::This APK is built without Supabase settings. The app stays local on the device: no sign-in, no sync. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY under Settings, Secrets and variables, Actions."
+            echo "Accounts: not configured — the app will stay local on the device"
+          fi
 
       - name: Check TypeScript and lint
         run: |
