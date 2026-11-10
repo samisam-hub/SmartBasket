@@ -1,3 +1,4 @@
+import * as wordpressCatalog from './wordpress-recipes.json';
 import { buildEverydayMeals, everydayIngredients } from './everyday-meals';
 import { canonicalIngredientKey, ingredientMappings, legacyIngredientKeys } from './ingredient-mappings';
 import type { IngredientDefinition, Meal } from '../types/meal';
@@ -22,6 +23,13 @@ function ingredient(key: string, name: string, group: IngredientDefinition['grou
   return { key, name, group, categories, aliases, exclude, unit: 'g', nutritionPer100: { calories, protein, carbohydrates, fat }, diets, allergens };
 }
 export const ingredients: Record<string, IngredientDefinition> = Object.fromEntries([
+  ingredient('ground_chicken', 'Hähnchenhackfleisch (roh)', 'protein', ['meat'], ['ground chicken','chicken mince','hähnchenhackfleisch','poulethackfleisch'], [145,19,0,8], animal),
+  ingredient('salt', 'Grobes Salz', 'precise', ['other'], ['coarse salt','grobes salz'], [0,0,0,0]),
+  ingredient('garlic_powder', 'Knoblauchpulver', 'precise', ['other'], ['garlic powder','knoblauchpulver'], [331,17,73,1]),
+  ingredient('feta', 'Feta', 'precise', ['dairy'], ['feta'], [265,14,4,21], [], ['milk'], ['vegan','ersatz','salat']),
+  ingredient('almond_flour', 'Gemahlene blanchierte Mandeln', 'precise', ['other'], ['blanched almond flour','gemahlene blanchierte mandeln'], [580,21,10,50], plant, ['tree_nuts'], ['entölt','defatted']),
+  ingredient('coconut_flour', 'Kokosmehl', 'precise', ['other'], ['coconut flour','kokosmehl'], [400,20,24,14]),
+  ingredient('baking_powder', 'Backpulver', 'precise', ['other'], ['baking powder','backpulver'], [53,0,28,0], []),
   ingredient('chicken_ham', "Geflügelschinken (gegarte Scheiben)", 'protein', ['meat'], ['chicken ham','hähnchenschinken'], [110,20,2,2.4], animal),
   ingredient('smoked_salmon', "Räucherlachs", 'protein', ['fish'], ['smoked salmon','räucherlachs'], [180,22,0,10], [...animal,'pescatarian'], ['fish']),
   ingredient('beef_steak', "Rindersteak (roh)", 'protein', ['meat'], ['beef steak','rump steak','rindersteak'], [190,22,0,11], animal),
@@ -64,9 +72,9 @@ export const ingredients: Record<string, IngredientDefinition> = Object.fromEntr
 ].concat(everydayIngredients).map(i=>[i.key,i]));
 // Non-enumerable aliases keep saved Phase 3B meal snapshots readable.
 for(const [old,key] of Object.entries(legacyIngredientKeys))Object.defineProperty(ingredients,old,{value:ingredients[key],enumerable:false});
-function meal(id: string, name: string, mealType: Meal['mealType'], amounts: [string,number][]): Meal {
+function meal(id: string, name: string, mealType: Meal['mealType'], amounts: [string,number][], season = true): Meal {
   // Season savory meals; sweet breakfasts and snacks keep their original ingredients.
-  if (mealType !== 'snack' && !['oat-berries','yogurt-fruit','overnight-oats','cottage-bowl',
+  if (season && mealType !== 'snack' && !['oat-berries','yogurt-fruit','overnight-oats','cottage-bowl',
     'cottage-carrot-bread','chicken-ham-lunchbox'].includes(id)) {
     amounts = [...amounts, [id==='salmon-egg-toast'?'dill':'parsley',3], ['pepper',0.2]];
   }
@@ -119,4 +127,13 @@ export const meals: Meal[] = [
   meal('snack-banana-chocolate',"Banane mit dunkler Schokolade",'snack',[['banana',60],['dark_chocolate',10]]),
 ];
 meals.push(...buildEverydayMeals(ingredients));
+
+for (const recipe of wordpressCatalog.recipes) {
+  if (recipe.slot !== 'breakfast') continue;
+  const amounts = recipe.ingredients.map<[string, number]>(({ key, grams }) => [key, grams / recipe.servings]);
+  const recipeMeal = meal(recipe.id, recipe.name, recipe.slot, amounts, false);
+  recipeMeal.preparation = { activeMinutes: 20, totalMinutes: 40, referenceServings: recipe.servings,
+    method: 'bake', note: '2 Brötchen pro Portion' };
+  meals.push(recipeMeal);
+}
 export const quickIndividualMealIds = ['cottage-carrot-bread', 'chicken-ham-lunchbox'] as const;

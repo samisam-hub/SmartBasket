@@ -12,6 +12,13 @@ export interface IngredientMapping {
 const mapping=(aliases:string[],allowedCategories:ProductCategory[],blockedKeywords:string[]=[],requiredKeywords:string[]=aliases):IngredientMapping=>({aliases,allowedCategories,blockedKeywords,requiredKeywords:[...requiredKeywords]});
 /** Concepts, not meal prose or OFF category strings. Curated IDs never bypass safety/form checks. */
 export const ingredientMappings:Record<string,IngredientMapping>={
+ ground_chicken:mapping(['ground chicken','chicken mince','hähnchenhackfleisch','poulethackfleisch'],['meat'],['cooked','gegart','marinated','mariniert','ready']),
+ salt:mapping(['coarse salt','grobes salz'],['other'],['mix','mischung']),
+ garlic_powder:mapping(['garlic powder','knoblauchpulver'],['other'],['mix','mischung']),
+ feta:mapping(['feta'],['dairy'],['vegan','ersatz','salat','salad','dip']),
+ almond_flour:mapping(['blanched almond flour','gemahlene blanchierte mandeln'],['other'],['entölt','defatted']),
+ coconut_flour:mapping(['coconut flour','kokosmehl'],['other'],['mix','mischung']),
+ baking_powder:mapping(['baking powder','backpulver'],['other'],['mix','mischung']),
  sourdough_bread:mapping(['sourdough bread','sourdough loaf','sauerteigbrot','pain au levain'],['bread'],['sweet','raisins','rosinen','filled','gefüllt','mix','mischung','crackers','croutons']),
  cherry_tomatoes:mapping(['cherry tomatoes','cherry tomato','cherrytomaten','kirschtomaten','cocktailtomaten'],['vegetables'],['canned','chopped','diced','gehackt','stückig','dose','dried','getrocknet','sauce','passata','juice','saft','pickled','eingelegt']),
  chicken_ham:mapping(['chicken ham','hähnchenschinken','haehnchenschinken'],['meat'],['pork','schwein','breaded','paniert']),

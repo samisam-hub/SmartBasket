@@ -43,6 +43,7 @@ const german: Record<string, string> = {
   "Plain Greek yogurt": "Griechischer Naturjoghurt",
   "Cottage cheese": "Körniger Frischkäse",
   "Olive oil": "Olivenöl",
+  "High-protein spinach and feta breakfast rolls": "Protein-Frühstücksbrötchen mit Spinat und Feta",
   "Oatmeal with berries": "Haferbrei mit Beeren",
   "Egg and chicken-ham toast": "Toast mit Ei und Geflügelschinken",
   "Smoked salmon and soft egg toast": "Toast mit Räucherlachs und weichem Ei",
