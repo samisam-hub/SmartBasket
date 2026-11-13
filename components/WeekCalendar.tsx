@@ -9,7 +9,7 @@ import { addDays, dayOf, itemsInSlot, itemsOn, planDate, planDateLabel, sortSlot
 import { MealImage } from './MealImage';
 import { isCook } from '../services/meals/choices';
 import { mealCostPerServing } from '../services/pricing/ingredientCost';
-import { IconButton, PrimaryButton, SecondaryButton, TextButton } from './ui';
+import { IconButton, PrimaryButton, TextButton } from './ui';
 import { colors, radii, spacing, typography, ui } from '../lib/theme';
 
 export const todayPlanDate = (now: Date = new Date()) => planDate(now);
@@ -71,6 +71,9 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
   busy?: boolean;
 }) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  // The ways out of this screen live behind one button: three stacked ones pushed the day itself
+  // off the screen, and a household looks at its day far more often than it changes the week.
+  const [weekMenu, setWeekMenu] = useState(false);
   const today = todayPlanDate();
   const dates = weekDates(weekStart);
   const date = dates.includes(selected) ? selected : dates[0];
@@ -81,9 +84,18 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
   return <View style={ui.stack}>
     <View style={ui.row}>
       <Text accessibilityRole="header" style={[ui.title, { flex: 1 }]}>{t('calendar.title')}</Text>
-      <IconButton icon="sliders" label={t('calendar.pickDays')} disabled={busy}
-        onPress={() => router.push('/plan/week')} />
+      <IconButton icon="sliders" label={t('calendar.more')} disabled={busy}
+        onPress={() => setWeekMenu(open => !open)} />
     </View>
+    {weekMenu && <View style={styles.menu}>
+      <TextButton label={t(plan?.days.length ? 'calendar.changeDays' : 'calendar.chooseDays')} disabled={busy}
+        onPress={() => { setWeekMenu(false); router.push('/plan/week'); }} />
+      {onCopyPrevious && <TextButton label={t('week.copyPrevious')} disabled={busy}
+        onPress={() => { setWeekMenu(false); onCopyPrevious(); }} />}
+      {plan?.days.length ? <TextButton label={t(openPlanSlots(plan).length ? 'calendar.tasteAndPlan' : 'calendar.viewPlan')}
+        disabled={busy} onPress={() => { setWeekMenu(false);
+          router.push(openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview'); }} /> : null}
+    </View>}
     <View style={[ui.row, { gap: spacing.xs, alignItems: 'stretch' }]}>
       <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.prevWeek')} disabled={busy}
         onPress={() => onWeek(addDays(weekStart, -7))} style={styles.arrow}>
@@ -160,11 +172,6 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
       <Feather name="chevron-right" size={22} color={colors.muted} />
     </Pressable>)}
     <Text style={ui.small}>{weekSummary(plan)}</Text>
-    <SecondaryButton label={t(plan?.days.length ? 'calendar.changeDays' : 'calendar.chooseDays')} disabled={busy}
-      onPress={() => router.push('/plan/week')} />
-    {onCopyPrevious && <SecondaryButton label={t('week.copyPrevious')} disabled={busy} onPress={onCopyPrevious} />}
-    {plan?.days.length ? <SecondaryButton label={t(openPlanSlots(plan).length ? 'calendar.tasteAndPlan' : 'calendar.viewPlan')}
-      disabled={busy} onPress={() => router.push(openPlanSlots(plan).length ? '/plan/taste' : '/plan/overview')} /> : null}
     {!!plan?.items.length && <PrimaryButton label={t('calendar.createList')} disabled={busy} onPress={onBasket} />}
   </View>;
 }
@@ -187,6 +194,8 @@ const styles = {
   cardTitle: { ...typography.h3, color: colors.ink },
   tag: { ...typography.caption, color: colors.primary, backgroundColor: colors.pale,
     borderRadius: radii.pill, paddingHorizontal: spacing.sm, paddingVertical: 2, overflow: 'hidden' as const },
+  menu: { backgroundColor: colors.surface, borderRadius: radii.large, borderWidth: 1,
+    borderColor: colors.border, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   empty: { backgroundColor: colors.surface, borderRadius: radii.large, borderWidth: 1,
     borderColor: colors.border, padding: spacing.lg, gap: spacing.md },
   openSlot: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: spacing.md,

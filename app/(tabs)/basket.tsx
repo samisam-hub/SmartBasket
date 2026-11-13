@@ -31,6 +31,9 @@ export default function ShoppingListScreen() {
   const [failure, setFailure] = useState<string | null>(null);
   const [extras, setExtras] = useState<CustomItem[]>([]), [typed, setTyped] = useState('');
   const [note, setNote] = useState(''), [addError, setAddError] = useState<string | null>(null);
+  // Editing the list and switching between lists are rare; the list itself is why anybody is
+  // here. Both live behind one button so the first items fit on the screen.
+  const [menu, setMenu] = useState(false);
   useFocusEffect(useCallback(() => {
     if (!ready) return;
     // A guest who has not finished setting up cannot have a saved list; the empty state is the
@@ -142,8 +145,17 @@ export default function ShoppingListScreen() {
           <Text style={ui.small}>{[budgetLine, usedLine].filter(Boolean).join(' · ')}</Text>
         </>}
       </View>
-      {edits.saved && <IconButton icon="share-2" label={t('basket.share')} onPress={share} />}
+      {/* One button for everything that is not ticking something off: two would squeeze the
+        * figures above the list into another line, and this is a list, not a toolbar. */}
+      {edits.saved && <IconButton icon="more-vertical" label={t('basket.more')}
+        onPress={() => setMenu(open => !open)} />}
     </View>
+    {edits.saved && menu && <View style={styles.menu}>
+      <TextButton label={t('basket.share')} onPress={() => { setMenu(false); share(); }} />
+      <TextButton label={t('basket.edit')} onPress={() => { setMenu(false); keepEdits({ ...edits, saved: false }); }} />
+      <TextButton label={t('basket.allLists', { count: baskets.length })}
+        onPress={() => { setMenu(false); router.push('/saved-lists'); }} />
+    </View>}
     <ErrorMessage message={failure} />
     {warning && <Text style={ui.small}>{warning}</Text>}
     {basket.result.purchasedAt && <Text style={ui.small}>{t('basket.purchased', { date: formatDate(basket.result.purchasedAt) })}</Text>}
@@ -189,9 +201,6 @@ export default function ShoppingListScreen() {
   // Shopping it: compact rows in one card, the tick at the end of each.
   return <Screen bottom>
     {head}
-    <View style={ui.row}>
-      <SecondaryButton label={t('basket.edit')} onPress={() => keepEdits({ ...edits, saved: false })} />
-    </View>
     <View style={styles.card}>
       {groups.map(group => <View key={group.key}>
         <View style={styles.groupHead}>
@@ -212,7 +221,6 @@ export default function ShoppingListScreen() {
       </View>}
     </View>
     <Text style={ui.small}>{t('basket.tickNote')}</Text>
-    <TextButton label={t('basket.allLists', { count: baskets.length })} onPress={() => router.push('/saved-lists')} />
   </Screen>;
 }
 const styles = {
@@ -220,6 +228,8 @@ const styles = {
     borderRadius: radii.large, padding: spacing.md, gap: 2 },
   undo: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: spacing.sm,
     backgroundColor: colors.ink, borderRadius: radii.medium, paddingLeft: spacing.md, paddingRight: spacing.xs },
+  menu: { backgroundColor: colors.surface, borderRadius: radii.large, borderWidth: 1,
+    borderColor: colors.border, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
     borderRadius: radii.large, overflow: 'hidden' as const },
   groupHead: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: spacing.sm,

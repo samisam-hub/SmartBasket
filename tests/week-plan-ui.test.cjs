@@ -9,6 +9,8 @@ const stub = (name) => {
   return Stub;
 };
 const pushed = [];
+/** The one button a screen's other ways out hide behind. */
+const renderal = (renderer, label) => renderer.root.findAll((node) => node.props.label === label)[0];
 const animatedView = stub("Animated.View");
 // Every animation the card starts, so a test can see which way it moved and how long it took.
 const animations = [];
@@ -174,6 +176,10 @@ test("the calendar shows each day's state and only offers a basket once somethin
   // An empty week offers picking days, not a basket.
   await act(() => { renderer = create(render(startWeek(monday, preferences))); });
   assert.deepEqual(labelled("Einkaufsliste erstellen"), []);
+  // The ways out of the week live behind one button, so the day itself keeps the screen.
+  assert.deepEqual(labelled("Tage wählen"), [], "the menu stays closed until it is asked for");
+  const weekMenu = () => renderal(renderer, "Tage, Wochenplan und mehr");
+  await act(() => weekMenu().props.onPress());
   assert.ok(labelled("Tage wählen").length > 0);
   assert.match(texts(), /Für diesen Tag ist nichts geplant/);
 
@@ -242,6 +248,7 @@ test("an empty week offers taking the previous week's plan, after picking days",
   await act(() => { renderer = create(React.createElement(WeekCalendar, {
     plan: startWeek("2026-10-12", preferences), weekStart: "2026-10-12", selected: "2026-10-12",
     onSelect: () => {}, onWeek: () => {}, onBasket: () => {}, onCopyPrevious: () => { copied++; } })); });
+  await act(() => renderal(renderer, "Tage, Wochenplan und mehr").props.onPress());
   const labels = renderer.root.findAll((node) => typeof node.type === "string" && node.props.label)
     .map((node) => node.props.label);
   assert.ok(labels.includes("Plan der Vorwoche übernehmen"));
@@ -250,6 +257,9 @@ test("an empty week offers taking the previous week's plan, after picking days",
   pushed.length = 0;
   await act(() => renderer.root.findAll((node) => node.props.label === "Tage wählen")[0].props.onPress());
   assert.deepEqual(pushed, ["/plan/week"]);
+  // Choosing from the menu closes it, so the second way out is asked for again.
+  assert.deepEqual(renderer.root.findAll((node) => node.props.label === "Plan der Vorwoche übernehmen"), []);
+  await act(() => renderal(renderer, "Tage, Wochenplan und mehr").props.onPress());
   await act(() => renderer.root.findAll((node) => node.props.label === "Plan der Vorwoche übernehmen")[0].props.onPress());
   assert.equal(copied, 1);
   await act(() => renderer.unmount());
