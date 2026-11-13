@@ -398,6 +398,8 @@ export const en: Record<TranslationKey, Phrase> = {
   'calendar.openCount': '{count} still open',
   'calendar.readyForList': 'ready for the shopping list',
   'calendar.portions': { one: '{count} portion', other: '{count} portions' },
+  'calendar.cookTime': '{minutes} min',
+  'calendar.pricePerPortion': 'about {price} a portion',
   'calendar.kcalPerPortion': '{calories} kcal a portion',
   'calendar.person': 'Person',
   'taste.loading': 'Loading your tastes …',

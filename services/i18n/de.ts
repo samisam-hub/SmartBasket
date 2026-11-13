@@ -402,6 +402,8 @@ export const de = {
   'calendar.openCount': '{count} noch offen',
   'calendar.readyForList': 'bereit für die Einkaufsliste',
   'calendar.portions': { one: '{count} Portion', other: '{count} Portionen' },
+  'calendar.cookTime': '{minutes} Min.',
+  'calendar.pricePerPortion': 'etwa {price} pro Portion',
   'calendar.kcalPerPortion': '{calories} kcal pro Portion',
   'calendar.person': 'Person',
   'taste.loading': 'Vorlieben werden geladen …',

@@ -48,7 +48,7 @@ for (const extension of [".ts", ".tsx"]) require.extensions[extension] = (module
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText, filename);
 const { MealSwipeCards, swipeAction } = require("../components/MealSwipeCards.tsx");
-const { WeekCalendar, dayState, mealFacts, openingDate, weekSummary } = require("../components/WeekCalendar.tsx");
+const { WeekCalendar, dayState, mealEffort, mealFacts, openingDate, weekSummary } = require("../components/WeekCalendar.tsx");
 const { startWeek, toggleDay, chooseMeal } = require("../services/meals/weekPlanDraft.ts");
 const { suggestMeals } = require("../services/meals/planner.ts");
 const { prefs } = require("./basket-fixtures.cjs");
@@ -282,4 +282,20 @@ test("a meal card says what is recorded and never invents a cooking time", () =>
   const facts = mealFacts(plan.items[0]);
   assert.match(facts, /^Abendessen · \d+ kcal pro Portion · [\d.]+ Portionen?$/);
   assert.doesNotMatch(facts, /min|Min/, "the curated meals carry no cooking time");
+});
+
+test("a card says what a portion costs and how long it takes, where that is recorded", () => {
+  const preferences = prefs();
+  let plan = toggleDay(startWeek(monday, preferences), monday, preferences);
+  plan = chooseMeal(plan, monday, "dinner", suggestion(plan, monday, "dinner"), preferences);
+  const item = plan.items[0];
+  const effort = mealEffort(item);
+  // A price is only there when the ingredients carry one, a time only when the recipe records one.
+  if (item.meal.preparation?.totalMinutes) assert.match(effort, /\d+ Min\./);
+  assert.match(effort, /etwa .*€ pro Portion/, effort);
+  // An evening out has neither, and nothing is guessed for it.
+  const out = { ...item, mealMode: "eat_out",
+    meal: { ...item.meal, ingredients: [], caloriesPerServing: 0, preparation: undefined } };
+  assert.equal(mealEffort(out), "");
+  assert.doesNotMatch(mealFacts(out), /kcal/, "no calories are invented for an evening out");
 });

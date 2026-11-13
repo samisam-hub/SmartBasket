@@ -1,4 +1,4 @@
-import { slotLabel, t, term } from '../services/i18n';
+import { formatMoney, slotLabel, t, term } from '../services/i18n';
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -7,6 +7,8 @@ import type { AnyMealPlanItem, WeekPlan } from '../types/meal';
 import { openPlanSlots } from '../services/meals/validation';
 import { addDays, dayOf, itemsInSlot, itemsOn, planDate, planDateLabel, sortSlots, weekDates, weekStartOf, weekdayShort } from '../services/meals/weekPlan';
 import { MealImage } from './MealImage';
+import { isCook } from '../services/meals/choices';
+import { mealCostPerServing } from '../services/pricing/ingredientCost';
 import { IconButton, PrimaryButton, SecondaryButton, TextButton } from './ui';
 import { colors, radii, spacing, typography, ui } from '../lib/theme';
 
@@ -31,13 +33,28 @@ export function openingDate(plan: WeekPlan | null, weekStart: string, today = to
   if (dates.includes(today)) return today;
   return dates.find(date => dayState(plan, date) !== 'unplanned') ?? dates[0];
 }
-/** What a card says beside the name. The curated meals carry no cooking time, so this says what
- *  is actually recorded: which meal of the day it is, and what one portion holds. */
+/** What a card says beside the name: which meal of the day it is, and how much of it there is.
+ *  Only what is recorded — an evening out carries no calories, and nothing is guessed for it. */
 export function mealFacts(item: AnyMealPlanItem): string {
   const parts = [slotLabel(item.mealSlot)];
   if (item.meal.caloriesPerServing)
     parts.push(t('calendar.kcalPerPortion', { calories: Math.round(item.meal.caloriesPerServing) }));
   parts.push(t('calendar.portions', { count: Math.round(item.servings * 10) / 10 }));
+  return parts.join(' · ');
+}
+/** What it takes to put the dish on the table: how long, and what a portion costs about.
+ *
+ *  Both are only shown where they are real. A recipe without a recorded time says nothing about
+ *  time, and a meal nobody cooks — an evening out, something heated up — has no ingredient price
+ *  that would mean anything. Guessing either would be worse than leaving the line short. */
+export function mealEffort(item: AnyMealPlanItem): string {
+  const parts: string[] = [];
+  const minutes = isCook(item) ? item.meal.preparation?.totalMinutes : undefined;
+  if (minutes && Number.isFinite(minutes) && minutes > 0)
+    parts.push(t('calendar.cookTime', { minutes: Math.round(minutes) }));
+  const portion = isCook(item) && item.meal.ingredients.length ? mealCostPerServing(item.meal) : null;
+  if (portion !== null && portion > 0)
+    parts.push(t('calendar.pricePerPortion', { price: formatMoney(portion) }));
   return parts.join(' · ');
 }
 
@@ -105,8 +122,11 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
     {items.map(item => {
       const menu = openMenu === item.id;
       const eating = item.participantIds?.map(id => people.find(person => person.id === id)?.name || t('calendar.person'));
+      const effort = mealEffort(item);
       return <View key={item.id} style={styles.card}>
-        <MealImage meal={item.meal} banner />
+        {/* The picture sits beside the text, not above it: a day holds three meals, and three
+          * letterboxed photographs are a scroll, not an overview. */}
+        <MealImage meal={item.meal} thumb />
         <View style={styles.cardBody}>
           <View style={ui.row}>
             <Text style={[styles.cardTitle, { flex: 1 }]}>{item.meal.name}</Text>
@@ -115,6 +135,7 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
           </View>
           {eating?.length && <Text style={[ui.caption, { color: colors.primary }]}>{t('calendar.eatingFor', { people: eating.join(', ') })}</Text>}
           <Text style={ui.small}>{mealFacts(item)}</Text>
+          {!!effort && <Text style={ui.small}>{effort}</Text>}
           {!!item.meal.dietaryTags.filter(tag => tag !== 'none').length && <View style={ui.wrap}>
             {item.meal.dietaryTags.filter(tag => tag !== 'none').map(tag =>
               <Text key={tag} style={styles.tag}>{term(tag)}</Text>)}
@@ -160,9 +181,10 @@ const styles = {
   dotOpen: { backgroundColor: colors.orange },
   dotDone: { backgroundColor: colors.primary },
   dotOn: { backgroundColor: colors.onPrimary },
-  card: { backgroundColor: colors.surface, borderRadius: radii.large, borderWidth: 1,
-    borderColor: colors.border, overflow: 'hidden' as const },
-  cardBody: { padding: spacing.lg, gap: spacing.xs },
+  card: { flexDirection: 'row' as const, alignItems: 'flex-start' as const, gap: spacing.md,
+    backgroundColor: colors.surface, borderRadius: radii.large, borderWidth: 1,
+    borderColor: colors.border, overflow: 'hidden' as const, padding: spacing.md },
+  cardBody: { flex: 1, minWidth: 0, gap: 2 },
   cardTitle: { ...typography.h3, color: colors.ink },
   tag: { ...typography.caption, color: colors.primary, backgroundColor: colors.pale,
     borderRadius: radii.pill, paddingHorizontal: spacing.sm, paddingVertical: 2, overflow: 'hidden' as const },
