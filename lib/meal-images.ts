@@ -1,6 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 import type { Meal } from '../types/meal';
-import { mealOptionImages } from './meal-option-images';
+import { mealOptionFocus, mealOptionImages } from './meal-option-images';
 import { everydayMealImages } from './everyday-meal-images';
 
 /** Approved AI serving illustrations, bundled for offline use; never product photos. */
@@ -67,4 +67,12 @@ export function mealImageSource(meal: Meal): ImageSourcePropType | null {
   if (!image || core.length !== image.ingredients.length ||
       !image.ingredients.every(key => core.some(i => i.ingredientKey === key))) return null;
   return image.source;
+}
+
+/** Where to cut a strip of this picture, as a fraction from the top. Half is the middle of it,
+ *  which is right for a plate photographed from above, and wrong for a scene. */
+export function mealImageFocus(meal: Meal): number {
+  if (meal.nutritionSource === 'unrecorded')
+    return mealOptionFocus[meal.id.split(':')[1] as keyof typeof mealOptionFocus] ?? 0.5;
+  return 0.5;
 }

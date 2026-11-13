@@ -299,3 +299,19 @@ test("a card says what a portion costs and how long it takes, where that is reco
   assert.equal(mealEffort(out), "");
   assert.doesNotMatch(mealFacts(out), /kcal/, "no calories are invented for an evening out");
 });
+
+test("a strip of a picture is cut around the food, and never past its edge", () => {
+  const { mealImageFocus } = require("../lib/meal-images.ts");
+  const cooked = { id: "oat-berries", nutritionSource: "curated-development-estimate" };
+  assert.equal(mealImageFocus(cooked), 0.5, "a plate photographed from above is centred");
+  // The evening out is a scene: its table sits in the lower half, so the strip is cut lower.
+  const out = { id: "choice:eat_out:outside", nutritionSource: "unrecorded" };
+  assert.ok(mealImageFocus(out) > 0.55 && mealImageFocus(out) < 0.8, mealImageFocus(out));
+  const { strip } = require("../components/MealImage.tsx");
+  // A 16:5 strip of a square picture: centred is -110%, a lower focus moves it further up.
+  assert.equal(Math.round(strip(16 / 5, 0.5)), -110);
+  assert.ok(strip(16 / 5, 0.62) < strip(16 / 5, 0.5));
+  // Never so far that background shows: the picture is 320% tall, so -220% is the limit.
+  assert.equal(Math.round(strip(16 / 5, 1)), -220);
+  assert.equal(strip(16 / 5, 0), 0, "and never pulled down past its own top edge");
+});

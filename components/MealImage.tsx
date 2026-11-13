@@ -1,8 +1,15 @@
 import { contentName } from '../services/i18n/content';
 import { useState } from 'react';
 import { Image, View } from 'react-native';
-import { mealImageSource } from '../lib/meal-images';
+import { mealImageFocus, mealImageSource } from '../lib/meal-images';
 import type { Meal } from '../types/meal';
+
+/** How far up a square picture has to move so that the point at `focus` lands in the middle of a
+ *  strip of this shape, in percent of the strip's own height. Never so far that the picture
+ *  leaves the opening: a band of background at the edge would be worse than an off-centre dish. */
+export function strip(aspect: number, focus: number): number {
+  return Math.max((1 - aspect) * 100, Math.min(0, 50 - aspect * 100 * focus));
+}
 
 export function MealImage({ meal, compact = false, banner = false, thumb = false, aspect = 16 / 9 }:
   { meal: Meal; compact?: boolean;
@@ -22,7 +29,12 @@ export function MealImage({ meal, compact = false, banner = false, thumb = false
     <View style={{ width: '100%', aspectRatio: banner ? aspect : 1,
       borderRadius: banner ? 0 : thumb ? 12 : 16, overflow: 'hidden' }}>
       <Image source={source} accessibilityLabel={contentName(meal.name)}
-        resizeMode="cover" resizeMethod="resize" style={{ position: 'absolute', width: '100%', height: '100%' }}
+        resizeMode="cover" resizeMethod="resize"
+        style={{ position: 'absolute', left: 0, ...(banner && aspect > 1
+          // A strip is cut around the food rather than around the middle of the frame: the square
+          // picture is laid in at full width and moved up until the dish sits in the opening.
+          ? { width: '100%', height: `${aspect * 100}%`, top: `${strip(aspect, mealImageFocus(meal))}%` }
+          : { width: '100%', height: '100%' }) }}
         onError={() => setFailedSource(source)} />
     </View>
   </View>;
