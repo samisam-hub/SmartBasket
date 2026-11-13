@@ -124,9 +124,9 @@ export function WeekCalendar({ plan, weekStart, selected, onSelect, onWeek, onBa
       const eating = item.participantIds?.map(id => people.find(person => person.id === id)?.name || t('calendar.person'));
       const effort = mealEffort(item);
       return <View key={item.id} style={styles.card}>
-        {/* The picture sits beside the text, not above it: a day holds three meals, and three
-          * letterboxed photographs are a scroll, not an overview. */}
-        <MealImage meal={item.meal} thumb />
+        {/* The picture leads the card in full width, but cut to a strip: a day holds three
+          * meals, and three whole photographs are a scroll, not an overview. */}
+        <MealImage meal={item.meal} banner aspect={16 / 5} />
         <View style={styles.cardBody}>
           <View style={ui.row}>
             <Text style={[styles.cardTitle, { flex: 1 }]}>{item.meal.name}</Text>
@@ -181,10 +181,9 @@ const styles = {
   dotOpen: { backgroundColor: colors.orange },
   dotDone: { backgroundColor: colors.primary },
   dotOn: { backgroundColor: colors.onPrimary },
-  card: { flexDirection: 'row' as const, alignItems: 'flex-start' as const, gap: spacing.md,
-    backgroundColor: colors.surface, borderRadius: radii.large, borderWidth: 1,
-    borderColor: colors.border, overflow: 'hidden' as const, padding: spacing.md },
-  cardBody: { flex: 1, minWidth: 0, gap: 2 },
+  card: { backgroundColor: colors.surface, borderRadius: radii.large, borderWidth: 1,
+    borderColor: colors.border, overflow: 'hidden' as const },
+  cardBody: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, gap: 2 },
   cardTitle: { ...typography.h3, color: colors.ink },
   tag: { ...typography.caption, color: colors.primary, backgroundColor: colors.pale,
     borderRadius: radii.pill, paddingHorizontal: spacing.sm, paddingVertical: 2, overflow: 'hidden' as const },
