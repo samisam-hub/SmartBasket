@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const {
   SUGGESTIONS_PER_SLOT,
   compatibleMeal,
+  fitsSlot,
   ingredientAvailability,
   mealNutrition,
   suggestMeals,
@@ -139,6 +140,27 @@ test("a catalog that runs out is reported honestly instead of repeating a meal",
     suggestMeals(plan, monday, "snack", preferences, fullCatalog, snacks.map((m) => m.id)),
     [],
   );
+});
+
+test("a dish from earlier today comes back only when nothing else is left", () => {
+  const preferences = prefs({ householdSize: 1 });
+  const dinners = meals.filter((m) => fitsSlot(m, "dinner") && compatibleMeal(m, preferences));
+  const repeated = dinners.find((m) => fitsSlot(m, "lunch"));
+  assert.ok(repeated, "the fixture catalog has a dish for both lunch and dinner");
+  const plan = {
+    ...week(preferences, [{ date: monday, slots: ["lunch", "dinner"] }]),
+    items: [item(monday, "lunch", repeated.id, 1)],
+  };
+  // Every other dinner excluded: the lunch dish is all that remains, and the slot stays fillable.
+  const lastResort = suggestMeals(plan, monday, "dinner", preferences, fullCatalog,
+    dinners.filter((m) => m.id !== repeated.id).map((m) => m.id));
+  assert.equal(lastResort.length, 1);
+  assert.equal(lastResort[0].meal.id, repeated.id);
+  // With the catalog intact it stays behind the rest: repeating is the fallback, not the offer.
+  const plenty = suggestMeals(plan, monday, "dinner", preferences, fullCatalog);
+  assert.equal(plenty.length, SUGGESTIONS_PER_SLOT);
+  assert.ok(!plenty.some((s) => s.meal.id === repeated.id),
+    "a dish already eaten today is not among the suggestions while others fit");
 });
 
 test("suggestions need valid, completed preferences", () => {

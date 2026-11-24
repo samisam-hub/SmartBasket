@@ -135,8 +135,10 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
   if (participantIds?.length
     ? dishes.some(item=>sameGroup(item.participantIds,participantIds))
     : dishes.length) return [];
-  // Already shown, and anything else chosen for this day: no silent repetition within a day.
-  const skip=new Set([...exclude,...planned.map(item=>item.meal.id)]);
+  // Only what this slot has already shown. A dish chosen earlier today stays in the running but
+  // scores badly through w.sameDay, so it comes back only when the catalog has nothing else to
+  // offer: a repeat the household can swap is better than a slot they have to fill by hand.
+  const skip=new Set(exclude);
   const options=meals.filter(m=>fitsSlot(m,slot)&&!skip.has(m.id)&&ratings[m.id]!==false&&compatibleMeal(m,p));
   const targets=nutritionTargets(p);
   const prior=planned.reduce((n,item)=>{const x=mealNutrition(item);
