@@ -144,11 +144,14 @@ export function suggestMeals(plan: WeekPlan, date: string, slot: MealSlot, p: Us
   // The remaining calories of the day are only dinner's to take once the other chosen slots are decided.
   const decided=day.slots.filter(other=>other!==slot).every(other=>planned.some(item=>item.mealSlot===other));
   const dayShare=day.slots.reduce((share,chosen)=>share+slotCalorieShare[chosen],0);
+  // The budget is spread over the slots the household actually planned, not over four a day.
+  // Planning dinner alone would otherwise leave each dinner a quarter of the day's money.
+  const plannedSlots=plan.days.reduce((count,each)=>count+each.slots.length,0);
   const best=new Map<string,MealSuggestion>();
   for (const candidate of scoredCandidates(options,{
     slot,householdSize:plan.householdSize,dailyCalories:p.dailyCalories,dailyProteinTarget:targets.dailyProteinTarget,
     dayCalories:p.dailyCalories*dayShare,dayProtein:targets.dailyProteinTarget*dayShare,
-    budgetPerSlot:targets.budgetTarget?targets.budgetTarget/(Math.max(1,plan.days.length)*4):null,
+    budgetPerSlot:targets.budgetTarget?targets.budgetTarget/Math.max(1,plannedSlots):null,
     prior,restOfDay:slot==='dinner'&&decided&&planned.every(item => isCook(item) &&
       (!item.participantIds || item.participantIds.length === plan.householdSize)),
     used:new Set(plan.items.flatMap(item=>item.meal.ingredients.map(l=>l.ingredientKey))),
